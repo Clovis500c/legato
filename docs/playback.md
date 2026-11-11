@@ -356,8 +356,11 @@ visualizer and the media panel apply.
   part's own file (`/library/parts/…`, learnt at the sync, else asked once from `library/metadata/<id>`) with ranges;
   Plex's transcoder isn't asked, so a format the engine can't read says so. Covers: `photo/:/transcode` at 1200 px.
   The row says when only the relay answered.
-- Not yet: Volume levelling and Skip silence (local files only: the server's ReplayGain from OpenSubsonic is a plan
-  line), the server's own search in the app's search (each connector has it: `Conn::search`), playlist edits sent
+- Volume levelling (2026-11-11): a Subsonic server's own ReplayGain (OpenSubsonic's `replayGain` on `getSong`, the
+  tags its scanner read), asked once per song as it is about to play (`servers::gains`, with `local_prepare`) and
+  used like a file's tags. A server or a song without it plays as it is; Jellyfin's and Plex's loudness measures
+  aren't read. Untried on a real server.
+- Not yet: Skip silence (local files only), the server's own search in the app's search (each connector has it: `Conn::search`), playlist edits sent
   back, Plex's transcoder for formats the engine can't read. Tested with a local HTTP server in the
   tests (play, seek by range, a server without ranges, a dropped connection, transcoding asked again); never against a
   real Navidrome, Jellyfin or Plex.

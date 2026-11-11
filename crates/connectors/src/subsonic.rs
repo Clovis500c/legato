@@ -8,6 +8,7 @@ pub use crate::servers::{Body, Streamed};
 use crate::servers::{COVER_SIZE, LIST_TIMEOUT, base_of, http, note, reach};
 use anyhow::{Context, Result, anyhow, bail};
 use md5::{Digest, Md5};
+use music_core::local::ReplayGain;
 use music_core::lyrics::{self, Record};
 use music_core::model::{PlaylistRef, Source, Track};
 use music_core::server;
@@ -104,6 +105,13 @@ fn structured(l: &Value) -> Option<Record> {
         return Some(Record { synced: Some(lyrics::to_lrc(timed)), ..Default::default() });
     }
     Some(Record { plain: Some(lines.into_iter().map(|(_, t)| t).collect::<Vec<_>>().join("\n")), ..Default::default() })
+}
+
+/// OpenSubsonic's `replayGain` object, values out of ReplayGain's range left out (as for a file's tags).
+fn gain_of(rg: &Value) -> Option<ReplayGain> {
+    let num = |k: &str, range: std::ops::RangeInclusive<f64>| rg.get(k).and_then(Value::as_f64).filter(|v| range.contains(v)).map(|v| v as f32);
+    let peak = |k| num(k, 0.000_01..=10.0);
+    Some(ReplayGain { track_db: num("trackGain", -60.0..=60.0)?, track_peak: peak("trackPeak"), album: num("albumGain", -60.0..=60.0).map(|db| (db, peak("albumPeak"))) })
 }
 
 fn text(v: &Value, k: &str) -> Option<String> {
@@ -307,6 +315,13 @@ impl Subsonic {
         Ok(r.get("lyrics").and_then(|l| text(l, "value")).filter(|t| !t.trim().is_empty()).map(|plain| Record { plain: Some(plain), ..Default::default() }))
     }
 
+    /// A song's ReplayGain as the server read it from the file's tags (OpenSubsonic's `replayGain`, to -18 LUFS).
+    /// None: the server doesn't give it, or the song has no track gain.
+    pub async fn replay_gain(&self, item: &str) -> Result<Option<ReplayGain>> {
+        let r = self.call("getSong", &[("id", item)], crate::linklist::REQUEST_TIMEOUT).await?;
+        Ok(r.get("song").and_then(|s| s.get("replayGain")).and_then(gain_of))
+    }
+
     /// A play: `submission` false = now playing (at the start), true = a listen (past half the song or 4 minutes,
     /// `lastfm::Scrobble::counts`). `at` = when it started, unix ms.
     pub async fn scrobble(&self, item: &str, at_ms: i64, submission: bool) -> Result<()> {
@@ -386,6 +401,28 @@ mod tests {
         m.assert_async().await;
         // The password itself never travels.
         assert!(!format!("{sub:?}").contains("pw"));
+    }
+
+    #[tokio::test]
+    async fn a_songs_replay_gain_comes_from_the_server_when_it_has_one() {
+        let mut s = Server::new_async().await;
+        let song = |id: &str, extra: &str| (Matcher::UrlEncoded("id".into(), id.into()), ok(&format!(r#","song":{{"id":"{id}","title":"T"{extra}}}"#)));
+        for (id, extra) in [
+            ("full", r#","replayGain":{"trackGain":-6.5,"trackPeak":0.98,"albumGain":-5,"albumPeak":1,"baseGain":0}"#),
+            ("track", r#","replayGain":{"trackGain":2.1}"#),
+            ("peaks", r#","replayGain":{"trackPeak":1,"albumPeak":1}"#),
+            ("odd", r#","replayGain":{"trackGain":900,"albumGain":-3}"#),
+            ("none", ""),
+        ] {
+            let (q, body) = song(id, extra);
+            s.mock("GET", "/rest/getSong.view").match_query(q).with_body(body).create_async().await;
+        }
+        let sub = Subsonic::new(&s.url(), "me", "pw");
+        assert_eq!(sub.replay_gain("full").await.unwrap(), Some(ReplayGain { track_db: -6.5, track_peak: Some(0.98), album: Some((-5.0, Some(1.0))) }));
+        assert_eq!(sub.replay_gain("track").await.unwrap(), Some(ReplayGain { track_db: 2.1, track_peak: None, album: None }));
+        for id in ["peaks", "odd", "none"] {
+            assert_eq!(sub.replay_gain(id).await.unwrap(), None, "{id}");
+        }
     }
 
     #[tokio::test]

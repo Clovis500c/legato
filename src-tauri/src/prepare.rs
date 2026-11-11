@@ -35,14 +35,18 @@ struct File {
 }
 
 /// Tells the engine the silences (`silence`) and levelling gains (`level`) of the first files of a run, before it plays
-/// them. Best effort: an unreadable file plays as it is.
+/// them. Best effort: an unreadable file plays as it is. Server songs: their server's own gains only (`servers::gains`).
 #[tauri::command]
 pub async fn local_prepare(state: State<'_, AppState>, paths: Vec<String>, silence: bool, level: bool) -> Result<(), String> {
+    let (remote, paths): (Vec<PathBuf>, Vec<PathBuf>) = paths.into_iter().take(NEAR).map(PathBuf::from).partition(|p| music_player::http::is_remote(p));
+    if level && !remote.is_empty() {
+        crate::servers::gains(&state, remote).await;
+    }
     let mut trims = Vec::new();
     let mut files = Vec::new();
     {
         let lib = state.lib();
-        for path in paths.into_iter().take(NEAR).map(PathBuf::from) {
+        for path in paths {
             let Some(m) = modified(&path) else { continue };
             let key = path.to_string_lossy().into_owned();
             let cached = if silence { lib.cached_silence(&key, m).ok().flatten() } else { None };

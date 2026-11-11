@@ -351,13 +351,13 @@ const PAUSE_HOLD_MS = 5000
 // Play waits this long for a local file's silence scan and gain, then starts it as it is.
 const SILENCE_WAIT_MS = 400
 
-const localPaths = (tracks: LibraryTrack[]) => tracks.flatMap((x) => (x.ids.local ? [x.ids.local] : []))
+const localPaths = (tracks: LibraryTrack[]) => tracks.flatMap((x) => (x.ids.local ? [x.ids.local] : x.ids.server ? [SERVER_PATH + x.ids.server] : []))
 
 /** The engine learns what it needs of local files about to play (cached): their silences, their levelling gains. */
 function prepareLocal(all: string[]): Promise<void> {
-  // Server songs: no file to scan (their silences and gains aren't known yet).
-  const paths = all.filter((p) => !p.startsWith(SERVER_PATH))
   const { skipSilence, levelling } = usePlayer.getState()
+  // Server songs: no file to scan; only the gains their server keeps (OpenSubsonic's ReplayGain), when levelling.
+  const paths = levelling === 'off' ? all.filter((p) => !p.startsWith(SERVER_PATH)) : all
   if (!paths.length || (!skipSilence && levelling === 'off')) return Promise.resolve()
   return api.localPrepare(paths, skipSilence, levelling !== 'off').catch(() => {})
 }

@@ -9,11 +9,13 @@ use music_connectors::servers::{self as conns, Conn};
 use music_connectors::subsonic::Subsonic;
 use music_core::model::{Source, Track};
 use music_core::server::{self, Account, Exposure, Kind};
-use music_player::http::{Fetch as PlayerFetch, Remote, Reply};
+use music_player::http::{Fetch as PlayerFetch, PREFIX, Remote, Reply};
+use music_player::{Command, Gain};
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::io::{self, Read};
-use std::sync::{Arc, RwLock};
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex, PoisonError, RwLock};
 use std::time::Duration;
 use tauri::{AppHandle, Manager, State};
 
@@ -411,6 +413,38 @@ pub async fn server_scrobble(state: State<'_, AppState>, id: String, started_at_
     let at = position_ms.filter(|p| p.is_finite() && *p >= 0.0).map(|p| p as u64);
     let _ = Conn::from_account(&a).played(&item, started_at_ms as i64, submission, at).await;
     Ok(())
+}
+
+/// Songs' levelling gains as their servers gave them, by library id (None: it has none). Asked once per run of the app.
+static GAINS: Mutex<Option<HashMap<String, Option<Gain>>>> = Mutex::new(None);
+
+/// Volume levelling for server songs about to play (`paths`: the engine's): the ReplayGain their server read from
+/// the files' tags, told to the engine. A server that gives none, or doesn't answer: the song plays as it is.
+pub async fn gains(state: &AppState, paths: Vec<PathBuf>) {
+    let known = |id: &str| GAINS.lock().unwrap_or_else(PoisonError::into_inner).get_or_insert_default().get(id).copied();
+    let mut list = Vec::new();
+    for path in paths {
+        let Some(id) = path.to_str().and_then(|p| p.strip_prefix(PREFIX)).map(str::to_string) else { continue };
+        let gain = match known(&id) {
+            Some(g) => g,
+            None => {
+                let Ok((a, item)) = item(&id) else { continue };
+                let Ok(rg) = Conn::from_account(&a).replay_gain(&item).await else { continue };
+                let g = rg.map(|rg| Gain::tagged(rg.track_db, rg.track_peak, rg.album));
+                let mut all = GAINS.lock().unwrap_or_else(PoisonError::into_inner);
+                let all = all.get_or_insert_default();
+                if all.len() > 2000 {
+                    all.clear();
+                }
+                all.insert(id, g);
+                g
+            }
+        };
+        list.extend(gain.map(|g| (path, g)));
+    }
+    if !list.is_empty() {
+        state.player.send(Command::Gains { list });
+    }
 }
 
 /// The engine's way to server songs: the request built here with fresh auth, run on the app's async runtime, the

@@ -176,7 +176,10 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       - [ ] `S` Plex's transcoder (`music/:/transcode/universal`) for formats the engine can't read.
       - [ ] `S` Trust a self-signed server: its certificate's SHA-256 fingerprint shown at sign-in and pinned (rustls's
         own verifier on every platform, so a pinned one is checked, not just accepted).
-      - [ ] `S` Server songs levelled: OpenSubsonic's `replayGain` (track / album) into Volume levelling.
+      - [x] `S` Server songs levelled: OpenSubsonic's `replayGain` (track / album) into Volume levelling.
+        2026-11-11: asked with `getSong` as a song is about to play (once per song and run of the app), used like a
+        file's ReplayGain tags. Not done: Jellyfin's `NormalizationGain` and Plex's loudness (other scales), a gain
+        kept in the library (asked again after a restart). Untried on a real server: mock tests only.
       - [ ] `S` Your music server in the app's search (`Conn::search` built for the three kinds, not wired). Decided alone
         (2026-11-06): left for later; the library mirrors the whole server at each sync, so its songs already come
         up in the library's own search; the server's search would only add what came since the last sync.

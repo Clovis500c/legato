@@ -213,6 +213,15 @@ impl Conn {
         }
     }
 
+    /// A song's ReplayGain as its server keeps it. Subsonic only (OpenSubsonic's `replayGain`): Jellyfin and Plex give
+    /// their own loudness measures, not read.
+    pub async fn replay_gain(&self, item: &str) -> Result<Option<music_core::local::ReplayGain>> {
+        match self {
+            Self::Subsonic(s) => s.replay_gain(item).await,
+            _ => Ok(None),
+        }
+    }
+
     /// Songs matching `query` on the server itself.
     pub async fn search(&self, query: &str, count: usize) -> Result<Vec<Track>> {
         match self {
