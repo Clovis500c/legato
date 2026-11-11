@@ -986,6 +986,8 @@ const hi: Record<string, string> = {
   '{n} cover': '{n} कवर',
   '{n} covers': '{n} कवर',
   'Source code': 'सोर्स कोड',
+  'Community': 'समुदाय',
+  'Ask a question, share a theme or an idea in the project’s GitHub Discussions.': 'प्रोजेक्ट की GitHub Discussions में सवाल पूछें, कोई थीम या विचार साझा करें।',
   'Source-available: free to use, not to copy. Built with Tauri 2, Rust and React.': 'सोर्स-उपलब्ध: इस्तेमाल के लिए मुफ़्त, कॉपी के लिए नहीं। Tauri 2, Rust और React से बना।',
   'The open-source components the app is built on: their licenses, copyright notices and source links.': 'वे ओपन-सोर्स कंपोनेंट जिन पर ऐप बना है: उनके लाइसेंस, कॉपीराइट सूचनाएं और सोर्स लिंक।',
   'Couldn’t open the licenses file': 'लाइसेंस फ़ाइल नहीं खुल सकी',

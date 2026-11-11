@@ -15,7 +15,7 @@ import { downloadUpdate, installUpdate, useUpdate } from '../update/updates'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
 import { phoneApp } from '../../shared/platform'
 import { DESKTOP_ONLY } from './desktopOnly'
-import { PRIVACY_PAGE, REPO } from '../../shared/links'
+import { DISCUSSIONS, PRIVACY_PAGE, REPO } from '../../shared/links'
 
 // Status colors keep their meaning whatever the theme.
 const pill: Record<UpdateStatus['state'], { color: string; pulse?: boolean }> = {
@@ -180,6 +180,11 @@ export function AboutSection() {
           <Row label={msg('Source code')} sub={tr('Source-available: free to use, not to copy. Built with Tauri 2, Rust and React.')}>
             <Button variant="ghost" onClick={() => void openUrl(REPO).catch(() => {})}>
               <ArrowSquareOut size={14} /> GitHub
+            </Button>
+          </Row>
+          <Row label={msg('Community')} sub={tr('Ask a question, share a theme or an idea in the project’s GitHub Discussions.')}>
+            <Button variant="ghost" onClick={() => void openUrl(DISCUSSIONS).catch(() => {})}>
+              <ArrowSquareOut size={14} /> Discussions
             </Button>
           </Row>
           <Row label={msg('Third-party licenses')} sub={tr('The open-source components the app is built on: their licenses, copyright notices and source links.')}>

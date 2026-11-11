@@ -986,6 +986,8 @@ const vi: Record<string, string> = {
   '{n} cover': '{n} ảnh bìa',
   '{n} covers': '{n} ảnh bìa',
   'Source code': 'Mã nguồn',
+  'Community': 'Cộng đồng',
+  'Ask a question, share a theme or an idea in the project’s GitHub Discussions.': 'Đặt câu hỏi, chia sẻ giao diện hoặc ý tưởng trong GitHub Discussions của dự án.',
   'Source-available: free to use, not to copy. Built with Tauri 2, Rust and React.': 'Mã nguồn công khai: dùng miễn phí, không được sao chép. Xây dựng bằng Tauri 2, Rust và React.',
   'The open-source components the app is built on: their licenses, copyright notices and source links.': 'Các thành phần mã nguồn mở mà ứng dụng sử dụng: giấy phép, thông báo bản quyền và liên kết mã nguồn.',
   'Couldn’t open the licenses file': 'Không mở được tệp giấy phép',

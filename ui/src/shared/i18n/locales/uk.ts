@@ -986,6 +986,8 @@ const uk: Record<string, string> = {
   '{n} cover': '{n} обкладинка',
   '{n} covers': 'Обкладинок: {n}',
   'Source code': 'Вихідний код',
+  'Community': 'Спільнота',
+  'Ask a question, share a theme or an idea in the project’s GitHub Discussions.': 'Поставте запитання, поділіться темою чи ідеєю в GitHub Discussions проєкту.',
   'Source-available: free to use, not to copy. Built with Tauri 2, Rust and React.': 'Вихідний код відкритий для перегляду: використовувати можна, копіювати не можна. Зроблено на Tauri 2, Rust і React.',
   'The open-source components the app is built on: their licenses, copyright notices and source links.': 'Компоненти з відкритим кодом, на яких побудовано застосунок: їхні ліцензії, повідомлення про авторські права й посилання на код.',
   'Couldn’t open the licenses file': 'Не вдалося відкрити файл ліцензій',

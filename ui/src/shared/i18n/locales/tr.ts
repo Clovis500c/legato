@@ -986,6 +986,8 @@ const tr: Record<string, string> = {
   '{n} cover': '{n} kapak',
   '{n} covers': '{n} kapak',
   'Source code': 'Kaynak kodu',
+  'Community': 'Topluluk',
+  'Ask a question, share a theme or an idea in the project’s GitHub Discussions.': 'Projenin GitHub Discussions sayfasında soru sorun, bir tema ya da fikir paylaşın.',
   'Source-available: free to use, not to copy. Built with Tauri 2, Rust and React.': 'Kaynağı erişilebilir: kullanmak serbest, kopyalamak değil. Tauri 2, Rust ve React ile yapıldı.',
   'The open-source components the app is built on: their licenses, copyright notices and source links.': 'Uygulamanın üzerine kurulduğu açık kaynak bileşenler: lisansları, telif hakkı bildirimleri ve kaynak bağlantıları.',
   'Couldn’t open the licenses file': 'Lisans dosyası açılamadı',

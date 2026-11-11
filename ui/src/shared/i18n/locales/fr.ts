@@ -995,6 +995,8 @@ const fr: Record<string, string> = {
   '{n} cover': '{n} pochette',
   '{n} covers': '{n} pochettes',
   'Source code': 'Code source',
+  'Community': 'Communauté',
+  'Ask a question, share a theme or an idea in the project’s GitHub Discussions.': 'Posez une question, partagez un thème ou une idée dans les Discussions GitHub du projet.',
   'Source-available: free to use, not to copy. Built with Tauri 2, Rust and React.': 'Code source disponible : libre d’utilisation, pas de copie. Fait avec Tauri 2, Rust et React.',
   'The open-source components the app is built on: their licenses, copyright notices and source links.': 'Les composants open source sur lesquels repose l’application : leurs licences, mentions de droits d’auteur et liens vers les sources.',
   'Couldn’t open the licenses file': 'Impossible d’ouvrir le fichier des licences',

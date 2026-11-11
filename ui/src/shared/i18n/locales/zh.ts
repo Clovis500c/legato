@@ -986,6 +986,8 @@ const zh: Record<string, string> = {
   '{n} cover': '{n} 张封面',
   '{n} covers': '{n} 张封面',
   'Source code': '源代码',
+  'Community': '社区',
+  'Ask a question, share a theme or an idea in the project’s GitHub Discussions.': '在项目的 GitHub Discussions 中提问、分享主题或想法。',
   'Source-available: free to use, not to copy. Built with Tauri 2, Rust and React.': '源代码公开：可免费使用，但不可复制。基于 Tauri 2、Rust 和 React 构建。',
   'The open-source components the app is built on: their licenses, copyright notices and source links.': '应用所使用的开源组件：它们的许可证、版权声明和源代码链接。',
   'Couldn’t open the licenses file': '无法打开许可证文件',

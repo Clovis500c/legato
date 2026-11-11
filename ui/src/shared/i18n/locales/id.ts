@@ -986,6 +986,8 @@ const id: Record<string, string> = {
   '{n} cover': '{n} sampul',
   '{n} covers': '{n} sampul',
   'Source code': 'Kode sumber',
+  'Community': 'Komunitas',
+  'Ask a question, share a theme or an idea in the project’s GitHub Discussions.': 'Ajukan pertanyaan, bagikan tema atau ide di GitHub Discussions proyek ini.',
   'Source-available: free to use, not to copy. Built with Tauri 2, Rust and React.': 'Kode sumber tersedia: bebas dipakai, bukan untuk disalin. Dibuat dengan Tauri 2, Rust, dan React.',
   'The open-source components the app is built on: their licenses, copyright notices and source links.': 'Komponen sumber terbuka yang menjadi dasar aplikasi: lisensi, pemberitahuan hak cipta, dan link sumbernya.',
   'Couldn’t open the licenses file': 'Tidak dapat membuka file lisensi',

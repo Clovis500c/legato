@@ -198,6 +198,8 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 **Medium**
 - [ ] `S` Community: GitHub Discussions (on since 2026-11-07, with the "good first issue" label) linked from About, a
       showcase of themes on the website.
+      2026-11-11: Settings > About > Community opens the Discussions. Left: the website's showcase of themes (it
+      needs themes to show: the owner's or the first shared ones).
 - [x] `S-M` Discovery: new releases of your artists from MusicBrainz only (the owner's choice 2026-11-07, no Reddit),
       shown as cards to play from YouTube; its host in the website's privacy rows.
       2026-11-11: Home's section "New from your artists" (`releases`), off until turned on in Customize Home

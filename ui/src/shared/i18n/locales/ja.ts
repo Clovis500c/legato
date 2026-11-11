@@ -986,6 +986,8 @@ const ja: Record<string, string> = {
   '{n} cover': '{n}枚のカバー',
   '{n} covers': '{n}枚のカバー',
   'Source code': 'ソースコード',
+  'Community': 'コミュニティ',
+  'Ask a question, share a theme or an idea in the project’s GitHub Discussions.': 'プロジェクトの GitHub Discussions で質問したり、テーマやアイデアを共有できます。',
   'Source-available: free to use, not to copy. Built with Tauri 2, Rust and React.': 'ソース公開：無料で使えますが、複製はできません。Tauri 2、Rust、Reactで作られています。',
   'The open-source components the app is built on: their licenses, copyright notices and source links.': 'アプリが使っているオープンソースコンポーネント：ライセンス、著作権表示、ソースへのリンク。',
   'Couldn’t open the licenses file': 'ライセンスファイルを開けませんでした',

@@ -986,6 +986,8 @@ const sv: Record<string, string> = {
   '{n} cover': '{n} omslag',
   '{n} covers': '{n} omslag',
   'Source code': 'Källkod',
+  'Community': 'Community',
+  'Ask a question, share a theme or an idea in the project’s GitHub Discussions.': 'Ställ en fråga, dela ett tema eller en idé i projektets GitHub Discussions.',
   'Source-available: free to use, not to copy. Built with Tauri 2, Rust and React.': 'Källkoden är tillgänglig: fri att använda, inte att kopiera. Byggd med Tauri 2, Rust och React.',
   'The open-source components the app is built on: their licenses, copyright notices and source links.': 'Komponenterna med öppen källkod som appen bygger på: deras licenser, upphovsrättsmeddelanden och länkar till källkoden.',
   'Couldn’t open the licenses file': 'Det gick inte att öppna licensfilen',

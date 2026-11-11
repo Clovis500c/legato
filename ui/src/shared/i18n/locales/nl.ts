@@ -986,6 +986,8 @@ const nl: Record<string, string> = {
   '{n} cover': '{n} cover',
   '{n} covers': '{n} covers',
   'Source code': 'Broncode',
+  'Community': 'Community',
+  'Ask a question, share a theme or an idea in the project’s GitHub Discussions.': 'Stel een vraag, deel een thema of een idee in de GitHub Discussions van het project.',
   'Source-available: free to use, not to copy. Built with Tauri 2, Rust and React.': 'Source-available: vrij te gebruiken, niet te kopiëren. Gebouwd met Tauri 2, Rust en React.',
   'The open-source components the app is built on: their licenses, copyright notices and source links.': 'De opensourceonderdelen waarop de app is gebouwd: hun licenties, copyrightvermeldingen en links naar de broncode.',
   'Couldn’t open the licenses file': 'Kon het licentiebestand niet openen',

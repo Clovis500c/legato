@@ -986,6 +986,8 @@ const ko: Record<string, string> = {
   '{n} cover': '커버 {n}개',
   '{n} covers': '커버 {n}개',
   'Source code': '소스 코드',
+  'Community': '커뮤니티',
+  'Ask a question, share a theme or an idea in the project’s GitHub Discussions.': '프로젝트의 GitHub Discussions에서 질문하거나 테마와 아이디어를 공유하세요.',
   'Source-available: free to use, not to copy. Built with Tauri 2, Rust and React.': '소스 공개: 무료로 사용할 수 있지만 복제는 안 됩니다. Tauri 2, Rust, React로 만들었습니다.',
   'The open-source components the app is built on: their licenses, copyright notices and source links.': '앱이 사용하는 오픈 소스 구성 요소: 라이선스, 저작권 고지, 소스 링크.',
   'Couldn’t open the licenses file': '라이선스 파일을 열 수 없습니다',
