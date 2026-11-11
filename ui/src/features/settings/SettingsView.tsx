@@ -325,7 +325,7 @@ function Appearance() {
           <Row setting="columnBrowser" label={msg('Column browser')} sub={tr('Artists and albums in two panes above Songs: pick one, the list shows its songs')} preview={<BrowserScene columnBrowser={s.columnBrowser} />}>
             <Toggle label={tr('Column browser')} checked={s.columnBrowser} onChange={(columnBrowser) => update({ columnBrowser })} />
           </Row>
-          <Row setting="hideExplicit" label={msg('Hide explicit songs')} sub={tr('Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync')}>
+          <Row setting="hideExplicit" label={msg('Hide explicit songs')} sub={tr('Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album are hidden everywhere (lists, albums, artists, search, mixes, radios), with a count and a way to show one again. Songs already in your library are marked at their next sync')}>
             <Toggle label={tr('Hide explicit songs')} checked={s.hideExplicit} onChange={(hideExplicit) => update({ hideExplicit })} />
           </Row>
           <Row setting="releaseCovers" label={msg('Covers for new releases')} sub={tr('Home’s New from your artists shows each release’s cover from Cover Art Archive (coverartarchive.org, then archive.org). Off by default: those hosts then see which releases you look at')}>

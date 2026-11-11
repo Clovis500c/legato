@@ -2,7 +2,7 @@ import { CaretDown, MusicNotesSimple } from '@phosphor-icons/react'
 import { useState, type ReactNode } from 'react'
 import type { LibraryTrack } from '../../shared/api'
 import { tr, trn } from '../../shared/i18n/i18n'
-import { markMusic } from './edits'
+import { markMusic, markNotExplicit } from './edits'
 import { TrackTable } from './TrackTable'
 import { onMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
 import { tracksMenu } from '../menus'
@@ -11,13 +11,13 @@ import { tracksMenu } from '../menus'
  * "N videos hidden because they aren't music · Show": a fold that opens on the list of them (user's request
  * 2026-10-22). Songs, playlists, mixes and Add music's search share it.
  */
-export function HiddenFold({ count, children, className = '', menu }: { count: number; children: ReactNode; className?: string; menu?: () => MenuEntry[] }) {
+export function HiddenFold({ count, children, className = '', menu, text }: { count: number; children: ReactNode; className?: string; menu?: () => MenuEntry[]; text?: string }) {
   const [open, setOpen] = useState(false)
   if (!count) return null
   return (
     <div className={`flex shrink-0 flex-col rounded-lg border border-line-soft ${className}`}>
       <button onClick={() => setOpen(!open)} onContextMenu={onMenu(() => [{ label: open ? tr('Hide list') : tr('Show'), onSelect: () => setOpen(!open) }, '-', ...(menu?.() ?? [])])} aria-expanded={open} className="flex items-center justify-between gap-3 px-3 py-2 text-left text-xs text-ink-2">
-        {trn(count, '{n} video hidden because it isn’t music', '{n} videos hidden because they aren’t music')}
+        {text ?? trn(count, '{n} video hidden because it isn’t music', '{n} videos hidden because they aren’t music')}
         <span className="flex shrink-0 items-center gap-1.5 rounded-full border border-line px-3 py-1 font-medium text-ink hover:bg-raised">
           {open ? tr('Hide list') : tr('Show')}
           <CaretDown size={11} weight="bold" className={`transition-transform ${open ? 'rotate-180' : ''}`} />
@@ -25,6 +25,25 @@ export function HiddenFold({ count, children, className = '', menu }: { count: n
       </button>
       {open && <div className="border-t border-line-soft">{children}</div>}
     </div>
+  )
+}
+
+/** Songs the filter hides (Settings › Hide explicit songs), counted, and "Not explicit" brings one back for good. */
+export function HiddenExplicit({ tracks }: { tracks: LibraryTrack[] }) {
+  return (
+    <HiddenFold count={tracks.length} className="mb-2" text={trn(tracks.length, '{n} explicit song hidden', '{n} explicit songs hidden')} menu={() => [{ label: tr('Not explicit'), onSelect: () => void markNotExplicit(tracks.map((t) => t.id), true) }, '-', ...tracksMenu(tracks)]}>
+      <div className="flex max-h-[min(22rem,45vh)] flex-col px-1 py-1">
+        <TrackTable
+          tracks={tracks}
+          empty={null}
+          rowActions={(t) => (
+            <button onClick={() => void markNotExplicit([t.id], true)} title={tr('The flag is wrong: show it with your songs from now on')} className="flex h-6 items-center gap-1 rounded-full border border-line px-2 text-[0.6875rem] font-medium whitespace-nowrap text-ink hover:bg-raised">
+              {tr('Not explicit')}
+            </button>
+          )}
+        />
+      </div>
+    </HiddenFold>
   )
 }
 

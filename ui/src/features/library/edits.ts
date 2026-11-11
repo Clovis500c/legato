@@ -80,6 +80,17 @@ export async function removePositions(id: number, positions: number[]) {
  * The user's word on music or not, above the app's guess (null = the guess again); the lists follow. Hidden as not
  * music: Undo in the toast.
  */
+/** The user's word that a song a source marked explicit isn't: the filter shows it from now on. Undo marks it again. */
+export async function markNotExplicit(ids: number[], ok: boolean) {
+  try {
+    await api.setExplicit(ids, ok)
+    await app().refreshChanged()
+  } catch (e) {
+    return app().notify(String(e), { kind: 'error' })
+  }
+  if (ok) app().notify(tr('{songs} no longer marked explicit', { songs: songs(ids) }), { action: { label: tr('Undo'), run: () => void markNotExplicit(ids, false) } })
+}
+
 export async function markMusic(ids: number[], music: boolean | null) {
   try {
     await api.setMusic(ids, music)

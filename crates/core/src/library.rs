@@ -90,7 +90,7 @@ pub fn now_ms() -> i64 {
     std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis() as i64).unwrap_or(0)
 }
 
-const TRACK_COLS: &str = "t.id, t.title, t.artist, t.album, t.duration_ms, t.isrc, t.art, t.added, t.musicness, t.added_at, t.genre, t.year, t.explicit";
+const TRACK_COLS: &str = "t.id, t.title, t.artist, t.album, t.duration_ms, t.isrc, t.art, t.added, t.musicness, t.added_at, t.genre, t.year, (t.explicit = 1)";
 
 /// Liked Music: last like on top, always.
 fn liked_music(source: Source, source_id: &str) -> bool {
@@ -639,7 +639,7 @@ impl Library {
         let (album, dur, dupe_isrc, art, music, explicit) = self.db.query_row(
             "SELECT album, duration_ms, isrc, art, musicness, explicit FROM tracks WHERE id = ?1",
             [dupe],
-            |r| Ok((r.get::<_, Option<String>>(0)?, r.get::<_, Option<u32>>(1)?, r.get::<_, Option<String>>(2)?, r.get::<_, Option<String>>(3)?, r.get::<_, Option<String>>(4)?, r.get::<_, bool>(5)?)),
+            |r| Ok((r.get::<_, Option<String>>(0)?, r.get::<_, Option<u32>>(1)?, r.get::<_, Option<String>>(2)?, r.get::<_, Option<String>>(3)?, r.get::<_, Option<String>>(4)?, r.get::<_, i64>(5)? == 1)),
         )?;
         self.db.execute("UPDATE track_ids SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
         self.db.execute("UPDATE playlist_tracks SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
@@ -1504,6 +1504,18 @@ impl Library {
         Ok(())
     }
 
+    /// The user's word on a song a source marked explicit: `ok` = "not explicit" (stored as 2: a source saying explicit
+    /// again doesn't undo it, `mark_explicit` only writes over 0), else back to 1. Other values untouched.
+    pub fn set_explicit_ok(&self, ids: &[i64], ok: bool) -> Result<()> {
+        let (from, to) = if ok { (1, 2) } else { (2, 1) };
+        self.tx(|| {
+            for id in ids {
+                self.db.prepare_cached("UPDATE tracks SET explicit = ?1 WHERE id = ?2 AND explicit = ?3")?.execute(params![to, id, from])?;
+            }
+            Ok(())
+        })
+    }
+
     /// A source said explicit: it stays so (another source's silence doesn't clear it).
     fn mark_explicit(&self, id: i64) -> Result<()> {
         self.db.prepare_cached("UPDATE tracks SET explicit = 1 WHERE id = ?1 AND explicit = 0")?.execute([id])?;
@@ -2022,6 +2034,13 @@ mod tests {
         let b = lib.upsert_track(&Track { explicit: true, ..song(3) })?;
         lib.merge_tracks(a, &[b])?;
         assert!(get(a));
+        // The user's word: not explicit. A source saying so again doesn't undo it; the user can take it back.
+        lib.set_explicit_ok(&[a, id], true)?;
+        assert!(!get(a) && !get(id));
+        lib.upsert_track(&Track { explicit: true, ..song(1) })?;
+        assert!(!get(id));
+        lib.set_explicit_ok(&[id], false)?;
+        assert!(get(id));
         Ok(())
     }
 

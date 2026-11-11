@@ -208,6 +208,12 @@ export function libraryStats(tracks: LibraryTrack[]) {
  * their own fold (HiddenVideos); a doubt stays. Nothing is deleted.
  */
 /** Settings › Hide explicit songs: the songs a source marked explicit left out (the same list when off or none). */
+/** The same, with the songs set aside kept for the fold that counts them and brings one back. */
+export function splitExplicit<T extends Pick<Track, 'explicit'>>(tracks: T[], hide: boolean): { kept: T[]; hidden: T[] } {
+  const hidden = hide ? tracks.filter((t) => t.explicit) : []
+  return { kept: hidden.length ? tracks.filter((t) => !t.explicit) : tracks, hidden }
+}
+
 export const withoutExplicit = <T extends Pick<Track, 'explicit'>>(tracks: T[], hide: boolean): T[] => (hide && tracks.some((t) => t.explicit) ? tracks.filter((t) => !t.explicit) : tracks)
 
 export function musicOnly<T extends Pick<Track, 'musicness'>>(tracks: T[]): { kept: T[]; hidden: T[] } {

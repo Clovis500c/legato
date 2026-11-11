@@ -115,6 +115,8 @@ export const api = {
   setRating: (trackId: number, stars: number) => invoke<void>('set_rating', { trackId, stars }),
   /** The user's word: music (true), not music (false), null = the app's guess again. */
   setMusic: (trackIds: number[], music: boolean | null) => invoke<void>('set_music', { trackIds, music }),
+  /** "Not explicit" on songs a source marked explicit (true), or back (false). */
+  setExplicit: (trackIds: number[], ok: boolean) => invoke<void>('set_explicit', { trackIds, ok }),
   /** Edit song info: a local file's tags rewritten (tags.rs). coverPath = new front cover; removeCover = none. */
   /** Edit song info: local songs' tags rewritten in their files (one or several, in this order), only what's given. */
   editTags: (trackIds: number[], tags: SongTags) => invoke<TagsSaved>('edit_tags', { trackIds, tags }),

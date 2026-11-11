@@ -18,8 +18,9 @@ import { CardRow, MediaCard, Section } from '../../shared/ui/Section'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { kindLabel, unofficial, videoKind } from '../add/kind'
 import { AddToPlaylist } from '../library/AddToPlaylist'
-import { groupAlbums, groupArtists, type AlbumGroup, type ArtistGroup } from '../library/filter'
-import { HiddenFold } from '../library/HiddenVideos'
+import { filterTracks, groupAlbums, groupArtists, type AlbumGroup, type ArtistGroup } from '../library/filter'
+import { HiddenExplicit, HiddenFold } from '../library/HiddenVideos'
+import { useExplicit } from '../library/useExplicit'
 import { PlaylistCover } from '../library/PlaylistCover'
 import { TrackTable } from '../library/TrackTable'
 import { hitMenu, playlistMenu, trackMenu, tracksMenu } from '../menus'
@@ -191,7 +192,9 @@ const NONE: LibraryMatches = { songs: [], artists: [], albums: [], playlists: []
  */
 export function SearchView() {
   const request = useStore((s) => s.search)
-  const { tracks, playlists, stats, go } = useStore(useShallow(({ tracks, playlists, stats, go }) => ({ tracks, playlists, stats, go })))
+  const { tracks: every, playlists, stats, go } = useStore(useShallow(({ tracks, playlists, stats, go }) => ({ tracks, playlists, stats, go })))
+  const clean = useExplicit(every)
+  const tracks = clean.kept
   const play = usePlayer((s) => s.playTracks)
   const rememberSearches = useSettings((s) => s.settings.rememberSearches)
   const q = request?.q ?? ''
@@ -540,6 +543,7 @@ export function SearchView() {
         </div>
       )}
 
+      {q && <HiddenExplicit tracks={filterTracks(clean.hidden, q, 'all')} />}
       {!everywhere && shown === 'songs' ? (
         <TrackTable tracks={lib.songs} empty={tr('No results.')} />
       ) : (

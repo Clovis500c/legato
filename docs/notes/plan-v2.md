@@ -71,7 +71,7 @@ classic mini player stay off by default; the web share link stays the default; p
       it only if `isShareCode` (a pasted link's test) and opens the same import dialog. The share page has "Open in
       Legato" beside "Copy the link for Legato". Untried: the registry write, Windows starting the exe with the link, the
       uninstall hook, a browser's "open this app?" prompt (needs the installed app: a dev build never registers).
-- [ ] `S-M` Explicit songs hidden everywhere (own playlists, album, artist and search pages), only hidden: a way for
+- [x] `S-M` Explicit songs hidden everywhere (own playlists, album, artist and search pages), only hidden: a way for
       the user to bring one back when the flag is wrong (the owner's choice 2026-11-11).
 
 ## The owner's asks of 2026-11-11, night
@@ -99,7 +99,13 @@ Where a line says "reading", the owner hasn't confirmed it.
       React hands the embed that video with `loadVideoById` (in a crossfade, a new embed with autoplay, the pause sent
       to no frame); a video blocked after a stall plays fine there. Fixed: the embed only cues a video its watch page
       plays (`embedStarts`), and one that starts anyway is paused. Not tried for real (needs a refused video).
-
+      2026-11-11: with the setting on, hidden in Songs, every playlist (own ones too: while some are hidden the playlist is
+      not editable by position, like with a search typed), albums, artist pages, search, mixes, and radios / autoplay
+      (`similarTo`); each list that is shortened shows "N explicit songs hidden · Show" (`HiddenExplicit`) whose rows
+      have "Not explicit" (also in the song menu of a flagged song, with Undo). The word is kept in the library (`explicit`
+      = 2, a source saying explicit again can't undo it; `Library::set_explicit_ok`, no schema change). Not covered: Home's
+      shelves and cards, the Up next queue already built, a playlist's play-all from a sidebar menu (they use the same
+      lists, but only the pages above were filtered). Never seen on a screen.
 - [ ] `S-M` The share page (`/l`, since `867cc53`) as a good-looking preview of a playlist without the app, from the
       compact links: a preview only, no player on the web (the owner's word).
 - [ ] `M` Remixes shared outside the app: a small file of ours, `.lmix` (or close, the owner's call), and its compact

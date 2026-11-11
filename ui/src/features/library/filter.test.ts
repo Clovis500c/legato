@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { LibraryTrack } from '../../shared/api'
 import { formatDuration, timeAgo } from '../../shared/format'
-import { allArtists, filterTracks, groupAlbums, groupArtists, libraryStats, musicOnly, primaryArtist, withoutExplicit, sortGroups, sortTracks } from './filter'
+import { allArtists, filterTracks, groupAlbums, groupArtists, libraryStats, musicOnly, primaryArtist, withoutExplicit, splitExplicit, sortGroups, sortTracks } from './filter'
 
 const t = (id: number, title: string, artist: string, ids: LibraryTrack['ids']): LibraryTrack => ({
   id,
@@ -173,5 +173,16 @@ describe('musicOnly', () => {
     const list = [t(1, 'music'), t(2, 'notMusic'), t(3, 'unsure'), t(4)]
     expect(musicOnly(list)).toEqual({ kept: [t(1, 'music'), t(3, 'unsure'), t(4)], hidden: [t(2, 'notMusic')] })
     expect(musicOnly([t(1)]).kept).toEqual([t(1)])
+  })
+})
+
+describe('splitExplicit', () => {
+  it('sets the flagged songs aside only when asked, keeping them for the fold', () => {
+    const list = [{ id: 1, explicit: true }, { id: 2, explicit: false }, { id: 3, explicit: true }]
+    expect(splitExplicit(list, true)).toEqual({ kept: [{ id: 2, explicit: false }], hidden: [list[0], list[2]] })
+    const off = splitExplicit(list, false)
+    expect(off.kept).toBe(list)
+    expect(off.hidden).toEqual([])
+    expect(splitExplicit([{ id: 4, explicit: false }], true).hidden).toEqual([])
   })
 })

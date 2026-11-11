@@ -24,9 +24,10 @@ import { canPlay, usePlayer } from '../player/store'
 import { SharePanel } from '../share/SharePanel'
 import { FIT_FIELD, SongsThatFit } from './SongsThatFit'
 import { PlaylistCover } from './PlaylistCover'
-import { filterTracks, groupAlbums, groupArtists, groupStats, libraryStats, musicOnly, sortGroups as orderGroups, sortTracks, withoutExplicit, type Filter, type GroupSort, type Sort } from './filter'
+import { filterTracks, groupAlbums, groupArtists, groupStats, libraryStats, musicOnly, sortGroups as orderGroups, sortTracks, type Filter, type GroupSort, type Sort } from './filter'
 import { DuplicatesButton } from './dialogs'
-import { HiddenVideos } from './HiddenVideos'
+import { HiddenExplicit, HiddenVideos } from './HiddenVideos'
+import { useExplicit } from './useExplicit'
 import { columnsMenu, TrackTable } from './TrackTable'
 import { browse, inPicks } from './browse'
 import { browserEntry, ColumnBrowser, useBrowse } from './ColumnBrowser'
@@ -275,8 +276,8 @@ export function SongsView() {
   const browser = useSettings((s) => s.settings.columnBrowser)
   const picks = useBrowse()
   const stats = useMemo(() => libraryStats(tracks), [tracks])
-  const hideExplicit = useSettings((s) => s.settings.hideExplicit)
-  const music = useMemo(() => musicOnly(withoutExplicit(tracks, hideExplicit)), [tracks, hideExplicit])
+  const clean = useExplicit(tracks)
+  const music = useMemo(() => musicOnly(clean.kept), [clean])
   const found = useMemo(() => filterTracks(music.kept, query, filter), [music, query, filter])
   // Column browser: its panes over what the search and the chips found; the list = what they picked.
   const browsed = useMemo(() => (browser && tracks.length ? browse(found, picks) : null), [browser, tracks.length, found, picks])
@@ -309,6 +310,7 @@ export function SongsView() {
       </div>
       {browsed && <ColumnBrowser b={browsed} play={playSorted} />}
       <HiddenVideos tracks={hidden} />
+      <HiddenExplicit tracks={filterTracks(clean.hidden, query, filter)} />
       <TrackTable
         tracks={shown}
         sort={sort}
@@ -354,8 +356,8 @@ export function PlaylistView({ id }: { id: number }) {
   const newestFirst = playlist?.newestFirst ?? false
   // Your own playlists show what you put in them (their rows are edited by position); imports set non-music aside,
   // and explicit songs when asked.
-  const hideExplicit = useSettings((s) => s.settings.hideExplicit)
-  const music = useMemo(() => (playlist?.custom ? { kept: playlistTracks, hidden: [] } : musicOnly(withoutExplicit(playlistTracks, hideExplicit))), [playlistTracks, playlist?.custom, hideExplicit])
+  const clean = useExplicit(playlistTracks)
+  const music = useMemo(() => (playlist?.custom ? { kept: clean.kept, hidden: [] } : musicOnly(clean.kept)), [clean, playlist?.custom])
   const hidden = useMemo(() => filterTracks(music.hidden, query, 'all'), [music, query])
   const shown = useMemo(() => sortTracks(filterTracks(music.kept, query, 'all'), playlistSort, { stats, seed, positional: true, newestFirst }), [music, query, playlistSort, stats, seed, newestFirst])
   const sharing = useStore((s) => s.sharing === id)
@@ -405,8 +407,9 @@ export function PlaylistView({ id }: { id: number }) {
         }
       />
       <HiddenVideos tracks={hidden} />
+      <HiddenExplicit tracks={filterTracks(clean.hidden, query, 'all')} />
       {sharing && <SharePanel id={id} name={playlist.name} onClose={closeShare} />}
-      <TrackTable tracks={shown} sort={playlistSort} onSort={setPlaylistSort} empty={playlist.custom ? tr('Empty playlist: add songs below, or from Songs with the “Add to playlist” button.') : tr('No songs.')} editId={playlist.custom && !query && playlistSort === 'manual' ? id : undefined} footer={playlist.custom && <SongsThatFit id={id} songs={playlistTracks} />} />
+      <TrackTable tracks={shown} sort={playlistSort} onSort={setPlaylistSort} empty={playlist.custom ? tr('Empty playlist: add songs below, or from Songs with the “Add to playlist” button.') : tr('No songs.')} editId={playlist.custom && !query && playlistSort === 'manual' && !clean.hidden.length ? id : undefined} footer={playlist.custom && <SongsThatFit id={id} songs={playlistTracks} />} />
     </>
   )
 }

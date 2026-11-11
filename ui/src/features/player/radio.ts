@@ -1,3 +1,4 @@
+import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { api, type LibraryTrack } from '../../shared/api'
 import { tr } from '../../shared/i18n/i18n'
@@ -14,7 +15,8 @@ const keyOf = (t: LibraryTrack) => t.ids.youtube ?? `#${t.id}`
 export async function similarTo(seed: LibraryTrack[], skip: Set<string>, max: number): Promise<LibraryTrack[]> {
   const last = seed.at(-1)
   if (!last) return []
-  const fresh = (t: LibraryTrack) => !skip.has(keyOf(t))
+  const hide = useSettings.getState().settings.hideExplicit
+  const fresh = (t: LibraryTrack) => !skip.has(keyOf(t)) && !(hide && t.explicit)
   const { status, tracks, stats } = useStore.getState()
   const video = last.ids.youtube
   if (status.youtube.connected && video) {

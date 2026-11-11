@@ -11,8 +11,9 @@ import { CoverGrid } from '../../shared/ui/CoverGrid'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { MediaCard } from '../../shared/ui/Section'
 import { coverTracks } from '../library/covers'
-import { musicOnly, withoutExplicit } from '../library/filter'
-import { HiddenVideos } from '../library/HiddenVideos'
+import { musicOnly } from '../library/filter'
+import { HiddenExplicit, HiddenVideos } from '../library/HiddenVideos'
+import { useExplicit } from '../library/useExplicit'
 import { TrackTable } from '../library/TrackTable'
 import { tracksMenu } from '../menus'
 import { isRemote, remoteTrack, usePlayer } from '../player/store'
@@ -170,8 +171,8 @@ export function MixView({ id }: { id: string }) {
   const mix = mixes?.find((m) => m.id === id)
   // Mixes are built from music (crates/core mixes); one marked "not music" since waits in the fold.
   const all = useMixTracks(mix)
-  const hideExplicit = useSettings((s) => s.settings.hideExplicit)
-  const { kept: tracks, hidden } = useMemo(() => musicOnly(withoutExplicit(all, hideExplicit)), [all, hideExplicit])
+  const clean = useExplicit(all)
+  const { kept: tracks, hidden } = useMemo(() => musicOnly(clean.kept), [clean])
   const play = usePlayer((s) => s.playTracks)
   const steer = (t: LibraryTrack, pref: 'less' | 'never') =>
     api
@@ -196,6 +197,7 @@ export function MixView({ id }: { id: string }) {
         }
       />
       <HiddenVideos tracks={hidden} />
+      <HiddenExplicit tracks={clean.hidden} />
       <TrackTable
         tracks={tracks}
         empty={tr('Nothing left in this mix.')}

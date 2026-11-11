@@ -84,7 +84,7 @@ import type { Addon } from './addons/registry'
 import { isOn, setAddon } from './addons/state'
 import { takesEdits } from './sources/servers'
 import { holds, playingFrom } from './library/holding'
-import { addToPlaylist, markMusic, removeFromPlaylist, removePositions, removeTrackFromPlaylist, songs } from './library/edits'
+import { addToPlaylist, markMusic, markNotExplicit, removeFromPlaylist, removePositions, removeTrackFromPlaylist, songs } from './library/edits'
 import { ownLiked, youtubeLiked } from './library/likedMusic'
 import { editInfo, findDuplicates } from './library/dialogs'
 import { repeatedRows } from './library/duplicates'
@@ -493,6 +493,7 @@ export function trackMenu(t: LibraryTrack, ctx: { list?: LibraryTrack[]; index?:
       ],
     },
     // Music or not, the user's word over the app's guess (hidden videos fold).
+    t.explicit && { label: tr('Not explicit'), icon: <ArrowCounterClockwise size={16} />, onSelect: () => void markNotExplicit([t.id], true) },
     t.musicness === 'notMusic'
       ? { label: tr('It’s music'), icon: <MusicNotesSimple size={16} />, onSelect: () => void markMusic([t.id], true) }
       : { label: tr('Not music: hide it'), icon: <EyeSlash size={16} />, onSelect: () => void markMusic([t.id], false) },

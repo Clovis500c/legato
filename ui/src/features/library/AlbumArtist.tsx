@@ -29,6 +29,8 @@ import { ArtistAbout } from './ArtistAbout'
 import { albumRows } from './albumPage'
 import { discography } from './discography'
 import { groupAlbums, primaryArtist, type AlbumGroup } from './filter'
+import { HiddenExplicit } from './HiddenVideos'
+import { useExplicit } from './useExplicit'
 import { PlayAll, ShuffleRound, totalTime } from './LibraryView'
 import { TrackTable } from './TrackTable'
 
@@ -202,8 +204,11 @@ function useAlbumInfo(album: string, artist: string, ids: number[]) {
 
 /** An album read as an album: its songs by track number (the mockup's table), then more by the artist. */
 export function AlbumView({ album, artist }: { album: string; artist: string }) {
-  const { tracks, go } = useStore(useShallow(({ tracks, go }) => ({ tracks, go })))
+  const { tracks: every, go } = useStore(useShallow(({ tracks, go }) => ({ tracks, go })))
+  const clean = useExplicit(every)
+  const tracks = clean.kept
   const shown = useMemo(() => tracks.filter((t) => t.album && fold(t.album) === fold(album) && fold(primaryArtist(t.artist)) === fold(artist)), [tracks, album, artist])
+  const hiddenHere = useMemo(() => clean.hidden.filter((t) => t.album && fold(t.album) === fold(album) && fold(primaryArtist(t.artist)) === fold(artist)), [clean, album, artist])
   const more = useMemo(() => groupAlbums(tracks.filter((t) => fold(primaryArtist(t.artist)) === fold(artist) && !(t.album && fold(t.album) === fold(album)))).slice(0, 6), [tracks, album, artist])
   const toArtist = () => go({ name: 'artist', artist })
   const info = useAlbumInfo(album, artist, shown.map((t) => t.id))
@@ -254,6 +259,7 @@ export function AlbumView({ album, artist }: { album: string; artist: string }) 
         }
       />
       <AlbumHead />
+      <HiddenExplicit tracks={hiddenHere} />
       {page ? (
         <>
           <ul className="flex flex-col">
@@ -317,7 +323,9 @@ function useYtmArtist(artist: string) {
  * singles and EPs), then the artist's YouTube Music shelves: albums, videos, playlists they're on, their own playlists.
  */
 export function ArtistView({ artist }: { artist: string }) {
-  const { tracks, stats } = useStore(useShallow(({ tracks, stats }) => ({ tracks, stats })))
+  const { tracks: every, stats } = useStore(useShallow(({ tracks, stats }) => ({ tracks, stats })))
+  const clean = useExplicit(every)
+  const tracks = clean.kept
   // Every song: yours, or YouTube Music's (its list, loaded on demand).
   const [all, setAll] = useState<'mine' | 'youtube' | null>(null)
   const [everySong, setEverySong] = useState<LibraryTrack[] | null>(null)
@@ -325,6 +333,7 @@ export function ArtistView({ artist }: { artist: string }) {
   const yt = useYtmArtist(artist)
   const ytSongs = useMemo(() => (yt?.songs ?? []).map(remoteTrack), [yt])
   const shown = useMemo(() => tracks.filter((t) => fold(primaryArtist(t.artist)) === fold(artist)), [tracks, artist])
+  const hiddenHere = useMemo(() => clean.hidden.filter((t) => fold(primaryArtist(t.artist)) === fold(artist)), [clean, artist])
   const top = useMemo(() => [...shown].sort((a, b) => (stats[b.id]?.[0] ?? 0) - (stats[a.id]?.[0] ?? 0)).slice(0, 5), [shown, stats])
   const disco = useMemo(() => discography(tracks, artist), [tracks, artist])
   const releases = kind === 'singles' && disco.singles.length ? disco.singles : disco.albums.length ? disco.albums : disco.singles
@@ -375,6 +384,7 @@ export function ArtistView({ artist }: { artist: string }) {
   return (
     <div className="-mx-6 -mt-5 flex min-h-0 flex-1 flex-col gap-9 overflow-y-auto px-6 pt-5 pb-8 phone:-mx-4 phone:-mt-3 phone:gap-7 phone:px-4 phone:pt-3">
       {header}
+      <HiddenExplicit tracks={hiddenHere} />
       {top.length > 0 && (
         <Section title={tr('Your most played')} side={shown.length > top.length && <SideLink label={tr('All {n} songs', { n: formatCount(shown.length) })} onClick={() => setAll('mine')} />}>
           <ul className="-mt-1 flex flex-col">
