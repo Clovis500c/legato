@@ -15,6 +15,7 @@ pub mod musicbrainz;
 pub mod nearby;
 pub mod oauth;
 pub mod plex;
+pub mod radio_browser;
 pub mod rooms;
 pub mod servers;
 pub mod soundcloud;
