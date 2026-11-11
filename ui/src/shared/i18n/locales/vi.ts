@@ -2350,6 +2350,8 @@ const vi: Record<string, string> = {
   'cover art archive coverartarchive new releases artists pictures images privacy': 'cover art archive coverartarchive phát hành mới nghệ sĩ hình ảnh quyền riêng tư',
   'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'Bài hát được YouTube Music, bản xuất Spotify hoặc một album Apple Music đánh dấu explicit sẽ rời khỏi Bài hát, danh sách phát đã nhập và các mix. Bài đã có trong thư viện được đánh dấu ở lần đồng bộ tiếp theo',
   'explicit lyrics parental clean children kids family': 'explicit nhạy cảm lời bài hát kiểm soát của phụ huynh trẻ em gia đình clean',
+  'This device doesn’t trust your server’s certificate (a self-signed one?). Trust it only if this SHA-256 fingerprint is the one your server shows:': 'Thiết bị này không tin chứng chỉ của máy chủ (chứng chỉ tự ký?). Chỉ tin nó nếu dấu vân tay SHA-256 này trùng với dấu mà máy chủ của bạn hiển thị:',
+  'Trust this certificate and sign in': 'Tin chứng chỉ này và đăng nhập',
 }
 
 export default vi

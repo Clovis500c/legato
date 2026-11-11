@@ -288,7 +288,7 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
         `directPlay=0`, `musicBitrate=320`), no Range (a seek reads again from 0 and skips). Decided alone (2026-11-11):
         MP3 at 320 like the other two kinds, not Plex's HLS. Untried on a real Plex server: mock tests only, so the
         parameter set (`directStream=0`, `.mp3` suffix) is from memory of Plex's clients, not checked on a transcoder.
-      - [ ] `S` Trust a self-signed server: its certificate's SHA-256 fingerprint shown at sign-in and pinned (rustls's
+      - [x] `S` Trust a self-signed server: its certificate's SHA-256 fingerprint shown at sign-in and pinned (rustls's
         own verifier on every platform, so a pinned one is checked, not just accepted).
         The owner's choice 2026-11-11: yes, built by Opus with tests (a wrong fingerprint refused, an expired certificate
         refused), as its own branch.
@@ -299,6 +299,11 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
         pin-then-validate rules. Tests need a TLS test server and generated certs (no `rcgen` / `tokio-rustls` dev
         dependency yet) to show a wrong fingerprint, an expired and a mismatched certificate refused. Do it as its own
         branch with the owner.
+        Built 2026-11-12 (on `platforms`, not its own branch): a pinned host's requests go to one rustls client
+        (`connectors::pin`), the rest stay on the system's TLS; the pin is checked by webpki with the certificate as its
+        only root (dates, handshake), name and CA flag excused. Tests with rcgen certificates and a real TLS handshake on
+        127.0.0.1. Not tried for real: a real NAS's certificate, the sign-in screen, Android; Plex not offered (its
+        sign-in is plex.tv's).
       - [x] `S` Server songs levelled: OpenSubsonic's `replayGain` (track / album) into Volume levelling.
         2026-11-11: asked with `getSong` as a song is about to play (once per song and run of the app), used like a
         file's ReplayGain tags. Not done: Jellyfin's `NormalizationGain` and Plex's loudness (other scales), a gain

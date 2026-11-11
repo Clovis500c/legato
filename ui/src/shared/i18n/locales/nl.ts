@@ -2350,6 +2350,8 @@ const nl: Record<string, string> = {
   'cover art archive coverartarchive new releases artists pictures images privacy': 'cover art archive coverartarchive nieuwe uitgaven artiesten afbeeldingen privacy',
   'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'Nummers die YouTube Music, een Spotify-export of een Apple Music-album als expliciet markeert, verdwijnen uit Nummers, geïmporteerde playlists en mixen. Nummers die al in je bibliotheek staan, worden bij hun volgende synchronisatie gemarkeerd',
   'explicit lyrics parental clean children kids family': 'explicit expliciet songteksten ouderlijk toezicht kinderen gezin clean',
+  'This device doesn’t trust your server’s certificate (a self-signed one?). Trust it only if this SHA-256 fingerprint is the one your server shows:': 'Dit apparaat vertrouwt het certificaat van je server niet (een zelfondertekend?). Vertrouw het alleen als deze SHA-256-vingerafdruk dezelfde is als die je server toont:',
+  'Trust this certificate and sign in': 'Dit certificaat vertrouwen en inloggen',
 }
 
 export default nl

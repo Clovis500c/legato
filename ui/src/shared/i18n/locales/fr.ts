@@ -2350,6 +2350,8 @@ const fr: Record<string, string> = {
   'cover art archive coverartarchive new releases artists pictures images privacy': 'cover art archive coverartarchive nouveautés artistes pochettes images confidentialité',
   'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'Les titres marqués explicites par YouTube Music, un export Spotify ou un album Apple Music quittent Titres, les playlists importées et les mix. Ceux déjà dans votre bibliothèque sont marqués à leur prochaine synchronisation',
   'explicit lyrics parental clean children kids family': 'explicit explicite paroles contrôle parental enfants famille clean',
+  'This device doesn’t trust your server’s certificate (a self-signed one?). Trust it only if this SHA-256 fingerprint is the one your server shows:': 'Cet appareil ne fait pas confiance au certificat de votre serveur (un certificat auto-signé ?). Faites-lui confiance seulement si cette empreinte SHA-256 est celle qu’affiche votre serveur :',
+  'Trust this certificate and sign in': 'Faire confiance à ce certificat et se connecter',
 }
 
 export default fr

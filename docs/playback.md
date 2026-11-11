@@ -329,8 +329,10 @@ visualizer and the media panel apply.
   Code 41 (the server refuses token auth: LDAP users): after a warning in the form, the account is kept with `plain_password`
   and the password goes hex-encoded (`p=enc:`), https only (refused on http in `Subsonic::url`/`sign` and in `Account::complete`).
   No user or password inside the address (`http://me:secret@nas` is refused). Plain http:// is allowed; to a public
-  address the row warns (`music_core::server::exposure`). A self-signed certificate fails with a clear error (no way to
-  trust one yet: plan-v2).
+  address the row warns (`music_core::server::exposure`). A self-signed certificate (2026-11-12): refused by the system's TLS, its
+  SHA-256 fingerprint is shown at sign-in; trusted, it is pinned in the account (`Account::pin`) and its host's requests
+  (streams and covers too) go through rustls, checked against it (`connectors::pin`: its dates and the handshake still
+  checked, not its name or CA flag).
 - Jellyfin (2026-11-06): `System/Info/Public` first (a Jellyfin, 10.9 or newer: `/Items?userId=`, `UserFavoriteItems`,
   `UserPlayedItems`), then `Users/AuthenticateByName` with `Authorization: MediaBrowser Client="Legato",
   Device="Legato on Windows", DeviceId=<random, per sign-in>, Version=…`; the password is sent that once, the account

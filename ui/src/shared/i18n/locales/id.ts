@@ -2350,6 +2350,8 @@ const id: Record<string, string> = {
   'cover art archive coverartarchive new releases artists pictures images privacy': 'cover art archive coverartarchive rilisan baru artis gambar privasi',
   'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'Lagu yang ditandai eksplisit oleh YouTube Music, ekspor Spotify, atau album Apple Music hilang dari Lagu, playlist impor, dan mix. Lagu yang sudah ada di koleksimu ditandai saat sinkronisasi berikutnya',
   'explicit lyrics parental clean children kids family': 'explicit eksplisit lirik kontrol orang tua anak keluarga clean',
+  'This device doesn’t trust your server’s certificate (a self-signed one?). Trust it only if this SHA-256 fingerprint is the one your server shows:': 'Perangkat ini tidak memercayai sertifikat servermu (sertifikat swatanda?). Percayai hanya jika sidik jari SHA-256 ini sama dengan yang ditampilkan servermu:',
+  'Trust this certificate and sign in': 'Percayai sertifikat ini dan masuk',
 }
 
 export default id

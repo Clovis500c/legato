@@ -2350,6 +2350,8 @@ const zh: Record<string, string> = {
   'cover art archive coverartarchive new releases artists pictures images privacy': 'cover art archive coverartarchive 新发行 艺人 图片 隐私',
   'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'YouTube Music、Spotify 导出或 Apple Music 专辑标为 Explicit 的歌曲将从歌曲、导入的播放列表和混音中移除。已在资料库中的歌曲会在下次同步时标记',
   'explicit lyrics parental clean children kids family': 'explicit 露骨 歌词 家长控制 儿童 家庭 clean',
+  'This device doesn’t trust your server’s certificate (a self-signed one?). Trust it only if this SHA-256 fingerprint is the one your server shows:': '此设备不信任你的服务器证书（自签名证书？）。只有当这个 SHA-256 指纹与服务器显示的一致时才信任它：',
+  'Trust this certificate and sign in': '信任此证书并登录',
 }
 
 export default zh

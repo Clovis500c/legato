@@ -153,7 +153,7 @@ impl PlexTv {
     }
 
     pub fn with_urls(base: &str, auth: &str, client: &str) -> Self {
-        Self { base: base.trim_end_matches('/').to_string(), auth: auth.to_string(), client: client.to_string(), http: http() }
+        Self { base: base.trim_end_matches('/').to_string(), auth: auth.to_string(), client: client.to_string(), http: http(base) }
     }
 
     /// A strong PIN (long code, longer life).
@@ -226,7 +226,7 @@ pub fn split(all: &[Connection]) -> (Vec<String>, Vec<String>) {
 
 /// The machine at `base`, by `/identity`; None = no answer, or not a Plex server's.
 async fn identity(base: &str, client: &str, token: Option<&str>) -> Option<Result<String, u16>> {
-    let mut req = about(http().get(format!("{base}/identity")), client).timeout(TRY_WAIT);
+    let mut req = about(http(base).get(format!("{base}/identity")), client).timeout(TRY_WAIT);
     if let Some(t) = token {
         req = req.header("X-Plex-Token", t);
     }
@@ -297,7 +297,7 @@ impl std::fmt::Debug for Plex {
 
 impl Plex {
     pub fn from_account(a: &Account) -> Self {
-        Self { base: base_of(&a.address), key: a.key(), token: a.token.clone(), client: a.device.clone(), http: http() }
+        Self { base: base_of(&a.address), key: a.key(), token: a.token.clone(), client: a.device.clone(), http: http(&a.address) }
     }
 
     pub fn key(&self) -> &str {

@@ -14,6 +14,7 @@ pub mod lrclib;
 pub mod musicbrainz;
 pub mod nearby;
 pub mod oauth;
+pub mod pin;
 pub mod plex;
 pub mod radio_browser;
 pub mod rooms;

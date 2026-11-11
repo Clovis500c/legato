@@ -577,9 +577,14 @@ function ServerRow() {
   const [exposure, setExposure] = useState<ServerExposure | null>(null)
   /** The server refused token sign-in (code 41) on an https address: the user may send the password as it is. */
   const [asPlain, setAsPlain] = useState(false)
+  /** Its certificate refused by the system (self-signed): its fingerprint shown, then the one the user trusted. */
+  const [fingerprint, setFingerprint] = useState<string | null>(null)
+  const [trusted, setTrusted] = useState<string>()
   useEffect(() => void refresh(), [refresh])
   useEffect(() => {
     setAsPlain(false)
+    setFingerprint(null)
+    setTrusted(undefined)
     if (!address.trim()) return setExposure(null)
     const t = setTimeout(() => void api.serverExposure(address).then(setExposure, () => setExposure(null)), 250)
     return () => clearTimeout(t)
@@ -601,16 +606,19 @@ function ServerRow() {
       void refresh()
     }
   }
-  const signIn = async (plain = false) => {
+  const signIn = async (plain = false, pin = trusted) => {
     setBusy(tr('Checking with your server…'))
     try {
-      const s = await api.serverSignIn(kind, address, user, password, plain)
+      const s = await api.serverSignIn(kind, address, user, password, plain, pin)
       setBusy(null)
       await signedIn(s)
     } catch (e) {
       setBusy(null)
       // Code 41 on https: asked here, with its warning, instead of an error toast.
       if (!plain && kind === 'subsonic' && /only takes the password sent as it is/.test(String(e)) && /^https:\/\//i.test(address.trim())) return setAsPlain(true)
+      // Self-signed: its fingerprint, for the user to compare with the server's own, instead of an error toast.
+      const fp = /SHA-256 fingerprint: ((?:[0-9A-F]{2}:){31}[0-9A-F]{2})/.exec(String(e))?.[1]
+      if (fp && !pin) return setFingerprint(fp)
       useStore.setState({ error: String(e) })
     }
   }
@@ -671,6 +679,24 @@ function ServerRow() {
                     ? tr('Your password stays in this phone’s secure storage. Legato talks to your server only, never to a server of ours.')
                     : tr('Your password stays in this PC’s keychain. Legato talks to your server only, never to a server of ours.')}
               </p>
+              {fingerprint && !trusted && (
+                <div className="flex flex-col gap-2 text-ink">
+                  <p className="flex items-start gap-1.5">
+                    <Warning size={14} className="mt-px shrink-0" /> {tr('This device doesn’t trust your server’s certificate (a self-signed one?). Trust it only if this SHA-256 fingerprint is the one your server shows:')}
+                  </p>
+                  <code className="break-all font-mono text-[11px] select-text">{fingerprint}</code>
+                  <Button
+                    className="w-fit"
+                    disabled={!ready}
+                    onClick={() => {
+                      setTrusted(fingerprint)
+                      void signIn(asPlain, fingerprint)
+                    }}
+                  >
+                    {tr('Trust this certificate and sign in')}
+                  </Button>
+                </div>
+              )}
               {asPlain && (
                 <div className="flex flex-col gap-2 text-ink">
                   <p className="flex items-start gap-1.5">

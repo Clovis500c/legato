@@ -2350,6 +2350,8 @@ const tr: Record<string, string> = {
   'cover art archive coverartarchive new releases artists pictures images privacy': 'cover art archive coverartarchive yeni çıkışlar sanatçılar görseller gizlilik',
   'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'YouTube Music, bir Spotify dışa aktarımı veya bir Apple Music albümü tarafından müstehcen işaretlenen şarkılar Şarkılar, içe aktarılan çalma listeleri ve mikslerden çıkar. Kitaplığındaki şarkılar bir sonraki eşitlemede işaretlenir',
   'explicit lyrics parental clean children kids family': 'explicit müstehcen şarkı sözü ebeveyn denetimi çocuk aile clean',
+  'This device doesn’t trust your server’s certificate (a self-signed one?). Trust it only if this SHA-256 fingerprint is the one your server shows:': 'Bu cihaz sunucunun sertifikasına güvenmiyor (kendinden imzalı mı?). Yalnızca bu SHA-256 parmak izi sunucunun gösterdiğiyle aynıysa güven:',
+  'Trust this certificate and sign in': 'Bu sertifikaya güven ve oturum aç',
 }
 
 export default tr

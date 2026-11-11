@@ -131,7 +131,7 @@ impl Subsonic {
         // Key from the address as kept (`Account::key`); base as `Url` writes it, so the cover URLs built from it start
         // with it (`sign`, `art::allow_server`).
         let key = server::key(server::Kind::Subsonic, address.trim_end_matches('/'), user);
-        Self { base: base_of(address), user: user.to_string(), password: password.to_string(), plain: false, key, http: http() }
+        Self { base: base_of(address), user: user.to_string(), password: password.to_string(), plain: false, key, http: http(address) }
     }
 
     pub fn from_account(a: &server::Account) -> Self {

@@ -2350,6 +2350,8 @@ const ko: Record<string, string> = {
   'cover art archive coverartarchive new releases artists pictures images privacy': 'cover art archive coverartarchive 신규 발매 아티스트 이미지 개인정보',
   'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'YouTube Music, Spotify 내보내기, Apple Music 앨범이 Explicit으로 표시한 곡을 노래, 가져온 재생목록, 믹스에서 뺍니다. 이미 보관함에 있는 곡은 다음 동기화 때 표시됩니다',
   'explicit lyrics parental clean children kids family': 'explicit 선정적 가사 자녀 보호 어린이 가족 clean',
+  'This device doesn’t trust your server’s certificate (a self-signed one?). Trust it only if this SHA-256 fingerprint is the one your server shows:': '이 기기는 서버의 인증서를 신뢰하지 않습니다(자체 서명 인증서?). 이 SHA-256 지문이 서버에 표시된 것과 같을 때만 신뢰하세요:',
+  'Trust this certificate and sign in': '이 인증서를 신뢰하고 로그인',
 }
 
 export default ko

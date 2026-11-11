@@ -2350,6 +2350,8 @@ const uk: Record<string, string> = {
   'cover art archive coverartarchive new releases artists pictures images privacy': 'cover art archive coverartarchive новинки виконавці зображення конфіденційність',
   'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'Пісні, які YouTube Music, експорт Spotify або альбом Apple Music позначають як explicit, зникають із Пісень, імпортованих плейлистів і міксів. Пісні, що вже є в медіатеці, позначаються під час наступної синхронізації',
   'explicit lyrics parental clean children kids family': 'explicit відвертий зміст тексти батьківський контроль діти сімʼя clean',
+  'This device doesn’t trust your server’s certificate (a self-signed one?). Trust it only if this SHA-256 fingerprint is the one your server shows:': 'Цей пристрій не довіряє сертифікату вашого сервера (самопідписаний?). Довіряйте йому, лише якщо цей відбиток SHA-256 збігається з тим, що показує сервер:',
+  'Trust this certificate and sign in': 'Довіряти цьому сертифікату й увійти',
 }
 
 export default uk

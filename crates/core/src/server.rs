@@ -56,6 +56,9 @@ pub struct Account {
     /// Plex: its addresses through Plex's relay, tried last. `address` is one of these or of `connections`.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub relays: Vec<String>,
+    /// SHA-256 of the server's own (self-signed) certificate, trusted by the user at sign-in (`connectors::pin`).
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub pin: String,
 }
 
 impl std::fmt::Debug for Account {

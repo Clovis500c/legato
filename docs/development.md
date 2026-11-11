@@ -211,7 +211,7 @@ Navidrome of your own (any Subsonic-compatible server works the same):
    half shows in Navidrome's "recently played"; Sign out takes its songs away.
 
 The password goes to the dev build's own keychain entry. A public `http://` address shows the warning; an `https://`
-one with a self-signed certificate fails with "certificate isn't trusted" (a known limit).
+one with a self-signed certificate shows its SHA-256 fingerprint and "Trust this certificate and sign in" (`pin.rs`).
 
 ### Jellyfin and Plex (the owner's servers)
 

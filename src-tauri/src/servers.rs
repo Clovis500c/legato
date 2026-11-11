@@ -7,6 +7,7 @@
 use crate::{AddReport, AppState, CmdResult, err, push};
 use music_connectors::servers::{self as conns, Conn};
 use music_connectors::subsonic::Subsonic;
+use music_connectors::pin;
 use music_core::library::LibraryPlaylist;
 use music_core::model::{Source, Track};
 use music_core::server::{self, Account, Exposure, Kind};
@@ -198,25 +199,47 @@ pub async fn server_exposure(address: String) -> CmdResult<Option<Exposure>> {
 /// password not kept), then the account is kept. Plex signs in on its own page (`plex.rs`). The first sync is the
 /// interface's next call (it shows its progress).
 #[tauri::command]
-pub async fn server_sign_in(state: State<'_, AppState>, kind: Kind, address: String, user: String, password: String, plain: bool) -> CmdResult<ServerStatus> {
+pub async fn server_sign_in(state: State<'_, AppState>, kind: Kind, address: String, user: String, password: String, plain: bool, pin: Option<String>) -> CmdResult<ServerStatus> {
     // Trust boundary: typed text.
     let address = server::normalize(&address).map_err(String::from)?;
     let user = user.trim().to_string();
     if user.is_empty() || user.len() > 200 || password.is_empty() || password.len() > 500 {
         return Err("Type your server's user and password".into());
     }
-    let account = match kind {
+    // The certificate the user checked (its fingerprint shown after the first try): this sign-in goes through it.
+    let trusted = pin.filter(|p| p.len() <= 200 && !p.is_empty());
+    if let Some(p) = &trusted {
+        pin::set(&address, Some(p));
+    }
+    let signed = match kind {
         Kind::Subsonic => {
             // The password as it is (hex-encoded): after the interface's warning, https only.
-            let a = Account { kind, address, user, password, plain_password: plain, ..Default::default() };
-            Subsonic::from_account(&a).ping().await.map_err(err)?;
-            a
+            let a = Account { kind, address: address.clone(), user, password, plain_password: plain, ..Default::default() };
+            Subsonic::from_account(&a).ping().await.map(|_| a)
         }
-        Kind::Jellyfin => music_connectors::jellyfin::sign_in(&address, &user, &password).await.map_err(err)?,
+        Kind::Jellyfin => music_connectors::jellyfin::sign_in(&address, &user, &password).await,
         Kind::Plex => return Err("Plex signs in on its own page: Sign in with Plex".into()),
+    };
+    let account = match signed {
+        Ok(a) => Account { pin: if pin::pinned(&address) { trusted.unwrap_or_default() } else { String::new() }, ..a },
+        Err(e) => {
+            pin::set(&address, None);
+            // Refused by the system's TLS: its fingerprint, for the user to check against the server's own.
+            if trusted.is_none()
+                && e.to_string().starts_with(UNTRUSTED)
+                && address.starts_with("https://")
+                && let Some(fp) = pin::probe(&address).await
+            {
+                return Err(format!("{UNTRUSTED}. Its SHA-256 fingerprint: {fp}"));
+            }
+            return Err(err(e));
+        }
     };
     add(&state, account)
 }
+
+/// `music_connectors::servers::reach`'s words for a certificate the system refused.
+const UNTRUSTED: &str = "Your music server's certificate isn't trusted";
 
 /// A checked account joins the keychain's list (the same server account replaced).
 pub fn add(state: &AppState, account: Account) -> CmdResult<ServerStatus> {
@@ -233,6 +256,9 @@ pub fn add(state: &AppState, account: Account) -> CmdResult<ServerStatus> {
 pub async fn server_sign_out(state: State<'_, AppState>, key: String) -> CmdResult<()> {
     // Jellyfin's token ended on the server too (a server that's off doesn't hold the sign-out).
     if let Some(a) = account(&key) {
+        if !a.pin.is_empty() {
+            pin::set(&a.address, None);
+        }
         let _ = tokio::time::timeout(Duration::from_secs(10), Conn::from_account(&a).sign_out()).await;
     }
     let mut list = accounts();

@@ -13,17 +13,20 @@ use std::time::Duration;
 use url::Url;
 
 /// One HTTP client for servers: a short connect timeout (a server that's off answers nothing), redirects on the same
-/// host only (`X-Plex-Token` isn't a header reqwest drops on the way to another host).
-pub(crate) fn http() -> reqwest::Client {
-    static HTTP: std::sync::LazyLock<reqwest::Client> = std::sync::LazyLock::new(|| {
+/// host only (`X-Plex-Token` isn't a header reqwest drops on the way to another host). A server whose certificate the
+/// user pinned at sign-in (`pin.rs`): the same, checked by rustls against that certificate.
+pub(crate) fn http(address: &str) -> reqwest::Client {
+    fn builder() -> reqwest::ClientBuilder {
         let same = reqwest::redirect::Policy::custom(|a| match a.previous().last() {
             _ if a.previous().len() > 5 => a.error("Your music server redirected too many times"),
             Some(from) if stays(from, a.url()) => a.follow(),
             _ => a.stop(),
         });
-        crate::builder().connect_timeout(Duration::from_secs(10)).redirect(same).build().unwrap_or_default()
-    });
-    HTTP.clone()
+        crate::builder().connect_timeout(Duration::from_secs(10)).redirect(same)
+    }
+    static HTTP: std::sync::LazyLock<reqwest::Client> = std::sync::LazyLock::new(|| builder().build().unwrap_or_default());
+    static PINNED: std::sync::LazyLock<reqwest::Client> = std::sync::LazyLock::new(|| crate::pin::client(builder()));
+    if crate::pin::pinned(address) { PINNED.clone() } else { HTTP.clone() }
 }
 
 /// A redirect a server's auth may follow: the same host, never from https down to http.
@@ -143,6 +146,10 @@ pub enum Conn {
 
 impl Conn {
     pub fn from_account(a: &Account) -> Self {
+        // Pinned at sign-in: every request to its host checked against that certificate (covers too).
+        if !a.pin.is_empty() {
+            crate::pin::set(&a.address, Some(&a.pin));
+        }
         match a.kind {
             Kind::Subsonic => Self::Subsonic(Subsonic::from_account(a)),
             Kind::Jellyfin => Self::Jellyfin(Jellyfin::from_account(a)),
@@ -325,7 +332,7 @@ mod tests {
     async fn a_redirect_to_another_host_is_not_followed() {
         let mut s = mockito::Server::new_async().await;
         s.mock("GET", "/away").with_status(302).with_header("location", "http://127.0.0.2:9/stolen").create_async().await;
-        let res = http().get(format!("{}/away", s.url())).header("X-Plex-Token", "t").send().await.unwrap();
+        let res = http(&s.url()).get(format!("{}/away", s.url())).header("X-Plex-Token", "t").send().await.unwrap();
         assert_eq!(res.status().as_u16(), 302, "stopped, not followed");
     }
 

@@ -88,7 +88,7 @@ pub async fn info(address: &str) -> Result<Info> {
     let base = base_of(address);
     note(&base);
     let url = Url::parse(&format!("{base}/System/Info/Public")).map_err(|_| anyhow!("Your music server's address isn't right"))?;
-    let res = http().get(url).timeout(REQUEST_TIMEOUT).send().await.map_err(reach)?;
+    let res = http(address).get(url).timeout(REQUEST_TIMEOUT).send().await.map_err(reach)?;
     if res.status().is_server_error() {
         bail!("Your music server failed (HTTP {})", res.status().as_u16());
     }
@@ -110,7 +110,7 @@ pub async fn sign_in(address: &str, user: &str, password: &str) -> Result<Accoun
     let info = info(address).await?;
     let device = device_id();
     let url = Url::parse(&format!("{}/Users/AuthenticateByName", base_of(address))).map_err(|_| anyhow!("Your music server's address isn't right"))?;
-    let res = http().post(url).header(AUTHORIZATION, authorization(&device, None)).json(&json!({ "Username": user, "Pw": password })).timeout(REQUEST_TIMEOUT).send().await.map_err(reach)?;
+    let res = http(address).post(url).header(AUTHORIZATION, authorization(&device, None)).json(&json!({ "Username": user, "Pw": password })).timeout(REQUEST_TIMEOUT).send().await.map_err(reach)?;
     let status = res.status();
     if status == reqwest::StatusCode::UNAUTHORIZED || status == reqwest::StatusCode::FORBIDDEN {
         bail!("Your music server refused the sign-in: check the user and the password");
@@ -143,7 +143,7 @@ impl std::fmt::Debug for Jellyfin {
 
 impl Jellyfin {
     pub fn from_account(a: &Account) -> Self {
-        Self { base: base_of(&a.address), key: a.key(), user_id: a.user_id.clone(), token: a.token.clone(), device: a.device.clone(), http: http() }
+        Self { base: base_of(&a.address), key: a.key(), user_id: a.user_id.clone(), token: a.token.clone(), device: a.device.clone(), http: http(&a.address) }
     }
 
     pub fn key(&self) -> &str {

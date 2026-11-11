@@ -2350,6 +2350,8 @@ const hi: Record<string, string> = {
   'cover art archive coverartarchive new releases artists pictures images privacy': 'cover art archive coverartarchive नई रिलीज़ कलाकार चित्र गोपनीयता',
   'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'YouTube Music, Spotify एक्सपोर्ट या Apple Music एल्बम द्वारा explicit चिह्नित गाने गानों, आयात की गई प्लेलिस्ट और मिक्स से हट जाते हैं। आपकी लाइब्रेरी में पहले से मौजूद गाने अगले सिंक पर चिह्नित होते हैं',
   'explicit lyrics parental clean children kids family': 'explicit स्पष्ट बोल अभिभावक नियंत्रण बच्चे परिवार clean',
+  'This device doesn’t trust your server’s certificate (a self-signed one?). Trust it only if this SHA-256 fingerprint is the one your server shows:': 'यह डिवाइस आपके सर्वर के प्रमाणपत्र पर भरोसा नहीं करता (शायद स्व-हस्ताक्षरित?)। इस पर तभी भरोसा करें जब यह SHA-256 फ़िंगरप्रिंट वही हो जो आपका सर्वर दिखाता है:',
+  'Trust this certificate and sign in': 'इस प्रमाणपत्र पर भरोसा करें और साइन इन करें',
 }
 
 export default hi

@@ -2350,6 +2350,8 @@ const sv: Record<string, string> = {
   'cover art archive coverartarchive new releases artists pictures images privacy': 'cover art archive coverartarchive nyheter artister bilder integritet',
   'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'Låtar som YouTube Music, en Spotify-export eller ett Apple Music-album märker som explicita försvinner från Låtar, importerade spellistor och mixar. Låtar som redan finns i ditt bibliotek märks vid nästa synkning',
   'explicit lyrics parental clean children kids family': 'explicit explicita låttexter föräldrakontroll barn familj clean',
+  'This device doesn’t trust your server’s certificate (a self-signed one?). Trust it only if this SHA-256 fingerprint is the one your server shows:': 'Den här enheten litar inte på din servers certifikat (ett självsignerat?). Lita bara på det om detta SHA-256-fingeravtryck är det som din server visar:',
+  'Trust this certificate and sign in': 'Lita på certifikatet och logga in',
 }
 
 export default sv

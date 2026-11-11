@@ -2350,6 +2350,8 @@ const ja: Record<string, string> = {
   'cover art archive coverartarchive new releases artists pictures images privacy': 'cover art archive coverartarchive 新着 アーティスト 画像 プライバシー',
   'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'YouTube Music、Spotify のエクスポート、Apple Music のアルバムで Explicit とされた曲を、曲、取り込んだプレイリスト、ミックスから外します。ライブラリにある曲は次の同期で印が付きます',
   'explicit lyrics parental clean children kids family': 'explicit 露骨 歌詞 ペアレンタル 子ども 家族 clean',
+  'This device doesn’t trust your server’s certificate (a self-signed one?). Trust it only if this SHA-256 fingerprint is the one your server shows:': 'このデバイスはサーバーの証明書を信頼していません（自己署名？）。この SHA-256 フィンガープリントがサーバーに表示されるものと同じ場合のみ信頼してください：',
+  'Trust this certificate and sign in': 'この証明書を信頼してサインイン',
 }
 
 export default ja

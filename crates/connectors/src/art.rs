@@ -256,7 +256,9 @@ impl ArtCache {
         }
         // A server's cover: its auth added here, never in the URL kept or shown.
         let signed = server_signer(url).unwrap_or_else(|| Signed { url: url.to_string(), headers: Vec::new() });
-        let mut req = self.http.get(&signed.url);
+        // Pinned certificate (`pin.rs`): the servers' client, the system's TLS would refuse it.
+        let http = if crate::pin::pinned(&signed.url) { crate::servers::http(&signed.url) } else { self.http.clone() };
+        let mut req = http.get(&signed.url);
         for (k, v) in &signed.headers {
             req = req.header(*k, v);
         }
