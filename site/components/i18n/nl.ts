@@ -122,7 +122,7 @@ export const nl: Copy = {
     head: ['Komt eraan', 'Wat het brengt'],
     rows: [
       ['Songteksten', 'Een vertaling onder elke regel, en een nummer gevonden aan de hand van een regel die je nog weet.'],
-      ['Je eigen muziek', 'MusicBrainz-zoekacties voor je tags, je server in de zoekresultaten.'],
+      ['Je eigen muziek', 'Je server in de zoekresultaten.'],
       ['Slimmer luisteren', 'Je nummers geanalyseerd op je pc (tempo, energie, toonsoort) voor radio’s en overgangen die passen, een route van de ene artiest naar de andere, een jaaroverzicht om te delen.'],
       ['In huis', 'Speakers en tv’s (DLNA, Chromecast), samen luisteren via internet, op je andere pc verdergaan waar je was gebleven.'],
       ['Afwerking voor Windows', 'Een beeld-in-beeldspeler.'],

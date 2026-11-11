@@ -122,7 +122,7 @@ export const id: Copy = {
     head: ['Segera', 'Yang dibawanya'],
     rows: [
       ['Lirik', 'Terjemahan di bawah setiap baris, dan lagu yang ditemukan dari sebaris lirik yang kamu ingat.'],
-      ['Musikmu sendiri', 'Pencarian MusicBrainz untuk tag-mu, servermu di pencarian.'],
+      ['Musikmu sendiri', 'Servermu di pencarian.'],
       ['Mendengar lebih cerdas', 'Lagumu dianalisis di PC-mu (tempo, energi, kunci nada) untuk radio dan transisi yang pas, jalur dari satu artis ke artis lain, rangkuman tahunan untuk dibagikan.'],
       ['Di sekitar rumah', 'Speaker dan TV (DLNA, Chromecast), mendengar bersama lewat internet, melanjutkan di PC lain dari titik terakhir.'],
       ['Sentuhan akhir Windows', 'Pemutar gambar dalam gambar.'],

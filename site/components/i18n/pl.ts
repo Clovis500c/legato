@@ -122,7 +122,7 @@ export const pl: Copy = {
     head: ['Nadchodzi', 'Co przynosi'],
     rows: [
       ['Teksty', 'Tłumaczenie pod każdą linijką i utwór znaleziony po linijce, którą pamiętasz.'],
-      ['Twoja własna muzyka', 'Wyszukiwanie w MusicBrainz dla twoich tagów, twój serwer w wyszukiwaniu.'],
+      ['Twoja własna muzyka', 'Twój serwer w wyszukiwaniu.'],
       ['Mądrzejsze słuchanie', 'Twoje utwory analizowane na twoim komputerze (tempo, energia, tonacja) dla pasujących radiów i przejść, droga od jednego wykonawcy do drugiego, roczne podsumowanie do udostępnienia.'],
       ['W domu', 'Głośniki i telewizory (DLNA, Chromecast), wspólne słuchanie przez internet, kontynuowanie na drugim komputerze od tego samego miejsca.'],
       ['Szlify dla Windowsa', 'Odtwarzacz w trybie obraz w obrazie.'],

@@ -1,14 +1,14 @@
-import { Image, Trash } from '@phosphor-icons/react'
+import { Image, MagnifyingGlass, Trash } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
 import { useStore } from '../../app/store'
-import { api, type LibraryTrack } from '../../shared/api'
+import { api, type LibraryTrack, type SongRelease } from '../../shared/api'
 import { coverRewritten, trackArt } from '../../shared/art'
 import { pickFile } from '../../shared/files'
 import { tr, trn } from '../../shared/i18n/i18n'
 import { Button } from '../../shared/ui/Button'
 import { Cover } from '../../shared/ui/Cover'
 import { Dialog } from '../../shared/ui/Dialog'
-import { canSave, formOf, numberOk, startOf, tagsToWrite, type TagField, type TagForm, type TagStart } from './tagForm'
+import { canSave, formOf, numberOk, startOf, tagsToWrite, type TagField, type TagForm, type TagStart, withRelease } from './tagForm'
 
 const field = 'w-full rounded-md border border-line bg-bg px-3 py-2 text-sm outline-none focus:border-ink-3 aria-invalid:border-danger'
 
@@ -26,6 +26,9 @@ export function EditInfo({ tracks, onClose }: { tracks: LibraryTrack[]; onClose:
   // undefined = cover kept, null = taken off, string = picture file picked.
   const [cover, setCover] = useState<string | null | undefined>(undefined)
   const [busy, setBusy] = useState(false)
+  // MusicBrainz' releases of this song, once asked (one song only): null = not asked.
+  const [releases, setReleases] = useState<SongRelease[] | null>(null)
+  const [looking, setLooking] = useState(false)
   useEffect(() => {
     let live = true
     // Files not read: the library's title, artist and album to start from.
@@ -47,6 +50,17 @@ export function EditInfo({ tracks, onClose }: { tracks: LibraryTrack[]; onClose:
     if (file) setCover(file)
   }
   const ok = !!form && !!start && canSave(form, start, one)
+  const lookUp = async () => {
+    if (!form) return
+    setLooking(true)
+    try {
+      setReleases(await api.songReleases(form.title, form.artist, form.album, first.durationMs))
+    } catch (e) {
+      useStore.getState().notify(String(e), { kind: 'error' })
+    } finally {
+      setLooking(false)
+    }
+  }
   const save = async () => {
     if (!form || !start) return
     setBusy(true)
@@ -119,6 +133,32 @@ export function EditInfo({ tracks, onClose }: { tracks: LibraryTrack[]; onClose:
                 <input type="checkbox" className="size-3.5 accent-ink" checked={number} onChange={(e) => setNumber(e.target.checked)} />
                 {tr('Number them 1 to {n} in this order', { n: tracks.length })}
               </label>
+            )}
+            {one && (
+              <div className="flex flex-col gap-1.5">
+                <Button variant="ghost" disabled={looking || !form.title.trim() || !form.artist.trim()} onClick={() => void lookUp()} className="self-start">
+                  <MagnifyingGlass size={14} /> {looking ? tr('Looking up…') : tr('Look up on MusicBrainz')}
+                </Button>
+                {releases && !releases.length && <p className="text-xs text-ink-2">{tr('MusicBrainz knows no release of this song')}</p>}
+                {releases && releases.length > 0 && (
+                  <ul aria-label={tr('Releases on MusicBrainz')} className="flex max-h-40 flex-col overflow-y-auto rounded-md border border-line">
+                    {releases.map((r, i) => (
+                      <li key={i}>
+                        <button
+                          onClick={() => {
+                            setForm(withRelease(form, r))
+                            setReleases(null)
+                          }}
+                          className="flex w-full flex-col px-3 py-1.5 text-left hover:bg-raised focus-visible:bg-raised"
+                        >
+                          <span className="truncate text-[0.8125rem] font-medium">{r.album}</span>
+                          <span className="truncate text-xs text-ink-2">{[r.albumArtist, r.year, r.kind, r.track !== null && (r.tracks ? tr('Track {n} of {total}', { n: r.track, total: r.tracks }) : tr('Track {n}', { n: r.track })), r.disc !== null && r.disc > 1 && tr('Disc {n}', { n: r.disc }), r.country].filter(Boolean).join(' · ')}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             )}
             <p className="text-[0.6875rem] text-ink-3">
               {one ? tr('Written into the file: other players see it too. The sound stays as it is.') : tr('Written into each file: only what you change, the rest stays as each file has it. The sound stays as it is.')}

@@ -1,4 +1,4 @@
-import type { FileTags, LibraryTrack, SongTags } from '../../shared/api'
+import type { FileTags, LibraryTrack, SongRelease, SongTags } from '../../shared/api'
 
 /** Edit song info's fields, in the order shown. Title for one song only; several songs can be numbered instead. */
 export const TAG_FIELDS = ['title', 'artist', 'album', 'albumArtist', 'genre', 'year', 'track', 'disc'] as const
@@ -53,4 +53,11 @@ export function tagsToWrite(form: TagForm, start: TagStart, { one, number }: { o
 export function canSave(form: TagForm, start: TagStart, one: boolean): boolean {
   const out = tagsToWrite(form, start, { one, number: false })
   return out.title !== '' && out.artist !== '' && NUMBERS.every((f) => numberOk(form[f]))
+}
+
+/** A MusicBrainz release picked in Edit song info: its album, album artist, year and numbers in the form, the rest kept. */
+export function withRelease(form: TagForm, r: SongRelease): TagForm {
+  const n = (v: number | null) => (v === null || v > 9999 ? undefined : String(v))
+  const set = { album: r.album || undefined, albumArtist: r.albumArtist || undefined, year: n(r.year), track: n(r.track), disc: n(r.disc) }
+  return { ...form, ...Object.fromEntries(Object.entries(set).filter(([, v]) => v !== undefined)) }
 }

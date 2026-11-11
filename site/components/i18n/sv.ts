@@ -122,7 +122,7 @@ export const sv: Copy = {
     head: ['Kommer', 'Vad det ger'],
     rows: [
       ['Låttexter', 'En översättning under varje rad, och en låt hittad från en rad du minns.'],
-      ['Din egen musik', 'MusicBrainz-uppslag för dina taggar, din server i sökningen.'],
+      ['Din egen musik', 'Din server i sökningen.'],
       ['Smartare lyssnande', 'Dina låtar analyserade på din dator (tempo, energi, tonart) för radio och övertoningar som passar, en väg från en artist till en annan, en årssammanfattning att dela.'],
       ['Runt huset', 'Högtalare och tv-apparater (DLNA, Chromecast), lyssna tillsammans över internet, fortsätta på din andra dator där du slutade.'],
       ['Finputs för Windows', 'En bild-i-bild-spelare.'],

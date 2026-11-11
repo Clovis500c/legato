@@ -122,7 +122,7 @@ export const es: Copy = {
     head: ['Llega', 'Qué trae'],
     rows: [
       ['Letras', 'Una traducción bajo cada línea, y una canción encontrada a partir de un verso que recuerdas.'],
-      ['Tu propia música', 'Búsquedas en MusicBrainz para tus etiquetas, tu servidor en la búsqueda.'],
+      ['Tu propia música', 'Tu servidor en la búsqueda.'],
       ['Escucha más lista', 'Tus canciones analizadas en tu PC (tempo, energía, tonalidad) para radios y fundidos que encajen, un camino de un artista a otro, un resumen anual para compartir.'],
       ['Por la casa', 'Altavoces y televisores (DLNA, Chromecast), escuchar juntos por internet, seguir en tu otro PC donde lo dejaste.'],
       ['Pulido para Windows', 'Un reproductor en imagen en imagen.'],

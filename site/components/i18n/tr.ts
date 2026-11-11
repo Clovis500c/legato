@@ -122,7 +122,7 @@ export const tr: Copy = {
     head: ['Geliyor', 'Ne getiriyor'],
     rows: [
       ['Sözler', 'Her satırın altında bir çeviri ve hatırladığın bir dizeden bulunan şarkı.'],
-      ['Kendi müziğin', 'Etiketlerin için MusicBrainz sorguları, sunucun aramada.'],
+      ['Kendi müziğin', 'Sunucun aramada.'],
       ['Daha akıllı dinleme', 'Şarkıların bilgisayarında analiz edilir (tempo, enerji, ton): uyan radyolar ve geçişler, bir sanatçıdan diğerine bir yol, paylaşılacak yıllık bir özet için.'],
       ['Ev içinde', 'Hoparlörler ve TV’ler (DLNA, Chromecast), internet üzerinden birlikte dinleme, diğer bilgisayarında kaldığın yerden devam.'],
       ['Windows cilası', 'Pencere içinde pencere oynatıcı.'],

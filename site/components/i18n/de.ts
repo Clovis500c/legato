@@ -122,7 +122,7 @@ export const de: Copy = {
     head: ['Kommt', 'Was es bringt'],
     rows: [
       ['Songtexte', 'Eine Übersetzung unter jeder Zeile, und ein Song, gefunden über eine Zeile, die du noch im Kopf hast.'],
-      ['Deine eigene Musik', 'MusicBrainz-Abfragen für deine Tags, dein Server in der Suche.'],
+      ['Deine eigene Musik', 'Dein Server in der Suche.'],
       ['Klügeres Hören', 'Deine Songs auf deinem PC analysiert (Tempo, Energie, Tonart) für passende Radios und Überblendungen, ein Weg von einem Künstler zum anderen, ein Jahresrückblick zum Teilen.'],
       ['Rund ums Haus', 'Lautsprecher und Fernseher (DLNA, Chromecast), gemeinsam hören übers Internet, auf deinem anderen PC dort weitermachen, wo du aufgehört hast.'],
       ['Feinschliff für Windows', 'Ein Bild-im-Bild-Player.'],

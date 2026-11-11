@@ -115,6 +115,13 @@ pub async fn edit_tags(state: State<'_, AppState>, track_ids: Vec<i64>, tags: Ta
     Ok(out)
 }
 
+/// Edit song info › Look up on MusicBrainz (one click, one request): the releases the song is on, to pick from. Only its
+/// title and artist leave the PC; nothing is written until the user saves.
+#[tauri::command]
+pub async fn song_releases(title: String, artist: String, album: String, duration_ms: Option<u64>) -> CmdResult<Vec<music_connectors::musicbrainz::SongRelease>> {
+    music_connectors::musicbrainz::MusicBrainz::default().song_releases(&title, &artist, &album, duration_ms).await.map_err(err)
+}
+
 /// Now Playing › Lyrics › Edit lyrics, or the timing fixed: the text (LRC or plain) saved into the song's own file.
 #[tauri::command]
 pub async fn write_lyrics(state: State<'_, AppState>, track_id: i64, text: String) -> CmdResult<()> {

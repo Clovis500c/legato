@@ -230,8 +230,14 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - [ ] `M` Lyrics translation in the panel (a service sends text: add the website's privacy row first).
       Owner's call (2026-11-01): which service gets the lyrics (the user's own DeepL or Google key, a LibreTranslate
       server); Windows gives apps no offline translator. The panel side is small once that's chosen.
-- [ ] `M` MusicBrainz lookup that fills Edit song info (album, year, numbers from a release): a new host, the website's
+- [x] `M` MusicBrainz lookup that fills Edit song info (album, year, numbers from a release): a new host, the website's
       privacy row first.
+      2026-11-11: Edit song info (one song) › Look up on MusicBrainz: one recording search by title and artist
+      (`musicbrainz::song_releases`), up to 8 releases (official, plain albums, the album typed, the earliest first;
+      takes over 10 s longer or shorter left out) to pick from; a pick fills album, album artist, year, track, disc, and
+      Save writes as before. Website: a "Song info lookup" privacy row. Decided alone (2026-11-11): one song only (a
+      whole album's numbers would need the release's track list, a second request); no genre (not in the search).
+      Untried against the real MusicBrainz: the answer's shape is from their docs.
 - [ ] `M` Equalizer presets per output device (headphones vs speakers) and AutoEQ profiles for known headphones.
 - [ ] `M` BPM / key tags; genre / year of streamed songs (Spotify's export has a release date; iTunes a genre);
       smart playlist rules on them (mixes, DJ-like transitions by BPM).

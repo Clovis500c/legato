@@ -7,6 +7,12 @@
 //! caller spaces the artists and stops at the first refusal). Only the artist's name and a date leave the PC.
 //! The date range in the query is Lucene's own syntax, which the docs don't show: the answer is filtered by date
 //! here too, so a range that were ignored would only bring fewer new releases, never old ones.
+//!
+//! Edit song info's lookup (a click, one request): `GET /ws/2/recording/?query=recording:"<title>" AND
+//! artist:"<artist>"` answers `{"recordings":[{score, length, "artist-credit", releases:[{title, status, date, country,
+//! "artist-credit"?, "release-group":{"primary-type", "secondary-types"}, media:[{position, "track-count",
+//! "track-offset", track:[{number}]}]}]}]}` (their search docs; a release's own credit only when it differs). Only the
+//! song's title and artist leave the PC.
 
 use anyhow::{Result, bail};
 use serde::{Deserialize, Serialize};
@@ -15,6 +21,8 @@ pub const API: &str = "https://musicbrainz.org/ws/2";
 const AGENT: &str = concat!("Legato/", env!("CARGO_PKG_VERSION"), " ( https://github.com/Clovis500c/legato )");
 /// Under this score the search matched something else than the artist's name.
 const MIN_SCORE: u32 = 90;
+/// Releases offered to pick from in Edit song info.
+const MAX_RELEASES: usize = 8;
 
 /// An album, EP or single of an artist, by its first release.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ts_rs::TS)]
@@ -61,6 +69,140 @@ struct Credit {
 fn is_day(s: &str) -> bool {
     let b = s.as_bytes();
     b.len() == 10 && b.iter().enumerate().all(|(i, c)| if i == 4 || i == 7 { *c == b'-' } else { c.is_ascii_digit() })
+}
+
+/// A release a song is on, to fill Edit song info's album, album artist, year and numbers.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ts_rs::TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, rename = "SongRelease")]
+pub struct SongRelease {
+    pub album: String,
+    pub album_artist: String,
+    pub year: Option<u32>,
+    pub track: Option<u32>,
+    pub disc: Option<u32>,
+    /// Tracks on that disc.
+    pub tracks: Option<u32>,
+    /// "Album", "EP", "Single", "Compilation"…, as MusicBrainz says.
+    pub kind: String,
+    /// Two letters ("GB", "XW" for worldwide), or empty.
+    pub country: String,
+}
+
+#[derive(Deserialize)]
+struct Recordings {
+    #[serde(default)]
+    recordings: Vec<Recording>,
+}
+
+#[derive(Deserialize)]
+struct Recording {
+    score: serde_json::Value,
+    /// ms.
+    length: Option<u64>,
+    #[serde(rename = "artist-credit", default)]
+    credit: Vec<Credit>,
+    #[serde(default)]
+    releases: Vec<OnRelease>,
+}
+
+#[derive(Deserialize)]
+struct OnRelease {
+    title: String,
+    status: Option<String>,
+    date: Option<String>,
+    country: Option<String>,
+    #[serde(rename = "artist-credit", default)]
+    credit: Vec<Credit>,
+    #[serde(rename = "release-group")]
+    group: Option<OnGroup>,
+    #[serde(default)]
+    media: Vec<Medium>,
+}
+
+#[derive(Deserialize)]
+struct OnGroup {
+    #[serde(rename = "primary-type")]
+    kind: Option<String>,
+    #[serde(rename = "secondary-types", default)]
+    secondary: Vec<String>,
+}
+
+#[derive(Deserialize)]
+struct Medium {
+    position: Option<u32>,
+    #[serde(rename = "track-count")]
+    count: Option<u32>,
+    #[serde(rename = "track-offset")]
+    offset: Option<u32>,
+    #[serde(default)]
+    track: Vec<OnTrack>,
+}
+
+#[derive(Deserialize)]
+struct OnTrack {
+    #[serde(default)]
+    number: String,
+}
+
+/// A number, or a number in a string (both seen in their docs).
+fn score(v: &serde_json::Value) -> u64 {
+    v.as_u64().or_else(|| v.as_str().and_then(|s| s.parse().ok())).unwrap_or(0)
+}
+
+fn names(credit: &[Credit]) -> String {
+    credit.iter().map(|c| c.name.trim()).filter(|n| !n.is_empty()).collect::<Vec<_>>().join(", ")
+}
+
+/// The search for a song by its title and artist.
+pub fn recording_query(title: &str, artist: &str) -> String {
+    format!("recording:\"{}\" AND artist:\"{}\"", quoted(title), quoted(artist))
+}
+
+/// The releases the matching recordings are on, at most `MAX_RELEASES`: recordings that scored `MIN_SCORE` and, when
+/// both lengths are known, within 10 s of the song's; official releases first, then a plain album, then the one named
+/// `album`, then the earliest. The same album, year and numbers once.
+pub fn pick_releases(body: &str, album: &str, duration_ms: Option<u64>) -> Result<Vec<SongRelease>> {
+    let album = album.trim().to_lowercase();
+    let mut found: Vec<(u8, String, SongRelease)> = Vec::new();
+    for r in serde_json::from_str::<Recordings>(body)?.recordings {
+        if score(&r.score) < u64::from(MIN_SCORE) || matches!((r.length, duration_ms), (Some(a), Some(b)) if a.abs_diff(b) > 10_000) {
+            continue;
+        }
+        let artist = names(&r.credit);
+        for rel in r.releases {
+            let medium = rel.media.first();
+            // A vinyl side's "A1" isn't a number: the place on the disc then.
+            let track = medium.and_then(|m| m.track.first().and_then(|t| t.number.trim().parse().ok()).or(m.offset.map(|o| o + 1)));
+            let (kind, secondary) = rel.group.map_or((String::new(), Vec::new()), |g| (g.kind.unwrap_or_default(), g.secondary));
+            let date = rel.date.unwrap_or_default();
+            let official = rel.status.as_deref().is_none_or(|s| s == "Official");
+            // 0 = the best: official, a plain album, the name already typed.
+            let rank = u8::from(!official) * 4 + u8::from(!(kind == "Album" && secondary.is_empty())) * 2 + u8::from(rel.title.trim().to_lowercase() != album);
+            let release = SongRelease {
+                album: rel.title.trim().to_string(),
+                album_artist: if rel.credit.is_empty() { artist.clone() } else { names(&rel.credit) },
+                year: date.get(..4).and_then(|y| y.parse().ok()),
+                track,
+                disc: medium.and_then(|m| m.position),
+                tracks: medium.and_then(|m| m.count),
+                kind: secondary.first().cloned().unwrap_or(kind),
+                country: rel.country.unwrap_or_default(),
+            };
+            found.push((rank, if date.is_empty() { "9999".into() } else { date }, release));
+        }
+    }
+    found.sort_by(|a, b| a.0.cmp(&b.0).then_with(|| a.1.cmp(&b.1)));
+    let mut out: Vec<SongRelease> = Vec::new();
+    for (_, _, r) in found {
+        if out.len() == MAX_RELEASES {
+            break;
+        }
+        if !out.iter().any(|o| o.album.to_lowercase() == r.album.to_lowercase() && o.year == r.year && o.track == r.track && o.disc == r.disc) {
+            out.push(r);
+        }
+    }
+    Ok(out)
 }
 
 /// Lucene's special characters and quotes taken out of a name put between quotes.
@@ -121,6 +263,22 @@ impl MusicBrainz {
         }
         pick(&r.text().await?, artist, since)
     }
+    /// One request: the releases a song is on (Edit song info's lookup).
+    pub async fn song_releases(&self, title: &str, artist: &str, album: &str, duration_ms: Option<u64>) -> Result<Vec<SongRelease>> {
+        if title.trim().is_empty() || artist.trim().is_empty() {
+            bail!("A title and an artist are needed");
+        }
+        let url = url::Url::parse_with_params(&format!("{}/recording/", self.api), [("query", recording_query(title, artist).as_str()), ("fmt", "json"), ("limit", "10")])?;
+        let r = self.http.get(url).header(reqwest::header::USER_AGENT, AGENT).timeout(crate::linklist::REQUEST_TIMEOUT).send().await?;
+        if r.status() == reqwest::StatusCode::SERVICE_UNAVAILABLE || r.status() == reqwest::StatusCode::TOO_MANY_REQUESTS {
+            bail!("MusicBrainz is busy: try again later");
+        }
+        if !r.status().is_success() {
+            bail!("MusicBrainz answered {}", r.status().as_u16());
+        }
+        pick_releases(&r.text().await?, album, duration_ms)
+    }
+
 }
 
 #[cfg(test)]
@@ -166,6 +324,50 @@ mod tests {
         let got = MusicBrainz::with_urls(&server.url()).new_releases("Velvet Cartographers", "2026-09-12").await.unwrap();
         assert_eq!(got.len(), 2);
         m.assert_async().await;
+    }
+
+    // A recording search's shape (their docs), cut to what is read.
+    const SONG: &str = r#"{"recordings":[
+      {"id":"r1","score":100,"title":"Glass Harbour","length":241000,"artist-credit":[{"name":"Velvet Cartographers"}],"releases":[
+        {"title":"Best Of the Coast","status":"Official","date":"2015-03-02","country":"GB","release-group":{"primary-type":"Album","secondary-types":["Compilation"]},"media":[{"position":1,"track-count":18,"track-offset":4,"track":[{"number":"5"}]}]},
+        {"title":"Tidelines","status":"Official","date":"2009-06-01","country":"XW","release-group":{"primary-type":"Album"},"media":[{"position":2,"track-count":11,"track-offset":2,"track":[{"number":"3"}]}]},
+        {"title":"Tidelines","status":"Official","date":"2009-06-01","country":"US","release-group":{"primary-type":"Album"},"media":[{"position":2,"track-count":11,"track-offset":2,"track":[{"number":"3"}]}]},
+        {"title":"Glass Harbour","status":"Promotion","date":"2009","artist-credit":[{"name":"VC"},{"name":"Guest"}],"release-group":{"primary-type":"Single"},"media":[{"position":1,"track-count":2,"track-offset":0,"track":[{"number":"A1"}]}]}
+      ]},
+      {"id":"r2","score":"100","title":"Glass Harbour (live)","length":300000,"artist-credit":[{"name":"Velvet Cartographers"}],"releases":[{"title":"Live","status":"Official","date":"2011","release-group":{"primary-type":"Album","secondary-types":["Live"]},"media":[]}]},
+      {"id":"r3","score":50,"title":"Other","artist-credit":[{"name":"Someone"}],"releases":[{"title":"Nope","status":"Official"}]}
+    ]}"#;
+
+    #[test]
+    fn a_song_s_releases_official_albums_first_once_each() {
+        let got = pick_releases(SONG, "", Some(240_000)).unwrap();
+        assert_eq!(got.iter().map(|r| (r.album.as_str(), r.year, r.track, r.disc)).collect::<Vec<_>>(), [("Tidelines", Some(2009), Some(3), Some(2)), ("Best Of the Coast", Some(2015), Some(5), Some(1)), ("Glass Harbour", Some(2009), Some(1), Some(1))]);
+        assert_eq!((got[0].album_artist.as_str(), got[0].tracks, got[0].kind.as_str(), got[0].country.as_str()), ("Velvet Cartographers", Some(11), "Album", "XW"));
+        assert_eq!((got[1].kind.as_str(), got[2].album_artist.as_str(), got[2].kind.as_str()), ("Compilation", "VC, Guest", "Single"));
+        // The live take is a minute longer: left out; without a length, kept.
+        assert!(pick_releases(SONG, "", None).unwrap().iter().any(|r| r.album == "Live"));
+        // The album already typed comes first among its kind.
+        let typed = pick_releases(SONG, " best of the coast", None).unwrap();
+        assert_eq!(typed[0].album, "Tidelines");
+        assert_eq!(recording_query("Say \"Hi\"", "A\\B"), "recording:\"Say  Hi \" AND artist:\"A B\"");
+        assert!(pick_releases("{}", "", None).unwrap().is_empty());
+    }
+
+    #[tokio::test]
+    async fn looks_a_song_up_once() {
+        let mut server = mockito::Server::new_async().await;
+        let m = server
+            .mock("GET", "/recording/")
+            .match_query(mockito::Matcher::UrlEncoded("query".into(), recording_query("Glass Harbour", "Velvet Cartographers")))
+            .match_header("user-agent", mockito::Matcher::Regex(r"^Legato/".into()))
+            .with_body(SONG)
+            .expect(1)
+            .create_async()
+            .await;
+        let mb = MusicBrainz::with_urls(&server.url());
+        assert_eq!(mb.song_releases("Glass Harbour", "Velvet Cartographers", "", Some(241_000)).await.unwrap().len(), 3);
+        m.assert_async().await;
+        assert!(mb.song_releases(" ", "A", "", None).await.is_err());
     }
 
     #[tokio::test]

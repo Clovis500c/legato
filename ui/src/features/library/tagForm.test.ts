@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { FileTags, LibraryTrack } from '../../shared/api'
-import { canSave, formOf, startOf, tagsToWrite } from './tagForm'
+import { canSave, formOf, startOf, tagsToWrite, withRelease } from './tagForm'
 
 const song = (id: number, title: string, artist: string, album: string | null = null): LibraryTrack => ({ id, added: id, addedAt: null, title, artist, album, durationMs: null, isrc: null, ids: { local: `C:/Music/${id}.mp3` } })
 const tags = (patch: Partial<FileTags> = {}): FileTags => ({ title: null, artist: null, album: null, albumArtist: null, genre: null, year: null, track: null, trackTotal: null, disc: null, ...patch })
@@ -36,5 +36,14 @@ describe('Edit song info', () => {
     expect(canSave(formOf(many), many, false)).toBe(true)
     const shared = startOf([song(1, 'One', 'Band'), song(2, 'Two', 'Band')], [])
     expect(canSave({ ...formOf(shared), artist: '' }, shared, false)).toBe(false)
+  })
+})
+
+describe('a MusicBrainz release in the form', () => {
+  it('fills album, album artist, year and numbers, keeps the rest and what it lacks', () => {
+    const form = { title: 'Glass Harbour', artist: 'VC', album: 'old', albumArtist: '', genre: 'Rock', year: '2001', track: '7', disc: '' }
+    const r = { album: 'Tidelines', albumArtist: 'Velvet Cartographers', year: 2009, track: 3, disc: null, tracks: 11, kind: 'Album', country: 'XW' }
+    expect(withRelease(form, r)).toEqual({ ...form, album: 'Tidelines', albumArtist: 'Velvet Cartographers', year: '2009', track: '3' })
+    expect(withRelease(form, { ...r, album: '', year: null, track: 12345 })).toEqual({ ...form, albumArtist: 'Velvet Cartographers' })
   })
 })

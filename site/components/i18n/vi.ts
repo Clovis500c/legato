@@ -122,7 +122,7 @@ export const vi: Copy = {
     head: ['Sắp có', 'Mang lại gì'],
     rows: [
       ['Lời bài hát', 'Bản dịch dưới mỗi dòng, và tìm bài hát từ một câu bạn còn nhớ.'],
-      ['Nhạc của riêng bạn', 'Tra MusicBrainz cho thẻ của bạn, máy chủ của bạn trong tìm kiếm.'],
+      ['Nhạc của riêng bạn', 'Máy chủ của bạn trong tìm kiếm.'],
       ['Nghe thông minh hơn', 'Bài hát được phân tích trên PC của bạn (nhịp độ, năng lượng, giọng) cho radio và chuyển tiếp hợp nhau, một đường đi từ nghệ sĩ này sang nghệ sĩ khác, bản tổng kết năm để chia sẻ.'],
       ['Quanh nhà', 'Loa và TV (DLNA, Chromecast), nghe chung qua internet, nghe tiếp trên PC khác từ chỗ bạn dừng.'],
       ['Hoàn thiện cho Windows', 'Trình phát hình trong hình.'],
