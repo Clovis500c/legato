@@ -159,7 +159,12 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - **Low**: niche or fun, for later.
 
 **High**
-- [ ] `S-M` Same loudness across sources: YouTube vs local vs Spotify levelled by the Adaptive Sound meter.
+- [x] `S-M` Same loudness across sources: YouTube vs local vs Spotify levelled by the Adaptive Sound meter.
+      2026-11-11: Volume levelling (Song / Album) now covers YouTube: each video's loudness heard on a play of 30 s or
+      more is kept (this PC), its next plays raised toward -14 LUFS in live.js (`docs/playback.md`). Decided alone
+      (2026-11-11): boosts only, since YouTube's normalisation turns loud videos down after our measure; the first play
+      of a video as it is. Spotify plays in its own app: out of reach. Untried for real (the ±1 LU of a mixed queue
+      not measured; whether the embed's element volume carries YouTube's normalisation is from memory).
 - [ ] `M` Accessibility pass: full keyboard, screen reader labels, contrast AA everywhere, reduced motion.
 - [x] `L` Personal servers: Jellyfin, Navidrome / Subsonic, Plex (the user's own music, streamed legally, keychain login).
       The three kinds in (2026-11-06), untried on a real server of any kind.

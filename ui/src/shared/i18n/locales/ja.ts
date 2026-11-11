@@ -832,6 +832,7 @@ const ja: Record<string, string> = {
   'Adaptive Sound level': 'Adaptive Soundのレベル',
   'Volume levelling': '音量の均一化',
   'Your own files play as loud as streamed songs: from their ReplayGain tags, or measured the first time they play. Album keeps an album’s quiet songs quiet, when its tags have an album gain': '自分のファイルをストリーミングの曲と同じ音量で再生します。ReplayGain タグから、または初回再生時に測定。アルバムは、タグにアルバムゲインがあれば、アルバム内の静かな曲を静かなまま保ちます',
+  'A quiet YouTube song is raised from its second play on, once it has been heard': '小さく聞こえる YouTube の曲は、一度聴いたあと 2 回目の再生から音量が上がります',
   'replaygain replay gain loudness normalize normalization volume level same lufs album track r128': 'replaygain リプレイゲイン ラウドネス ノーマライズ 正規化 音量 レベル 均一 lufs アルバム 曲 r128',
   'Where songs are brought: {lufs} LUFS': '曲をそろえる音量：{lufs} LUFS',
   'Moving cover': '動くカバー',

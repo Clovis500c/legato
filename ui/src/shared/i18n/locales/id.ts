@@ -832,6 +832,7 @@ const id: Record<string, string> = {
   'Adaptive Sound level': 'Level Suara Adaptif',
   'Volume levelling': 'Penyetaraan volume',
   'Your own files play as loud as streamed songs: from their ReplayGain tags, or measured the first time they play. Album keeps an album’s quiet songs quiet, when its tags have an album gain': 'File milikmu diputar sekeras lagu streaming: dari tag ReplayGain-nya, atau diukur saat pertama kali diputar. Album menjaga lagu pelan di sebuah album tetap pelan, jika tag-nya punya gain album',
+  'A quiet YouTube song is raised from its second play on, once it has been heard': 'Lagu YouTube yang pelan dinaikkan mulai pemutaran kedua, setelah pernah didengar',
   'replaygain replay gain loudness normalize normalization volume level same lufs album track r128': 'replaygain replay gain kenyaringan normalisasi volume level sama lufs album lagu r128',
   'Where songs are brought: {lufs} LUFS': 'Level target: {lufs} LUFS',
   'Moving cover': 'Sampul bergerak',

@@ -832,6 +832,7 @@ const tr: Record<string, string> = {
   'Adaptive Sound level': 'Uyarlanabilir Ses seviyesi',
   'Volume levelling': 'Ses seviyesi eşitleme',
   'Your own files play as loud as streamed songs: from their ReplayGain tags, or measured the first time they play. Album keeps an album’s quiet songs quiet, when its tags have an album gain': 'Kendi dosyaların akışla çalınan şarkılar kadar yüksek çalar: ReplayGain etiketlerinden ya da ilk çalındıklarında ölçülerek. Albüm, etiketlerinde albüm kazancı varsa bir albümün sessiz şarkılarını sessiz tutar',
+  'A quiet YouTube song is raised from its second play on, once it has been heard': 'Sessiz bir YouTube şarkısı bir kez dinlendikten sonra ikinci çalışından itibaren yükseltilir',
   'replaygain replay gain loudness normalize normalization volume level same lufs album track r128': 'replaygain replay gain ses yüksekliği normalleştirme ses seviyesi aynı lufs albüm parça r128',
   'Where songs are brought: {lufs} LUFS': 'Hedef seviye: {lufs} LUFS',
   'Moving cover': 'Hareketli kapak',

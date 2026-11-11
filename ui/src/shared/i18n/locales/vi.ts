@@ -832,6 +832,7 @@ const vi: Record<string, string> = {
   'Adaptive Sound level': 'Mức Adaptive Sound',
   'Volume levelling': 'Cân bằng âm lượng',
   'Your own files play as loud as streamed songs: from their ReplayGain tags, or measured the first time they play. Album keeps an album’s quiet songs quiet, when its tags have an album gain': 'Tệp của bạn phát to như các bài nghe trực tuyến: theo thẻ ReplayGain, hoặc đo lần đầu phát. Album giữ các bài nhỏ của một album vẫn nhỏ, khi thẻ có độ khuếch đại album',
+  'A quiet YouTube song is raised from its second play on, once it has been heard': 'Bài YouTube nhỏ tiếng được nâng lên từ lần phát thứ hai, sau khi đã nghe một lần',
   'replaygain replay gain loudness normalize normalization volume level same lufs album track r128': 'replaygain replay gain độ to chuẩn hóa âm lượng mức như nhau lufs album bài r128',
   'Where songs are brought: {lufs} LUFS': 'Mức đưa các bài về: {lufs} LUFS',
   'Moving cover': 'Ảnh bìa chuyển động',

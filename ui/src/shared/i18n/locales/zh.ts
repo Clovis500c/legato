@@ -832,6 +832,7 @@ const zh: Record<string, string> = {
   'Adaptive Sound level': 'Adaptive Sound 级别',
   'Volume levelling': '音量均衡',
   'Your own files play as loud as streamed songs: from their ReplayGain tags, or measured the first time they play. Album keeps an album’s quiet songs quiet, when its tags have an album gain': '你自己的文件以流媒体歌曲的音量播放：依据其 ReplayGain 标签，或在首次播放时测量。专辑模式在标签含专辑增益时，让专辑里安静的歌保持安静',
+  'A quiet YouTube song is raised from its second play on, once it has been heard': '声音偏小的 YouTube 歌曲在听过一次后，从第二次播放起会被调高',
   'replaygain replay gain loudness normalize normalization volume level same lufs album track r128': 'replaygain 回放增益 响度 标准化 归一化 音量 电平 一致 lufs 专辑 曲目 r128',
   'Where songs are brought: {lufs} LUFS': '歌曲统一到：{lufs} LUFS',
   'Moving cover': '动态封面',

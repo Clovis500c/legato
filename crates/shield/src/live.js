@@ -332,7 +332,7 @@
   // listen = levels only (cover pulse, early ends): the element plays its own sound, untouched, and this only listens.
   // ending = the app fades the song out (the gain holds); gain = where a new song's gain starts (the app's last song,
   // which may have played in the other embed), null = this frame's own.
-  let settings = { on: false, listen: false, adaptive: false, targetLufs: -14, ending: false, viz: false, fine: false, wave: false, gain: null }
+  let settings = { on: false, listen: false, adaptive: false, targetLufs: -14, ending: false, viz: false, fine: false, wave: false, gain: null, level: 0 }
   let effects = cleanFx(null)
   // { ctx, video, stream, track, src, full, gain, limiter, fx, raw, k, wanted, … } while attached; full = the sound
   // comes out of here (gain, limiter, fx), else they are null.
@@ -526,10 +526,12 @@
   // The element's own volume (the app's volume and fades) no longer reaches the captured sound: applied here.
   function setGain() {
     if (!g?.full) return
-    const level = g.wanted ? 0 : g.video.volume * db(g.gainDb)
+    // Volume levelling's gain for this song (the app's measure of its last play); Adaptive Sound, when on, levels instead.
+    const total = g.gainDb + (settings.adaptive ? 0 : settings.level)
+    const level = g.wanted ? 0 : g.video.volume * db(total)
     g.gain.gain.setTargetAtTime(level, g.ctx.currentTime, 0.03)
     // Effects before the gain can push peaks over too (bass boost).
-    g.limiter.ratio.value = g.gainDb > 0.1 || edited(effects) ? 20 : 1
+    g.limiter.ratio.value = total > 0.1 || edited(effects) ? 20 : 1
   }
 
   /** Speed and tempo on the video itself: pitch kept for tempo alone, else follows (the shifter corrects pitch). */
@@ -841,7 +843,7 @@
     }
     const t = Number(next.targetLufs)
     // A start gain waits for its song (the next track): later messages without one keep it.
-    settings = { on: next.on === true, listen: next.listen === true, adaptive: next.adaptive === true, targetLufs: Number.isFinite(t) ? Math.min(-6, Math.max(-30, t)) : -14, ending: next.ending === true, viz: next.viz === true, fine: next.fine === true, wave: next.wave === true, gain: num(next.gain, MAX_CUT, MAX_BOOST, settings.gain) }
+    settings = { on: next.on === true, listen: next.listen === true, adaptive: next.adaptive === true, targetLufs: Number.isFinite(t) ? Math.min(-6, Math.max(-30, t)) : -14, ending: next.ending === true, viz: next.viz === true, fine: next.fine === true, wave: next.wave === true, gain: num(next.gain, MAX_CUT, MAX_BOOST, settings.gain), level: num(next.level, MAX_CUT, MAX_BOOST, 0) }
     if (!settings.on) {
       clearInterval(retry)
       retry = 0

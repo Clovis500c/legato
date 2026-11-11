@@ -832,6 +832,7 @@ const ru: Record<string, string> = {
   'Adaptive Sound level': 'Уровень адаптивного звука',
   'Volume levelling': 'Выравнивание громкости',
   'Your own files play as loud as streamed songs: from their ReplayGain tags, or measured the first time they play. Album keeps an album’s quiet songs quiet, when its tags have an album gain': 'Твои файлы звучат так же громко, как песни из стриминга: по их тегам ReplayGain или по замеру при первом прослушивании. Альбом оставляет тихие песни альбома тихими, если в тегах есть усиление альбома',
+  'A quiet YouTube song is raised from its second play on, once it has been heard': 'Тихий трек YouTube звучит громче со второго воспроизведения, когда его уже прослушали',
   'replaygain replay gain loudness normalize normalization volume level same lufs album track r128': 'replaygain реплейгейн громкость нормализация уровень одинаковый lufs альбом трек r128',
   'Where songs are brought: {lufs} LUFS': 'Целевой уровень: {lufs} LUFS',
   'Moving cover': 'Живая обложка',

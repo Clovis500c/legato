@@ -832,6 +832,7 @@ const de: Record<string, string> = {
   'Adaptive Sound level': 'Pegel des adaptiven Sounds',
   'Volume levelling': 'Lautstärkeangleichung',
   'Your own files play as loud as streamed songs: from their ReplayGain tags, or measured the first time they play. Album keeps an album’s quiet songs quiet, when its tags have an album gain': 'Deine eigenen Dateien spielen so laut wie gestreamte Titel: nach ihren ReplayGain-Tags oder beim ersten Abspielen gemessen. Album lässt die leisen Titel eines Albums leise, wenn seine Tags einen Album-Gain haben',
+  'A quiet YouTube song is raised from its second play on, once it has been heard': 'Ein leiser YouTube-Titel wird ab dem zweiten Abspielen angehoben, sobald er einmal gehört wurde',
   'replaygain replay gain loudness normalize normalization volume level same lufs album track r128': 'replaygain replay gain lautheit normalisieren normalisierung lautstärke pegel gleich lufs album titel r128',
   'Where songs are brought: {lufs} LUFS': 'Zielpegel: {lufs} LUFS',
   'Moving cover': 'Bewegtes Cover',

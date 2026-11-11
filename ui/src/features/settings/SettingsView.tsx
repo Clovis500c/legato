@@ -498,7 +498,7 @@ function SoundGroup() {
             />
           </Row>
         )}
-        <Row setting="levelling" label={msg('Volume levelling')} sub={tr('Your own files play as loud as streamed songs: from their ReplayGain tags, or measured the first time they play. Album keeps an album’s quiet songs quiet, when its tags have an album gain')}>
+        <Row setting="levelling" label={msg('Volume levelling')} sub={`${tr('Your own files play as loud as streamed songs: from their ReplayGain tags, or measured the first time they play. Album keeps an album’s quiet songs quiet, when its tags have an album gain')}. ${tr('A quiet YouTube song is raised from its second play on, once it has been heard')}`}>
           <Segmented
             label={tr('Volume levelling')}
             value={s.levelling}

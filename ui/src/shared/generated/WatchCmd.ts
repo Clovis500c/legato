@@ -30,6 +30,10 @@ wave: boolean,
  */
 gain: number | null, 
 /**
+ * Volume levelling's gain for this song, dB (ytLevel.ts); ignored while Adaptive Sound is on.
+ */
+level: number, 
+/**
  * Live Editor settings; absent = unchanged.
  */
 effects?: Effects, };

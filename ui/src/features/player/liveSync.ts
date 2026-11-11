@@ -9,6 +9,7 @@ import { useLoudListeners } from './loudFeed'
 import { claimViz, useVizListeners, viz as frames } from './vizFrames'
 import { wantsWave } from './vizLooks'
 import { songFade, usePlayer } from './store'
+import { startLevelling } from './ytLevel'
 
 // Who plays now, for levels: the native engine (local files, server songs, previews) or YouTube. Spotify: its own app, none.
 const playing = () => {
@@ -18,8 +19,8 @@ const playing = () => {
 
 /** Live processing follows the settings (Settings › Advanced › Sound) and the Live Editor. Mounted once, by the player bar. */
 export function useLiveSync() {
-  const { adaptiveSound, adaptiveLevel, coverPulse, earlyEnds, skipSilence, liveYoutube, fine, wave } = useSettings(
-    useShallow(({ settings: s }) => ({ adaptiveSound: s.adaptiveSound, adaptiveLevel: s.adaptiveLevel, coverPulse: s.coverPulse, earlyEnds: s.earlyEnds, skipSilence: s.skipSilence, liveYoutube: s.liveYoutube, fine: s.visualizerBands === 'twelfth', wave: wantsWave(s.visualizerStyle) })),
+  const { adaptiveSound, adaptiveLevel, coverPulse, earlyEnds, skipSilence, liveYoutube, fine, wave, levelling } = useSettings(
+    useShallow(({ settings: s }) => ({ levelling: s.levelling, adaptiveSound: s.adaptiveSound, adaptiveLevel: s.adaptiveLevel, coverPulse: s.coverPulse, earlyEnds: s.earlyEnds, skipSilence: s.skipSilence, liveYoutube: s.liveYoutube, fine: s.visualizerBands === 'twelfth', wave: wantsWave(s.visualizerStyle) })),
   )
   // The 60 Hz frames (Visualizer v2): YouTube's side makes them only while a view listens.
   const viz = useVizListeners((s) => s.n > 0)
@@ -32,12 +33,14 @@ export function useLiveSync() {
   useEffect(() => frames.setAsk({ fine, wave }), [fine, wave])
   useEffect(() => startLive(playing), [])
   useEffect(() => startEditor(), [])
+  // Volume levelling: YouTube songs measured as they play, levelled from their second play on.
+  useEffect(() => startLevelling(() => levelling), [levelling])
   // Fade out under way: Adaptive Sound holds. Synchronous with the position, so the playing frame hears it before an
   // overlap hands the live link to the next song's embed.
   useEffect(() => usePlayer.subscribe((s) => setEnding(overlapDue(s.positionMs, s.durationMs, songFade(s)))), [])
   useEffect(() => {
     // Bypassed edits keep processing attached: A / B switches at once. Levels alone (moving cover, early ends) only listen.
-    const process = adaptiveSound || !neutral({ ...effects, on: true })
+    const process = adaptiveSound || levelling !== 'off' || !neutral({ ...effects, on: true })
     sendLive({ on: process || coverPulse || viz || meter, levels: process || coverPulse || meter, ends: earlyEnds || skipSilence, listen: !process, adaptive: adaptiveSound, targetLufs: adaptiveLevel, viz, fine, wave, youtube: liveYoutube, effects })
-  }, [adaptiveSound, adaptiveLevel, coverPulse, earlyEnds, skipSilence, liveYoutube, effects, viz, meter, fine, wave])
+  }, [levelling, adaptiveSound, adaptiveLevel, coverPulse, earlyEnds, skipSilence, liveYoutube, effects, viz, meter, fine, wave])
 }

@@ -832,6 +832,7 @@ const hi: Record<string, string> = {
   'Adaptive Sound level': 'Adaptive Sound लेवल',
   'Volume levelling': 'वॉल्यूम लेवलिंग',
   'Your own files play as loud as streamed songs: from their ReplayGain tags, or measured the first time they play. Album keeps an album’s quiet songs quiet, when its tags have an album gain': 'आपकी अपनी फ़ाइलें स्ट्रीम किए गए गानों जितनी तेज़ बजती हैं: उनके ReplayGain टैग से, या पहली बार बजने पर मापकर। एल्बम मोड किसी एल्बम के धीमे गानों को धीमा ही रखता है, जब उसके टैग में एल्बम गेन हो',
+  'A quiet YouTube song is raised from its second play on, once it has been heard': 'धीमा YouTube गाना एक बार सुने जाने के बाद, दूसरी बार से ऊँचा बजता है',
   'replaygain replay gain loudness normalize normalization volume level same lufs album track r128': 'replaygain replay gain लाउडनेस नॉर्मलाइज़ वॉल्यूम लेवल एक जैसा lufs एल्बम गाना r128',
   'Where songs are brought: {lufs} LUFS': 'गानों को यहां लाया जाता है: {lufs} LUFS',
   'Moving cover': 'हिलता कवर',

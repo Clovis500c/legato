@@ -832,6 +832,7 @@ const ko: Record<string, string> = {
   'Adaptive Sound level': 'Adaptive Sound 레벨',
   'Volume levelling': '볼륨 평준화',
   'Your own files play as loud as streamed songs: from their ReplayGain tags, or measured the first time they play. Album keeps an album’s quiet songs quiet, when its tags have an album gain': '내 파일을 스트리밍 곡과 같은 크기로 재생합니다. ReplayGain 태그를 쓰거나, 처음 재생할 때 측정합니다. 앨범은 태그에 앨범 게인이 있으면 앨범의 조용한 곡을 조용하게 유지합니다',
+  'A quiet YouTube song is raised from its second play on, once it has been heard': '소리가 작은 YouTube 곡은 한 번 들은 뒤 두 번째 재생부터 커져요',
   'replaygain replay gain loudness normalize normalization volume level same lufs album track r128': 'replaygain 리플레이게인 라우드니스 노멀라이즈 정규화 볼륨 레벨 균일 lufs 앨범 곡 r128',
   'Where songs are brought: {lufs} LUFS': '곡을 맞추는 음량: {lufs} LUFS',
   'Moving cover': '움직이는 커버',
