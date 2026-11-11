@@ -7,6 +7,7 @@ use crate::{AppState, unix_now};
 use music_connectors::musicbrainz::{MusicBrainz, Release};
 use music_core::discover::{ARTISTS, DAYS, day, top_artists};
 use serde::{Deserialize, Serialize};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 use tauri::State;
 
@@ -22,19 +23,35 @@ struct Saved {
     releases: Vec<Release>,
 }
 
+/// One round at a time: Home opened again while one runs would ask MusicBrainz twice a second.
+static ROUND: AtomicBool = AtomicBool::new(false);
+
+struct Round;
+
+impl Round {
+    fn start() -> Option<Self> {
+        (!ROUND.swap(true, Ordering::SeqCst)).then_some(Self)
+    }
+}
+
+impl Drop for Round {
+    fn drop(&mut self) {
+        ROUND.store(false, Ordering::SeqCst);
+    }
+}
+
 #[tauri::command]
 pub async fn new_releases(state: State<'_, AppState>) -> Result<Vec<Release>, String> {
     let now = unix_now();
-    let artists = {
+    let (_round, artists) = {
         let lib = state.lib();
-        if let Some(saved) = lib.setting(KEY).ok().flatten().and_then(|v| serde_json::from_value::<Saved>(v).ok())
-            && now - saved.at < FRESH_S
-        {
-            return Ok(saved.releases);
-        }
+        let saved = lib.setting(KEY).ok().flatten().and_then(|v| serde_json::from_value::<Saved>(v).ok());
+        let fresh = saved.as_ref().is_some_and(|s| now - s.at < FRESH_S);
+        // Fresh, or a round under way: what is kept.
+        let Some(round) = (!fresh).then(Round::start).flatten() else { return Ok(saved.map(|s| s.releases).unwrap_or_default()) };
         let stats = lib.play_stats().map_err(|e| e.to_string())?;
         let tracks = lib.tracks().map_err(|e| e.to_string())?;
-        top_artists(tracks.iter().map(|t| (t.track.artist.as_str(), stats.get(&t.id).map_or(0, |s| s.0))), ARTISTS)
+        (round, top_artists(tracks.iter().map(|t| (t.track.artist.as_str(), stats.get(&t.id).map_or(0, |s| s.0))), ARTISTS))
     };
     let since = day(now - DAYS * 86_400);
     let mb = MusicBrainz::default();
@@ -60,4 +77,17 @@ pub async fn new_releases(state: State<'_, AppState>) -> Result<Vec<Release>, St
         let _ = state.lib().set_setting(KEY, &json);
     }
     Ok(saved.releases)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn one_round_at_a_time() {
+        let first = Round::start();
+        assert!(first.is_some() && Round::start().is_none());
+        drop(first);
+        assert!(Round::start().is_some());
+    }
 }
