@@ -84,8 +84,14 @@ copies, downloads for offline), their accounts, limits and paid plan.
       beside `thumbbar.rs`), Windows' minimize and maximize animations.
 - [ ] 11. `S-M` Share links that open in any browser: a static page on the website reads the playlist from the link's
       fragment, Open in Legato, Listen on YouTube, Get Legato.
-- [ ] 12. `S-M` A moving cover background (our own WebGL shader): Now Playing, Karaoke, the Cover display, behind Home
+- [x] 12. `S-M` A moving cover background (our own WebGL shader): Now Playing, Karaoke, the Cover display, behind Home
       as an option; under 3 % CPU.
+      2026-11-11: Settings > Appearance > Flowing background (`backdropFlow`, off: Decided alone, it needs the owner's
+      eye), `flow.ts`: the blurred cover warped by two slow sine rounds, a quarter of the size, 30 fps at most, still
+      when paused or hidden, off with animations off, the still backdrop when WebGL is missing; on every screen with
+      a backdrop (Now Playing, Karaoke, Cover display, full-screen visualizer, picture in picture). Not built: behind
+      Home. Not tried: the shaders compile in Chromium, nothing more; never seen moving, its CPU never measured
+      (the 3 % is unproven), a cover change's fade unseen.
 - [ ] 15. `M` SoundCloud sets and likes: set aside (the owner's word, 2026-11-07). Its API terms (§01, §03, §10.4)
       forbid rebuilding its sets on YouTube without a registered app of theirs. Today's way, untried: Tune My Music's
       CSV export through Add music › song list.

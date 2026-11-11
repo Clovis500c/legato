@@ -112,6 +112,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'appearance', label: msg('Background blur'), keywords: msg('immersive blurry flou sharp') },
   { section: 'appearance', label: msg('Background dimming'), keywords: msg('immersive dark veil brightness') },
   { section: 'appearance', label: msg('Background motion'), keywords: msg('immersive animation drift') },
+  { section: 'appearance', label: msg('Flowing background'), keywords: msg('immersive liquid fluid warp shader webgl') },
   { section: 'appearance', label: msg('Mix covers'), keywords: msg('mixes artwork grid daily template image') },
   { section: 'general', label: msg('Open at startup'), keywords: msg('launch boot login sign in windows task manager autostart start automatically') },
   { section: 'general', label: msg('Keep running in the notification area'), keywords: msg('tray background close minimize system tray quit discord') },

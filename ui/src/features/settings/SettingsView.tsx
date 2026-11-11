@@ -286,6 +286,9 @@ function Appearance() {
           <Row setting="backdropMotion" label={msg('Background motion')} sub={tr('The cover drifts slowly behind the player')}>
             <Toggle label={tr('Background motion')} checked={s.backdropMotion} onChange={(backdropMotion) => update({ backdropMotion })} />
           </Row>
+          <Row setting="backdropFlow" label={msg('Flowing background')} sub={tr('The cover’s colours flow slowly behind the player while a song plays')}>
+            <Toggle label={tr('Flowing background')} checked={s.backdropFlow} onChange={(backdropFlow) => update({ backdropFlow })} />
+          </Row>
         </div>
       </Group>
       {/* Folded away like the hi-fi's own extras; a search result inside opens it (SettingsView). */}
