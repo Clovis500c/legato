@@ -80,6 +80,12 @@ Where a line says "reading", the owner hasn't confirmed it.
       menu has "Remove from {playlist}" for the playlist the queue plays from (`library/holding.ts`, matched by the name the
       queue keeps). Not done: YouTube Music / server playlists in that check (they stay in "Remove from ›"). Never seen on a
       screen: Vitest on the helpers only (`menus.tsx` can't be imported by a test: it touches `window`).
+- [ ] `S-M` Bug, second in priority (the owner's report, 2026-11-11 night, Beta 1.1.807, YouTube signed in, crossfade 2 s,
+      autoplay on, liveYoutube on): the same song played twice at the same time. The only clue in their diagnostics, at
+      the moment it happened: `playback youtube: the embed refused the video, playing it from its watch page`, then 0.6 s
+      later a normal `time to sound, after a song` line. No other error line. Lead to check first: the refused embed (or
+      the crossfade's other player) still starts or is never stopped once the watch page takes over, so both sound.
+      Not investigated yet.
 
 - [ ] `S-M` The share page (`/l`, since `867cc53`) as a good-looking preview of a playlist without the app, from the
       compact links: a preview only, no player on the web (the owner's word).
