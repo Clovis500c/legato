@@ -58,3 +58,8 @@
   Pop $1
   Pop $0
 !macroend
+
+; The legato:// link type the installed app registers for this user (src-tauri/src/protocol.rs): gone with the app.
+!macro NSIS_HOOK_POSTUNINSTALL
+  DeleteRegKey HKCU "Software\Classes\legato"
+!macroend

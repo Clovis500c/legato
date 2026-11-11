@@ -18,8 +18,9 @@ const button = 'rounded-full px-4 py-2 text-sm font-semibold'
 /**
  * A playlist shared from Legato (Share › Copy link), read from the address's fragment by this page's own script:
  * a browser never sends a fragment, so no server sees the playlist. English only (a recipient's page, one screen).
- * No covers: they would load from YouTube's image host. Opening the app from here needs the `legato://` link type
- * registered with the system, which the app doesn't do yet: the link is copied instead, to paste in Legato.
+ * No covers: they would load from YouTube's image host. "Open in Legato" is a `legato://` link, which the installed app
+ * registers with Windows (src-tauri protocol.rs); on a PC without it the link does nothing, so "Copy the link for
+ * Legato" stays beside it.
  */
 export function SharedPlaylist() {
   const [list, setList] = useState<Shared | null>(null)
@@ -55,7 +56,10 @@ export function SharedPlaylist() {
             <p className="text-sm text-ink-2">{list.items.length === 1 ? '1 song' : `${list.items.length.toLocaleString('en')} songs`}</p>
           </header>
           <div className="flex flex-wrap items-center gap-3">
-            <button type="button" onClick={copy} className={`${button} bg-ink text-on-ink`}>
+            <a href={`legato://playlist/${codeOf(location.hash)}`} className={`${button} bg-ink text-on-ink`}>
+              Open in Legato
+            </a>
+            <button type="button" onClick={copy} className={`${button} border border-line`}>
               {copied ? 'Copied: paste it in Legato (Ctrl+V)' : 'Copy the link for Legato'}
             </button>
             <a href="../" className={`${button} border border-line`}>

@@ -51,7 +51,7 @@ classic mini player stay off by default; the web share link stays the default; p
       `HomeView` draws `Backdrop` (moved to `player/Backdrop.tsx`, a `flowing` prop) with `bc90071`'s shader, which pauses with
       the song and a hidden window; dimmed at 72 % to read the cards. Never seen on a screen: the dim and the stacking
       (`isolate` wrapper around Home) are unjudged.
-- [ ] `S` `legato://` registered with Windows from the installed app only (`identity::installed()`), for a real
+- [x] `S` `legato://` registered with Windows from the installed app only (`identity::installed()`), for a real
       "Open in Legato" button on the share page, AND the page's "Copy the link for Legato" kept (the owner's choice
       2026-11-11; the web link stays the default).
 - [x] `S` Cover Art Archive covers for "New from your artists", as an option off by default, with its website privacy
@@ -65,6 +65,12 @@ classic mini player stay off by default; the web share link stays the default; p
       `/mbid-` files it redirects to), the website's "New from your artists" row says so; Settings › Privacy lists the hosts
       on its own (`Noted`). A release group without a cover shows the letter cover. Untried against the real archive:
       the redirect's hosts and file names are from its docs / memory, mock-free (the allowlist is tested on shapes only).
+      2026-11-11: `src-tauri/src/protocol.rs`: the installed release app writes HKCU\Software\Classes\legato at launch
+      (no admin; a command naming a gone exe is replaced, a working other one left), the NSIS uninstall hook removes it. A
+      launch's `legato://` argument (this one or a second, single instance) waits in Rust; `startOpenedLinks` takes it, keeps
+      it only if `isShareCode` (a pasted link's test) and opens the same import dialog. The share page has "Open in
+      Legato" beside "Copy the link for Legato". Untried: the registry write, Windows starting the exe with the link, the
+      uninstall hook, a browser's "open this app?" prompt (needs the installed app: a dev build never registers).
 - [ ] `S-M` Explicit songs hidden everywhere (own playlists, album, artist and search pages), only hidden: a way for
       the user to bring one back when the flag is wrong (the owner's choice 2026-11-11).
 

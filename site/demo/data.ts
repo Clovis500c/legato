@@ -223,6 +223,7 @@ const ANSWERS: Record<string, (args: Record<string, unknown>) => unknown> = {
   search_lyrics: sung,
   // Not started from the taskbar.
   jump_pending: () => null,
+  link_pending: () => null,
   bookmarks: ({ trackId }) => marksOf(trackId),
   add_bookmark: addMark,
   delete_bookmark: dropMark,

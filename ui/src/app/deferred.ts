@@ -24,6 +24,7 @@ export function startDeferred(): () => void {
     ['Streaming overlay', () => import('../features/remote/remote').then((m) => m.startOverlay())],
     ['Phone songs', () => import('../features/add/phoneMusic').then((m) => m.startPhoneMusic())],
     ['Jump List', () => import('../features/home/jumpList').then((m) => m.startJumpList())],
+    ['Opened links', () => import('../features/share/openedLink').then((m) => m.startOpenedLinks())],
     ['Alarm', () => import('../features/player/alarm').then((m) => m.startAlarm())],
     ['Listening rooms', () => import('../features/rooms/rooms').then((m) => m.startRooms())],
   ]

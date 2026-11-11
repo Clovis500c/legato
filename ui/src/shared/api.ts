@@ -214,6 +214,10 @@ export const api = {
   onPushFailed: (cb: (f: PushFailed) => void) => listen<PushFailed>('push-failed', (e) => cb(e.payload)),
   /** A second launch from a taskbar Jump List entry: `jumpPending` has it. */
   onJump: (cb: () => void) => listen('jump', () => cb()),
+  /** A second launch from a `legato://` link (protocol.rs): `linkPending` has it. */
+  onLink: (cb: () => void) => listen('link', () => cb()),
+  /** The `legato://` link this launch or a later one was started from, once (untrusted text). */
+  linkPending: () => invoke<string | null>('link_pending'),
   /** The alarm's time came (alarm.rs); `missed`: the PC was asleep then, not rung. */
   onAlarm: (cb: (missed: boolean) => void) => Promise.all([listen('alarm', () => cb(false)), listen('alarm-missed', () => cb(true))]).then((offs) => () => offs.forEach((f) => f())),
   /** The alarm's next ring (unix ms), or none: kept in Rust, so it rings from the tray too. */
