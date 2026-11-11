@@ -2,7 +2,8 @@
 
 export type ShareCode = { 
 /**
- * `legato://playlist/…`, for messages.
+ * The website's page with the code in its fragment (`share::WEB_LINK`), for messages: any browser shows the
+ * playlist, Legato reads it pasted.
  */
 link: string, 
 /**

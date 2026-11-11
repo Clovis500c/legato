@@ -577,7 +577,7 @@ const vi: Record<string, string> = {
   'QR code of the playlist': 'Mã QR của danh sách phát',
   'Scan it, or send a screenshot: Legato reads the code from the image (drop it on the window).': 'Quét mã, hoặc gửi ảnh chụp màn hình: Legato đọc mã từ ảnh (thả vào cửa sổ).',
   'Too many tracks for a QR code: send the link instead.': 'Quá nhiều bài cho một mã QR: hãy gửi liên kết thay thế.',
-  'Link · paste it anywhere in Legato (Ctrl+V)': 'Liên kết · dán ở bất kỳ đâu trong Legato (Ctrl+V)',
+  'Link · opens in any browser, or paste it anywhere in Legato (Ctrl+V)': 'Liên kết · mở được trong mọi trình duyệt, hoặc dán vào bất kỳ đâu trong Legato (Ctrl+V)',
   'Copied': 'Đã sao chép',
   'Copy': 'Sao chép',
   'The code holds the track list only: YouTube and Apple Music ids, or artist and title. No account, no server.': 'Mã chỉ chứa danh sách bài hát: ID YouTube và Apple Music, hoặc nghệ sĩ và tiêu đề. Không cần tài khoản, không có máy chủ.',

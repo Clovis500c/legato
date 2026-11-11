@@ -40,6 +40,9 @@ pub const LINK: &str = "legato://playlist/";
 /// Links made by Music App (the app's first name): still read.
 const OLD_LINK: &str = "musicapp://playlist/";
 pub const QR: &str = "MA1:";
+/// The website's page that shows a shared playlist in any browser. The code rides in the fragment, which a browser
+/// keeps to itself: GitHub's server never sees the playlist.
+pub const WEB_LINK: &str = "https://clovis500c.github.io/legato/l/#";
 
 impl Item {
     pub fn from_track(t: &Track) -> Self {
@@ -246,6 +249,11 @@ pub fn to_link(s: &Shared) -> String {
     format!("{LINK}{}", URL_SAFE_NO_PAD.encode(encode(s)))
 }
 
+/// For messages to anyone: the website's page with the same code, readable without the app.
+pub fn to_web_link(s: &Shared) -> String {
+    format!("{WEB_LINK}{}", URL_SAFE_NO_PAD.encode(encode(s)))
+}
+
 /// For QR codes: `MA1:` + base45, all in QR alphanumeric mode. Ids only.
 pub fn to_qr_text(s: &Shared) -> String {
     format!("{QR}{}", base45(&encode(&s.compact())))
@@ -268,7 +276,7 @@ pub fn read_qr(path: &Path) -> Result<String> {
 /// Link or QR text. Whitespace inside links tolerated (chat apps wrap lines).
 pub fn parse(text: &str) -> Result<Shared> {
     let text = text.trim();
-    if let Some(rest) = text.strip_prefix(LINK).or_else(|| text.strip_prefix(OLD_LINK)) {
+    if let Some(rest) = text.strip_prefix(LINK).or_else(|| text.strip_prefix(OLD_LINK)).or_else(|| text.strip_prefix(WEB_LINK)) {
         let clean: String = rest.chars().filter(|c| !c.is_whitespace()).collect();
         return decode(&URL_SAFE_NO_PAD.decode(clean).context("Share link is damaged")?);
     }
@@ -297,6 +305,15 @@ mod tests {
                 yt("jNQXAC9IVRw"),
             ],
         }
+    }
+
+    #[test]
+    fn a_web_link_reads_like_the_app_link() {
+        let link = to_web_link(&sample());
+        assert!(link.starts_with("https://clovis500c.github.io/legato/l/#"));
+        assert_eq!(parse(&link).unwrap(), sample());
+        // The website's test reads this very link (site/components/sharelink.test.ts).
+        println!("WEB {link}");
     }
 
     #[test]

@@ -577,7 +577,7 @@ const zh: Record<string, string> = {
   'QR code of the playlist': '歌单二维码',
   'Scan it, or send a screenshot: Legato reads the code from the image (drop it on the window).': '扫描它，或发送截图：Legato 会从图片中读取代码（拖放到窗口上）。',
   'Too many tracks for a QR code: send the link instead.': '歌曲太多，无法生成二维码：请改为发送链接。',
-  'Link · paste it anywhere in Legato (Ctrl+V)': '链接 · 可在 Legato 任意位置粘贴（Ctrl+V）',
+  'Link · opens in any browser, or paste it anywhere in Legato (Ctrl+V)': '链接 · 可在任何浏览器中打开，也可粘贴到 Legato 的任意位置（Ctrl+V）',
   'Copied': '已复制',
   'Copy': '复制',
   'The code holds the track list only: YouTube and Apple Music ids, or artist and title. No account, no server.': '代码中只包含歌曲列表：YouTube 和 Apple Music 的 ID，或艺人和标题。无需账号，无需服务器。',

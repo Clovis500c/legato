@@ -82,8 +82,17 @@ copies, downloads for offline), their accounts, limits and paid plan.
 
 - [ ] 6. `S` A native window on Windows 11: snap layouts on our maximize button (`WM_NCHITTEST` → `HTMAXBUTTON`,
       beside `thumbbar.rs`), Windows' minimize and maximize animations.
-- [ ] 11. `S-M` Share links that open in any browser: a static page on the website reads the playlist from the link's
+- [x] 11. `S-M` Share links that open in any browser: a static page on the website reads the playlist from the link's
       fragment, Open in Legato, Listen on YouTube, Get Legato.
+      2026-11-11: Share's Copy gives `https://clovis500c.github.io/legato/l/#<code>` (`share::WEB_LINK`), read back
+      by the app like its own links; the page (`site/app/(share)/l`, `sharelink.ts`) lists the songs with Listen on
+      YouTube / Apple Music, Get Legato, and reads the bytes Rust wrote (a test on both sides). Fixed on the way:
+      Ctrl+V anywhere didn't know `legato://playlist/` links, only `musicapp://` (`isShareCode`). Decided alone
+      (2026-11-11): no "Open in Legato" button, the `legato://` link type isn't registered with Windows (Features >
+      Low's deep links), so the page copies the app link to paste instead; no covers (they would load from YouTube's
+      host); the page in English only. A link copied before the website is deployed with this page opens a 404
+      until the push. Not tried: the page in a real browser (only `next build`'s export and the decoder's tests), a
+      10 000-song link's length in a chat app.
 - [x] 12. `S-M` A moving cover background (our own WebGL shader): Now Playing, Karaoke, the Cover display, behind Home
       as an option; under 3 % CPU.
       2026-11-11: Settings > Appearance > Flowing background (`backdropFlow`, off: Decided alone, it needs the owner's

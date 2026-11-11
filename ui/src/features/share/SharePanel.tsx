@@ -116,7 +116,7 @@ export function SharePanel({ id, name, onClose }: { id: number; name: string; on
             <p className="rounded-lg border border-line bg-recess px-3.5 py-3 text-xs">{tr('Too many tracks for a QR code: send the link instead.')}</p>
           )}
           <div className="flex flex-col gap-1.5">
-            <span className="kicker">{tr('Link · paste it anywhere in Legato (Ctrl+V)')}</span>
+            <span className="kicker">{tr('Link · opens in any browser, or paste it anywhere in Legato (Ctrl+V)')}</span>
             <div className="flex h-10.5 items-center gap-2.5 rounded-[9px] border border-line bg-raised pr-1.5 pl-3">
               <code className="flex-1 truncate font-mono text-[0.6875rem]">{code.link}</code>
               <Button variant="ghost" className="px-2.5! py-1! text-[0.6875rem]" onClick={copy}>

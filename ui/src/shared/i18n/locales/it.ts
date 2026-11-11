@@ -577,7 +577,7 @@ const it: Record<string, string> = {
   'QR code of the playlist': 'Codice QR della playlist',
   'Scan it, or send a screenshot: Legato reads the code from the image (drop it on the window).': 'Scansionalo o invia uno screenshot: Legato legge il codice dall\'immagine (trascinala sulla finestra).',
   'Too many tracks for a QR code: send the link instead.': 'Troppi brani per un codice QR: invia il link.',
-  'Link · paste it anywhere in Legato (Ctrl+V)': 'Link · incollalo ovunque in Legato (Ctrl+V)',
+  'Link · opens in any browser, or paste it anywhere in Legato (Ctrl+V)': 'Link · si apre in qualsiasi browser, oppure incollalo ovunque in Legato (Ctrl+V)',
   'Copied': 'Copiato',
   'Copy': 'Copia',
   'The code holds the track list only: YouTube and Apple Music ids, or artist and title. No account, no server.': 'Il codice contiene solo l\'elenco dei brani: ID di YouTube e Apple Music, o artista e titolo. Nessun account, nessun server.',

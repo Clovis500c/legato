@@ -828,7 +828,8 @@ async fn play_preview(state: State<'_, AppState>, id: String, country: String) -
 #[serde(rename_all = "camelCase")]
 #[ts(export)]
 struct ShareCode {
-    /// `legato://playlist/…`, for messages.
+    /// The website's page with the code in its fragment (`share::WEB_LINK`), for messages: any browser shows the
+    /// playlist, Legato reads it pasted.
     link: String,
     /// QR modules: size, row-major "0"/"1". None = too big for a QR code.
     qr: Option<(usize, String)>,
@@ -846,7 +847,7 @@ fn shared_playlist(lib: &Library, id: i64) -> CmdResult<Shared> {
 async fn share_playlist(state: State<'_, AppState>, id: i64) -> CmdResult<ShareCode> {
     let shared = shared_playlist(&state.lib(), id)?;
     let qr = share::qr_modules(&share::to_qr_text(&shared)).map(|(size, dark)| (size, dark.iter().map(|&d| if d { '1' } else { '0' }).collect()));
-    Ok(ShareCode { link: share::to_link(&shared), qr, tracks: shared.items.len(), bytes: share::encode(&shared).len() })
+    Ok(ShareCode { link: share::to_web_link(&shared), qr, tracks: shared.items.len(), bytes: share::encode(&shared).len() })
 }
 
 #[derive(Clone, Serialize, ts_rs::TS)]

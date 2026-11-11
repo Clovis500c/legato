@@ -42,6 +42,7 @@ import { region } from '../shared/format'
 import { ContextMenuHost, onMenu } from '../shared/ui/ContextMenu'
 import { DuplicatesHost, EditInfoHost } from '../features/library/dialogs'
 import { linkKind, shouldWelcome } from '../features/welcome/firstRun'
+import { isShareCode } from '../features/share/shareCode'
 import { Logo } from '../shared/ui/Logo'
 import { searchShift } from './searchShift'
 import { useSettings } from './settings'
@@ -311,7 +312,7 @@ export function App() {
       if (e.target instanceof Element && e.target.closest('input, textarea, [contenteditable]')) return
       const text = e.clipboardData?.getData('text').trim() ?? ''
       const kind = linkKind(text)
-      if (/^(musicapp:\/\/|MA1:)/i.test(text)) useStore.setState({ incoming: text })
+      if (isShareCode(text)) useStore.setState({ incoming: text })
       else if (kind === 'spotify') void useStore.getState().importSpotify(text)
       else if (kind === 'deezer' || kind === 'apple') void useStore.getState().importLink(text, kind)
       else if (kind === 'youtube' || kind === 'soundcloud') void useStore.getState().addLink(text)

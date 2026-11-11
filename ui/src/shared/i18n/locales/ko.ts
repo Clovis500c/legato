@@ -577,7 +577,7 @@ const ko: Record<string, string> = {
   'QR code of the playlist': '플레이리스트 QR 코드',
   'Scan it, or send a screenshot: Legato reads the code from the image (drop it on the window).': '스캔하거나 스크린샷을 보내세요: Legato이 이미지에서 코드를 읽습니다 (창에 놓기).',
   'Too many tracks for a QR code: send the link instead.': '곡이 너무 많아 QR 코드로 만들 수 없습니다: 대신 링크를 보내세요.',
-  'Link · paste it anywhere in Legato (Ctrl+V)': '링크 · Legato 어디에나 붙여넣기 (Ctrl+V)',
+  'Link · opens in any browser, or paste it anywhere in Legato (Ctrl+V)': '링크 · 어느 브라우저에서나 열리며, Legato 어디에나 붙여넣을 수 있습니다(Ctrl+V)',
   'Copied': '복사됨',
   'Copy': '복사',
   'The code holds the track list only: YouTube and Apple Music ids, or artist and title. No account, no server.': '코드에는 곡 목록만 들어 있습니다: YouTube 및 Apple Music ID, 또는 아티스트와 제목. 계정도 서버도 필요 없습니다.',

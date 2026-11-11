@@ -43,13 +43,14 @@ const toTheirs = (codes: string[]) =>
   `var t=(${pick.toString()})(s,navigator.languages||[navigator.language],${JSON.stringify(codes)});` +
   `if(t!=='en')location.replace(t+'/'+location.search+location.hash)})()`
 
-/** html and body of a language's page (each language is its own root layout: its own html lang). */
-export function Shell({ code, children }: { code: string; children: ReactNode }) {
+/** html and body of a language's page (each language is its own root layout: its own html lang). `redirect` off: a page
+ *  that exists in English only (a shared playlist's). */
+export function Shell({ code, children, redirect = true }: { code: string; children: ReactNode; redirect?: boolean }) {
   const c = COPIES[code]
   return (
     <html lang={c.lang} className={roboto.variable}>
       <body>
-        {code === 'en' && <script dangerouslySetInnerHTML={{ __html: toTheirs(Object.keys(COPIES)) }} />}
+        {code === 'en' && redirect && <script dangerouslySetInnerHTML={{ __html: toTheirs(Object.keys(COPIES)) }} />}
         <a href="#main" className="fixed -top-12 left-4 z-30 rounded-full bg-ink px-3.5 py-2 text-on-ink focus:top-4">
           {c.skip}
         </a>
