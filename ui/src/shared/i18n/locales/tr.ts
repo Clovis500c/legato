@@ -2345,6 +2345,9 @@ const tr: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Sunucunuz yalnızca olduğu gibi gönderilen parolayı kabul ediyor (onaltılık kodlanır, bu şifreleme değildir). https üzerinden yalnızca sunucunuz okuyabilir. Bu şekilde gönderilsin mi?',
   'Send my password as it is': 'Parolamı olduğu gibi gönder',
   'Hide explicit songs': 'Müstehcen şarkıları gizle',
+  'Covers for new releases': 'Yeni çıkışların kapakları',
+  'Home’s New from your artists shows each release’s cover from Cover Art Archive (coverartarchive.org, then archive.org). Off by default: those hosts then see which releases you look at': 'Ana sayfadaki “Sanatçılarından yeni” her çıkışın kapağını Cover Art Archive’den (coverartarchive.org, sonra archive.org) gösterir. Varsayılan olarak kapalı: bu sunucular hangi çıkışlara baktığını görür',
+  'cover art archive coverartarchive new releases artists pictures images privacy': 'cover art archive coverartarchive yeni çıkışlar sanatçılar görseller gizlilik',
   'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'YouTube Music, bir Spotify dışa aktarımı veya bir Apple Music albümü tarafından müstehcen işaretlenen şarkılar Şarkılar, içe aktarılan çalma listeleri ve mikslerden çıkar. Kitaplığındaki şarkılar bir sonraki eşitlemede işaretlenir',
   'explicit lyrics parental clean children kids family': 'explicit müstehcen şarkı sözü ebeveyn denetimi çocuk aile clean',
 }

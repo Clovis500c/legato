@@ -2345,6 +2345,9 @@ const sv: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Din server tar bara emot lösenordet skickat som det är (hexkodat, vilket inte är kryptering). Över https kan bara din server läsa det. Skicka det så här?',
   'Send my password as it is': 'Skicka mitt lösenord som det är',
   'Hide explicit songs': 'Dölj explicita låtar',
+  'Covers for new releases': 'Omslag för nyheter',
+  'Home’s New from your artists shows each release’s cover from Cover Art Archive (coverartarchive.org, then archive.org). Off by default: those hosts then see which releases you look at': '”Nytt från dina artister” på Hem visar varje utgivnings omslag från Cover Art Archive (coverartarchive.org, sedan archive.org). Av som standard: de värdarna ser då vilka utgivningar du tittar på',
+  'cover art archive coverartarchive new releases artists pictures images privacy': 'cover art archive coverartarchive nyheter artister bilder integritet',
   'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'Låtar som YouTube Music, en Spotify-export eller ett Apple Music-album märker som explicita försvinner från Låtar, importerade spellistor och mixar. Låtar som redan finns i ditt bibliotek märks vid nästa synkning',
   'explicit lyrics parental clean children kids family': 'explicit explicita låttexter föräldrakontroll barn familj clean',
 }

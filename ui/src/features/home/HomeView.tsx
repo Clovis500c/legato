@@ -7,6 +7,7 @@ import { useSettings } from '../../app/settings'
 import { playlistSongs, useStore } from '../../app/store'
 import { api, playlistKey, type HomeItem, type LibraryTrack, type ListRef, type Mix, type NewRelease, type Play as PlayRow, type Shelf, type YtmHome } from '../../shared/api'
 import { remoteArt, trackArt } from '../../shared/art'
+import { releaseCover } from './releaseCover'
 import { locale, msg, tr, trn } from '../../shared/i18n/i18n'
 import { onMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
 import { LedChip, RoundButton, Toggle } from '../../shared/ui/controls'
@@ -444,6 +445,11 @@ export function HomeView() {
   const ytSection = sections.some((x) => x.id === 'youtube' && x.on)
   const yt = useYtmHome(ytOn && ytSection, mood)
   const releases = useNewReleases(sections.some((x) => x.id === 'releases' && x.on))
+  const releaseCovers = useSettings((s) => s.settings.releaseCovers)
+  const coverOf = (id: string) => {
+    const url = releaseCovers ? releaseCover(id) : null
+    return url ? [remoteArt(url)] : []
+  }
   const moods = ytOn && ytSection ? yt.moods.filter((m) => m.title !== 'Podcasts') : []
   // YouTube Music picked, then signed out: everything again.
   const filter: HomeFilter = homeFilter === 'youtube' && !(ytOn && ytSection) ? 'all' : homeFilter
@@ -516,7 +522,7 @@ export function HomeView() {
           {releases.length ? (
             <CardRow>
               {releases.slice(0, ROW).map((r) => (
-                <MediaCard key={r.id} title={r.title} sub={`${r.artist} · ${new Date(`${r.date}T00:00:00`).toLocaleDateString()}`} art={<Cover title={r.title} size={176} />} onOpen={() => useStore.getState().searchFor(`${r.artist} ${r.title}`)} />
+                <MediaCard key={r.id} title={r.title} sub={`${r.artist} · ${new Date(`${r.date}T00:00:00`).toLocaleDateString()}`} art={<Cover title={r.title} art={coverOf(r.id)} size={176} />} onOpen={() => useStore.getState().searchFor(`${r.artist} ${r.title}`)} />
               ))}
             </CardRow>
           ) : (

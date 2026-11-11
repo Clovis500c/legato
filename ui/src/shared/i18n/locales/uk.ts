@@ -2345,6 +2345,9 @@ const uk: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Ваш сервер приймає лише пароль, надісланий як є (у шістнадцятковому записі, це не шифрування). Через https його прочитає лише ваш сервер. Надіслати так?',
   'Send my password as it is': 'Надіслати пароль як є',
   'Hide explicit songs': 'Приховувати пісні з відвертим змістом',
+  'Covers for new releases': 'Обкладинки новинок',
+  'Home’s New from your artists shows each release’s cover from Cover Art Archive (coverartarchive.org, then archive.org). Off by default: those hosts then see which releases you look at': '«Новинки ваших виконавців» на головній показує обкладинку кожного релізу з Cover Art Archive (coverartarchive.org, потім archive.org). За замовчуванням вимкнено: ці сервери побачать, які релізи ви дивитеся',
+  'cover art archive coverartarchive new releases artists pictures images privacy': 'cover art archive coverartarchive новинки виконавці зображення конфіденційність',
   'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'Пісні, які YouTube Music, експорт Spotify або альбом Apple Music позначають як explicit, зникають із Пісень, імпортованих плейлистів і міксів. Пісні, що вже є в медіатеці, позначаються під час наступної синхронізації',
   'explicit lyrics parental clean children kids family': 'explicit відвертий зміст тексти батьківський контроль діти сімʼя clean',
 }

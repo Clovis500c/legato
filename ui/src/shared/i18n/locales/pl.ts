@@ -2345,6 +2345,9 @@ const pl: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Twój serwer przyjmuje tylko hasło wysłane w niezmienionej postaci (zakodowane szesnastkowo, to nie jest szyfrowanie). Przez https odczyta je tylko Twój serwer. Wysłać w ten sposób?',
   'Send my password as it is': 'Wyślij moje hasło w niezmienionej postaci',
   'Hide explicit songs': 'Ukryj utwory z wulgaryzmami',
+  'Covers for new releases': 'Okładki nowości',
+  'Home’s New from your artists shows each release’s cover from Cover Art Archive (coverartarchive.org, then archive.org). Off by default: those hosts then see which releases you look at': '„Nowe od twoich artystów” na Stronie głównej pokazuje okładkę każdego wydania z Cover Art Archive (coverartarchive.org, potem archive.org). Domyślnie wyłączone: te serwery widzą wtedy, jakie wydania oglądasz',
+  'cover art archive coverartarchive new releases artists pictures images privacy': 'cover art archive coverartarchive nowości artyści obrazy prywatność',
   'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'Utwory oznaczone jako explicit przez YouTube Music, eksport Spotify lub album Apple Music znikają z Utworów, zaimportowanych playlist i miksów. Utwory, które już są w bibliotece, zostaną oznaczone przy następnej synchronizacji',
   'explicit lyrics parental clean children kids family': 'explicit wulgaryzmy tekst kontrola rodzicielska dzieci rodzina clean',
 }

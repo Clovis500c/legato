@@ -2345,6 +2345,9 @@ const vi: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Máy chủ của bạn chỉ nhận mật khẩu gửi nguyên văn (mã hóa thập lục phân, không phải mã hóa bảo mật). Qua https chỉ máy chủ của bạn đọc được. Gửi theo cách này?',
   'Send my password as it is': 'Gửi mật khẩu của tôi nguyên văn',
   'Hide explicit songs': 'Ẩn bài hát có nội dung nhạy cảm',
+  'Covers for new releases': 'Bìa bản phát hành mới',
+  'Home’s New from your artists shows each release’s cover from Cover Art Archive (coverartarchive.org, then archive.org). Off by default: those hosts then see which releases you look at': '“Mới từ nghệ sĩ của bạn” ở Trang chủ hiện bìa của từng bản phát hành từ Cover Art Archive (coverartarchive.org, rồi archive.org). Mặc định tắt: các máy chủ đó sẽ thấy bạn xem bản phát hành nào',
+  'cover art archive coverartarchive new releases artists pictures images privacy': 'cover art archive coverartarchive phát hành mới nghệ sĩ hình ảnh quyền riêng tư',
   'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'Bài hát được YouTube Music, bản xuất Spotify hoặc một album Apple Music đánh dấu explicit sẽ rời khỏi Bài hát, danh sách phát đã nhập và các mix. Bài đã có trong thư viện được đánh dấu ở lần đồng bộ tiếp theo',
   'explicit lyrics parental clean children kids family': 'explicit nhạy cảm lời bài hát kiểm soát của phụ huynh trẻ em gia đình clean',
 }

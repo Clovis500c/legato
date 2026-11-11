@@ -50,12 +50,17 @@ classic mini player stay off by default; the web share link stays the default; p
 - [ ] `S` `legato://` registered with Windows from the installed app only (`identity::installed()`), for a real
       "Open in Legato" button on the share page, AND the page's "Copy the link for Legato" kept (the owner's choice
       2026-11-11; the web link stays the default).
-- [ ] `S` Cover Art Archive covers for "New from your artists", as an option off by default, with its website privacy
+- [x] `S` Cover Art Archive covers for "New from your artists", as an option off by default, with its website privacy
       row (one more host; the owner's choice 2026-11-11).
 - [x] `S` The classic mini player keeps its place after a restart (a setting; `pipMode.ts` keeps it for the run only,
       checked in the code: `classicPlace` is a module variable, `f5528ba` does not save it).
       2026-11-11: `f5528ba` kept it for the run only; now settings `pipClassicPlace` (per PC, in `LOCAL_SETTINGS`, saved on
       close like `pipPlace`, refit to a screen by `pip.rs`). Never seen on a screen: Vitest on the sanitizer only.
+      2026-11-11: Settings › Appearance › Covers for new releases (`releaseCovers`, off); on, a card's cover is
+      `coverartarchive.org/release-group/<id>/front-250` through the `art` scheme (allowlist: that path, then archive.org's
+      `/mbid-` files it redirects to), the website's "New from your artists" row says so; Settings › Privacy lists the hosts
+      on its own (`Noted`). A release group without a cover shows the letter cover. Untried against the real archive:
+      the redirect's hosts and file names are from its docs / memory, mock-free (the allowlist is tested on shapes only).
 - [ ] `S-M` Explicit songs hidden everywhere (own playlists, album, artist and search pages), only hidden: a way for
       the user to bring one back when the flag is wrong (the owner's choice 2026-11-11).
 

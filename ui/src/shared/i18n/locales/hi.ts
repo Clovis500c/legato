@@ -2345,6 +2345,9 @@ const hi: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'आपका सर्वर पासवर्ड केवल जैसा है वैसा ही भेजने पर स्वीकार करता है (हेक्स में एन्कोड, जो एन्क्रिप्शन नहीं है)। https पर केवल आपका सर्वर इसे पढ़ सकता है। इसे ऐसे भेजें?',
   'Send my password as it is': 'मेरा पासवर्ड जैसा है वैसा भेजें',
   'Hide explicit songs': 'स्पष्ट (explicit) गाने छिपाएँ',
+  'Covers for new releases': 'नई रिलीज़ के कवर',
+  'Home’s New from your artists shows each release’s cover from Cover Art Archive (coverartarchive.org, then archive.org). Off by default: those hosts then see which releases you look at': 'होम का «आपके कलाकारों से नया» हर रिलीज़ का कवर Cover Art Archive (coverartarchive.org, फिर archive.org) से दिखाता है। डिफ़ॉल्ट रूप से बंद: तब वे होस्ट देखते हैं कि आप कौन सी रिलीज़ देखते हैं',
+  'cover art archive coverartarchive new releases artists pictures images privacy': 'cover art archive coverartarchive नई रिलीज़ कलाकार चित्र गोपनीयता',
   'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'YouTube Music, Spotify एक्सपोर्ट या Apple Music एल्बम द्वारा explicit चिह्नित गाने गानों, आयात की गई प्लेलिस्ट और मिक्स से हट जाते हैं। आपकी लाइब्रेरी में पहले से मौजूद गाने अगले सिंक पर चिह्नित होते हैं',
   'explicit lyrics parental clean children kids family': 'explicit स्पष्ट बोल अभिभावक नियंत्रण बच्चे परिवार clean',
 }

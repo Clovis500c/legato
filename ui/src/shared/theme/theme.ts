@@ -356,6 +356,8 @@ export interface Settings {
   sidebarCounts: boolean
   /** Songs a source marked explicit left out of Songs, playlists and mixes. Off: a parent's choice, not a default. */
   hideExplicit: boolean
+  /** Cover Art Archive covers on Home's "New from your artists" (a new host: archive.org). Off by default, for privacy. */
+  releaseCovers: boolean
   /** Covers in track lists. */
   listCovers: boolean
   /** Songs: artist and album panes above the list (MusicBee's column browser). Off by default: the list alone. */
@@ -562,6 +564,7 @@ export const DEFAULTS: Settings = {
   motion: true,
   sidebarCounts: true,
   hideExplicit: false,
+  releaseCovers: false,
   // Covers on every song row, compact too (user's pick 2026-10-29, over the mockup's coverless compact rows).
   listCovers: true,
   columnBrowser: false,
@@ -810,6 +813,7 @@ export function sanitize(raw: unknown): Settings {
     motion: typeof r.motion === 'boolean' ? r.motion : DEFAULTS.motion,
     sidebarCounts: typeof r.sidebarCounts === 'boolean' ? r.sidebarCounts : DEFAULTS.sidebarCounts,
     hideExplicit: r.hideExplicit === true,
+    releaseCovers: r.releaseCovers === true,
     listCovers: typeof r.listCovers === 'boolean' ? r.listCovers : DEFAULTS.listCovers,
     columnBrowser: typeof r.columnBrowser === 'boolean' ? r.columnBrowser : DEFAULTS.columnBrowser,
     clickToPlay: pick(r.clickToPlay, ['single', 'double'] as const, DEFAULTS.clickToPlay),

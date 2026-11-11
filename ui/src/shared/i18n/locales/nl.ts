@@ -2345,6 +2345,9 @@ const nl: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Je server accepteert alleen het wachtwoord zoals het is (hexadecimaal gecodeerd, dat is geen versleuteling). Via https kan alleen je server het lezen. Zo versturen?',
   'Send my password as it is': 'Mijn wachtwoord verzenden zoals het is',
   'Hide explicit songs': 'Expliciete nummers verbergen',
+  'Covers for new releases': 'Covers van nieuwe uitgaven',
+  'Home’s New from your artists shows each release’s cover from Cover Art Archive (coverartarchive.org, then archive.org). Off by default: those hosts then see which releases you look at': '„Nieuw van je artiesten” op Start toont de cover van elke uitgave van Cover Art Archive (coverartarchive.org, daarna archive.org). Standaard uit: die hosts zien dan welke uitgaven je bekijkt',
+  'cover art archive coverartarchive new releases artists pictures images privacy': 'cover art archive coverartarchive nieuwe uitgaven artiesten afbeeldingen privacy',
   'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'Nummers die YouTube Music, een Spotify-export of een Apple Music-album als expliciet markeert, verdwijnen uit Nummers, geïmporteerde playlists en mixen. Nummers die al in je bibliotheek staan, worden bij hun volgende synchronisatie gemarkeerd',
   'explicit lyrics parental clean children kids family': 'explicit expliciet songteksten ouderlijk toezicht kinderen gezin clean',
 }

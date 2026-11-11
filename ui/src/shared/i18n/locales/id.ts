@@ -2345,6 +2345,9 @@ const id: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Server Anda hanya menerima kata sandi yang dikirim apa adanya (dikodekan heksadesimal, bukan enkripsi). Lewat https hanya server Anda yang bisa membacanya. Kirim dengan cara ini?',
   'Send my password as it is': 'Kirim kata sandi saya apa adanya',
   'Hide explicit songs': 'Sembunyikan lagu eksplisit',
+  'Covers for new releases': 'Sampul rilisan baru',
+  'Home’s New from your artists shows each release’s cover from Cover Art Archive (coverartarchive.org, then archive.org). Off by default: those hosts then see which releases you look at': '«Baru dari artis Anda» di Beranda menampilkan sampul tiap rilisan dari Cover Art Archive (coverartarchive.org, lalu archive.org). Nonaktif secara bawaan: host tersebut akan melihat rilisan mana yang Anda lihat',
+  'cover art archive coverartarchive new releases artists pictures images privacy': 'cover art archive coverartarchive rilisan baru artis gambar privasi',
   'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'Lagu yang ditandai eksplisit oleh YouTube Music, ekspor Spotify, atau album Apple Music hilang dari Lagu, playlist impor, dan mix. Lagu yang sudah ada di koleksimu ditandai saat sinkronisasi berikutnya',
   'explicit lyrics parental clean children kids family': 'explicit eksplisit lirik kontrol orang tua anak keluarga clean',
 }

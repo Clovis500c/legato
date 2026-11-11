@@ -2345,6 +2345,9 @@ const zh: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': '你的服务器只接受原样发送的密码（十六进制编码，并非加密）。通过 https 只有你的服务器能读到。要这样发送吗？',
   'Send my password as it is': '原样发送我的密码',
   'Hide explicit songs': '隐藏含露骨内容的歌曲',
+  'Covers for new releases': '新发行的封面',
+  'Home’s New from your artists shows each release’s cover from Cover Art Archive (coverartarchive.org, then archive.org). Off by default: those hosts then see which releases you look at': '主页的“你的艺人的新作”会从 Cover Art Archive（coverartarchive.org，再到 archive.org）显示每个发行的封面。默认关闭：这些主机会看到你查看了哪些发行',
+  'cover art archive coverartarchive new releases artists pictures images privacy': 'cover art archive coverartarchive 新发行 艺人 图片 隐私',
   'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'YouTube Music、Spotify 导出或 Apple Music 专辑标为 Explicit 的歌曲将从歌曲、导入的播放列表和混音中移除。已在资料库中的歌曲会在下次同步时标记',
   'explicit lyrics parental clean children kids family': 'explicit 露骨 歌词 家长控制 儿童 家庭 clean',
 }
