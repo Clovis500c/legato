@@ -16,6 +16,12 @@ export function watching(video?: string): boolean {
   return v !== null && (video === undefined || v === video)
 }
 
+/** The embed may start `video` (not restored paused): never while its watch page plays it. The store opens the page
+ *  before React hands the embed the video (2026-11-12: a refused video played from both, the same song twice). */
+export function embedStarts(video: string, hold: boolean): boolean {
+  return !hold && !watching(video)
+}
+
 /** Embed command (postMessage protocol names) → watch page command. Others have no meaning there. */
 export function watchCommand(func: string, args: unknown[]): WatchCmd | null {
   const n = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : 0)

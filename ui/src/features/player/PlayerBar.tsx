@@ -26,7 +26,7 @@ import { DOWN_MS, retryWait } from './ytDown'
 import { useCoverFull } from './coverFull'
 import { useKaraoke } from './karaokeMode'
 import { useVizFull } from './vizFull'
-import { closeWatch, cropWatch, placeWatch, sendWatch, useWatch, watchUpdate } from './watch'
+import { closeWatch, cropWatch, embedStarts, placeWatch, sendWatch, useWatch, watching, watchUpdate } from './watch'
 import { frameAround } from '../../shared/artbox'
 import { bindLiveFrame, sendLive } from './live'
 import { useLiveSync } from './liveSync'
@@ -100,7 +100,7 @@ function YouTubeFrame({ videoId, tail = false, idle = false, cue = false }: { vi
   }
   // First video and options at mount: changing src later would reload the embed.
   // hold = restored paused (after an update): cued, not playing.
-  const [src] = useState(() => ({ first: videoId, controls: useSettings.getState().settings.youtubeControls, start: usePlayer.getState().startAt / 1000, autoplay: !tail && !usePlayer.getState().hold }))
+  const [src] = useState(() => ({ first: videoId, controls: useSettings.getState().settings.youtubeControls, start: usePlayer.getState().startAt / 1000, autoplay: !tail && embedStarts(videoId, usePlayer.getState().hold) }))
   const shown = useRef(videoId)
   const captionsOff = useRef<string | null>(null)
   const isTail = useRef(tail)
@@ -127,6 +127,8 @@ function YouTubeFrame({ videoId, tail = false, idle = false, cue = false }: { vi
         captionsOff.current = shown.current
         for (const m of ['captions', 'cc']) ytPost(frame.current, 'command', 'unloadModule', [m])
       }
+      // Started anyway (YouTube ignores a pause while a video starts): its watch page plays it, silenced here.
+      if (u.state === 1 && watching(shown.current)) return ytPost(frame.current, 'command', 'pauseVideo')
       onYoutube(u)
     }
     window.addEventListener('message', onMessage)
@@ -199,7 +201,7 @@ function YouTubeFrame({ videoId, tail = false, idle = false, cue = false }: { vi
     usePlayer.getState().applyVolume(true)
     sendLive(undefined, true)
     // Restored paused (hold): cued, as the first video of a new embed is.
-    ytPost(frame.current, 'command', usePlayer.getState().hold ? 'cueVideoById' : 'loadVideoById', [videoId, usePlayer.getState().startAt / 1000])
+    ytPost(frame.current, 'command', embedStarts(videoId, usePlayer.getState().hold) ? 'loadVideoById' : 'cueVideoById', [videoId, usePlayer.getState().startAt / 1000])
   }, [videoId, tail])
 
   // Our words over the browser's error page, never its address; nothing when nobody sees the video.
@@ -234,7 +236,7 @@ function YouTubeFrame({ videoId, tail = false, idle = false, cue = false }: { vi
         // Skipped ahead while the embed loaded: catch up. An embed made to cue the next song waits.
         if (!tail && shown.current !== videoId) {
           shown.current = videoId
-          ytPost(e.currentTarget, 'command', 'loadVideoById', [videoId, usePlayer.getState().startAt / 1000])
+          ytPost(e.currentTarget, 'command', embedStarts(videoId, usePlayer.getState().hold) ? 'loadVideoById' : 'cueVideoById', [videoId, usePlayer.getState().startAt / 1000])
         }
         usePlayer.getState().applyVolume(true)
         sendLive(undefined, true)

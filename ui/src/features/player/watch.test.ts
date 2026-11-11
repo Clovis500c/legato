@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { WatchReport } from '../../shared/api'
-import { physical, watchCommand, watchUpdate } from './watch'
+import { embedStarts, physical, useWatch, watchCommand, watchUpdate } from './watch'
 
 /** What the shell sends: every field there, null when the page said nothing. */
 const report = (r: Partial<WatchReport>): WatchReport => ({ state: null, time: null, duration: null, videoId: null, error: null, reason: null, click: false, ready: false, cropped: false, ...r })
@@ -23,6 +23,16 @@ describe('watch page (blocked embeds)', () => {
     expect(watchUpdate(report({ error: 'CONSENT' }), 'abcdefghijk')).toEqual({ unplayable: expect.stringContaining('cookie choice') })
     expect(watchUpdate(report({ error: 'UNPLAYABLE', reason: 'Not available in your country' }), 'abcdefghijk')).toEqual({ unplayable: 'Not available in your country', lost: true })
     expect(watchUpdate(report({ error: 'LOGIN_REQUIRED' }), 'abcdefghijk')).toEqual({ unplayable: 'LOGIN_REQUIRED', lost: true })
+  })
+
+  it('never starts a video in the embed while its watch page plays it', () => {
+    expect(embedStarts('abcdefghijk', false)).toBe(true)
+    expect(embedStarts('abcdefghijk', true)).toBe(false)
+    // Opened as the song is set, before the embed gets it: the embed only cues it, else both sound.
+    useWatch.setState({ video: 'abcdefghijk' })
+    expect(embedStarts('abcdefghijk', false)).toBe(false)
+    expect(embedStarts('otherotherx', false)).toBe(true)
+    useWatch.setState({ video: null })
   })
 
   it('places the webview in physical pixels', () => {
