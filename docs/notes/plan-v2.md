@@ -198,8 +198,16 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 **Medium**
 - [ ] `S` Community: GitHub Discussions (on since 2026-11-07, with the "good first issue" label) linked from About, a
       showcase of themes on the website.
-- [ ] `S-M` Discovery: new releases of your artists from MusicBrainz only (the owner's choice 2026-11-07, no Reddit),
+- [x] `S-M` Discovery: new releases of your artists from MusicBrainz only (the owner's choice 2026-11-07, no Reddit),
       shown as cards to play from YouTube; its host in the website's privacy rows.
+      2026-11-11: Home's section "New from your artists" (`releases`), off until turned on in Customize Home
+      (Decided alone: it sends artists' names to a new host). The ten artists listened to most, one request each a
+      second apart, once a day, the last 60 days, kept in this PC's library (`connectors/musicbrainz.rs`,
+      `core/discover.rs`, `src-tauri/discover.rs`); a card opens the app's search on "artist title". The privacy row
+      is on the website. Not done: covers (Cover Art Archive is one more host), a purpose of its own in Settings >
+      Privacy (musicbrainz.org shows under Other), artists told apart by id (same names: the credit's name must
+      match, no more). Never tried against the real service: the answer's shape and the date range in the query come
+      from their docs (mock tests only).
 - [ ] `S-M` Watch-page player: hide YouTube's own playlist panel (its RDMM "My Mix") and stop its autoplay into a Mix
       (`crates/shield/src/watch.js`).
       Left by the autopilot (2026-11-05): `watch.js` already hides the column the panel sits in (`#secondary`, `#below`)

@@ -11,6 +11,7 @@ pub mod lastfm;
 pub mod linklist;
 pub mod listenbrainz;
 pub mod lrclib;
+pub mod musicbrainz;
 pub mod nearby;
 pub mod oauth;
 pub mod plex;

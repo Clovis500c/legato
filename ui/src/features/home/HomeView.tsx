@@ -1,11 +1,11 @@
-import { ArrowDown, ArrowRight, ArrowUp, ArrowUUpLeft, ChartBar, ClockCounterClockwise, DotsSixVertical, EyeSlash, ListPlus, MusicNotes, Play, Playlist, PlusCircle, Shuffle, SlidersHorizontal, Sparkle, YoutubeLogo } from '@phosphor-icons/react'
+import { ArrowDown, ArrowRight, ArrowUp, ArrowUUpLeft, CalendarStar, ChartBar, ClockCounterClockwise, DotsSixVertical, EyeSlash, ListPlus, MusicNotes, Play, Playlist, PlusCircle, Shuffle, SlidersHorizontal, Sparkle, YoutubeLogo } from '@phosphor-icons/react'
 import { artistName } from '../../shared/artistName'
 import { useShallow } from 'zustand/react/shallow'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { playlistSongs, useStore } from '../../app/store'
-import { api, playlistKey, type HomeItem, type LibraryTrack, type ListRef, type Mix, type Play as PlayRow, type Shelf, type YtmHome } from '../../shared/api'
+import { api, playlistKey, type HomeItem, type LibraryTrack, type ListRef, type Mix, type NewRelease, type Play as PlayRow, type Shelf, type YtmHome } from '../../shared/api'
 import { remoteArt, trackArt } from '../../shared/art'
 import { locale, msg, tr, trn } from '../../shared/i18n/i18n'
 import { onMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
@@ -307,6 +307,20 @@ function useYtmHome(on: boolean, mood: string | null) {
   return { home: homes[key], moods: homes['']?.moods ?? [], error }
 }
 
+/** New from your artists: MusicBrainz asked once a day by Rust (`new_releases`), only while the section is on. */
+function useNewReleases(on: boolean) {
+  const [list, setList] = useState<NewRelease[]>()
+  useEffect(() => {
+    if (!on) return
+    let live = true
+    api.newReleases().then((l) => live && setList(l), () => {})
+    return () => {
+      live = false
+    }
+  }, [on])
+  return on ? list : undefined
+}
+
 /** Recommendations of the connected services. Spotify closed its recommendations API to new apps (Nov 2024). */
 function ServiceShelves({ home, error, menu }: { home?: YtmHome; error?: string; menu: () => MenuEntry[] }) {
   if (error) return <p className="text-xs text-ink-3">{tr('YouTube Music recommendations unavailable: {error}', { error })}</p>
@@ -331,6 +345,7 @@ const sectionLabels: Record<HomeSectionId, string> = {
   recent: msg('Recently played'),
   playlists: msg('Your playlists'),
   youtube: msg('YouTube Music recommendations'),
+  releases: msg('New from your artists'),
   added: msg('Recently added'),
 }
 
@@ -341,6 +356,7 @@ const sectionHints: Record<HomeSectionId, string> = {
   recent: msg('What you played lately'),
   playlists: msg('Your own and imported playlists'),
   youtube: msg('Shelves from YouTube Music, when signed in'),
+  releases: msg('Albums and singles of the last two months by the artists you play most; their names go to MusicBrainz'),
   added: msg('Newest songs in your library'),
 }
 
@@ -351,6 +367,7 @@ const sectionIcons: Record<HomeSectionId, ReactNode> = {
   recent: <ClockCounterClockwise size={18} />,
   playlists: <Playlist size={18} />,
   youtube: <YoutubeLogo size={18} />,
+  releases: <CalendarStar size={18} />,
   added: <PlusCircle size={18} />,
 }
 
@@ -426,6 +443,7 @@ export function HomeView() {
   const empty = !tracks.length && !playlists.length
   const ytSection = sections.some((x) => x.id === 'youtube' && x.on)
   const yt = useYtmHome(ytOn && ytSection, mood)
+  const releases = useNewReleases(sections.some((x) => x.id === 'releases' && x.on))
   const moods = ytOn && ytSection ? yt.moods.filter((m) => m.title !== 'Podcasts') : []
   // YouTube Music picked, then signed out: everything again.
   const filter: HomeFilter = homeFilter === 'youtube' && !(ytOn && ytSection) ? 'all' : homeFilter
@@ -489,6 +507,21 @@ export function HomeView() {
               <MediaCard key={p.id} title={p.name} sub={trn(p.trackCount, '{n} song', '{n} songs')} art={<PlaylistCover p={p} size={176} big />} onOpen={() => go({ name: 'playlist', id: p.id })} onPlay={() => void playlistSongs(p.id).then((t) => usePlayer.getState().playTracks(t, 0))} menu={() => playlistMenu(p)} />
             ))}
           </CardRow>
+        </Section>
+      ),
+    // A card looks the release up in the search (YouTube plays it): no search of ours until the user asks.
+    releases: () =>
+      releases && (
+        <Section title={tr('New from your artists')} sub={tr(sectionHints.releases)} menu={menuFor('releases')}>
+          {releases.length ? (
+            <CardRow>
+              {releases.slice(0, ROW).map((r) => (
+                <MediaCard key={r.id} title={r.title} sub={`${r.artist} · ${new Date(`${r.date}T00:00:00`).toLocaleDateString()}`} art={<Cover title={r.title} size={176} />} onOpen={() => useStore.getState().searchFor(`${r.artist} ${r.title}`)} />
+              ))}
+            </CardRow>
+          ) : (
+            <p className="text-xs text-ink-3">{tr('Nothing new in the last two months.')}</p>
+          )}
         </Section>
       ),
     youtube: () => ytOn && <ServiceShelves home={yt.home} error={yt.error} menu={menuFor('youtube')} />,

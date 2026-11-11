@@ -4,6 +4,7 @@ pub mod cache;
 pub mod cover;
 pub mod devices;
 pub mod diag;
+pub mod discover;
 pub mod local;
 pub mod lyrics;
 pub mod history;

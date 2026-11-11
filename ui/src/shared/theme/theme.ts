@@ -76,9 +76,10 @@ const SORTS: readonly Sort[] = ['manual', 'added-new', 'added-old', 'most-played
 const GROUP_SORTS: readonly GroupSort[] = ['name', 'name-desc', 'artist', 'songs', 'albums', 'added-new', 'added-old', 'most-played', 'recently-played', 'length', 'random']
 
 /** Home's sections, default order. */
-export const HOME_SECTIONS = ['quick', 'week', 'mixes', 'recent', 'playlists', 'youtube', 'added'] as const
-/** Off until turned on: the sidebar lists your playlists already (user's pick 2026-10-23). */
-const HOME_OFF: readonly HomeSectionId[] = ['playlists']
+export const HOME_SECTIONS = ['quick', 'week', 'mixes', 'recent', 'playlists', 'youtube', 'releases', 'added'] as const
+/** Off until turned on: the sidebar lists your playlists already (user's pick 2026-10-23); `releases` sends your top
+ *  artists' names to MusicBrainz, so it waits for the user's own switch. */
+const HOME_OFF: readonly HomeSectionId[] = ['playlists', 'releases']
 export const PLAYLIST_ORDERS = ['custom', 'name', 'songs', 'opened'] as const
 export type PlaylistOrder = (typeof PLAYLIST_ORDERS)[number]
 /** Home's chips: everything, your library only, YouTube Music only (remembered). */
