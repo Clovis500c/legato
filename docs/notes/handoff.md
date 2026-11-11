@@ -11,7 +11,8 @@ on `platforms`, not pushed.
 - **platforms** = master (`80310d3`, pushed) + the autonomous run of 2026-11-11, local only
   (`git log origin/master..platforms`): the artists' round pictures on the big title, Up next on Now Playing's
   backdrop, the flowing background (a setting, off), share links that open in a browser (the website's `/l` page:
-  links copied by this build 404 until the website is deployed). None of it was seen on a screen: the run's
+  links copied by this build 404 until the website is deployed), the fade editor's marks in normal case, Home's
+  "New from your artists" from MusicBrainz (a section, off). None of it was seen on a screen: the run's
   report, `docs/notes/report-2026-11-11.md` (untracked), lists what to try and the questions for the owner.
   Pushes go `platforms:master`, only on the owner's word; docs only: `[skip release]` in the last commit's first line.
 - **winget**: microsoft/winget-pkgs#474341 (Stable 1.1.681): CLA signed, Microsoft's validation passed, waiting for a
