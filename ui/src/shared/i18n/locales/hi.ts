@@ -2340,6 +2340,9 @@ const hi: Record<string, string> = {
   'The song’s own file': 'गाने की अपनी फ़ाइल',
   '{n} match': '{n} मेल',
   'Let Legato choose': 'Legato को चुनने दें',
+  'Your music server only takes the password sent as it is: use its https:// address, then confirm': 'आपका म्यूज़िक सर्वर पासवर्ड केवल जैसा है वैसा ही भेजने पर स्वीकार करता है: उसके https:// पते का उपयोग करें, फिर पुष्टि करें',
+  'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'आपका सर्वर पासवर्ड केवल जैसा है वैसा ही भेजने पर स्वीकार करता है (हेक्स में एन्कोड, जो एन्क्रिप्शन नहीं है)। https पर केवल आपका सर्वर इसे पढ़ सकता है। इसे ऐसे भेजें?',
+  'Send my password as it is': 'मेरा पासवर्ड जैसा है वैसा भेजें',
 }
 
 export default hi

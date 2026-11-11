@@ -198,7 +198,7 @@ pub async fn server_exposure(address: String) -> CmdResult<Option<Exposure>> {
 /// password not kept), then the account is kept. Plex signs in on its own page (`plex.rs`). The first sync is the
 /// interface's next call (it shows its progress).
 #[tauri::command]
-pub async fn server_sign_in(state: State<'_, AppState>, kind: Kind, address: String, user: String, password: String) -> CmdResult<ServerStatus> {
+pub async fn server_sign_in(state: State<'_, AppState>, kind: Kind, address: String, user: String, password: String, plain: bool) -> CmdResult<ServerStatus> {
     // Trust boundary: typed text.
     let address = server::normalize(&address).map_err(String::from)?;
     let user = user.trim().to_string();
@@ -207,7 +207,8 @@ pub async fn server_sign_in(state: State<'_, AppState>, kind: Kind, address: Str
     }
     let account = match kind {
         Kind::Subsonic => {
-            let a = Account { kind, address, user, password, ..Default::default() };
+            // The password as it is (hex-encoded): after the interface's warning, https only.
+            let a = Account { kind, address, user, password, plain_password: plain, ..Default::default() };
             Subsonic::from_account(&a).ping().await.map_err(err)?;
             a
         }

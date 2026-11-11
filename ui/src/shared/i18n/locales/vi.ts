@@ -2340,6 +2340,9 @@ const vi: Record<string, string> = {
   'The song’s own file': 'Tệp của chính bài hát',
   '{n} match': 'Khớp {n}',
   'Let Legato choose': 'Để Legato chọn',
+  'Your music server only takes the password sent as it is: use its https:// address, then confirm': 'Máy chủ nhạc của bạn chỉ nhận mật khẩu gửi nguyên văn: hãy dùng địa chỉ https:// của nó rồi xác nhận',
+  'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Máy chủ của bạn chỉ nhận mật khẩu gửi nguyên văn (mã hóa thập lục phân, không phải mã hóa bảo mật). Qua https chỉ máy chủ của bạn đọc được. Gửi theo cách này?',
+  'Send my password as it is': 'Gửi mật khẩu của tôi nguyên văn',
 }
 
 export default vi

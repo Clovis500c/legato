@@ -2340,6 +2340,9 @@ const id: Record<string, string> = {
   'The song’s own file': 'File lagu itu sendiri',
   '{n} match': 'Cocok {n}',
   'Let Legato choose': 'Biarkan Legato memilih',
+  'Your music server only takes the password sent as it is: use its https:// address, then confirm': 'Server musik Anda hanya menerima kata sandi yang dikirim apa adanya: pakai alamat https://-nya, lalu konfirmasi',
+  'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Server Anda hanya menerima kata sandi yang dikirim apa adanya (dikodekan heksadesimal, bukan enkripsi). Lewat https hanya server Anda yang bisa membacanya. Kirim dengan cara ini?',
+  'Send my password as it is': 'Kirim kata sandi saya apa adanya',
 }
 
 export default id

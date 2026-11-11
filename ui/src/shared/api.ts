@@ -73,7 +73,7 @@ export const api = {
   /** How an address as typed would be reached (null = not an address yet): the plain-http warning. */
   serverExposure: (address: string) => invoke<ServerExposure | null>('server_exposure', { address }),
   /** Checked with the server (Subsonic's `ping`, Jellyfin's token), then kept in the keychain. Plex: `plexSignIn`. */
-  serverSignIn: (kind: ServerKind, address: string, user: string, password: string) => invoke<ServerStatus>('server_sign_in', { kind, address, user, password }),
+  serverSignIn: (kind: ServerKind, address: string, user: string, password: string, plain = false) => invoke<ServerStatus>('server_sign_in', { kind, address, user, password, plain }),
   serverSignOut: (key: string) => invoke<void>('server_sign_out', { key }),
   serverSync: (key: string) => invoke<ServerSync>('server_sync', { key }),
   /** Like = star on the server, unlike = unstar. `id` = the song's server id. */

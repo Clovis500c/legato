@@ -2340,6 +2340,9 @@ const ko: Record<string, string> = {
   'The song’s own file': '곡 자체 파일',
   '{n} match': '{n} 일치',
   'Let Legato choose': 'Legato가 고르기',
+  'Your music server only takes the password sent as it is: use its https:// address, then confirm': '음악 서버가 비밀번호를 그대로 보내는 방식만 받습니다: https:// 주소를 사용한 뒤 확인하세요',
+  'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': '서버가 비밀번호를 그대로 보내는 방식만 받습니다(16진수로 인코딩될 뿐 암호화는 아닙니다). https에서는 서버만 읽을 수 있습니다. 이렇게 보낼까요?',
+  'Send my password as it is': '내 비밀번호를 그대로 보내기',
 }
 
 export default ko

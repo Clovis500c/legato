@@ -35,6 +35,9 @@ pub struct Account {
     /// Jellyfin's access token, Plex's server token.
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub token: String,
+    /// Subsonic: the server refused token auth (code 41), the password goes hex-encoded (`p=enc:`), https only.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub plain_password: bool,
     /// Jellyfin's user id.
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub user_id: String,
@@ -81,7 +84,7 @@ impl Account {
         let short = |s: &str, max: usize| !s.is_empty() && s.len() <= max;
         short(&self.user, 200)
             && match self.kind {
-                Kind::Subsonic => short(&self.password, 500),
+                Kind::Subsonic => short(&self.password, 500) && (!self.plain_password || self.address.to_ascii_lowercase().starts_with("https://")),
                 Kind::Jellyfin => short(&self.token, 500) && short(&self.user_id, 200) && short(&self.device, 200),
                 Kind::Plex => short(&self.token, 500) && short(&self.server_id, 200) && short(&self.device, 200) && self.connections.len() + self.relays.len() <= 16 && (self.connections.contains(&self.address) || self.relays.contains(&self.address)),
             }

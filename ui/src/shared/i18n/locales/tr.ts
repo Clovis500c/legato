@@ -2340,6 +2340,9 @@ const tr: Record<string, string> = {
   'The song’s own file': 'Şarkının kendi dosyası',
   '{n} match': '{n} eşleşme',
   'Let Legato choose': 'Legato seçsin',
+  'Your music server only takes the password sent as it is: use its https:// address, then confirm': 'Müzik sunucunuz yalnızca olduğu gibi gönderilen parolayı kabul ediyor: https:// adresini kullanın, sonra onaylayın',
+  'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Sunucunuz yalnızca olduğu gibi gönderilen parolayı kabul ediyor (onaltılık kodlanır, bu şifreleme değildir). https üzerinden yalnızca sunucunuz okuyabilir. Bu şekilde gönderilsin mi?',
+  'Send my password as it is': 'Parolamı olduğu gibi gönder',
 }
 
 export default tr

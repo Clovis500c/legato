@@ -26,6 +26,7 @@ const KINDS: [RegExp, string][] = [
   [/^Your music server sent a format Legato can['’]t play/, msg('Your music server sent a format Legato can’t play')],
   [/^Your music server speaks a newer API/, msg('Your music server speaks a newer API than Legato knows')],
   [/^Your music server doesn['’]t let this user do that/, msg('Your music server doesn’t let this user do that')],
+  [/^Your music server only takes the password sent as it is/, msg('Your music server only takes the password sent as it is: use its https:// address, then confirm')],
   [/^Your music server doesn['’]t take this kind of sign-in/, msg('Your music server doesn’t take this kind of sign-in for this user')],
   // Sign in with Plex (connectors plex.rs, src-tauri plex.rs).
   [/^Plex['’]s sign-in doesn['’]t answer/, msg('Plex’s sign-in doesn’t answer: check your internet connection, then try again')],

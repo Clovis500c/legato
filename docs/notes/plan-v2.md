@@ -206,9 +206,14 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
         removal reads the server's list first (it removes by position). Left: `createPlaylist` (a playlist made
         here stays here), renames and order, Jellyfin and Plex (read-only, said in words). Untried on a real
         server: mock tests only.
-      - [ ] `S` Servers that refuse token auth (Subsonic code 41: LDAP users, some Ampache / Nextcloud Music setups): the
+      - [x] `S` Servers that refuse token auth (Subsonic code 41: LDAP users, some Ampache / Nextcloud Music setups): the
         password sent hex-encoded (`p=enc:`) after a warning, https only. Today the sign-in says "doesn't take this kind
         of sign-in" (translated since part 2, with the three other messages the 2026-11-06 review found in English).
+        2026-11-11: code 41 now says the server only takes the password as it is; on an https address the form shows the
+        warning and a "Send my password as it is" button, the account kept with `plain_password` (`p=enc:<hex>`, refused on
+        http everywhere). Code 42 keeps its old message. Decided alone (2026-11-11): a button after the first failed
+        sign-in rather than a checkbox up front (nothing sent as it is unless the server asked). Untried on a real server:
+        mock tests only.
 - [ ] `L` macOS and Linux builds (media panel, detector, tray per OS).
 - [ ] `L+` Mobile version, well optimised, the Rust code reused (the owner's ask 2026-11-02): Tauri 2's Android target
       with the same crates and `ui/`, Android first, iPhone after. Spec, seven phases, what stays desktop-only and the

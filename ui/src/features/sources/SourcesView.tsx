@@ -575,8 +575,11 @@ function ServerRow() {
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState<string | null>(null)
   const [exposure, setExposure] = useState<ServerExposure | null>(null)
+  /** The server refused token sign-in (code 41) on an https address: the user may send the password as it is. */
+  const [asPlain, setAsPlain] = useState(false)
   useEffect(() => void refresh(), [refresh])
   useEffect(() => {
+    setAsPlain(false)
     if (!address.trim()) return setExposure(null)
     const t = setTimeout(() => void api.serverExposure(address).then(setExposure, () => setExposure(null)), 250)
     return () => clearTimeout(t)
@@ -598,15 +601,17 @@ function ServerRow() {
       void refresh()
     }
   }
-  const signIn = async () => {
+  const signIn = async (plain = false) => {
     setBusy(tr('Checking with your server…'))
     try {
-      const s = await api.serverSignIn(kind, address, user, password)
+      const s = await api.serverSignIn(kind, address, user, password, plain)
       setBusy(null)
       await signedIn(s)
     } catch (e) {
-      useStore.setState({ error: String(e) })
       setBusy(null)
+      // Code 41 on https: asked here, with its warning, instead of an error toast.
+      if (!plain && kind === 'subsonic' && /only takes the password sent as it is/.test(String(e)) && /^https:\/\//i.test(address.trim())) return setAsPlain(true)
+      useStore.setState({ error: String(e) })
     }
   }
   const field = 'h-8 w-full rounded-md border border-line bg-bg px-2 text-xs'
@@ -666,6 +671,16 @@ function ServerRow() {
                     ? tr('Your password stays in this phone’s secure storage. Legato talks to your server only, never to a server of ours.')
                     : tr('Your password stays in this PC’s keychain. Legato talks to your server only, never to a server of ours.')}
               </p>
+              {asPlain && (
+                <div className="flex flex-col gap-2 text-ink">
+                  <p className="flex items-start gap-1.5">
+                    <Warning size={14} className="mt-px shrink-0" /> {tr('Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?')}
+                  </p>
+                  <Button className="w-fit" disabled={!ready} onClick={() => void signIn(true)}>
+                    {tr('Send my password as it is')}
+                  </Button>
+                </div>
+              )}
               <Button className="w-fit" type="submit" disabled={!ready}>
                 {busy ?? tr('Sign in')}
               </Button>

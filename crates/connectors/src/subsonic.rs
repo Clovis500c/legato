@@ -6,7 +6,7 @@
 
 pub use crate::servers::{Body, Streamed};
 use crate::servers::{COVER_SIZE, LIST_TIMEOUT, base_of, http, note, reach};
-use anyhow::{Context, Result, anyhow, bail};
+use anyhow::{Context, Result, anyhow, bail, ensure};
 use md5::{Digest, Md5};
 use music_core::local::ReplayGain;
 use music_core::lyrics::{self, Record};
@@ -39,6 +39,8 @@ pub struct Subsonic {
     base: String,
     user: String,
     password: String,
+    /// Code 41's way: the password hex-encoded, https only.
+    plain: bool,
     key: String,
     http: reqwest::Client,
 }
@@ -64,7 +66,8 @@ fn salt() -> String {
 fn failed(code: i64, message: &str) -> anyhow::Error {
     match code {
         40 | 44 => anyhow!("Your music server refused the sign-in: check the user and the password"),
-        41 | 42 => anyhow!("Your music server doesn't take this kind of sign-in for this user ({message})"),
+        41 => anyhow!("Your music server only takes the password sent as it is ({message}): use its https:// address, then confirm"),
+        42 => anyhow!("Your music server doesn't take this kind of sign-in for this user ({message})"),
         30 => anyhow!("Your music server is too old for Legato: it needs the Subsonic API 1.13 or newer ({message})"),
         20 => anyhow!("Your music server speaks a newer API than Legato knows ({message})"),
         50 => anyhow!("Your music server doesn't let this user do that ({message})"),
@@ -128,11 +131,11 @@ impl Subsonic {
         // Key from the address as kept (`Account::key`); base as `Url` writes it, so the cover URLs built from it start
         // with it (`sign`, `art::allow_server`).
         let key = server::key(server::Kind::Subsonic, address.trim_end_matches('/'), user);
-        Self { base: base_of(address), user: user.to_string(), password: password.to_string(), key, http: http() }
+        Self { base: base_of(address), user: user.to_string(), password: password.to_string(), plain: false, key, http: http() }
     }
 
     pub fn from_account(a: &server::Account) -> Self {
-        Self::new(&a.address, &a.user, &a.password)
+        Self { plain: a.plain_password, ..Self::new(&a.address, &a.user, &a.password) }
     }
 
     /// This server account's key (library ids).
@@ -159,7 +162,7 @@ impl Subsonic {
     /// A URL of this server with auth added (fresh salt), or None when it isn't this server's API.
     pub fn sign(&self, url: &str) -> Option<String> {
         let mut u = Url::parse(url).ok()?;
-        if !url.starts_with(&format!("{}/rest/", self.base)) {
+        if !url.starts_with(&format!("{}/rest/", self.base)) || !self.may_send() {
             return None;
         }
         let kept: Vec<(String, String)> = u.query_pairs().filter(|(k, _)| !["u", "t", "s", "p", "v", "c", "f"].contains(&k.as_ref())).map(|(k, v)| (k.into_owned(), v.into_owned())).collect();
@@ -167,12 +170,23 @@ impl Subsonic {
         Some(u.to_string())
     }
 
+    /// The password as it is only goes over https.
+    fn may_send(&self) -> bool {
+        !self.plain || self.base.starts_with("https://")
+    }
+
     fn auth(&self) -> Vec<(&'static str, String)> {
+        let rest = [("v", API_VERSION.into()), ("c", CLIENT.into()), ("f", "json".into())];
+        if self.plain {
+            let hex: String = self.password.bytes().map(|b| format!("{b:02x}")).collect();
+            return [("u", self.user.clone()), ("p", format!("enc:{hex}"))].into_iter().chain(rest).collect();
+        }
         let s = salt();
-        vec![("u", self.user.clone()), ("t", token(&self.password, &s)), ("s", s), ("v", API_VERSION.into()), ("c", CLIENT.into()), ("f", "json".into())]
+        [("u", self.user.clone()), ("t", token(&self.password, &s)), ("s", s)].into_iter().chain(rest).collect()
     }
 
     fn url(&self, method: &str, params: &[(&str, &str)]) -> Result<Url> {
+        ensure!(self.may_send(), "Your music server only takes the password sent as it is: use its https:// address, then confirm");
         note(&self.base);
         let mut u = Url::parse(&format!("{}/rest/{method}.view", self.base)).context("Your music server's address isn't right")?;
         u.query_pairs_mut().extend_pairs(params).extend_pairs(self.auth());
@@ -411,6 +425,21 @@ mod tests {
         let art = t.art.unwrap();
         assert!(art.starts_with(sub.base()), "{art}");
         assert!(sub.sign(&art).is_some_and(|s| s.contains("&t=")));
+    }
+
+    #[test]
+    fn code_41_asks_for_the_password_as_it_is_sent_hex_encoded_over_https_only() {
+        let body = r#"{"subsonic-response":{"status":"failed","error":{"code":41,"message":"Token authentication not supported for LDAP users"}}}"#;
+        assert!(answer(body).unwrap_err().to_string().starts_with("Your music server only takes the password sent as it is"));
+        let a = |address: &str| server::Account { kind: server::Kind::Subsonic, address: address.into(), user: "me".into(), password: "pä".into(), plain_password: true, ..Default::default() };
+        let https = Subsonic::from_account(&a("https://nas"));
+        let auth = https.auth();
+        assert!(auth.contains(&("p", "enc:70c3a4".into())) && !auth.iter().any(|(k, _)| ["t", "s"].contains(k)), "{auth:?}");
+        assert!(https.url("ping", &[]).is_ok() && https.sign("https://nas/rest/stream.view?id=1").is_some_and(|u| u.contains("p=enc%3A70c3a4") || u.contains("p=enc:70c3a4")));
+        // Plain http: nothing is built, nothing is sent; the account isn't complete either.
+        let http = Subsonic::from_account(&a("http://nas:4533"));
+        assert!(http.url("ping", &[]).is_err() && http.sign("http://nas:4533/rest/stream.view?id=1").is_none());
+        assert!(a("https://nas").complete() && !a("http://nas:4533").complete());
     }
 
     #[tokio::test]

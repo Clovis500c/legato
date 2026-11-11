@@ -318,8 +318,11 @@ visualizer and the media panel apply.
 - Covers: `getCoverArt` (asked at 1200 px at most: a folder's own scan can pass the cache's 5 MB) through the `art`
   scheme; the server's base (as `Url` writes it) is allowed in `connectors::art` at sign-in and launch, the request
   signed there (`allow_server`), so the URL the interface holds carries no token; Sign out takes it off the list.
+  Plex's covers are kept as `plex:<account key>/photo/…` and signed at the address in use, so a change of address changes nothing stored.
 - Sign-in: `ping` with token auth (md5(password + a fresh salt) per request), the account (address, user, password) in
   the keychain under `servers`; Sync Mode carries it only inside a sealed snapshot (a plain file's secrets are ignored).
+  Code 41 (the server refuses token auth: LDAP users): after a warning in the form, the account is kept with `plain_password`
+  and the password goes hex-encoded (`p=enc:`), https only (refused on http in `Subsonic::url`/`sign` and in `Account::complete`).
   No user or password inside the address (`http://me:secret@nas` is refused). Plain http:// is allowed; to a public
   address the row warns (`music_core::server::exposure`). A self-signed certificate fails with a clear error (no way to
   trust one yet: plan-v2).

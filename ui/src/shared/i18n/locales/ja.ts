@@ -2340,6 +2340,9 @@ const ja: Record<string, string> = {
   'The song’s own file': '曲のファイル',
   '{n} match': '一致度 {n}',
   'Let Legato choose': 'Legato に任せる',
+  'Your music server only takes the password sent as it is: use its https:// address, then confirm': 'お使いの音楽サーバーは、パスワードをそのまま送る方式しか受け付けません。https:// のアドレスを使い、確認してください',
+  'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'お使いのサーバーは、パスワードをそのまま送る方式しか受け付けません（16進数に変換されるだけで、暗号化ではありません）。https なら読めるのはサーバーだけです。この方法で送りますか？',
+  'Send my password as it is': 'パスワードをそのまま送る',
 }
 
 export default ja

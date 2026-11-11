@@ -2340,6 +2340,9 @@ const sv: Record<string, string> = {
   'The song’s own file': 'Låtens egen fil',
   '{n} match': '{n} matchning',
   'Let Legato choose': 'Låt Legato välja',
+  'Your music server only takes the password sent as it is: use its https:// address, then confirm': 'Din musikserver tar bara emot lösenordet skickat som det är: använd dess https://-adress och bekräfta sedan',
+  'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Din server tar bara emot lösenordet skickat som det är (hexkodat, vilket inte är kryptering). Över https kan bara din server läsa det. Skicka det så här?',
+  'Send my password as it is': 'Skicka mitt lösenord som det är',
 }
 
 export default sv

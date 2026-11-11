@@ -2340,6 +2340,9 @@ const pl: Record<string, string> = {
   'The song’s own file': 'Własny plik utworu',
   '{n} match': 'Zgodność {n}',
   'Let Legato choose': 'Niech Legato wybierze',
+  'Your music server only takes the password sent as it is: use its https:// address, then confirm': 'Twój serwer muzyczny przyjmuje tylko hasło wysłane w niezmienionej postaci: użyj jego adresu https://, a potem potwierdź',
+  'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Twój serwer przyjmuje tylko hasło wysłane w niezmienionej postaci (zakodowane szesnastkowo, to nie jest szyfrowanie). Przez https odczyta je tylko Twój serwer. Wysłać w ten sposób?',
+  'Send my password as it is': 'Wyślij moje hasło w niezmienionej postaci',
 }
 
 export default pl

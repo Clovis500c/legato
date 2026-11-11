@@ -2340,6 +2340,9 @@ const ru: Record<string, string> = {
   'The song’s own file': 'Собственный файл песни',
   '{n} match': 'Совпадение {n}',
   'Let Legato choose': 'Пусть выберет Legato',
+  'Your music server only takes the password sent as it is: use its https:// address, then confirm': 'Ваш музыкальный сервер принимает только пароль, отправленный как есть: используйте его адрес https://, затем подтвердите',
+  'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Ваш сервер принимает только пароль, отправленный как есть (в шестнадцатеричной записи, это не шифрование). По https его прочитает только ваш сервер. Отправить так?',
+  'Send my password as it is': 'Отправить пароль как есть',
 }
 
 export default ru
