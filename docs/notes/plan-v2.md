@@ -315,6 +315,8 @@ Most useful first; the tag is the effort.
       same for `crates/core/src/library.rs` (queries per table).
 - [ ] `M` Typed `invoke` wrappers: the types are generated, the wrappers in `api.ts` stay by hand (no `tauri-specta`), so a
       command's name and arguments are still checked by eye.
+      2026-11-11: the names are checked (`api.test.ts` reads `generate_handler!`: a wrapper calling a command the
+      shell doesn't have fails). Left: the arguments' names and types.
 - [ ] `M` Diagnostics: a crash that ends the process without a Rust panic (a native fault, a kill) leaves no line; Windows'
       event log and minidumps are not read.
 - [ ] `S` `graphify hook install` (the user's go) so the graph stays fresh without asking; then drop the `.gitattributes`
