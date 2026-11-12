@@ -176,6 +176,13 @@ Where a line says "reading", the owner hasn't confirmed it.
       Next (the autoplay setting still decides when a song ends by itself); easy to change in `store.ts` `step`. Not tried
       on a screen: Vitest only (the sound itself is the engine's).
 
+- [x] `S` "Add to playlist" for a song that is not in the library: the full-screen player's menu (and the player bar, the mini player, Up next,
+      a search result's) had "Add to library" but no "Add to playlist"; the signed-in YouTube song playing, a recommendation or a
+      result had to be added first. 2026-11-12: every one of those menus (`remoteMenu`, `playerMenu`, `hitMenu`) now has it: a playlist
+      holds library rows, so the song is added to the library as it goes in, in one step, and the notice says so. Decided alone
+      (2026-11-12): the library gets the row (a playlist can't hold a song the library lacks: the schema); a radio station gets
+      neither. Not tried on a screen.
+
 ## Best in class (user's ask 2026-10-30)
 
 What a listener would get, against Riff (rootscripts/riff: Electron, yt-dlp downloads, YouTube / SoundCloud, imports

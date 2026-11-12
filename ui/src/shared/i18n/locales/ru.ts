@@ -2345,6 +2345,7 @@ const ru: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Ваш сервер принимает только пароль, отправленный как есть (в шестнадцатеричной записи, это не шифрование). По https его прочитает только ваш сервер. Отправить так?',
   'Send my password as it is': 'Отправить пароль как есть',
   'Hide explicit songs': 'Скрывать песни с ненормативной лексикой',
+  'Added “{title}” to your library too': '«{title}» также добавлена в вашу библиотеку',
   'Official website': 'Официальный сайт',
   'Social network': 'Соцсеть',
   'Streaming': 'Стриминг',

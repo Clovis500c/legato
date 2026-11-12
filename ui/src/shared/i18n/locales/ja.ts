@@ -2345,6 +2345,7 @@ const ja: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'お使いのサーバーは、パスワードをそのまま送る方式しか受け付けません（16進数に変換されるだけで、暗号化ではありません）。https なら読めるのはサーバーだけです。この方法で送りますか？',
   'Send my password as it is': 'パスワードをそのまま送る',
   'Hide explicit songs': '露骨な表現を含む曲を隠す',
+  'Added “{title}” to your library too': '「{title}」をライブラリにも追加しました',
   'Official website': '公式サイト',
   'Social network': 'ソーシャルネットワーク',
   'Streaming': 'ストリーミング',

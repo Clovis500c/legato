@@ -84,6 +84,7 @@ import type { Addon } from './addons/registry'
 import { isOn, setAddon } from './addons/state'
 import { takesEdits } from './sources/servers'
 import { holds, playingFrom } from './library/holding'
+import { isStation } from './radio/station'
 import { clearLoop, markLoop, useLoop } from './player/abLoop'
 import { addToPlaylist, markMusic, markNotExplicit, removeFromPlaylist, removePositions, removeTrackFromPlaylist, songs } from './library/edits'
 import { ownLiked, youtubeLiked } from './library/likedMusic'
@@ -354,6 +355,25 @@ const addToLibraryItem = (t: LibraryTrack): MenuEntry => ({
       .catch(fail),
 })
 
+/**
+ * "Add to playlist ›" for a song that isn't in the library yet (a recommendation, a YouTube result playing): a playlist
+ * holds library rows, so the song is added to the library as it goes in (one step instead of two, said in the notice).
+ * A radio station is no song: nothing.
+ */
+function addRemoteTo(t: LibraryTrack): MenuEntry | false {
+  if (isStation(t)) return false
+  return {
+    label: tr('Add to playlist'),
+    icon: <ListPlus size={16} />,
+    items: addToItems(async () => {
+      const id = await api.addTrack(t)
+      await app().refreshChanged()
+      app().notify(tr('Added “{title}” to your library too', { title: t.title }))
+      return [id]
+    }),
+  }
+}
+
 /** Song from a recommendation (not in the library): play, queue, add, links. */
 function remoteMenu(t: LibraryTrack, list: LibraryTrack[], index: number): MenuEntry[] {
   return [
@@ -363,6 +383,7 @@ function remoteMenu(t: LibraryTrack, list: LibraryTrack[], index: number): MenuE
     { label: tr('Start radio'), icon: <Radio size={16} />, onSelect: () => void startRadio(t) },
     '-',
     addToLibraryItem(t),
+    addRemoteTo(t),
     '-',
     pages(t).length > 0 && { label: tr('Copy link'), icon: <Link size={16} />, onSelect: () => copy(pages(t)[0].url, tr('Link copied')) },
     { label: tr('Copy title and artist'), icon: <Copy size={16} />, onSelect: () => copy(`${t.artist} – ${t.title}`, tr('Title and artist copied')) },
@@ -555,6 +576,7 @@ export function hitMenu(hit: SearchHit, add: () => void, busy: boolean, play: ()
     { label: tr('Add to queue'), icon: <ListPlus size={16} />, onSelect: () => player().enqueue([item], false) },
     '-',
     { label: tr('Add to library'), icon: <Plus size={16} />, disabled: busy, onSelect: add },
+    addRemoteTo(item),
     '-',
     links.length > 0 && { label: tr('Copy link'), icon: <Link size={16} />, onSelect: () => copy(links[0].url, tr('Link copied')) },
     { label: tr('Copy title and artist'), icon: <Copy size={16} />, onSelect: () => copy(`${hit.artist} – ${hit.title}`, tr('Title and artist copied')) },
@@ -766,6 +788,7 @@ export function playerMenu({ controls = true }: { controls?: boolean } = {}): Me
     t && { label: tr('Go to artist'), icon: <MicrophoneStage size={16} />, onSelect: () => (setFull(false), app().go({ name: 'artist', artist: primaryArtist(t.artist) })) },
     lib && saveCoverItem(lib),
     lib && isRemote(lib) && addToLibraryItem(lib),
+    lib && isRemote(lib) && addRemoteTo(lib),
     '-',
     video && { label: tr('Copy video URL'), icon: <Link size={16} />, onSelect: () => copy(`https://youtu.be/${video}`, tr('Video URL copied')) },
     video && { label: tr('Copy video URL at current time'), icon: <Link size={16} />, onSelect: () => copy(`https://youtu.be/${video}?t=${Math.floor(positionMs / 1000)}`, tr('Video URL copied')) },
