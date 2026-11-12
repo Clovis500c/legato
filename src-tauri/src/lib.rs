@@ -2609,6 +2609,28 @@ pub fn run() {
 mod tests {
     use super::*;
 
+    /// CLAUDE.md: a sync command runs on the window's thread, so one that locks the library freezes the app (a sync
+    /// holding it, a slow disk). Every command file scanned: a `.lib()` only in an `async fn` command.
+    #[test]
+    fn no_sync_command_locks_the_library() {
+        let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("src");
+        let mut sync = Vec::new();
+        for entry in std::fs::read_dir(&dir).unwrap().flatten() {
+            let path = entry.path();
+            let Ok(text) = std::fs::read_to_string(&path) else { continue };
+            for cmd in text.split("#[tauri::command]").skip(1) {
+                let body = cmd.split("
+}
+").next().unwrap_or(cmd);
+                let head = body.lines().find(|l| l.contains("fn ")).unwrap_or_default();
+                if !head.contains("async fn") && body.contains(".lib()") {
+                    sync.push(format!("{}: {}", path.file_name().unwrap().to_string_lossy(), head.trim()));
+                }
+            }
+        }
+        assert!(sync.is_empty(), "sync commands locking the library: {sync:?}");
+    }
+
     #[test]
     fn credentials_merge_trims_and_keeps_old_values() {
         let old = Credentials { spotify_client_id: Some("OLD".into()) };

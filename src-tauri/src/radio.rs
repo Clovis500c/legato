@@ -37,13 +37,13 @@ pub async fn radio_search(query: String) -> CmdResult<Vec<Station>> {
 }
 
 #[tauri::command]
-pub fn radio_kept(state: State<'_, AppState>) -> Vec<Station> {
-    kept(&state)
+pub async fn radio_kept(state: State<'_, AppState>) -> CmdResult<Vec<Station>> {
+    Ok(kept(&state))
 }
 
 /// Keeps a station (once), or lets it go.
 #[tauri::command]
-pub fn radio_keep(state: State<'_, AppState>, station: Station, keep: bool) -> CmdResult<Vec<Station>> {
+pub async fn radio_keep(state: State<'_, AppState>, station: Station, keep: bool) -> CmdResult<Vec<Station>> {
     let mut all = kept(&state);
     all.retain(|s| s.id != station.id);
     if keep {
