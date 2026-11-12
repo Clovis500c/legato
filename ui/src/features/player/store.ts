@@ -722,7 +722,9 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     if (isNative(how)) {
       // Consecutive local and server tracks go to the engine as one run: gapless between them. List order only.
       let end = index + 1
-      while (!get().shuffle && get().repeat !== 'one' && end < list.length && isNative(vias(list[end])[0])) end++
+      // A radio station never ends: it stays alone in its run (the next one would only hold a second stream open).
+      const live = (t: LibraryTrack) => !!t.ids.server?.startsWith('radio:')
+      while (!get().shuffle && get().repeat !== 'one' && end < list.length && isNative(vias(list[end])[0]) && !live(list[end - 1]) && !live(list[end])) end++
       const paths = list.slice(index, end).map((x, i) => nativePath(x, i === 0 ? how : vias(x)[0])!)
       // Skip silence, levelling: the engine learns where the music starts and how loud each file is before the song
       // plays (cached, or tags). An answer not there in time plays the song as it is: the engine seeks past the silence

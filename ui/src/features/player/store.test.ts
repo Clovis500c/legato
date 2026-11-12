@@ -490,3 +490,16 @@ describe('Next on the last song of the queue', () => {
     player.mockRestore()
   })
 })
+
+describe('radio stations in the queue', () => {
+  it('each plays alone in the engine: a live stream never hands over to the next one', async () => {
+    const sent: string[][] = []
+    const spy = vi.spyOn(api, 'player').mockImplementation((cmd) => (cmd.type === 'play' && sent.push(cmd.paths), Promise.resolve()) as never)
+    const station = (id: number): LibraryTrack => ({ ...song(-id), id: -id, ids: { server: `radio:https://r${id}.example/live` } })
+    usePlayer.setState({ repeat: 'off', shuffle: false })
+    usePlayer.getState().playTracks([station(1), station(2), station(3)], 1)
+    await settle()
+    spy.mockRestore()
+    expect(sent).toEqual([['server:radio:https://r2.example/live']])
+  })
+})

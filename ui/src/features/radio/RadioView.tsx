@@ -6,7 +6,7 @@ import { tr, trn } from '../../shared/i18n/i18n'
 import { Button } from '../../shared/ui/Button'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { usePlayer } from '../player/store'
-import { stationTrack } from './station'
+import { stationQueue } from './station'
 
 /**
  * Internet radio: search Radio Browser's open directory (the words typed go there, nothing else), play a station, keep
@@ -30,11 +30,15 @@ export function RadioView() {
       .finally(() => setBusy(false))
   }
   const keep = (s: RadioStation, on: boolean) => api.radioKeep(s, on).then(setKept, fail)
-  const row = (s: RadioStation) => {
+  // Next and Previous go to the neighbour in the list the station was started from (results, or Your stations).
+  const row = (list: RadioStation[]) => (s: RadioStation) => {
     const mine = kept.some((k) => k.id === s.id)
     return (
       <li key={s.id} className="flex items-center gap-3 border-t border-line-soft py-2.5">
-        <button type="button" aria-label={tr('Play {title}', { title: s.name })} onClick={() => usePlayer.getState().playTracks([stationTrack(s)], 0)} className="grid size-9 shrink-0 place-items-center rounded-full bg-raised text-ink hover:brightness-110">
+        <button type="button" aria-label={tr('Play {title}', { title: s.name })} onClick={() => {
+            const q = stationQueue(list, s)
+            usePlayer.getState().playTracks(q.tracks, q.index)
+          }} className="grid size-9 shrink-0 place-items-center rounded-full bg-raised text-ink hover:brightness-110">
           <Play weight="fill" size={16} />
         </button>
         <span className="min-w-0 flex-1">
@@ -64,11 +68,11 @@ export function RadioView() {
       </form>
       <div className="min-h-0 flex-1 overflow-y-auto pb-8">
         {found && <h2 className="kicker pb-1">{found.length ? trn(found.length, '{n} station found', '{n} stations found') : tr('No station found.')}</h2>}
-        {found && <ul className="flex flex-col">{found.map(row)}</ul>}
+        {found && <ul className="flex flex-col">{found.map(row(found))}</ul>}
         <h2 className="kicker flex items-center gap-2 pt-6 pb-1">
           <Radio size={14} /> {tr('Your stations')}
         </h2>
-        {kept.length ? <ul className="flex flex-col">{kept.map(row)}</ul> : <p className="text-sm text-ink-2">{tr('Keep a station with its heart: it waits here.')}</p>}
+        {kept.length ? <ul className="flex flex-col">{kept.map(row(kept))}</ul> : <p className="text-sm text-ink-2">{tr('Keep a station with its heart: it waits here.')}</p>}
       </div>
     </>
   )

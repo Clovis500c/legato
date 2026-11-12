@@ -183,6 +183,16 @@ Where a line says "reading", the owner hasn't confirmed it.
       (2026-11-12): the library gets the row (a playlist can't hold a song the library lacks: the schema); a radio station gets
       neither. Not tried on a screen.
 
+- [x] `S` Next and Previous on a radio station (the owner, trying the Radio page): a station was queued alone, so Next had no
+      neighbour and, at the end of that queue, only paused it. 2026-11-12: a station now starts its whole list (the search
+      results, or Your stations) from its place, so Next / Previous reach the neighbours; each station goes to the engine alone
+      (a live stream never hands over, a second one would only hold a stream open). With no list: as before. Decided alone
+      (2026-11-12): the last station of a list still only pauses (Opus's `569969cf`), no wrap-around. Not tried by ear.
+- [ ] `S` Station icons: the directory gives a favicon per station; shown in the lists, Your stations, the player, Up next and the mini
+      player, the initials staying as the fallback; safe (the `art` scheme only, nothing from the front end).
+- [ ] `S-M` Starter stations when Your stations is empty: by the user's region (Windows' / the interface's language, never an IP
+      lookup) and tastes (genres in their library and history, local only), from Radio Browser; the heart keeps one.
+
 ## Best in class (user's ask 2026-10-30)
 
 What a listener would get, against Riff (rootscripts/riff: Electron, yt-dlp downloads, YouTube / SoundCloud, imports

@@ -7,6 +7,12 @@ export const RADIO = 'radio:'
 /** Is this track a radio station (endless: no like, no server play report, no length)? */
 export const isStation = (t: { ids: { server?: string } }) => !!t.ids.server?.startsWith(RADIO)
 
+/** The list a station was started from as a queue, starting at that station: Next and Previous go to its neighbours. */
+export function stationQueue(list: RadioStation[], s: RadioStation): { tracks: LibraryTrack[]; index: number } {
+  const at = list.findIndex((x) => x.id === s.id)
+  return at < 0 ? { tracks: [stationTrack(s)], index: 0 } : { tracks: list.map(stationTrack), index: at }
+}
+
 /** A station as something the player queue plays: a recommendation-like track (not in the library), its address in `ids.server`. */
 export function stationTrack(s: RadioStation): LibraryTrack {
   const meta = [s.country, [s.codec, s.bitrate ? `${s.bitrate} kbit/s` : ''].filter(Boolean).join(' ')].filter(Boolean).join(' · ')
