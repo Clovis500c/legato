@@ -42,6 +42,9 @@ const MIN_LEN: usize = 5;
 const PER_ARTIST: usize = 4;
 const DAILY_MIXES: usize = 6;
 const ARTIST_MIXES: usize = 3;
+/// Mixes from the genres and decades your local files' tags name, and how many songs a genre or decade needs.
+const TAG_MIXES: usize = 2;
+const TAG_MIN: usize = 8;
 const REDISCOVER_AFTER: i64 = 60 * DAY;
 /// Aural fixation: this much in one month (full listens' worth), at least FIXATION_SHARE of all its plays, at most
 /// FIXATION_SINCE after it; the month FIXATION_MONTHS back or more (this one = 0).
@@ -645,6 +648,36 @@ pub fn mixes(input: &Input) -> Vec<Mix> {
         out.push(Mix { id: format!("artist-{made}"), title: format!("{name} Mix"), reason, track_ids: ids, kind: "favorites", words, found: Vec::new() });
     }
 
+    // Genre and decade mixes: what the local files' tags say (streamed songs carry none), the ones you play most first.
+    let tagged = |label: &dyn Fn(&LibraryTrack) -> Option<(String, String)>, id: &str, kind: &'static str, out: &mut Vec<Mix>, taste: &Taste<'_>| {
+        let mut by: HashMap<String, (String, f64, usize)> = HashMap::new();
+        for t in input.tracks {
+            if let Some((key, shown)) = label(t) {
+                let e = by.entry(key).or_insert((shown, 0.0, 0));
+                e.1 += score_of(t.id).max(0.0);
+                e.2 += 1;
+            }
+        }
+        let mut order: Vec<(String, (String, f64, usize))> = by.into_iter().filter(|(_, v)| v.2 >= TAG_MIN).collect();
+        order.sort_by(|a, b| b.1 .1.total_cmp(&a.1 .1).then(a.0.cmp(&b.0)));
+        let mut made = 0;
+        for (key, (name, _, _)) in order {
+            if made == TAG_MIXES {
+                break;
+            }
+            let cands = input.tracks.iter().filter(|t| label(t).is_some_and(|(k, _)| k == key)).map(|t| (t.id, score_of(t.id) + 0.5));
+            let ids = taste.pick(cands, Opts { cooldown: true, favored: None });
+            if ids.len() < MIN_LEN || !new_enough(out, &ids) {
+                continue;
+            }
+            made += 1;
+            let reason = format!("The {name} in your library, your way");
+            out.push(Mix { id: format!("{id}-{made}"), title: if id == "decade" { format!("Your songs of the {name}") } else { format!("Your {name} songs") }, reason, track_ids: ids, kind, words: Words { name: Some(name), ..Words::default() }, found: Vec::new() });
+        }
+    };
+    tagged(&|t| t.genre.as_deref().map(str::trim).filter(|g| !g.is_empty() && g.chars().count() <= 40).map(|g| (g.to_lowercase(), g.to_string())), "genre", "favorites", &mut out, &taste);
+    tagged(&|t| t.year.filter(|y| (1900..=2100).contains(y)).map(|y| (format!("{}", y / 10 * 10), format!("{}s", y / 10 * 10))), "decade", "favorites", &mut out, &taste);
+
     // Supermix: your favourites over the months, not one day's listens (slow decay on top of the usual score).
     let mut long: HashMap<i64, f64> = taste.score.iter().filter(|(_, s)| **s > 0.0).map(|(id, s)| (*id, *s)).collect();
     for p in &plays {
@@ -970,6 +1003,31 @@ mod tests {
         let m = out.iter().find(|m| m.id == "repeat").unwrap_or_else(|| panic!("{out:?}"));
         assert_eq!(m.track_ids.iter().copied().collect::<BTreeSet<_>>(), (1..=8).collect(), "{m:?}");
         assert_eq!(m.kind, "favorites");
+    }
+
+    #[test]
+    fn genre_and_decade_mixes_come_from_the_tags_of_local_files() {
+        // Six artists you play (no tags: streamed), and six you have not played yet, tagged Jazz / 1959 (a genre with
+        // too few songs, Polka, makes none; a mix that repeats the others is left out, so the played ones stay apart).
+        let mut tracks = library_of(30, &["A", "B", "C", "D", "E", "F"]);
+        let jazz = ["J1", "J2", "J3", "J4", "J5", "J6"];
+        tracks.extend((31..=54).map(|i| LibraryTrack { genre: Some(" Jazz ".into()), year: Some(1959), ..t(i, jazz[(i as usize - 31) % 6]) }));
+        tracks.extend((55..=57).map(|i| LibraryTrack { genre: Some("Polka".into()), ..t(i, "P") }));
+        let plays: Vec<Play> = (1..=12).map(|i| play(i, NOW - DAY + i * 200, true)).collect();
+        let out = run(&tracks, &plays, &HashMap::new(), 1);
+        let genre = out.iter().find(|m| m.id == "genre-1").unwrap_or_else(|| panic!("{out:?}"));
+        assert_eq!((genre.words.name.as_deref(), genre.kind), (Some("Jazz"), "favorites"));
+        assert!(genre.track_ids.iter().all(|id| (31..=54).contains(id)));
+        assert!(out.iter().all(|m| m.words.name.as_deref() != Some("Polka")));
+        // Same songs, same year, no genre: the decade makes its own (and with a genre, the repeat is left out).
+        assert!(out.iter().all(|m| m.id != "decade-1"));
+        for t in &mut tracks {
+            t.genre = None;
+        }
+        let out = run(&tracks, &plays, &HashMap::new(), 1);
+        let decade = out.iter().find(|m| m.id == "decade-1").unwrap_or_else(|| panic!("{out:?}"));
+        assert_eq!(decade.words.name.as_deref(), Some("1950s"));
+        assert!(out.iter().all(|m| !m.id.starts_with("genre-")));
     }
 
     #[test]

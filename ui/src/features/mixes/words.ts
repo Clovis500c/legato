@@ -50,6 +50,8 @@ export function mixTitle(m: Mix): string {
   if (m.id.startsWith('daily-') && w.number) return tr('Daily Mix {n}', { n: w.number })
   if (m.id.startsWith('artist-') && w.name) return tr('{name} Mix', { name: w.name })
   if (m.id === 'supermix') return tr('Supermix')
+  if (m.id.startsWith('genre-') && w.name) return tr('Your {name} songs', { name: w.name })
+  if (m.id.startsWith('decade-') && w.name) return tr('Your songs of the {name}', { name: w.name })
   return FIXED[m.id] ? tr(FIXED[m.id].title) : m.title
 }
 
@@ -63,5 +65,6 @@ export function mixReason(m: Mix): string {
   if (m.id.startsWith('daily-') && names.length) return tr('Because you listen to {names}', { names: listOf(names) })
   if (m.id.startsWith('artist-') && w.name) return names.length ? tr('{name}, with {names}', { name: w.name, names: listOf(names) }) : tr('All {name}, your way', { name: w.name })
   if (m.id === 'supermix') return m.found?.length ? tr('Your favorites over the months, and new songs like them') : tr('Your favorites over the months')
+  if ((m.id.startsWith('genre-') || m.id.startsWith('decade-')) && w.name) return tr('The {name} in your library, your way', { name: w.name })
   return FIXED[m.id] ? tr(FIXED[m.id].reason) : m.reason
 }
