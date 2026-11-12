@@ -410,8 +410,12 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       whole album's numbers would need the release's track list, a second request); no genre (not in the search).
       Untried against the real MusicBrainz: the answer's shape is from their docs.
 - [ ] `M` Equalizer presets per output device (headphones vs speakers) and AutoEQ profiles for known headphones.
-- [ ] `M` BPM / key tags; genre / year of streamed songs (Spotify's export has a release date; iTunes a genre);
+- [x] `M` BPM / key tags; genre / year of streamed songs (Spotify's export has a release date; iTunes a genre);
       smart playlist rules on them (mixes, DJ-like transitions by BPM).
+      2026-11-12, local files' half: schema v22 (`bpm`, `key`, filled by the next scan from TBPM / tmpo and TKEY / initialkey;
+      a tempo outside 30-400 or a key over 12 characters is dropped), Songs' BPM and Key columns (off by default, Settings
+      › Columns) and Tempo sorts. Not done: streamed songs' genre / year / tempo (no source gives them without a new host),
+      smart-playlist rules and tempo-matched transitions on them, editing them in Edit song info. Never seen on a screen.
 - [ ] `M` Mixes: genre / year tags (stored for local files only), Last.fm "Discoveries" (user's key); "Never in mixes"
       on a discovered song (not in the library: no row to hold the choice).
 - [x] `M` Internet radio stations (Radio Browser's open directory).

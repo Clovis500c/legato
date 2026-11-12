@@ -70,9 +70,9 @@ export const PRESETS: Theme[] = [
 
 export const ACCENTS = ['#FF5A1F', '#E5383B', '#F2B705', '#2E8B57', '#2F6FEB', '#171614']
 
-export const COLUMNS = ['album', 'year', 'genre', 'sources', 'plays', 'rating', 'added', 'duration'] as const
+export const COLUMNS = ['album', 'year', 'genre', 'bpm', 'key', 'sources', 'plays', 'rating', 'added', 'duration'] as const
 /** List sorts (features/library/filter): checked on load. */
-const SORTS: readonly Sort[] = ['manual', 'added-new', 'added-old', 'most-played', 'recently-played', 'rating', 'title', 'title-desc', 'artist', 'album', 'year', 'year-new', 'genre', 'duration', 'duration-short', 'random', 'recent']
+const SORTS: readonly Sort[] = ['manual', 'added-new', 'added-old', 'most-played', 'recently-played', 'rating', 'title', 'title-desc', 'artist', 'album', 'year', 'year-new', 'genre', 'bpm', 'bpm-fast', 'duration', 'duration-short', 'random', 'recent']
 const GROUP_SORTS: readonly GroupSort[] = ['name', 'name-desc', 'artist', 'songs', 'albums', 'added-new', 'added-old', 'most-played', 'recently-played', 'length', 'random']
 
 /** Home's sections, default order. */

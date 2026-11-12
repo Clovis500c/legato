@@ -793,7 +793,7 @@ mod tests {
     const NOW: i64 = 1_800_000_000;
 
     fn t(id: i64, artist: &str) -> LibraryTrack {
-        LibraryTrack { id, added: id, added_at: None, genre: None, year: None, track: Track { title: format!("Song {id}"), artist: artist.into(), ..Default::default() } }
+        LibraryTrack { id, added: id, added_at: None, genre: None, year: None, bpm: None, key: None, track: Track { title: format!("Song {id}"), artist: artist.into(), ..Default::default() } }
     }
 
     fn play(id: i64, at: i64, completed: bool) -> Play {
@@ -1103,9 +1103,9 @@ mod tests {
     fn one_version_per_song_and_its_artist_spread() {
         // Two uploads of Yeat's song by slowed channels, Yeat's own, and 9 songs by others: all played a lot.
         let mut tracks = vec![
-            LibraryTrack { id: 1, added: 1, added_at: None, genre: None, year: None, track: video("Yeat- Liv Like Dis [Reverse Intro] (Slowed + Reverbed)", "Capt. Slowed", "a1") },
-            LibraryTrack { id: 2, added: 2, added_at: None, genre: None, year: None, track: video("yeat - liv like dis [reversed intro] (slowed + reverb + bass boosted)", "bayle", "a2") },
-            LibraryTrack { id: 3, added: 3, added_at: None, genre: None, year: None, track: video("Liv Like Dis", "Yeat", "a3") },
+            LibraryTrack { id: 1, added: 1, added_at: None, genre: None, year: None, bpm: None, key: None, track: video("Yeat- Liv Like Dis [Reverse Intro] (Slowed + Reverbed)", "Capt. Slowed", "a1") },
+            LibraryTrack { id: 2, added: 2, added_at: None, genre: None, year: None, bpm: None, key: None, track: video("yeat - liv like dis [reversed intro] (slowed + reverb + bass boosted)", "bayle", "a2") },
+            LibraryTrack { id: 3, added: 3, added_at: None, genre: None, year: None, bpm: None, key: None, track: video("Liv Like Dis", "Yeat", "a3") },
         ];
         tracks.extend((4..=12).map(|i| t(i, ["Uno", "Dos", "Tres"][(i % 3) as usize])));
         let plays: Vec<Play> = (1..=12).flat_map(|i| (0..3).map(move |k| play(i, NOW - (k + 1) * DAY + i * 200, true))).collect();

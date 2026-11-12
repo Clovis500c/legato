@@ -26,6 +26,9 @@ pub struct LocalSong {
     pub track: Track,
     pub genre: Option<String>,
     pub year: Option<u32>,
+    /// Beats per minute and musical key as the tags say (TBPM / tmpo, TKEY / initialkey).
+    pub bpm: Option<u32>,
+    pub key: Option<String>,
 }
 
 impl From<Track> for LocalSong {
@@ -233,7 +236,15 @@ pub fn read_song(path: &Path) -> LocalSong {
         explicit: false,
     };
     // Read as the song editor reads them (`file_tags`).
-    LocalSong { track, genre: text(tag.and_then(|t| t.genre())), year: tag.and_then(|t| t.get_string(ItemKey::RecordingDate)).and_then(year_of) }
+    let bpm = tag.and_then(|t| t.get_string(ItemKey::IntegerBpm).or_else(|| t.get_string(ItemKey::Bpm))).and_then(bpm_of);
+    let key = text(tag.and_then(|t| t.get_string(ItemKey::InitialKey).map(Into::into))).filter(|k| k.chars().count() <= 12);
+    LocalSong { track, genre: text(tag.and_then(|t| t.genre())), year: tag.and_then(|t| t.get_string(ItemKey::RecordingDate)).and_then(year_of), bpm, key }
+}
+
+/// "128", "127.6", " 90 ": whole beats per minute in a believable range (a tag can hold anything), else none.
+fn bpm_of(s: &str) -> Option<u32> {
+    let v = s.trim().parse::<f32>().ok().filter(|v| v.is_finite())?.round();
+    (30.0..=400.0).contains(&v).then_some(v as u32)
 }
 
 /// Embedded cover (front cover first, else any picture): bytes + MIME type.
@@ -430,9 +441,19 @@ pub(crate) mod tests {
         let mut tag = lofty::tag::Tag::new(lofty::tag::TagType::Id3v2);
         tag.set_genre("Jazz".into());
         tag.insert_text(ItemKey::RecordingDate, "1959-08-17".into());
+        tag.insert_text(ItemKey::IntegerBpm, "127.6".into());
+        tag.insert_text(ItemKey::InitialKey, "Am".into());
         tag.save_to_path(&p, lofty::config::WriteOptions::default()).unwrap();
         let s = read_song(&p);
         assert_eq!((s.genre.as_deref(), s.year, s.track.title.as_str()), (Some("Jazz"), Some(1959), "a"));
+        assert_eq!((s.bpm, s.key.as_deref()), (Some(128), Some("Am")));
+    }
+
+    #[test]
+    fn a_tempo_tag_is_a_believable_whole_number_or_nothing() {
+        for (tag, want) in [("128", Some(128)), (" 90 ", Some(90)), ("127.6", Some(128)), ("0", None), ("29", None), ("9000", None), ("fast", None), ("NaN", None), ("", None), ("-120", None)] {
+            assert_eq!(bpm_of(tag), want, "{tag:?}");
+        }
     }
 
     #[test]

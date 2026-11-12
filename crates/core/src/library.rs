@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS settings (
 ";
 
 /// Schema version this code writes (user_version after migrations).
-pub const SCHEMA_VERSION: i64 = 21;
+pub const SCHEMA_VERSION: i64 = 22;
 
 /// The library was made by a newer version of the app.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -90,7 +90,7 @@ pub fn now_ms() -> i64 {
     std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis() as i64).unwrap_or(0)
 }
 
-const TRACK_COLS: &str = "t.id, t.title, t.artist, t.album, t.duration_ms, t.isrc, t.art, t.added, t.musicness, t.added_at, t.genre, t.year, (t.explicit = 1)";
+const TRACK_COLS: &str = "t.id, t.title, t.artist, t.album, t.duration_ms, t.isrc, t.art, t.added, t.musicness, t.added_at, t.genre, t.year, (t.explicit = 1), t.bpm, t.key";
 
 /// Liked Music: last like on top, always.
 fn liked_music(source: Source, source_id: &str) -> bool {
@@ -196,6 +196,13 @@ pub struct LibraryTrack {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[ts(optional)]
     pub year: Option<u32>,
+    /// A local file's tempo (whole beats a minute) and key, as its tags say (v22).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub bpm: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub key: Option<String>,
     #[serde(flatten)]
     pub track: Track,
 }
@@ -237,7 +244,7 @@ pub enum PlaylistEdit {
 
 /// Row → track (`TRACK_COLS`, then the ids JSON object, optional).
 fn to_track(r: &Row) -> rusqlite::Result<LibraryTrack> {
-    let ids: Option<String> = r.get(13).ok();
+    let ids: Option<String> = r.get(15).ok();
     let musicness: Option<String> = r.get(8)?;
     Ok(LibraryTrack {
         id: r.get(0)?,
@@ -245,6 +252,8 @@ fn to_track(r: &Row) -> rusqlite::Result<LibraryTrack> {
         added_at: r.get(9)?,
         genre: r.get(10)?,
         year: r.get(11)?,
+        bpm: r.get(13)?,
+        key: r.get(14)?,
         track: Track {
             title: r.get(1)?,
             artist: r.get(2)?,
@@ -270,8 +279,8 @@ const CHANGE_LOG: &str = "
 CREATE TEMP TABLE IF NOT EXISTS changed (kind INTEGER NOT NULL, id INTEGER NOT NULL, artist TEXT NOT NULL, PRIMARY KEY (kind, id, artist)) WITHOUT ROWID;
 CREATE TEMP TRIGGER IF NOT EXISTS song_in AFTER INSERT ON tracks BEGIN INSERT INTO changed VALUES (0, new.id, '') ON CONFLICT DO NOTHING; END;
 CREATE TEMP TRIGGER IF NOT EXISTS song_set AFTER UPDATE ON tracks
-  WHEN (old.title, old.artist, old.album, old.duration_ms, old.isrc, old.art, old.added, old.added_at, old.musicness, old.genre, old.year, old.explicit)
-    IS NOT (new.title, new.artist, new.album, new.duration_ms, new.isrc, new.art, new.added, new.added_at, new.musicness, new.genre, new.year, new.explicit)
+  WHEN (old.title, old.artist, old.album, old.duration_ms, old.isrc, old.art, old.added, old.added_at, old.musicness, old.genre, old.year, old.explicit, old.bpm, old.key)
+    IS NOT (new.title, new.artist, new.album, new.duration_ms, new.isrc, new.art, new.added, new.added_at, new.musicness, new.genre, new.year, new.explicit, new.bpm, new.key)
   BEGIN
     INSERT INTO changed VALUES (0, new.id, '') ON CONFLICT DO NOTHING;
     INSERT INTO changed SELECT 0, old.id, old.artist WHERE old.artist IS NOT new.artist ON CONFLICT DO NOTHING;
@@ -513,6 +522,10 @@ impl Library {
         if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 21 {
             // v21: a song marked explicit by a source (Settings › Hide explicit songs).
             lib.db.execute_batch("BEGIN; ALTER TABLE tracks ADD COLUMN explicit INTEGER NOT NULL DEFAULT 0; PRAGMA user_version = 21; COMMIT;")?;
+        }
+        if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 22 {
+            // v22: local files' tempo and key (their tags), filled by the next scan.
+            lib.db.execute_batch("BEGIN; ALTER TABLE tracks ADD COLUMN bpm INTEGER; ALTER TABLE tracks ADD COLUMN key TEXT; PRAGMA user_version = 22; COMMIT;")?;
         }
         lib.db.execute_batch(CHANGE_LOG)?;
         // Statements on logged tables compile their triggers too: kept, not rebuilt per call.
@@ -913,6 +926,12 @@ impl Library {
     }
 
     /// A local file's tags rewritten by the user (Edit song info): its row follows (rescans only fill gaps).
+    /// A local file's tempo and key, as its tags say now (a scan). Unchanged: nothing written.
+    pub fn set_tempo_key(&self, id: i64, bpm: Option<u32>, key: Option<&str>) -> Result<()> {
+        self.db.prepare_cached("UPDATE tracks SET bpm = ?1, key = ?2 WHERE id = ?3 AND (bpm, key) IS NOT (?1, ?2)")?.execute(params![bpm, key, id])?;
+        Ok(())
+    }
+
     /// A local file's genre and year, as its tags say now (a scan, Edit song info). Unchanged: nothing written.
     pub fn set_genre_year(&self, id: i64, genre: Option<&str>, year: Option<u32>) -> Result<()> {
         self.db.prepare_cached("UPDATE tracks SET genre = ?1, year = ?2 WHERE id = ?3 AND (genre, year) IS NOT (?1, ?2)")?.execute(params![genre, year, id])?;
@@ -993,6 +1012,7 @@ impl Library {
             for s in &songs {
                 let id = self.upsert_track(&s.track)?;
                 self.set_genre_year(id, s.genre.as_deref(), s.year)?;
+                self.set_tempo_key(id, s.bpm, s.key.as_deref())?;
             }
             let old: Vec<String> = {
                 let mut stmt = self.db.prepare("SELECT source_id FROM track_ids WHERE source = 'local'")?;
@@ -1969,16 +1989,16 @@ mod tests {
     #[test]
     fn local_files_keep_their_genre_and_year() -> Result<()> {
         let lib = Library::in_memory()?;
-        let file = |genre: Option<&str>, year| LocalSong { track: Track { ids: [(Source::Local, "C:/Music/1.flac".into())].into(), ..song(1) }, genre: genre.map(Into::into), year };
+        let file = |genre: Option<&str>, year| LocalSong { track: Track { ids: [(Source::Local, "C:/Music/1.flac".into())].into(), ..song(1) }, genre: genre.map(Into::into), year, bpm: year.map(|_| 128), key: year.map(|_| "8A".to_string()) };
         lib.replace_local(&[file(Some("Jazz"), Some(1959))])?;
         let t = &lib.tracks()?[0];
-        assert_eq!((t.genre.as_deref(), t.year), (Some("Jazz"), Some(1959)));
+        assert_eq!((t.genre.as_deref(), t.year, t.bpm, t.key.as_deref()), (Some("Jazz"), Some(1959), Some(128), Some("8A")));
         // Tags taken off the file: the next scan takes them off the song, and the interface gets no empty field.
         lib.replace_local(&[file(None, None)])?;
         let t = &lib.tracks()?[0];
         assert_eq!((t.genre.as_deref(), t.year), (None, None));
         let json = serde_json::to_value(t)?;
-        assert!(json.get("genre").is_none() && json.get("year").is_none() && json.get("title").is_some());
+        assert!(json.get("genre").is_none() && json.get("year").is_none() && json.get("bpm").is_none() && json.get("key").is_none() && json.get("title").is_some());
         Ok(())
     }
 

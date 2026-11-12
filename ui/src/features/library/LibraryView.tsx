@@ -57,6 +57,8 @@ const sortGroups: { id: Sort; label: string }[][] = [
     { id: 'year', label: msg('Year (oldest first)') },
     { id: 'year-new', label: msg('Year (newest first)') },
     { id: 'genre', label: msg('Genre (A–Z)') },
+    { id: 'bpm', label: msg('Tempo (slowest first)') },
+    { id: 'bpm-fast', label: msg('Tempo (fastest first)') },
   ],
   [
     { id: 'duration', label: msg('Longest first') },
@@ -133,7 +135,7 @@ function SortButton<T extends string>({ groups, value, onPick }: { groups: { id:
 function SortMenu({ playlist = false }: { playlist?: boolean }) {
   const { sort, playlistSort, setSort, setPlaylistSort } = useStore(useShallow(({ sort, playlistSort, setSort, setPlaylistSort }) => ({ sort, playlistSort, setSort, setPlaylistSort })))
   const tracks = useStore((s) => s.tracks)
-  const tagged = useMemo(() => tracks.some((t) => t.year || t.genre), [tracks])
+  const tagged = useMemo(() => tracks.some((t) => t.year || t.genre || t.bpm), [tracks])
   return <SortButton groups={sortGroups.filter((g) => (playlist || g[0].id !== 'manual') && (tagged || g[0].id !== 'year'))} value={playlist ? playlistSort : sort} onPick={playlist ? setPlaylistSort : setSort} />
 }
 

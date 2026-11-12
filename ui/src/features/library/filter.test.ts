@@ -186,3 +186,12 @@ describe('splitExplicit', () => {
     expect(splitExplicit([{ id: 4, explicit: false }], true).hidden).toEqual([])
   })
 })
+
+describe('sorting by tempo', () => {
+  const t = (id: number, bpm?: number) => ({ id, bpm, title: `t${id}`, artist: 'a', album: null, ids: {}, added: 0 }) as never
+  it('puts songs without a tempo last, either way', () => {
+    const list = [t(1), t(2, 140), t(3, 90)]
+    expect(sortTracks(list, 'bpm', { stats: {}, seed: 1 }).map((x: { id: number }) => x.id)).toEqual([3, 2, 1])
+    expect(sortTracks(list, 'bpm-fast', { stats: {}, seed: 1 }).map((x: { id: number }) => x.id)).toEqual([2, 3, 1])
+  })
+})
