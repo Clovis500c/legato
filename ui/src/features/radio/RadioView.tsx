@@ -10,7 +10,7 @@ import { stationTrack } from './station'
 
 /**
  * Internet radio: search Radio Browser's open directory (the words typed go there, nothing else), play a station, keep
- * the ones you like. MP3 and Ogg stations come first; an AAC one says it can't play yet (the engine reads no AAC).
+ * the ones you like. MP3 and Ogg stations come first; AAC ones (ADTS, AAC-LC) play too, HE-AAC and LATM ones may not.
  */
 export function RadioView() {
   const [kept, setKept] = useState<RadioStation[]>([])

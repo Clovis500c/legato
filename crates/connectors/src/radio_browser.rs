@@ -48,7 +48,7 @@ fn yes() -> u8 {
     1
 }
 
-/// The engine reads MP3 and OGG; AAC is a later step, so those stations come after.
+/// MP3 and OGG first (surest: AAC-LC in ADTS plays too, but HE-AAC and LATM streams may not), AAC after.
 fn rank(s: &Station) -> u8 {
     u8::from(!matches!(s.codec.as_str(), "MP3" | "OGG"))
 }

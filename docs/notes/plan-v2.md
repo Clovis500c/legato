@@ -414,6 +414,9 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       "live" instead of a progress bar in Now Playing, favicons, the directory's other searches (country, tag). Never seen
       on a screen nor against a real station.
       (4) `S` AAC streams (symphonia's AAC + ADTS, `cargo deny`). The owner's choice 2026-11-11: AAC too.
+      [x] 2026-11-11: nothing to add: `rodio`'s `mp4` feature already compiles symphonia's AAC codec and its ADTS reader, so no
+      new dependency (`cargo deny` unchanged); a test plays made-up silent AAC-LC ADTS frames as a station (garbage fails).
+      Untried on a real AAC station; HE-AAC (SBR) and LATM streams are not read (said in docs/playback.md).
 - [ ] `M` Release radar: new releases from artists in the library (YouTube Music / MusicBrainz).
 - [ ] `M` Credits and artist pages: who wrote / produced (MusicBrainz), a short bio (Wikipedia), links out.
 - [ ] `M` Sweet fades (Plexamp): crossfade length picked per pair from the songs' ends (loudness, silence, tempo).

@@ -314,7 +314,8 @@ visualizer and the media panel apply.
   song: `http::Stream::open_live` (plain GET through `music_connectors::radio_browser::open`, no Range, no `Icy-MetaData`, so
   no metadata inside the audio), no length, no seek (a seek outside the buffer is refused); a cut or ended connection
   reconnects (same backoff and tries) and carries on with what comes next. No second try as a server MP3. AAC stations
-  fail in words until symphonia's AAC is added.
+  play when they send AAC-LC in ADTS (symphonia's AAC codec is in already, through rodio's `mp4`; tested on made-up
+  silent frames). Not read: HE-AAC (SBR / PS: the core would play at half the rate) and LATM streams, which fail in words.
 - Raw stream first (`stream?format=raw`); a format the engine can't decode (opus, say) is asked again as the server's
   own MP3 at 320 kbps (`format=mp3&maxBitRate=320`), seekable by the server's byte ranges when it gives them.
 - Back to the server, when its direction sends (Both ways, Send only): a like stars the song, an unlike unstars it;

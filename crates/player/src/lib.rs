@@ -694,6 +694,28 @@ mod tests {
         let _ = std::fs::remove_file(file);
     }
 
+    /// Silent AAC-LC frames in ADTS (what most AAC radio streams send): 44.1 kHz mono, one empty channel element each.
+    fn adts_silence(frames: usize) -> Vec<u8> {
+        let frame = [0xFF, 0xF1, 0x50, 0x40, 0x01, 0x7F, 0xFC, 0x00, 0x00, 0x00, 0x07];
+        frame.iter().copied().cycle().take(frame.len() * frames).collect()
+    }
+
+    #[test]
+    fn an_aac_station_in_adts_plays() {
+        struct Station(Vec<u8>);
+        impl http::Fetch for Station {
+            fn get(&self, _: &str, _: u64, _: bool) -> std::io::Result<http::Reply> {
+                Ok(http::Reply { status: 200, content_length: None, content_range: None, content_type: Some("audio/aacp".into()), body: Box::new(Cursor::new(self.0.clone())) })
+            }
+        }
+        let mut e = Engine { volume: 1.0, ..Default::default() };
+        e.device = Some(Output::Null(Null::open()));
+        e.handle(Command::Remote { fetch: http::Remote(Arc::new(Station(adts_silence(200)))) }).unwrap();
+        e.handle(Command::Play { paths: vec![PathBuf::from("server:radio:https://radio.example/aac")], start: 0 }).unwrap();
+        assert!(e.error.is_none(), "{:?}", e.error);
+        e.handle(Command::Stop).unwrap();
+    }
+
     #[test]
     fn the_status_gives_the_early_end_only_when_skipping() {
         let path = wav("end", 0, 3, 4);
