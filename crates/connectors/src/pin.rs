@@ -261,8 +261,9 @@ ok").await;
         assert_eq!(fp.len(), 95);
         assert_eq!(parse(&fp), parse(&fp.replace(':', "").to_lowercase()));
         assert!(parse("AB:CD").is_none() && parse(&format!("{fp}Z")).is_none());
-        set("https://[::1]:8096", Some(&fp));
-        assert!(pinned("https://[::1]:8096/System/Info/Public") && !pinned("https://127.0.0.1:8096/"));
-        set("https://[::1]:8096", None);
+        // A host of its own: the pins are one table for every test running at once (the handshake tests use ::1).
+        set("https://fingerprint-test.lan:8096", Some(&fp));
+        assert!(pinned("https://fingerprint-test.lan:8096/System/Info/Public") && !pinned("https://127.0.0.1:8096/"));
+        set("https://fingerprint-test.lan:8096", None);
     }
 }
