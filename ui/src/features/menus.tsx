@@ -27,6 +27,7 @@ import {
   ImageSquare,
   Gear,
   Link,
+  Timer,
   Users,
   ListBullets,
   ListPlus,
@@ -88,6 +89,7 @@ import { holds, playingFrom } from './library/holding'
 import { navOf, withHidden } from './sidebar/navHidden'
 import { isStation } from './radio/station'
 import { clearLoop, markLoop, useLoop } from './player/abLoop'
+import { toggleMetronome, useMetronome } from './player/metronome'
 import { addToPlaylist, markMusic, markNotExplicit, removeFromPlaylist, removePositions, removeTrackFromPlaylist, songs } from './library/edits'
 import { ownLiked, youtubeLiked } from './library/likedMusic'
 import { editInfo, findDuplicates, showCredits } from './library/dialogs'
@@ -796,6 +798,7 @@ export function playerMenu({ controls = true }: { controls?: boolean } = {}): Me
     t && rateItem(t),
     t && bookmarkItem(t.id),
     loopItem(),
+    { label: tr('Metronome'), icon: <Timer size={16} />, checked: useMetronome.getState().bpm !== null, onSelect: () => void toggleMetronome(t?.bpm) },
     t?.album && { label: tr('Go to album'), icon: <Disc size={16} />, onSelect: () => (setFull(false), app().go({ name: 'album', album: t.album!, artist: primaryArtist(t.artist) })) },
     t && { label: tr('Go to artist'), icon: <MicrophoneStage size={16} />, onSelect: () => (setFull(false), app().go({ name: 'artist', artist: primaryArtist(t.artist) })) },
     lib && saveCoverItem(lib),

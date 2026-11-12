@@ -593,7 +593,10 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       count-in / metronome on the song's tempo.
       2026-11-12, the A-B loop: the player's menu has A–B loop (Loop starts here / Loop ends here / Clear the loop); at the end the
       song goes back to the start, from the position the player reports (`abLoop.ts`, no engine change, so the turn is a
-      quarter of a second late on a file); it goes when another song starts. Left: key and chords shown, a metronome.
+      quarter of a second late on a file); it goes when another song starts. Left: chords shown (no source gives them: the key is the tag's, a column and Edit song info).
+      2026-11-12, the metronome: the player's menu has "Metronome" (clicks on the audio clock at the song's tempo tag, else a typed tempo, 30 to 400
+      BPM; it follows the tempo, not the song's beats; stops with another song). Decided alone (2026-11-12): no count-in (it would need to
+      hold playback). Never tried by ear.
       2026-11-12: the loop has a key (L: start, end, clear, in the shortcuts table) and a band on the progress bar. Decided
       alone (2026-11-12): L, one key cycling the three steps, rather than three keys. Never tried by ear or on a screen.
 - [ ] `M-L` Profiles on one PC (each person's library, likes, history and Last.fm), switched from the top bar.
