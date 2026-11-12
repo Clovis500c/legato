@@ -207,6 +207,11 @@ Where a line says "reading", the owner hasn't confirmed it.
       `DEFAULTS_VERSION` bump. Decided alone (2026-11-12): the tick list rather than a menu entry "Sections…" (the settings search finds
       it); only the five entries, not the playlists list. Never seen on a screen.
 
+- [x] `S` CI on master was red (run 43275083597). (1) macOS: `lmix::tests::only_an_absolute_lmix_path` used a `C:\` path, not absolute
+      off Windows. 2026-11-12: the test builds its absolute path per system (`cfg!(windows)`); the rule is unchanged. Other `C:\`
+      paths in tests only feed string logic (`is_audio`, `path_key`), checked passing on macOS. Not run on macOS here: the log's only
+      failure; a later one past `-p legato` would show in the next run.
+
 ## Best in class (user's ask 2026-10-30)
 
 What a listener would get, against Riff (rootscripts/riff: Electron, yt-dlp downloads, YouTube / SoundCloud, imports

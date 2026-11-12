@@ -51,7 +51,10 @@ mod tests {
 
     #[test]
     fn only_an_absolute_lmix_path() {
-        assert!(lmix_path(r"C:\Mixes\a.lmix").is_ok() && lmix_path(r"C:\Mixes\A.LMIX").is_ok());
-        assert!(lmix_path("a.lmix").is_err() && lmix_path(r"C:\Mixes\a.exe").is_err() && lmix_path(r"C:\Mixes\a.lmix.exe").is_err());
+        // An absolute path is the system's own kind: a drive letter on Windows, a root elsewhere.
+        let dir = if cfg!(windows) { r"C:\Mixes" } else { "/mixes" };
+        let at = |name: &str| std::path::Path::new(dir).join(name).to_string_lossy().into_owned();
+        assert!(lmix_path(&at("a.lmix")).is_ok() && lmix_path(&at("A.LMIX")).is_ok());
+        assert!(lmix_path("a.lmix").is_err() && lmix_path(&at("a.exe")).is_err() && lmix_path(&at("a.lmix.exe")).is_err());
     }
 }
