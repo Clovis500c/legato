@@ -11,6 +11,7 @@ pub mod history;
 pub mod itunes_xml;
 pub mod matching;
 pub mod mixes;
+pub mod walk;
 pub mod musicness;
 pub mod playfile;
 pub mod model;

@@ -1,4 +1,4 @@
-import { CaretLeft, Clock, DotsThree, Heart, MicrophoneStage, Play, Plus, Radio, SpinnerGap } from '@phosphor-icons/react'
+import { CaretLeft, Clock, DotsThree, Heart, MicrophoneStage, PersonSimpleWalk, Play, Plus, Radio, SpinnerGap } from '@phosphor-icons/react'
 import { PlayingBars, PlayingMark } from '../player/PlayingMark'
 import { artistName } from '../../shared/artistName'
 import { useShallow } from 'zustand/react/shallow'
@@ -12,7 +12,7 @@ import { fold, formatCount, formatDuration, region } from '../../shared/format'
 import { tr, trn } from '../../shared/i18n/i18n'
 import { pop } from '../../shared/motion'
 import { Button } from '../../shared/ui/Button'
-import { onMenu, openMenu } from '../../shared/ui/ContextMenu'
+import { onMenu, openMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
 import { LedChip, RoundButton } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
 import { PageHeader } from '../../shared/ui/PageHeader'
@@ -31,6 +31,7 @@ import { discography } from './discography'
 import { groupAlbums, primaryArtist, type AlbumGroup } from './filter'
 import { photoOf, useArtistPicture } from './artistPicture'
 import { ArtistLinks } from './ArtistLinks'
+import { walkFrom } from './artistWalk'
 import { HiddenExplicit } from './HiddenVideos'
 import { useExplicit } from './useExplicit'
 import { PlayAll, ShuffleRound, totalTime } from './LibraryView'
@@ -353,9 +354,11 @@ export function ArtistView({ artist }: { artist: string }) {
   const picture = useArtistPicture(artist, yt?.art)
   const photo = photoOf(picture, shown.length || !yt?.art ? firstArt(shown) : [remoteArt(yt.art)])
   const tint = useCoverTint(photo[0])
+  // Only an artist of the library has a walk (it follows what you listen to together).
+  const walk: MenuEntry[] = shown.length ? ['-', { label: tr('Walk to another artist…'), icon: <PersonSimpleWalk size={16} />, onSelect: () => void walkFrom(artist) }] : []
   const header = (
     <PageHeader
-      onContextMenu={onMenu(() => tracksMenu(playable))}
+      onContextMenu={onMenu(() => tracksMenu(playable, walk))}
       art={<Cover title={artist} art={photo} size={168} eager className="rounded-full! border-0" />}
       tint={tint}
       kicker={tr('Artist')}
@@ -368,7 +371,7 @@ export function ArtistView({ artist }: { artist: string }) {
           <Button variant="ghost" onClick={() => void startRadioFrom(playable, artistName(artist))}>
             <Radio size={16} /> {tr('Radio')}
           </Button>
-          <RoundButton label={tr('More')} kind="plain" onClick={(e) => openMenu(e, tracksMenu(playable))}>
+          <RoundButton label={tr('More')} kind="plain" onClick={(e) => openMenu(e, tracksMenu(playable, walk))}>
             <DotsThree size={20} weight="bold" />
           </RoundButton>
         </>

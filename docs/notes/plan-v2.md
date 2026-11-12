@@ -548,7 +548,8 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       [x] 2026-11-11: nothing to add: `rodio`'s `mp4` feature already compiles symphonia's AAC codec and its ADTS reader, so no
       new dependency (`cargo deny` unchanged); a test plays made-up silent AAC-LC ADTS frames as a station (garbage fails).
       Untried on a real AAC station; HE-AAC (SBR) and LATM streams are not read (said in docs/playback.md).
-- [ ] `M` Release radar: new releases from artists in the library (YouTube Music / MusicBrainz).
+- [x] `M` Release radar: new releases from artists in the library (YouTube Music / MusicBrainz). Done 2026-11-11 as Discovery's
+      "New from your artists" (MusicBrainz only; see above); this line was a duplicate, ticked 2026-11-12.
 - [ ] `M` Credits and artist pages: who wrote / produced (MusicBrainz), a short bio (Wikipedia), links out.
       2026-11-12, the links out only: an artist's page has "Find links on MusicBrainz" (a click, two requests a second apart, the
       name only; `MusicBrainz::artist_links`: the artist by exact name with a score of 90, then its url relations, http(s) of 8
@@ -608,7 +609,12 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - [ ] `S-M` Volume: per-source volume memory (its own setting and a switch rule, a taste: the owner's call). The
       curve stays as it is (the owner's word, 2026-11-07).
 - [ ] `M` Concerts near the user from followed artists (a public API with no account; privacy row).
-- [ ] `M` A path between two artists (Plexamp's "Sonic Adventure"): a mix that walks from one to the other.
+- [x] `M` A path between two artists (Plexamp's "Sonic Adventure"): a mix that walks from one to the other.
+      2026-11-12: an artist page's menu (the ⋯ button and a right-click on the header) has "Walk to another artist…": you type a
+      library artist (a part of the name is enough) and the list plays a few songs of each artist on the strongest chain of
+      artists you listen to together (same session, same playlist: `walk::artist_path`, a Dijkstra on those links), at most 12
+      artists, no chain = a notice. Decided alone (2026-11-12): the links are the listening graph the mixes already use, not a
+      sound analysis (that line is still open), so a library with little history finds few walks. Never seen on a screen.
 - [ ] `M` Describe a playlist in words ("calm rainy Sunday, no lyrics"): matched against the library's tags and sonic
       features locally; an LLM only with the user's own key (like Last.fm's), privacy row first.
 - [ ] `M` Audiobooks from local files (m4b chapters, resume per book, speed, sleep at chapter end), apart from music.
