@@ -881,7 +881,8 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     // paused while the sound went on.
     if (!auto) {
       if (get().playing) get().toggle()
-      return get().seek(0)
+      // A radio station is live: no start to go back to (the engine refuses the seek with an error).
+      return void (list[index]?.ids.server?.startsWith('radio:') || get().seek(0))
     }
     // Up next ran out: similar songs when the setting says so (autoplay.ts), else stop.
     if (auto && queueEnd) return void queueEnd().then((added) => (added ? get().step(1, true) : set({ playing: false })), () => set({ playing: false }))

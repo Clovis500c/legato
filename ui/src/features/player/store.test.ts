@@ -475,4 +475,18 @@ describe('Next on the last song of the queue', () => {
     await settle()
     expect(usePlayer.getState().index).toBe(0)
   })
+
+  it('only pauses a radio station: a live stream has no start to seek to', async () => {
+    usePlayer.setState({ repeat: 'off' })
+    const station: LibraryTrack = { ...song(3), ids: { server: 'radio:https://radio.example/live' } }
+    usePlayer.getState().playTracks([song(1), station], 1)
+    await settle()
+    const player = vi.spyOn(api, 'player').mockResolvedValue(undefined as never)
+    usePlayer.setState({ playing: true })
+    usePlayer.getState().step(1)
+    await settle()
+    expect(player.mock.calls.map((c) => c[0].type)).not.toContain('seek')
+    expect(usePlayer.getState()).toMatchObject({ index: 1, playing: false })
+    player.mockRestore()
+  })
 })
