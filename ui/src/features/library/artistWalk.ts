@@ -1,6 +1,6 @@
 import { useStore } from '../../app/store'
 import { api } from '../../shared/api'
-import { tr } from '../../shared/i18n/i18n'
+import { tr, trn } from '../../shared/i18n/i18n'
 import { askText } from '../../shared/ui/Ask'
 import { usePlayer } from '../player/store'
 
@@ -19,7 +19,7 @@ export async function walkFrom(artist: string) {
     if (!walk || !list.length) return notify(tr('No walk found: nothing you listen to joins these two artists'))
     usePlayer.getState().playTracks(list, 0)
     if (usePlayer.getState().list === list) usePlayer.setState({ from: walk.artists.join(' → ') })
-    notify(tr('Walking through {n} artists', { n: walk.artists.length }))
+    notify(trn(walk.artists.length, 'Walking through {n} artist', 'Walking through {n} artists'))
   } catch (e) {
     notify(String(e), { kind: 'error' })
   }

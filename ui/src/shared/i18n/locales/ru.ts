@@ -2355,6 +2355,7 @@ const ru: Record<string, string> = {
   'Walk to which artist of your library?': 'До какого исполнителя из вашей библиотеки?',
   'Walk': 'Идти',
   'No walk found: nothing you listen to joins these two artists': 'Путь не найден: ничто из того, что вы слушаете, не связывает этих исполнителей',
+  'Walking through {n} artist': 'Через {n} исполнителя',
   'Walking through {n} artists': 'Через {n} исполнителей',
   'Metronome': 'Метроном',
   'Metronome tempo (30 to 400 BPM)': 'Темп метронома (от 30 до 400 BPM)',

@@ -2355,6 +2355,7 @@ const id: Record<string, string> = {
   'Walk to which artist of your library?': 'Ke artis mana di pustakamu?',
   'Walk': 'Jalan',
   'No walk found: nothing you listen to joins these two artists': 'Jalur tidak ditemukan: tidak ada yang kamu dengarkan yang menghubungkan kedua artis ini',
+  'Walking through {n} artist': 'Melewati {n} artis',
   'Walking through {n} artists': 'Melewati {n} artis',
   'Metronome': 'Metronom',
   'Metronome tempo (30 to 400 BPM)': 'Tempo metronom (30 sampai 400 BPM)',

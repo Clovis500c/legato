@@ -2355,6 +2355,7 @@ const ja: Record<string, string> = {
   'Walk to which artist of your library?': 'ライブラリのどのアーティストまで？',
   'Walk': '出発',
   'No walk found: nothing you listen to joins these two artists': '道が見つかりません：この 2 人をつなぐ曲を聴いていません',
+  'Walking through {n} artist': '{n} 組のアーティストを経由',
   'Walking through {n} artists': '{n} 組のアーティストを経由',
   'Metronome': 'メトロノーム',
   'Metronome tempo (30 to 400 BPM)': 'メトロノームのテンポ（30〜400 BPM）',

@@ -2355,6 +2355,7 @@ const zh: Record<string, string> = {
   'Walk to which artist of your library?': '走向资料库中的哪位艺人？',
   'Walk': '出发',
   'No walk found: nothing you listen to joins these two artists': '没有找到路径：你听的歌里没有任何东西连接这两位艺人',
+  'Walking through {n} artist': '途经 {n} 位艺人',
   'Walking through {n} artists': '途经 {n} 位艺人',
   'Metronome': '节拍器',
   'Metronome tempo (30 to 400 BPM)': '节拍器速度（30 到 400 BPM）',

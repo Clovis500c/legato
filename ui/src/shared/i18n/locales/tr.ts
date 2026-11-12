@@ -2355,6 +2355,7 @@ const tr: Record<string, string> = {
   'Walk to which artist of your library?': 'Kitaplığındaki hangi sanatçıya?',
   'Walk': 'Yürü',
   'No walk found: nothing you listen to joins these two artists': 'Yol bulunamadı: dinlediklerin bu iki sanatçıyı birbirine bağlamıyor',
+  'Walking through {n} artist': '{n} sanatçı üzerinden',
   'Walking through {n} artists': '{n} sanatçı üzerinden',
   'Metronome': 'Metronom',
   'Metronome tempo (30 to 400 BPM)': 'Metronom temposu (30 ile 400 BPM)',

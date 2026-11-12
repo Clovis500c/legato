@@ -2355,6 +2355,7 @@ const ko: Record<string, string> = {
   'Walk to which artist of your library?': '라이브러리의 어느 아티스트까지?',
   'Walk': '출발',
   'No walk found: nothing you listen to joins these two artists': '길을 찾지 못했습니다: 이 두 아티스트를 이어 주는 청취 기록이 없습니다',
+  'Walking through {n} artist': '아티스트 {n}명을 거쳐',
   'Walking through {n} artists': '아티스트 {n}명을 거쳐',
   'Metronome': '메트로놈',
   'Metronome tempo (30 to 400 BPM)': '메트로놈 템포(30~400 BPM)',

@@ -2355,6 +2355,7 @@ const hi: Record<string, string> = {
   'Walk to which artist of your library?': 'अपनी लाइब्रेरी के किस कलाकार तक?',
   'Walk': 'चलें',
   'No walk found: nothing you listen to joins these two artists': 'कोई रास्ता नहीं मिला: आप जो सुनते हैं उसमें कुछ इन दोनों कलाकारों को नहीं जोड़ता',
+  'Walking through {n} artist': '{n} कलाकार से होकर',
   'Walking through {n} artists': '{n} कलाकारों से होकर',
   'Metronome': 'मेट्रोनोम',
   'Metronome tempo (30 to 400 BPM)': 'मेट्रोनोम की गति (30 से 400 BPM)',

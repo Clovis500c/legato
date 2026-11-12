@@ -2355,6 +2355,7 @@ const nl: Record<string, string> = {
   'Walk to which artist of your library?': 'Naar welke artiest uit je bibliotheek?',
   'Walk': 'Ga',
   'No walk found: nothing you listen to joins these two artists': 'Geen route gevonden: niets wat je luistert verbindt deze twee artiesten',
+  'Walking through {n} artist': 'Via {n} artiest',
   'Walking through {n} artists': 'Via {n} artiesten',
   'Metronome': 'Metronoom',
   'Metronome tempo (30 to 400 BPM)': 'Tempo van de metronoom (30 tot 400 BPM)',

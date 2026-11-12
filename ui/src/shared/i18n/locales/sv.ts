@@ -2355,6 +2355,7 @@ const sv: Record<string, string> = {
   'Walk to which artist of your library?': 'Till vilken artist i ditt bibliotek?',
   'Walk': 'Vandra',
   'No walk found: nothing you listen to joins these two artists': 'Ingen väg hittades: inget du lyssnar på binder ihop de två artisterna',
+  'Walking through {n} artist': 'Via {n} artist',
   'Walking through {n} artists': 'Via {n} artister',
   'Metronome': 'Metronom',
   'Metronome tempo (30 to 400 BPM)': 'Metronomens tempo (30 till 400 BPM)',

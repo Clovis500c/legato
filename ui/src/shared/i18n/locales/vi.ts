@@ -2355,6 +2355,7 @@ const vi: Record<string, string> = {
   'Walk to which artist of your library?': 'Đến nghệ sĩ nào trong thư viện của bạn?',
   'Walk': 'Đi',
   'No walk found: nothing you listen to joins these two artists': 'Không tìm thấy đường: không có gì bạn nghe nối hai nghệ sĩ này',
+  'Walking through {n} artist': 'Đi qua {n} nghệ sĩ',
   'Walking through {n} artists': 'Đi qua {n} nghệ sĩ',
   'Metronome': 'Máy gõ nhịp',
   'Metronome tempo (30 to 400 BPM)': 'Nhịp độ máy gõ nhịp (30 đến 400 BPM)',

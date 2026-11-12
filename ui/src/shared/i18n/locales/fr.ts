@@ -2355,6 +2355,7 @@ const fr: Record<string, string> = {
   'Walk to which artist of your library?': 'Jusqu’à quel artiste de votre bibliothèque ?',
   'Walk': 'Partir',
   'No walk found: nothing you listen to joins these two artists': 'Aucun chemin : rien de ce que vous écoutez ne relie ces deux artistes',
+  'Walking through {n} artist': 'Chemin par {n} artiste',
   'Walking through {n} artists': 'Chemin par {n} artistes',
   'Metronome': 'Métronome',
   'Metronome tempo (30 to 400 BPM)': 'Tempo du métronome (30 à 400 BPM)',
