@@ -233,6 +233,9 @@ Where a line says "reading", the owner hasn't confirmed it.
       languages (`content.tsx`, `i18n/*.ts`). A link out: the visitor clicks, nothing is sent from the site or the app, so no `PRIVACY` /
       `SERVICES` row (decided alone, 2026-11-12). Also added to the FAQ what only the README said (SmartScreen's warning, which file to
       download, Stable or Beta) and "Simple Icons (CC0)" to the footer's credits. `pnpm build` in `site/` passes.
+      README: cut to what it is, the one-line install, the website, the Discord / Discussions, CONTRIBUTING and the licence. What it dropped is
+      on the site: the features and the FAQ (already), the install steps by file, SmartScreen, Stable / Beta (added), the numbers
+      (already, Performance), the trademark notice and the icons' credit (the footer); build from source is in CONTRIBUTING.md.
 - [ ] `M` Sign in with Discord, to show who shared (the owner's wish; only a note, nothing to build now): the version WITHOUT a bot first, an OAuth
       sign-in without a secret, the profile carried in the link; later, optionally, the link signed by the owner's bot, an exception to
       "serverless" that the owner must validate. Waits for their Discord application id.
