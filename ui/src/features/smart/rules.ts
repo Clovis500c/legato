@@ -13,11 +13,19 @@ export function passes(r: SmartRule, t: LibraryTrack, stats: Stats, newest: Set<
   switch (r.field) {
     case 'artist':
     case 'album':
-    case 'title': {
+    case 'title':
+    case 'genre': {
       const want = fold(r.value.trim())
       if (!want) return true
       const have = fold(t[r.field] ?? '')
       return r.op === 'is' ? have === want : r.op === 'not' ? !have.includes(want) : have.includes(want)
+    }
+    case 'year':
+    case 'tempo': {
+      if (r.value.trim() === '' || !Number.isFinite(n)) return true
+      // Songs the tags say nothing about (streamed ones) can't pass: no tempo isn't a slow one.
+      const have = r.field === 'year' ? t.year : t.bpm
+      return have !== undefined && (r.op === 'atMost' ? have <= n : have >= n)
     }
     case 'source': {
       const has = !!t.ids[r.value as Source]

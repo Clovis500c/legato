@@ -2345,6 +2345,7 @@ const id: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Server Anda hanya menerima kata sandi yang dikirim apa adanya (dikodekan heksadesimal, bukan enkripsi). Lewat https hanya server Anda yang bisa membacanya. Kirim dengan cara ini?',
   'Send my password as it is': 'Kirim kata sandi saya apa adanya',
   'Hide explicit songs': 'Sembunyikan lagu eksplisit',
+  'Tempo (BPM)': 'Tempo (BPM)',
   'Theme “{name}” added': 'Tema “{name}” ditambahkan',
   '24 themes at most: remove one first.': 'Maksimal 24 tema: hapus satu dulu.',
   'Your {name} songs': 'Lagu {name} Anda',

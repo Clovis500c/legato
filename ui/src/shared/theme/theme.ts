@@ -93,11 +93,11 @@ export interface HomeSection {
 
 /** Saved Home layout → every known section once, in the saved order, ones added since at their default place. */
 /** Smart playlist rule: a song field, a test, a value (numbers as text, like a form field). */
-export const SMART_FIELDS = ['artist', 'album', 'title', 'source', 'plays', 'played', 'rating', 'added'] as const
+export const SMART_FIELDS = ['artist', 'album', 'title', 'genre', 'year', 'tempo', 'source', 'plays', 'played', 'rating', 'added'] as const
 export type SmartField = (typeof SMART_FIELDS)[number]
 export interface SmartRule {
   field: SmartField
-  /** artist / album / title: has, is, not · source: is, not · plays: atLeast, atMost · played: within, notWithin · rating: atLeast, atMost (stars, rated songs only), none · added: last */
+  /** artist / album / title / genre: has, is, not · year / tempo (BPM, local files' tags): atLeast, atMost, songs without one fail · source: is, not · plays: atLeast, atMost · played: within, notWithin · rating: atLeast, atMost (stars, rated songs only), none · added: last */
   op: string
   value: string
 }

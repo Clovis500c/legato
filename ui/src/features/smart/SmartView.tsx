@@ -16,11 +16,14 @@ import { TrackTable } from '../library/TrackTable'
 import { smartTracks } from './rules'
 import { saveSmart, smartMenu, useSmartList } from './actions'
 
-const FIELD_LABEL: Record<SmartField, string> = { artist: msg('Artist'), album: msg('Album'), title: msg('Title'), source: msg('Source'), plays: msg('Plays'), played: msg('Last played'), rating: msg('Rating'), added: msg('Added') }
+const FIELD_LABEL: Record<SmartField, string> = { artist: msg('Artist'), album: msg('Album'), title: msg('Title'), genre: msg('Genre'), year: msg('Year'), tempo: msg('Tempo (BPM)'), source: msg('Source'), plays: msg('Plays'), played: msg('Last played'), rating: msg('Rating'), added: msg('Added') }
 const OPS: Record<SmartField, { value: string; label: string }[]> = {
   artist: [{ value: 'has', label: msg('contains') }, { value: 'is', label: msg('is') }, { value: 'not', label: msg('doesn’t contain') }],
   album: [{ value: 'has', label: msg('contains') }, { value: 'is', label: msg('is') }, { value: 'not', label: msg('doesn’t contain') }],
   title: [{ value: 'has', label: msg('contains') }, { value: 'is', label: msg('is') }, { value: 'not', label: msg('doesn’t contain') }],
+  genre: [{ value: 'has', label: msg('contains') }, { value: 'is', label: msg('is') }, { value: 'not', label: msg('doesn’t contain') }],
+  year: [{ value: 'atLeast', label: msg('at least') }, { value: 'atMost', label: msg('at most') }],
+  tempo: [{ value: 'atLeast', label: msg('at least') }, { value: 'atMost', label: msg('at most') }],
   source: [{ value: 'is', label: msg('is') }, { value: 'not', label: msg('isn’t') }],
   plays: [{ value: 'atLeast', label: msg('at least') }, { value: 'atMost', label: msg('at most') }],
   played: [{ value: 'within', label: msg('in the last (days)') }, { value: 'notWithin', label: msg('not in the last (days)') }],
@@ -33,6 +36,9 @@ const DEFAULT_RULE: Record<SmartField, SmartRule> = {
   artist: { field: 'artist', op: 'has', value: '' },
   album: { field: 'album', op: 'has', value: '' },
   title: { field: 'title', op: 'has', value: '' },
+  genre: { field: 'genre', op: 'has', value: '' },
+  year: { field: 'year', op: 'atLeast', value: '1990' },
+  tempo: { field: 'tempo', op: 'atLeast', value: '120' },
   source: { field: 'source', op: 'is', value: 'youtube' },
   plays: { field: 'plays', op: 'atLeast', value: '5' },
   played: { field: 'played', op: 'within', value: '30' },
@@ -81,7 +87,7 @@ function RuleRow({ rule, onChange, onRemove }: { rule: SmartRule; onChange: (r: 
           </select>
         )
       ) : (
-        <input aria-label={tr('Value')} value={rule.value} inputMode={['plays', 'played', 'added'].includes(rule.field) ? 'numeric' : undefined} onChange={(e) => onChange({ ...rule, value: e.target.value })} className={`${field} w-48`} />
+        <input aria-label={tr('Value')} value={rule.value} inputMode={['plays', 'played', 'added', 'year', 'tempo'].includes(rule.field) ? 'numeric' : undefined} onChange={(e) => onChange({ ...rule, value: e.target.value })} className={`${field} w-48`} />
       )}
       <RoundButton label={tr('Remove this rule')} kind="plain" size="xs" onClick={onRemove}>
         <X size={13} />

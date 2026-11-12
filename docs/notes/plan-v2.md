@@ -420,7 +420,9 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       2026-11-12, local files' half: schema v22 (`bpm`, `key`, filled by the next scan from TBPM / tmpo and TKEY / initialkey;
       a tempo outside 30-400 or a key over 12 characters is dropped), Songs' BPM and Key columns (off by default, Settings
       › Columns) and Tempo sorts. Not done: streamed songs' genre / year / tempo (no source gives them without a new host),
-      smart-playlist rules and tempo-matched transitions on them, editing them in Edit song info. Never seen on a screen.
+      tempo-matched transitions, editing them in Edit song info. 2026-11-12, smart playlists: rules on Genre (contains / is /
+      doesn't contain), Year and Tempo (BPM) (at least / at most; a song with no tag fails a number test, as unrated songs do for
+      ratings): `rules.ts`, the rule editor. Never seen on a screen. Never seen on a screen.
 - [ ] `M` Mixes: genre / year tags (stored for local files only), Last.fm "Discoveries" (user's key); "Never in mixes"
       on a discovered song (not in the library: no row to hold the choice).
       2026-11-12, the genre / year half: "Your {genre} songs" (up to 2) and "Your songs of the {decade}" (up to 2) mixes from the

@@ -21,6 +21,18 @@ describe('smart playlists', () => {
     expect(ids(list({ rules: [{ field: 'added', op: 'last', value: '2' }], sort: 'added' }))).toEqual([4, 3])
   })
 
+  it("filters by the tags of local files: genre, year and tempo, songs with none failing a number test", () => {
+    const tagged = [{ ...tracks[0], genre: 'House', year: 2001, bpm: 123 }, { ...tracks[1], genre: 'Synthwave', year: 2010, bpm: 96 }, { ...tracks[2], genre: 'Funk', year: 2013 }, tracks[3]]
+    const by = (l: SmartList) => smartTracks(l, tagged, stats, now).map((x) => x.id)
+    expect(by(list({ rules: [{ field: 'genre', op: 'has', value: 'wave' }] }))).toEqual([2])
+    expect(by(list({ rules: [{ field: 'genre', op: 'not', value: 'house' }], sort: 'title' }))).toEqual([3, 4, 2])
+    expect(by(list({ rules: [{ field: 'year', op: 'atLeast', value: '2005' }] }))).toEqual([3, 2])
+    expect(by(list({ rules: [{ field: 'tempo', op: 'atLeast', value: '100' }] }))).toEqual([1])
+    expect(by(list({ rules: [{ field: 'tempo', op: 'atMost', value: '100' }] }))).toEqual([2])
+    // An unfinished rule lets everything through, like the others.
+    expect(by(list({ rules: [{ field: 'tempo', op: 'atLeast', value: '' }] }))).toHaveLength(4)
+  })
+
   it('filters and sorts by rating, unrated songs being no rating', () => {
     const rated: Record<number, [number, number, number?]> = { ...stats, 1: [12, now - 3600, 9], 2: [3, now, 4], 4: [0, 0, 8] }
     const by = (l: SmartList) => smartTracks(l, tracks, rated, now).map((x) => x.id)

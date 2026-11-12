@@ -2345,6 +2345,7 @@ const ko: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': '서버가 비밀번호를 그대로 보내는 방식만 받습니다(16진수로 인코딩될 뿐 암호화는 아닙니다). https에서는 서버만 읽을 수 있습니다. 이렇게 보낼까요?',
   'Send my password as it is': '내 비밀번호를 그대로 보내기',
   'Hide explicit songs': '선정적인 곡 숨기기',
+  'Tempo (BPM)': '템포 (BPM)',
   'Theme “{name}” added': '테마 “{name}”을(를) 추가했습니다',
   '24 themes at most: remove one first.': '테마는 최대 24개입니다. 먼저 하나를 지우세요.',
   'Your {name} songs': '내 {name} 노래',
