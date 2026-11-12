@@ -1,6 +1,6 @@
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
-import { api, type Lmix } from '../../shared/api'
+import { api, type Effects, type Lmix } from '../../shared/api'
 import { saveFile } from '../../shared/files'
 import { tr } from '../../shared/i18n/i18n'
 import { remoteTrack, usePlayer } from '../player/store'
@@ -40,8 +40,8 @@ export const openRemix = (path: string) => api.lmixRead(path).then(playRemix).ca
 export const openRemixLink = (link: string) => api.lmixFromLink(link).then(playRemix).catch(fail)
 
 /** The playing YouTube song with the settings now in the editor, as a link to copy. */
-export async function copyRemixLink() {
-  const mix = nowRemix()
+export async function copyRemixLink(effects?: Effects) {
+  const mix = nowRemix(effects)
   if (!mix) return useStore.getState().notify(tr('Only a song playing from YouTube can be shared as a remix file'))
   try {
     await navigator.clipboard.writeText(await api.lmixLink(mix))
@@ -52,14 +52,14 @@ export async function copyRemixLink() {
 }
 
 /** The song playing from YouTube with the editor's settings, or null. */
-function nowRemix(): Lmix | null {
+function nowRemix(effects: Effects = useEditor.getState().effects): Lmix | null {
   const { now } = usePlayer.getState()
-  return now?.youtubeId ? { name: now.title || 'Remix', video: now.youtubeId, title: now.title, artist: now.artist, effects: useEditor.getState().effects } : null
+  return now?.youtubeId ? { name: now.title || 'Remix', video: now.youtubeId, title: now.title, artist: now.artist, effects } : null
 }
 
 /** The playing YouTube song with the settings now in the editor, as a file to share. */
-export async function exportRemix() {
-  const mix = nowRemix()
+export async function exportRemix(effects?: Effects) {
+  const mix = nowRemix(effects)
   if (!mix) return useStore.getState().notify(tr('Only a song playing from YouTube can be shared as a remix file'))
   const name = mix.name.replace(/[\\/:*?"<>|]/g, ' ').trim() || 'Remix'
   try {

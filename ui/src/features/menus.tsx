@@ -95,7 +95,7 @@ import { repeatedRows } from './library/duplicates'
 import { PlaylistCover as PlaylistIcon } from './library/PlaylistCover'
 import { primaryArtist } from './library/filter'
 import { isFull, viaLabel, vias } from './player/sources'
-import { bypass, deletePreset, deleteVersion, playVersion, reset, useEditor } from './editor/editor'
+import { bypass, deletePreset, deleteVersion, playVersion, presetEffects, reset, useEditor } from './editor/editor'
 import { loadPlugins, pluginCommands, runCommand } from './plugins/host'
 import { canPlay, isRemote, nowTrack, remoteTrack, usePlayer } from './player/store'
 import { startAutoDj } from './player/autoDj'
@@ -781,6 +781,9 @@ export function playerMenu({ controls = true }: { controls?: boolean } = {}): Me
     { label: tr('Share as a picture…'), icon: <ImageSquare size={16} />, onSelect: openShare },
     roomItem(),
     { label: tr('Live Editor'), icon: <SlidersHorizontal size={16} />, onSelect: () => (useSettings.getState().update({ editor: true }), setFull(true)) },
+    // The mix now in the editor (a version playing included), shared from the player's own menu too.
+    video && { label: tr('Share this mix as a file…'), icon: <ShareNetwork size={16} />, onSelect: () => void import('./editor/remixFile').then((m) => m.exportRemix()) },
+    video && { label: tr('Copy this mix’s link'), icon: <Link size={16} />, onSelect: () => void import('./editor/remixFile').then((m) => m.copyRemixLink()) },
     { label: tr('Sleep timer'), icon: <Moon size={16} />, items: sleepMenu() },
     !phoneApp && { label: tr('Alarm…'), icon: <Alarm size={16} />, onSelect: () => (setFull(false), app().go({ name: 'settings', section: 'playback', focus: 'Alarm' })) },
     { label: tr('Mini player'), icon: <PictureInPicture size={16} />, checked: mini || !!video, disabled: !!video, onSelect: () => useSettings.getState().update({ miniPlayer: !mini }) },
@@ -975,6 +978,9 @@ export function editVersionMenu(v: Edit, rename: () => void): MenuEntry[] {
   return [
     { label: tr('Play with this song'), icon: <Play size={16} />, checked: v.active, onSelect: () => playVersion(v.id).catch(fail) },
     { label: tr('Rename'), icon: <PencilSimple size={16} />, onSelect: rename },
+    // This version's settings, not the ones in the editor now (a YouTube song only).
+    { label: tr('Share this mix as a file…'), icon: <ShareNetwork size={16} />, disabled: !player().now?.youtubeId, onSelect: () => void import('./editor/remixFile').then((m) => m.exportRemix(presetEffects(v))) },
+    { label: tr('Copy this mix’s link'), icon: <Link size={16} />, disabled: !player().now?.youtubeId, onSelect: () => void import('./editor/remixFile').then((m) => m.copyRemixLink(presetEffects(v))) },
     '-',
     { label: tr('Delete'), icon: <Trash size={16} />, danger: true, onSelect: () => deleteVersion(v.id).catch(fail) },
   ]

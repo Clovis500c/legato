@@ -217,6 +217,11 @@ Where a line says "reading", the owner hasn't confirmed it.
       `node scripts/budget.mjs`: 344 → 336 kB gzip (1066 → 1041 kB raw); `BUDGET` unchanged. Not seen on a screen: the first search
       list now waits one chunk load.
 
+- [x] `S` Share a version of a mix (the owner): right-click a saved version in the Live Editor's "Versions of this song" now also has "Share this mix as
+      a file…" and "Copy this mix's link", for the clicked version's own settings (`presetEffects`), not the ones in the editor now; the
+      "Original" pseudo-version has none to share. They were missing from the full-screen player's menu because they lived only in the Live
+      Editor panel's menu (no bug: never added to `playerMenu`); `playerMenu` has both now for a YouTube song. Not tried on a screen.
+
 ## Best in class (user's ask 2026-10-30)
 
 What a listener would get, against Riff (rootscripts/riff: Electron, yt-dlp downloads, YouTube / SoundCloud, imports
