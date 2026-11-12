@@ -8,15 +8,14 @@ wait on `platforms`, not pushed.
 ## Where things stand
 - **Stable** 1.1.681 (2026-11-05): Windows installer, `latest.json`, the Android APK. **Beta** 1.1.801 (2026-11-07):
   an Android Java crash now lands in Copy diagnostics (for the QR-scan crash). GitHub's master = `8e9fb3f`.
-- **platforms** = master (`80310d3`, pushed) + 27 local commits (`git log origin/master..platforms`), none seen on a
-  screen: the round artist pictures, Up next on Now Playing's backdrop, the flowing background (off), web share links
-  (the website's `/l` page: links copied by this build 404 until the website is deployed), "New from your artists"
-  (off), the classic mini player (off), YouTube volume levelling, MusicBrainz lookup in Edit song info, a11y fixes,
-  Subsonic ReplayGain / playlist edits / code 41, Plex covers by account key and its MP3 transcoder, hide explicit
-  songs (`6bef82c`, schema v21), and internet radio steps 1 and 2 (the Radio Browser connector, the engine's endless
-  stream; no page starts a station yet). Skipped with reasons in plan-v2: FTS5 search (`88353da`, 7 ms a keystroke),
-  self-signed pinning, the server's search, Plex's sign-out removal. The report `docs/notes/report-2026-11-11.md`
-  (untracked, French) lists what to try and the owner's questions.
+- **platforms** = master (`80310d3`, pushed) + 46 local commits (`git log origin/master..platforms`), none seen on a
+  screen. The first day's list is in the report; since: the song played twice (`6f8e6fe0`), a self-signed server's
+  pinned fingerprint (`6986bd54`), Plex's transcoder, hide explicit songs everywhere with a "Not explicit" way back,
+  Cover Art Archive covers (option, off), the artist pictures asked once each, the classic mini player's place kept,
+  the flowing background behind Home (option, off), `legato://` registered by the installed app with an "Open in
+  Legato" button on the share page, and internet radio steps 1 to 3 (the Radio page; AAC stations still fail in words).
+  Skipped with reasons in plan-v2: FTS5 search, the server's search, Plex's sign-out removal. The report
+  `docs/notes/report-2026-11-11.md` (untracked, French) lists what to try and the owner's answers.
   Pushes go `platforms:master`, only on the owner's word; docs only: `[skip release]` in the last commit's first line.
 - **winget**: microsoft/winget-pkgs#474341 (Stable 1.1.681): CLA signed, Microsoft's validation passed, waiting for a
   moderator. Each new Stable needs a new manifest (`packaging/README.md`).
@@ -26,11 +25,13 @@ wait on `platforms`, not pushed.
   `2026-10-30-001238-…txt` at the root.
 
 ## Next
-1. Internet radio step 3 (a `radio` source and a Radio page: search, play, keep a station; Up next and history skip
-   it; the connector's error words into `errors.ts`), then step 4 (AAC), then Features › Medium's other open `M` lines.
-2. From the owner: the QR-scan crash on Android (their Copy diagnostics from Beta 1.1.801 after a scan), fixes from
-   their tries of the run, snap layouts (Against Liner 6) at the PC.
-3. Left untouched: the `L` lines (17's internet half, Linux and macOS builds).
+1. Internet radio step 4 (AAC: symphonia's AAC + ADTS, `cargo deny`).
+2. The night's asks of 2026-11-11 in their order (plan-v2, "The owner's asks of 2026-11-11, night"): the security of
+   dropped files first, then `.lmix`, the picture drop, the share page's preview, the Discord profile once the owner
+   has chosen, the website.
+3. From the owner: the QR-scan crash on Android (Copy diagnostics from Beta 1.1.801 after a scan), their tries of the
+   run (nothing was seen on a screen), snap layouts (Against Liner 6) at the PC.
+4. Then Features › Medium's other open `M` lines. The `L` lines (17's internet half, Linux and macOS builds) untouched.
 
 One step = `graphify query` first, code and tests, `pnpm check` green, one local commit on `platforms`, its plan-v2
 line ticked with what wasn't tried for real, `graphify update .`.
