@@ -651,6 +651,10 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       2026-11-12, the metronome: the player's menu has "Metronome" (clicks on the audio clock at the song's tempo tag, else a typed tempo, 30 to 400
       BPM; it follows the tempo, not the song's beats; stops with another song). Decided alone (2026-11-12): no count-in (it would need to
       hold playback). Never tried by ear.
+      2026-11-13, the count-in: the player's menu has "Count in, then play": the song waits (paused) while four clicks sound at its tempo
+      (the tag's, else typed; at the speed it is heard, the Live Editor's included), then it plays from where it is
+      (`countIn.ts`, the clicks are the metronome's). Decided alone (2026-11-13): four beats, no setting, an accent on the first; it
+      holds playback by pausing, so nothing in the engine changed. Never tried by ear.
       2026-11-12: the loop has a key (L: start, end, clear, in the shortcuts table) and a band on the progress bar. Decided
       alone (2026-11-12): L, one key cycling the three steps, rather than three keys. Never tried by ear or on a screen.
 - [ ] `M-L` Profiles on one PC (each person's library, likes, history and Last.fm), switched from the top bar.

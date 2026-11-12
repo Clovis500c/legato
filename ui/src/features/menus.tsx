@@ -800,6 +800,7 @@ export function playerMenu({ controls = true }: { controls?: boolean } = {}): Me
     t && rateItem(t),
     t && bookmarkItem(t.id),
     loopItem(),
+    { label: tr('Count in, then play'), icon: <Timer size={16} />, onSelect: () => void import('./player/countIn').then((m) => m.countInPlay(t?.bpm)) },
     { label: tr('Metronome'), icon: <Timer size={16} />, checked: useMetronome.getState().bpm !== null, onSelect: () => void toggleMetronome(t?.bpm) },
     t?.album && { label: tr('Go to album'), icon: <Disc size={16} />, onSelect: () => (setFull(false), app().go({ name: 'album', album: t.album!, artist: primaryArtist(t.artist) })) },
     t && { label: tr('Go to artist'), icon: <MicrophoneStage size={16} />, onSelect: () => (setFull(false), app().go({ name: 'artist', artist: primaryArtist(t.artist) })) },

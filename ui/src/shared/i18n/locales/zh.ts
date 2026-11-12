@@ -2345,6 +2345,8 @@ const zh: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': '你的服务器只接受原样发送的密码（十六进制编码，并非加密）。通过 https 只有你的服务器能读到。要这样发送吗？',
   'Send my password as it is': '原样发送我的密码',
   'Hide explicit songs': '隐藏含露骨内容的歌曲',
+  'Count in, then play': '先数拍再播放',
+  'Counting in at {bpm} BPM': '正在以 {bpm} BPM 数拍',
   'Chapters': '章节',
   'Chapter {n}': '第 {n} 章',
   'End of chapter': '章节结束',

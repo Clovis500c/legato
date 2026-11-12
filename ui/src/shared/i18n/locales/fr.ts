@@ -2345,6 +2345,8 @@ const fr: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Votre serveur n’accepte que le mot de passe envoyé tel quel (codé en hexadécimal, ce qui n’est pas du chiffrement). En https, seul votre serveur peut le lire. L’envoyer ainsi ?',
   'Send my password as it is': 'Envoyer mon mot de passe tel quel',
   'Hide explicit songs': 'Masquer les titres explicites',
+  'Count in, then play': 'Décompte, puis lecture',
+  'Counting in at {bpm} BPM': 'Décompte à {bpm} BPM',
   'Chapters': 'Chapitres',
   'Chapter {n}': 'Chapitre {n}',
   'End of chapter': 'Fin du chapitre',

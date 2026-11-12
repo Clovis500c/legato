@@ -34,17 +34,19 @@ let ctx: AudioContext | null = null
 let timer: ReturnType<typeof setInterval> | undefined
 let next = 0
 
-function click(at: number, accent: boolean) {
-  if (!ctx) return
-  const o = ctx.createOscillator()
-  const g = ctx.createGain()
+/** One click on `c`'s clock at `at` (seconds); louder pitch on the accent. */
+export function clickAt(c: AudioContext, at: number, accent: boolean) {
+  const o = c.createOscillator()
+  const g = c.createGain()
   o.frequency.value = accent ? 1600 : 1000
   g.gain.setValueAtTime(0.25, at)
   g.gain.exponentialRampToValueAtTime(0.0001, at + 0.05)
-  o.connect(g).connect(ctx.destination)
+  o.connect(g).connect(c.destination)
   o.start(at)
   o.stop(at + 0.06)
 }
+
+const click = (at: number, accent: boolean) => ctx && clickAt(ctx, at, accent)
 
 export function stopMetronome() {
   clearInterval(timer)
