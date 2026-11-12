@@ -2397,6 +2397,9 @@ const ru: Record<string, string> = {
   'explicit lyrics parental clean children kids family': 'explicit ненормативная лексика тексты родительский контроль дети семья clean',
   'This device doesn’t trust your server’s certificate (a self-signed one?). Trust it only if this SHA-256 fingerprint is the one your server shows:': 'Это устройство не доверяет сертификату вашего сервера (самоподписанный?). Доверяйте ему, только если этот отпечаток SHA-256 совпадает с тем, что показывает сервер:',
   'Trust this certificate and sign in': 'Доверять этому сертификату и войти',
+  'Use the theme “{name}”?': 'Использовать тему «{name}»?',
+  'It joins your themes and is applied now; Settings › Appearance › Theme takes you back.': 'Она добавится к вашим темам и сразу применится; вернуться можно в Настройки › Оформление › Тема.',
+  'Use it': 'Использовать',
 }
 
 export default ru

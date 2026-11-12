@@ -2397,6 +2397,9 @@ const id: Record<string, string> = {
   'explicit lyrics parental clean children kids family': 'explicit eksplisit lirik kontrol orang tua anak keluarga clean',
   'This device doesn’t trust your server’s certificate (a self-signed one?). Trust it only if this SHA-256 fingerprint is the one your server shows:': 'Perangkat ini tidak memercayai sertifikat servermu (sertifikat swatanda?). Percayai hanya jika sidik jari SHA-256 ini sama dengan yang ditampilkan servermu:',
   'Trust this certificate and sign in': 'Percayai sertifikat ini dan masuk',
+  'Use the theme “{name}”?': 'Pakai tema “{name}”?',
+  'It joins your themes and is applied now; Settings › Appearance › Theme takes you back.': 'Tema ini masuk ke temamu dan langsung dipakai; Pengaturan › Tampilan › Tema untuk kembali.',
+  'Use it': 'Pakai',
 }
 
 export default id

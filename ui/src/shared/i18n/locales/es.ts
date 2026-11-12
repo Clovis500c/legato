@@ -2397,6 +2397,9 @@ const es: Record<string, string> = {
   'explicit lyrics parental clean children kids family': 'explicit explícito letras control parental niños familia clean',
   'This device doesn’t trust your server’s certificate (a self-signed one?). Trust it only if this SHA-256 fingerprint is the one your server shows:': 'Este dispositivo no confía en el certificado de tu servidor (¿uno autofirmado?). Confía en él solo si esta huella SHA-256 es la que muestra tu servidor:',
   'Trust this certificate and sign in': 'Confiar en este certificado e iniciar sesión',
+  'Use the theme “{name}”?': '¿Usar el tema «{name}»?',
+  'It joins your themes and is applied now; Settings › Appearance › Theme takes you back.': 'Se suma a tus temas y se aplica ahora; Ajustes › Apariencia › Tema te devuelve al anterior.',
+  'Use it': 'Usarlo',
 }
 
 export default es

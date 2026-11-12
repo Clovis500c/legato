@@ -2397,6 +2397,9 @@ const ko: Record<string, string> = {
   'explicit lyrics parental clean children kids family': 'explicit 선정적 가사 자녀 보호 어린이 가족 clean',
   'This device doesn’t trust your server’s certificate (a self-signed one?). Trust it only if this SHA-256 fingerprint is the one your server shows:': '이 기기는 서버의 인증서를 신뢰하지 않습니다(자체 서명 인증서?). 이 SHA-256 지문이 서버에 표시된 것과 같을 때만 신뢰하세요:',
   'Trust this certificate and sign in': '이 인증서를 신뢰하고 로그인',
+  'Use the theme “{name}”?': '“{name}” 테마를 사용할까요?',
+  'It joins your themes and is applied now; Settings › Appearance › Theme takes you back.': '테마 목록에 추가되고 바로 적용됩니다. 설정 › 모양 › 테마에서 되돌릴 수 있습니다.',
+  'Use it': '사용',
 }
 
 export default ko

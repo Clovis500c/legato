@@ -2397,6 +2397,9 @@ const vi: Record<string, string> = {
   'explicit lyrics parental clean children kids family': 'explicit nhạy cảm lời bài hát kiểm soát của phụ huynh trẻ em gia đình clean',
   'This device doesn’t trust your server’s certificate (a self-signed one?). Trust it only if this SHA-256 fingerprint is the one your server shows:': 'Thiết bị này không tin chứng chỉ của máy chủ (chứng chỉ tự ký?). Chỉ tin nó nếu dấu vân tay SHA-256 này trùng với dấu mà máy chủ của bạn hiển thị:',
   'Trust this certificate and sign in': 'Tin chứng chỉ này và đăng nhập',
+  'Use the theme “{name}”?': 'Dùng chủ đề “{name}”?',
+  'It joins your themes and is applied now; Settings › Appearance › Theme takes you back.': 'Chủ đề được thêm vào danh sách và áp dụng ngay; Cài đặt › Giao diện › Chủ đề để quay lại.',
+  'Use it': 'Dùng',
 }
 
 export default vi

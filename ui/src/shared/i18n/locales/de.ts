@@ -2397,6 +2397,9 @@ const de: Record<string, string> = {
   'explicit lyrics parental clean children kids family': 'explicit explizit songtexte jugendschutz eltern kinder familie clean',
   'This device doesn’t trust your server’s certificate (a self-signed one?). Trust it only if this SHA-256 fingerprint is the one your server shows:': 'Dieses Gerät vertraut dem Zertifikat deines Servers nicht (ein selbst signiertes?). Vertraue ihm nur, wenn dieser SHA-256-Fingerabdruck der ist, den dein Server anzeigt:',
   'Trust this certificate and sign in': 'Diesem Zertifikat vertrauen und anmelden',
+  'Use the theme “{name}”?': 'Das Design „{name}“ verwenden?',
+  'It joins your themes and is applied now; Settings › Appearance › Theme takes you back.': 'Es kommt zu deinen Designs und wird jetzt angewendet; unter Einstellungen › Darstellung › Design kehrst du zurück.',
+  'Use it': 'Verwenden',
 }
 
 export default de

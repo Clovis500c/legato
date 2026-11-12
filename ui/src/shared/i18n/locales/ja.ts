@@ -2397,6 +2397,9 @@ const ja: Record<string, string> = {
   'explicit lyrics parental clean children kids family': 'explicit 露骨 歌詞 ペアレンタル 子ども 家族 clean',
   'This device doesn’t trust your server’s certificate (a self-signed one?). Trust it only if this SHA-256 fingerprint is the one your server shows:': 'このデバイスはサーバーの証明書を信頼していません（自己署名？）。この SHA-256 フィンガープリントがサーバーに表示されるものと同じ場合のみ信頼してください：',
   'Trust this certificate and sign in': 'この証明書を信頼してサインイン',
+  'Use the theme “{name}”?': 'テーマ「{name}」を使いますか？',
+  'It joins your themes and is applied now; Settings › Appearance › Theme takes you back.': 'テーマに追加され、すぐに適用されます。設定 › 外観 › テーマで元に戻せます。',
+  'Use it': '使う',
 }
 
 export default ja

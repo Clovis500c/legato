@@ -2397,6 +2397,9 @@ const sv: Record<string, string> = {
   'explicit lyrics parental clean children kids family': 'explicit explicita låttexter föräldrakontroll barn familj clean',
   'This device doesn’t trust your server’s certificate (a self-signed one?). Trust it only if this SHA-256 fingerprint is the one your server shows:': 'Den här enheten litar inte på din servers certifikat (ett självsignerat?). Lita bara på det om detta SHA-256-fingeravtryck är det som din server visar:',
   'Trust this certificate and sign in': 'Lita på certifikatet och logga in',
+  'Use the theme “{name}”?': 'Använda temat ”{name}”?',
+  'It joins your themes and is applied now; Settings › Appearance › Theme takes you back.': 'Det läggs till bland dina teman och används nu; Inställningar › Utseende › Tema tar dig tillbaka.',
+  'Use it': 'Använd',
 }
 
 export default sv

@@ -2397,6 +2397,9 @@ const nl: Record<string, string> = {
   'explicit lyrics parental clean children kids family': 'explicit expliciet songteksten ouderlijk toezicht kinderen gezin clean',
   'This device doesn’t trust your server’s certificate (a self-signed one?). Trust it only if this SHA-256 fingerprint is the one your server shows:': 'Dit apparaat vertrouwt het certificaat van je server niet (een zelfondertekend?). Vertrouw het alleen als deze SHA-256-vingerafdruk dezelfde is als die je server toont:',
   'Trust this certificate and sign in': 'Dit certificaat vertrouwen en inloggen',
+  'Use the theme “{name}”?': 'Het thema ‘{name}’ gebruiken?',
+  'It joins your themes and is applied now; Settings › Appearance › Theme takes you back.': 'Het komt bij je thema’s en wordt nu toegepast; via Instellingen › Weergave › Thema ga je terug.',
+  'Use it': 'Gebruiken',
 }
 
 export default nl

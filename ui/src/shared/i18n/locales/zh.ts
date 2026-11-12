@@ -2397,6 +2397,9 @@ const zh: Record<string, string> = {
   'explicit lyrics parental clean children kids family': 'explicit 露骨 歌词 家长控制 儿童 家庭 clean',
   'This device doesn’t trust your server’s certificate (a self-signed one?). Trust it only if this SHA-256 fingerprint is the one your server shows:': '此设备不信任你的服务器证书（自签名证书？）。只有当这个 SHA-256 指纹与服务器显示的一致时才信任它：',
   'Trust this certificate and sign in': '信任此证书并登录',
+  'Use the theme “{name}”?': '使用主题“{name}”？',
+  'It joins your themes and is applied now; Settings › Appearance › Theme takes you back.': '它会加入你的主题并立即应用；可在设置 › 外观 › 主题中改回。',
+  'Use it': '使用',
 }
 
 export default zh

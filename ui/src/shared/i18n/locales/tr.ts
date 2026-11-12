@@ -2397,6 +2397,9 @@ const tr: Record<string, string> = {
   'explicit lyrics parental clean children kids family': 'explicit müstehcen şarkı sözü ebeveyn denetimi çocuk aile clean',
   'This device doesn’t trust your server’s certificate (a self-signed one?). Trust it only if this SHA-256 fingerprint is the one your server shows:': 'Bu cihaz sunucunun sertifikasına güvenmiyor (kendinden imzalı mı?). Yalnızca bu SHA-256 parmak izi sunucunun gösterdiğiyle aynıysa güven:',
   'Trust this certificate and sign in': 'Bu sertifikaya güven ve oturum aç',
+  'Use the theme “{name}”?': '“{name}” teması kullanılsın mı?',
+  'It joins your themes and is applied now; Settings › Appearance › Theme takes you back.': 'Temalarına eklenir ve hemen uygulanır; Ayarlar › Görünüm › Tema ile geri dönebilirsin.',
+  'Use it': 'Kullan',
 }
 
 export default tr
