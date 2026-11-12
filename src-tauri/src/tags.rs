@@ -54,12 +54,12 @@ fn files(state: &AppState, track_ids: &[i64]) -> Result<Vec<PathBuf>, String> {
     track_ids.iter().map(|&id| lib.local_path(id).map_err(err)?.map(PathBuf::from).ok_or_else(|| "Only your own music files can be edited".to_string())).collect()
 }
 
-/// The chapters of a book in the library (an `.m4b`, `.m4a` or `.mp4` file of this PC); none for any other song. Reads the file's
+/// The chapters of a book in the library (an `.m4b`, `.m4a`, `.mp4` or `.mp3` file of this PC); none for any other song. Reads the file's
 /// header boxes only.
 #[tauri::command]
 pub async fn track_chapters(state: State<'_, AppState>, track_id: i64) -> CmdResult<Vec<music_core::chapters::Chapter>> {
     let Some(path) = state.lib().local_path(track_id).map_err(err)?.map(PathBuf::from) else { return Ok(Vec::new()) };
-    if !path.extension().and_then(|e| e.to_str()).is_some_and(|e| ["m4b", "m4a", "mp4"].iter().any(|k| e.eq_ignore_ascii_case(k))) {
+    if !path.extension().and_then(|e| e.to_str()).is_some_and(|e| ["m4b", "m4a", "mp4", "mp3"].iter().any(|k| e.eq_ignore_ascii_case(k))) {
         return Ok(Vec::new());
     }
     tauri::async_runtime::spawn_blocking(move || Ok(std::fs::File::open(path).map(|f| music_core::chapters::read_chapters(&mut std::io::BufReader::new(f))).unwrap_or_default())).await.map_err(err)?

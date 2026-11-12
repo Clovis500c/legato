@@ -636,6 +636,11 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       read: QuickTime text-track chapters (Audible and iTunes books may use them) and ID3 `CHAP` of mp3s: those show none.
       Never tried on a real book. Left open: speed kept per book (the Live Editor saves its speed per song already, when
       switched on), the books apart from music (a page).
+      2026-11-13, the other chapter forms: QuickTime chapter tracks (the text track a `tref/chap` points to, read from its sample
+      table: Apple's and Audible's books) when a file has no `chpl`, and the `CHAP` frames of an mp3's ID3v2.3 / v2.4 tag (title
+      from `TIT2`, any text encoding); `.mp3` now asks too. No new dependency (`core/chapters.rs`). Tested on files built in the
+      tests only, never on a real book of either kind; a QuickTime track with an unusual layout (chapters in the audio file's own
+      sample description, text in UTF-16 without a mark) shows none.
 - [ ] `M` Stream Deck plugin and an Xbox Game Bar widget (play / skip / like / now playing) over the local hotkeys.
 - [ ] `M` Blind test game: snippets from the library or a playlist, guess title / artist, scores, local multiplayer
       on one screen or over the LAN code.
