@@ -26,6 +26,7 @@ export function startDeferred(): () => void {
     ['Jump List', () => import('../features/home/jumpList').then((m) => m.startJumpList())],
     ['Opened links', () => import('../features/share/openedLink').then((m) => m.startOpenedLinks())],
     ['Scan progress', () => import('../features/library/scanProgress').then((m) => m.startScanProgress())],
+    ['A–B loop', () => import('../features/player/abLoop').then((m) => m.startLoop())],
     ['Alarm', () => import('../features/player/alarm').then((m) => m.startAlarm())],
     ['Listening rooms', () => import('../features/rooms/rooms').then((m) => m.startRooms())],
   ]

@@ -84,6 +84,7 @@ import type { Addon } from './addons/registry'
 import { isOn, setAddon } from './addons/state'
 import { takesEdits } from './sources/servers'
 import { holds, playingFrom } from './library/holding'
+import { clearLoop, markLoop, useLoop } from './player/abLoop'
 import { addToPlaylist, markMusic, markNotExplicit, removeFromPlaylist, removePositions, removeTrackFromPlaylist, songs } from './library/edits'
 import { ownLiked, youtubeLiked } from './library/likedMusic'
 import { editInfo, findDuplicates } from './library/dialogs'
@@ -760,6 +761,7 @@ export function playerMenu({ controls = true }: { controls?: boolean } = {}): Me
     t && removeFromPlayingList(t),
     t && rateItem(t),
     t && bookmarkItem(t.id),
+    loopItem(),
     t?.album && { label: tr('Go to album'), icon: <Disc size={16} />, onSelect: () => (setFull(false), app().go({ name: 'album', album: t.album!, artist: primaryArtist(t.artist) })) },
     t && { label: tr('Go to artist'), icon: <MicrophoneStage size={16} />, onSelect: () => (setFull(false), app().go({ name: 'artist', artist: primaryArtist(t.artist) })) },
     lib && saveCoverItem(lib),
@@ -779,6 +781,22 @@ export function removeFromPlayingList(t: LibraryTrack): MenuEntry {
   const from = player().from
   const p = playingFrom(app().playlists, app().orders, from, t.id)
   return !!p && { label: tr('Remove from {name}', { name: p.name }), icon: <MinusCircle size={16} />, onSelect: () => void removeTrackFromPlaylist(p.id, t.id) }
+}
+
+/** A–B loop (abLoop.ts): the moment now as its start or end, or cleared. Any playing song with a position. */
+function loopItem(): MenuEntry {
+  const { a, b, song } = useLoop.getState()
+  const mine = song !== null
+  return {
+    label: tr('A–B loop'),
+    icon: <Repeat size={16} />,
+    checked: a !== null && b !== null,
+    items: [
+      { label: tr('Loop starts here'), checked: mine && a !== null, onSelect: () => markLoop(false) },
+      { label: tr('Loop ends here'), checked: mine && b !== null, onSelect: () => markLoop(true) },
+      { label: tr('Clear the loop'), disabled: !mine, onSelect: clearLoop },
+    ],
+  }
 }
 
 /** The playing song's bookmarks: keep this moment (with a note or not), go back to one, take one off. */
