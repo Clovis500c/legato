@@ -1113,18 +1113,15 @@ fn blocked_finds(state: &AppState) -> std::collections::HashSet<String> {
     state.lib().setting(BLOCKED_FINDS).ok().flatten().and_then(|v| serde_json::from_value(v).ok()).unwrap_or_default()
 }
 
-/// "Never in mixes" on a song a mix discovered (it has no library row): its title and artist are remembered, and the mixes
-/// are made again without it.
+/// "Never in mixes" on a song a mix discovered (it has no library row): its title and artist are remembered (`block`
+/// false: its Undo), and the mixes are made again.
 #[tauri::command]
-async fn block_find(state: State<'_, AppState>, title: String, artist: String) -> CmdResult<()> {
+async fn block_find(state: State<'_, AppState>, title: String, artist: String, block: bool) -> CmdResult<()> {
     if title.trim().is_empty() || title.chars().count() > 300 || artist.chars().count() > 300 {
         return Err("Not a song".into());
     }
     let mut all = blocked_finds(&state);
-    if all.len() >= MAX_BLOCKED {
-        all.clear();
-    }
-    all.insert(music_core::matching::match_key(&title, &artist));
+    music_core::mixes::set_blocked(&mut all, &title, &artist, block, MAX_BLOCKED);
     state.lib().set_setting(BLOCKED_FINDS, &serde_json::to_value(&all).map_err(err)?).map_err(err)?;
     state.cache.mixes.clear();
     Ok(())

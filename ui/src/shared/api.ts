@@ -118,8 +118,8 @@ export const api = {
   /** The user's word: music (true), not music (false), null = the app's guess again. */
   setMusic: (trackIds: number[], music: boolean | null) => invoke<void>('set_music', { trackIds, music }),
   /** "Not explicit" on songs a source marked explicit (true), or back (false). */
-  /** "Never in mixes" on a song a mix discovered (not in the library): remembered by title and artist. */
-  blockFind: (title: string, artist: string) => invoke<void>('block_find', { title, artist }),
+  /** "Never in mixes" on a song a mix discovered (not in the library): remembered by title and artist; `block` false undoes it. */
+  blockFind: (title: string, artist: string, block = true) => invoke<void>('block_find', { title, artist, block }),
   setExplicit: (trackIds: number[], ok: boolean) => invoke<void>('set_explicit', { trackIds, ok }),
   /** Edit song info: a local file's tags rewritten (tags.rs). coverPath = new front cover; removeCover = none. */
   /** Edit song info: local songs' tags rewritten in their files (one or several, in this order), only what's given. */

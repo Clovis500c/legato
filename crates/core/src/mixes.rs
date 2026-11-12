@@ -428,6 +428,20 @@ fn new_enough(out: &[Mix], ids: &[i64]) -> bool {
     out.iter().all(|m| (m.track_ids.iter().filter(|id| set.contains(id)).count() as f64) < OVERLAP * ids.len() as f64)
 }
 
+/// "Never in mixes" on a discovered song (`block`), or its Undo: the `match_key` of its title and artist joins or leaves
+/// `all`. Full (`max`): the old ones go, the new one stays.
+pub fn set_blocked(all: &mut HashSet<String>, title: &str, artist: &str, block: bool, max: usize) {
+    let key = crate::matching::match_key(title, artist);
+    if !block {
+        all.remove(&key);
+        return;
+    }
+    if all.len() >= max {
+        all.clear();
+    }
+    all.insert(key);
+}
+
 /// The radios' songs without the ones the user said never to see in mixes (`blocked`: `matching::match_key` of title and
 /// artist, since a discovered song has no library row to hold the choice).
 pub fn without_blocked(found: Vec<(i64, Vec<Track>)>, blocked: &HashSet<String>) -> Vec<(i64, Vec<Track>)> {
@@ -1275,6 +1289,19 @@ mod tests {
         let m = out.iter().find(|m| m.id == "supermix").unwrap_or_else(|| panic!("{out:?}"));
         assert!((1..=6).all(|id| m.track_ids.contains(&id)) && (7..=12).all(|id| m.track_ids.contains(&id)), "{m:?}");
         assert_eq!((m.kind, m.reason.as_str()), ("favorites", "Your favorites over the months"));
+    }
+
+    #[test]
+    fn a_song_said_never_comes_back_with_undo() {
+        let mut all = HashSet::new();
+        set_blocked(&mut all, "Nightcall", "Kavinsky", true, 2);
+        assert!(all.contains(&crate::matching::match_key("Nightcall", "Kavinsky")));
+        set_blocked(&mut all, "Nightcall", "Kavinsky", false, 2);
+        assert!(all.is_empty());
+        for title in ["A", "B", "C"] {
+            set_blocked(&mut all, title, "X", true, 2);
+        }
+        assert_eq!(all, HashSet::from([crate::matching::match_key("C", "X")]));
     }
 
     #[test]

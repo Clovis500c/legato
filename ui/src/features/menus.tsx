@@ -390,7 +390,7 @@ function remoteMenu(t: LibraryTrack, list: LibraryTrack[], index: number): MenuE
     addRemoteTo(t),
     '-',
     // A song a mix discovered has no library row to hold "never": it is remembered by title and artist.
-    !isStation(t) && { label: tr('Never in mixes'), icon: <Prohibit size={16} />, onSelect: () => api.blockFind(t.title, t.artist).then(() => app().notify(tr('Left out of your mixes')), fail) },
+    !isStation(t) && { label: tr('Never in mixes'), icon: <Prohibit size={16} />, onSelect: () => api.blockFind(t.title, t.artist).then(() => app().notify(tr('Left out of your mixes'), { action: { label: tr('Undo'), run: () => void api.blockFind(t.title, t.artist, false).catch(fail) } }), fail) },
     pages(t).length > 0 && { label: tr('Copy link'), icon: <Link size={16} />, onSelect: () => copy(pages(t)[0].url, tr('Link copied')) },
     { label: tr('Copy title and artist'), icon: <Copy size={16} />, onSelect: () => copy(`${t.artist} – ${t.title}`, tr('Title and artist copied')) },
     ...pages(t).map((p) => ({ label: tr('Open in {service}', { service: p.label }), icon: <ArrowSquareOut size={16} />, onSelect: () => openUrl(p.url).catch(fail) })),
