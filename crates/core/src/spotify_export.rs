@@ -461,10 +461,11 @@ fn unzip(file: impl Read + Seek) -> anyhow::Result<Vec<ExportedList>> {
 
 /// An Exportify file (the ZIP of all lists, or the CSV of one), or Spotify's data export (its ZIP, or one of its JSON files).
 pub fn read(path: &Path) -> anyhow::Result<Vec<ExportedList>> {
-    let bytes = std::fs::read(path)?;
-    if bytes.len() as u64 > MAX_BYTES {
+    // The size first: a huge dropped file is never read into memory.
+    if std::fs::metadata(path)?.len() > MAX_BYTES {
         bail!("That file is too big");
     }
+    let bytes = std::fs::read(path)?;
     let lists = if bytes.starts_with(b"PK") {
         unzip(Cursor::new(bytes))?
     } else {

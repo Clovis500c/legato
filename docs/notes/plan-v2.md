@@ -134,6 +134,13 @@ Where a line says "reading", the owner hasn't confirmed it.
       taken from a file, nothing run, fuzz or property tests on each parser). Then a security pass of the whole app
       (IPC commands, deep links, the `art` scheme, the CSP, plugins, the phone remote and the overlay), findings fixed
       with tests.
+      2026-11-11, the drop's half: `crates/core/src/fuzz.rs` hammers each parser a dropped or opened file reaches (share codes and
+      links, theme files, M3U / XSPF / CSV lists, song lists, iTunes XML, lyrics files, Sync Mode files, audio tags, QR pictures)
+      with thousands of damaged inputs (fixed seed, no new dependency): none panics, outputs stay bounded, a path in a playlist
+      file only ever finds a song the library already holds, a plain sync file brings no secrets. Fixed on the way: a dropped
+      QR picture had no size or dimension limit (`share::read_qr`: 25 MB, 12 000 px a side, 256 MB), Exportify's file was read
+      whole before its size was checked. Not covered: `cargo-fuzz` depth (decoders of lofty / symphonia / image are theirs),
+      backups and plugin folders (not dropped), the whole-app pass (still open, for Opus).
 - [ ] `L` The website made beautiful (the owner: too basic today) and given documentation sections for developers
       (plugins' API, themes, the link and file formats, contributing). The design is a piece Fable may do itself (the
       owner's word).

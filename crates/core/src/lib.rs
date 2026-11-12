@@ -27,3 +27,5 @@ pub mod netlog;
 pub mod remote;
 pub mod rooms;
 pub mod themefile;
+#[cfg(test)]
+mod fuzz;

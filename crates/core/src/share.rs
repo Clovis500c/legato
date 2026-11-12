@@ -266,9 +266,20 @@ pub fn qr_modules(text: &str) -> Option<(usize, Vec<bool>)> {
     Some((code.width(), code.to_colors().into_iter().map(|c| c == qrcode::Color::Dark).collect()))
 }
 
+/// A dropped picture bigger than this is refused unread; decoded, it may not pass `QR_SIDE` either way or take more
+/// than `QR_ALLOC` bytes (a small file can unpack into a huge image).
+const QR_FILE: u64 = 25 << 20;
+const QR_SIDE: u32 = 12_000;
+const QR_ALLOC: u64 = 256 << 20;
+
 /// QR text from a screenshot or photo (PNG / JPEG).
 pub fn read_qr(path: &Path) -> Result<String> {
-    let img = image::open(path).context("Can't open this image")?.to_luma8();
+    ensure!(std::fs::metadata(path).context("Can't open this image")?.len() <= QR_FILE, "This image is too big");
+    let mut reader = image::ImageReader::open(path).context("Can't open this image")?.with_guessed_format().context("Can't open this image")?;
+    let mut limits = image::Limits::default();
+    (limits.max_image_width, limits.max_image_height, limits.max_alloc) = (Some(QR_SIDE), Some(QR_SIDE), Some(QR_ALLOC));
+    reader.limits(limits);
+    let img = reader.decode().context("Can't open this image")?.to_luma8();
     let mut prepared = rqrr::PreparedImage::prepare_from_greyscale(img.width() as usize, img.height() as usize, |x, y| img.get_pixel(x as u32, y as u32).0[0]);
     prepared.detect_grids().into_iter().find_map(|g| g.decode().ok().map(|(_, text)| text)).context("No QR code found in this image")
 }
