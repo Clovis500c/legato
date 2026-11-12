@@ -3,13 +3,13 @@ import type { FileTags, LibraryTrack } from '../../shared/api'
 import { canSave, formOf, startOf, tagsToWrite, withRelease } from './tagForm'
 
 const song = (id: number, title: string, artist: string, album: string | null = null): LibraryTrack => ({ id, added: id, addedAt: null, title, artist, album, durationMs: null, isrc: null, ids: { local: `C:/Music/${id}.mp3` } })
-const tags = (patch: Partial<FileTags> = {}): FileTags => ({ title: null, artist: null, album: null, albumArtist: null, genre: null, year: null, track: null, trackTotal: null, disc: null, ...patch })
+const tags = (patch: Partial<FileTags> = {}): FileTags => ({ title: null, artist: null, album: null, albumArtist: null, genre: null, year: null, track: null, trackTotal: null, disc: null, bpm: null, key: null, ...patch })
 
 describe('Edit song info', () => {
   it('starts from what the songs share, the library where a file says nothing', () => {
     const tracks = [song(1, 'One', 'Band', 'Record'), song(2, 'Two', 'Band', 'Record')]
     const start = startOf(tracks, [tags({ genre: 'Rock', year: 1999, track: 1 }), tags({ title: 'Two!', genre: 'Rock', year: 2001, track: 2 })])
-    expect(start).toEqual({ title: null, artist: 'Band', album: 'Record', albumArtist: '', genre: 'Rock', year: null, track: null, disc: '' })
+    expect(start).toEqual({ title: null, artist: 'Band', album: 'Record', albumArtist: '', genre: 'Rock', year: null, bpm: '', key: '', track: null, disc: '' })
     expect(formOf(start)).toMatchObject({ artist: 'Band', year: '', track: '' })
     // Files not read: the library's values.
     expect(startOf([song(3, 'Solo', 'Me')], [])).toMatchObject({ title: 'Solo', artist: 'Me', album: '', genre: '' })
@@ -18,7 +18,7 @@ describe('Edit song info', () => {
   it('writes only what changed; emptied fields come off, several values left empty stay', () => {
     const start = startOf([song(1, 'One', 'Band', 'Record'), song(2, 'Two', 'Band')], [tags({ genre: 'Rock', year: 1999 }), tags({ genre: 'Rock', year: 2001 })])
     const form = { ...formOf(start), album: 'Best of', genre: '', track: '7' }
-    expect(tagsToWrite(form, start, { one: false, number: false })).toEqual({ title: null, artist: null, album: 'Best of', albumArtist: null, genre: '', year: null, track: 7, disc: null, number: false })
+    expect(tagsToWrite(form, start, { one: false, number: false })).toEqual({ title: null, artist: null, album: 'Best of', albumArtist: null, genre: '', year: null, bpm: null, key: null, track: 7, disc: null, number: false })
     // Numbered in order: the track field aside.
     expect(tagsToWrite({ ...form, year: '2020' }, start, { one: false, number: true })).toMatchObject({ year: 2020, track: null, number: true })
     // One song: its title and artist always, as shown; a number emptied comes off.
@@ -41,9 +41,20 @@ describe('Edit song info', () => {
 
 describe('a MusicBrainz release in the form', () => {
   it('fills album, album artist, year and numbers, keeps the rest and what it lacks', () => {
-    const form = { title: 'Glass Harbour', artist: 'VC', album: 'old', albumArtist: '', genre: 'Rock', year: '2001', track: '7', disc: '' }
+    const form = { title: 'Glass Harbour', artist: 'VC', album: 'old', albumArtist: '', genre: 'Rock', year: '2001', bpm: '', key: '', track: '7', disc: '' }
     const r = { album: 'Tidelines', albumArtist: 'Velvet Cartographers', year: 2009, track: 3, disc: null, tracks: 11, kind: 'Album', country: 'XW' }
     expect(withRelease(form, r)).toEqual({ ...form, album: 'Tidelines', albumArtist: 'Velvet Cartographers', year: '2009', track: '3' })
     expect(withRelease(form, { ...r, album: '', year: null, track: 12345 })).toEqual({ ...form, albumArtist: 'Velvet Cartographers' })
+  })
+})
+
+describe('tempo and key in Edit song info', () => {
+  it('writes a changed tempo as a number and a key as text, takes them off when emptied, accepts only numbers', () => {
+    const start = startOf([song(1, 'One', 'Band')], [tags({ bpm: 120, key: 'Am' })])
+    expect(start).toMatchObject({ bpm: '120', key: 'Am' })
+    const form = { ...formOf(start), bpm: '128', key: '' }
+    expect(tagsToWrite(form, start, { one: true, number: false })).toMatchObject({ bpm: 128, key: '' })
+    expect(tagsToWrite(formOf(start), start, { one: true, number: false })).toMatchObject({ bpm: null, key: null })
+    expect(canSave({ ...formOf(start), bpm: '12x' }, start, true)).toBe(false)
   })
 })

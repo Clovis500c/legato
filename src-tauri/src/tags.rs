@@ -24,6 +24,8 @@ pub struct Tags {
     year: Option<u32>,
     track: Option<u32>,
     disc: Option<u32>,
+    bpm: Option<u32>,
+    key: Option<String>,
     /// Numbered 1, 2, 3… in the order given, their count as the total.
     #[serde(default)]
     number: bool,
@@ -65,6 +67,10 @@ pub async fn edit_tags(state: State<'_, AppState>, track_ids: Vec<i64>, tags: Ta
     let text = |v: Option<String>| v.map(|s| s.trim().to_string());
     let (title, artist) = (text(tags.title), text(tags.artist));
     let (album, album_artist, genre) = (text(tags.album), text(tags.album_artist), text(tags.genre));
+    let key = text(tags.key);
+    if key.as_deref().is_some_and(|k| k.chars().count() > 12) || tags.bpm.is_some_and(|b| b != 0 && !(30..=400).contains(&b)) {
+        return Err("A tempo is 30 to 400 BPM, a key 12 characters at most".into());
+    }
     if [&title, &artist, &album, &album_artist, &genre].iter().any(|v| v.as_deref().is_some_and(|s| s.chars().count() > 500)) {
         return Err("500 characters at most".into());
     }
@@ -80,7 +86,7 @@ pub async fn edit_tags(state: State<'_, AppState>, track_ids: Vec<i64>, tags: Ta
         Some(p) => Some(std::fs::read(p).map_err(err)?),
         None => None,
     };
-    let mut edit = TagEdit { title, artist, album, album_artist, genre, year: tags.year, track: tags.track, track_total: None, disc: tags.disc, cover, remove_cover: tags.remove_cover };
+    let mut edit = TagEdit { title, artist, album, album_artist, genre, year: tags.year, track: tags.track, track_total: None, disc: tags.disc, bpm: tags.bpm, key, cover, remove_cover: tags.remove_cover };
     let (count, number) = (files.len() as u32, tags.number);
     // Each file read back as the scan would read it: its library row follows what the file now says.
     let done = tauri::async_runtime::spawn_blocking(move || {
@@ -104,6 +110,7 @@ pub async fn edit_tags(state: State<'_, AppState>, track_ids: Vec<i64>, tags: Ta
                 let t = &s.track;
                 lib.set_details(id, &t.title, &t.artist, t.album.as_deref()).map_err(err)?;
                 lib.set_genre_year(id, s.genre.as_deref(), s.year).map_err(err)?;
+                lib.set_tempo_key(id, s.bpm, s.key.as_deref()).map_err(err)?;
                 out.saved += 1;
             }
             Err(e) => {

@@ -125,6 +125,10 @@ export function EditInfo({ tracks, onClose }: { tracks: LibraryTrack[]; onClose:
               {input('year', tr('Year'), true)}
             </div>
             <div className="flex gap-3">
+              {input('bpm', tr('BPM'), true)}
+              {input('key', tr('Key'))}
+            </div>
+            <div className="flex gap-3">
               {!number && input('track', tr('Track'), true)}
               {input('disc', tr('Disc'), true)}
             </div>

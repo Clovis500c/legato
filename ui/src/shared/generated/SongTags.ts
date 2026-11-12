@@ -4,7 +4,7 @@ export type SongTags = {
 /**
  * None = as it is (several songs: only what the user changed comes); empty text or 0 = taken off.
  */
-title: string | null, artist: string | null, album: string | null, albumArtist: string | null, genre: string | null, year: number | null, track: number | null, disc: number | null, 
+title: string | null, artist: string | null, album: string | null, albumArtist: string | null, genre: string | null, year: number | null, track: number | null, disc: number | null, bpm: number | null, key: string | null, 
 /**
  * Numbered 1, 2, 3… in the order given, their count as the total.
  */

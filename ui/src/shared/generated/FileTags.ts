@@ -3,4 +3,4 @@
 /**
  * A local file's tags as Edit song info shows them; None = not there.
  */
-export type FileTags = { title: string | null, artist: string | null, album: string | null, albumArtist: string | null, genre: string | null, year: number | null, track: number | null, trackTotal: number | null, disc: number | null, };
+export type FileTags = { title: string | null, artist: string | null, album: string | null, albumArtist: string | null, genre: string | null, year: number | null, track: number | null, trackTotal: number | null, disc: number | null, bpm: number | null, key: string | null, };

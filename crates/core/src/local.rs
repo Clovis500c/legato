@@ -286,6 +286,8 @@ pub struct FileTags {
     pub track: Option<u32>,
     pub track_total: Option<u32>,
     pub disc: Option<u32>,
+    pub bpm: Option<u32>,
+    pub key: Option<String>,
 }
 
 /// The file's main tag, read for the editor (like `read`: its first tag when the main kind is absent).
@@ -303,6 +305,8 @@ pub fn file_tags(path: &Path) -> FileTags {
         track: tag.track(),
         track_total: tag.track_total(),
         disc: tag.disk(),
+        bpm: tag.get_string(ItemKey::IntegerBpm).or_else(|| tag.get_string(ItemKey::Bpm)).and_then(bpm_of),
+        key: text(tag.get_string(ItemKey::InitialKey)).filter(|k| k.chars().count() <= 12),
     }
 }
 
@@ -325,6 +329,9 @@ pub struct TagEdit {
     pub track: Option<u32>,
     pub track_total: Option<u32>,
     pub disc: Option<u32>,
+    /// Tempo (0 = taken off) and key (empty = taken off).
+    pub bpm: Option<u32>,
+    pub key: Option<String>,
     /// New front cover (PNG / JPEG / WebP / GIF bytes); None = the one there stays.
     pub cover: Option<Vec<u8>>,
     pub remove_cover: bool,
@@ -368,6 +375,7 @@ pub fn write_tags(path: &Path, edit: &TagEdit) -> anyhow::Result<()> {
             (ItemKey::AlbumTitle, edit.album.as_deref()),
             (ItemKey::AlbumArtist, edit.album_artist.as_deref()),
             (ItemKey::Genre, edit.genre.as_deref()),
+            (ItemKey::InitialKey, edit.key.as_deref()),
         ];
         for (key, value) in texts {
             match value.map(str::trim) {
@@ -380,6 +388,11 @@ pub fn write_tags(path: &Path, edit: &TagEdit) -> anyhow::Result<()> {
             None => {}
             Some(0) => tag.remove_key(ItemKey::RecordingDate),
             Some(y) => drop(tag.insert_text(ItemKey::RecordingDate, y.to_string())),
+        }
+        match edit.bpm {
+            None => {}
+            Some(0) => tag.remove_key(ItemKey::IntegerBpm),
+            Some(b) => drop(tag.insert_text(ItemKey::IntegerBpm, b.to_string())),
         }
         use lofty::tag::Tag;
         let number = |tag: &mut Tag, value: Option<u32>, set: fn(&mut Tag, u32), remove: fn(&mut Tag)| match value {
@@ -724,15 +737,17 @@ pub(crate) mod tests {
             track: Some(3),
             track_total: Some(12),
             disc: Some(2),
+            bpm: Some(128),
+            key: Some("8A".into()),
             ..Default::default()
         };
         write_tags(&p, &all).unwrap();
         let s = |v: &str| Some(v.to_string());
-        let want = FileTags { title: s("One"), artist: s("Band"), album: s("Record"), album_artist: s("Various"), genre: s("Rock"), year: Some(1999), track: Some(3), track_total: Some(12), disc: Some(2) };
+        let want = FileTags { title: s("One"), artist: s("Band"), album: s("Record"), album_artist: s("Various"), genre: s("Rock"), year: Some(1999), track: Some(3), track_total: Some(12), disc: Some(2), bpm: Some(128), key: s("8A") };
         assert_eq!(file_tags(&p), want);
         // Several songs: what isn't asked stays; empty text and 0 take a field off.
-        write_tags(&p, &TagEdit { genre: Some(" ".into()), year: Some(0), track: Some(4), ..Default::default() }).unwrap();
-        assert_eq!(file_tags(&p), FileTags { genre: None, year: None, track: Some(4), ..want });
+        write_tags(&p, &TagEdit { genre: Some(" ".into()), year: Some(0), track: Some(4), bpm: Some(0), key: Some(String::new()), ..Default::default() }).unwrap();
+        assert_eq!(file_tags(&p), FileTags { genre: None, year: None, track: Some(4), bpm: None, key: None, ..want });
         assert_eq!((year_of("2019-05-02"), year_of(" 1987"), year_of("87"), year_of("0000"), year_of("May 2019")), (Some(2019), Some(1987), None, None, None));
     }
 }

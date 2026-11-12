@@ -1,14 +1,14 @@
 import type { FileTags, LibraryTrack, SongRelease, SongTags } from '../../shared/api'
 
 /** Edit song info's fields, in the order shown. Title for one song only; several songs can be numbered instead. */
-export const TAG_FIELDS = ['title', 'artist', 'album', 'albumArtist', 'genre', 'year', 'track', 'disc'] as const
+export const TAG_FIELDS = ['title', 'artist', 'album', 'albumArtist', 'genre', 'year', 'bpm', 'key', 'track', 'disc'] as const
 export type TagField = (typeof TAG_FIELDS)[number]
 /** What the fields hold, as typed (numbers too). */
 export type TagForm = Record<TagField, string>
 /** Where a field starts: the value every song shares ('' = none has one), or null = several values. */
 export type TagStart = Record<TagField, string | null>
 
-const NUMBERS = ['year', 'track', 'disc'] as const
+const NUMBERS = ['year', 'bpm', 'track', 'disc'] as const
 
 /** Where the form starts: what the files say, the library's title, artist and album where a file says nothing. */
 export function startOf(tracks: LibraryTrack[], files: FileTags[]): TagStart {
@@ -43,6 +43,8 @@ export function tagsToWrite(form: TagForm, start: TagStart, { one, number }: { o
     albumArtist: text('albumArtist'),
     genre: text('genre'),
     year: count('year'),
+    bpm: count('bpm'),
+    key: text('key'),
     track: number ? null : count('track'),
     disc: count('disc'),
     number,
