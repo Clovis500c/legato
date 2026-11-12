@@ -33,7 +33,11 @@ export async function syncServer(key: string) {
  * too; Plex: the listen). */
 export function startServers() {
   void useServers.getState().refresh()
-  const serverId = (trackId: number) => (usePlayer.getState().list.find((t) => t.id === trackId) ?? useStore.getState().tracks.find((t) => t.id === trackId))?.ids.server
+  // A radio station (`radio:<address>`) is no song of a server: nothing is reported.
+  const serverId = (trackId: number) => {
+    const id = (usePlayer.getState().list.find((t) => t.id === trackId) ?? useStore.getState().tracks.find((t) => t.id === trackId))?.ids.server
+    return id?.startsWith('radio:') ? undefined : id
+  }
   // When each song started (unix ms), for its listen's end (the next song has started by then).
   const started = new Map<number, number>()
   const offEnd = onListenEnd((play, durationMs) => {

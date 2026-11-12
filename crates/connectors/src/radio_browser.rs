@@ -3,14 +3,16 @@
 //! only (no audio goes through here). Checked 2026-11-11 from its API docs: `/json/stations/search`, `hidebroken`.
 
 use anyhow::{Result, bail};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
 pub const API: &str = "https://all.api.radio-browser.info/json";
 const AGENT: &str = concat!("Legato v", env!("CARGO_PKG_VERSION"), " (https://github.com/Clovis500c/legato)");
 const TIMEOUT: Duration = Duration::from_secs(15);
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ts_rs::TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, rename = "RadioStation")]
 pub struct Station {
     pub id: String,
     pub name: String,

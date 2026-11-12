@@ -406,7 +406,13 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       cut or an ended stream reconnects and carries on, a seek outside the buffer refused), `radio_browser::open` (plain GET,
       http / https only, no `Icy-MetaData`) behind the shell's fetcher. Nothing in the interface starts one yet (step 3);
       untried on a real station (mock and local-server tests only). Decided alone: a station is not forced to MP3 / OGG
-      here (the decoder's error says so for AAC, step 4); the station's address is not checked against private ranges. (3) `M` a `radio` source and a Radio page (search, play, keep a station), Up next and history skip it;
+      here (the decoder's error says so for AAC, step 4); the station's address is not checked against private ranges. (3) `M` a `radio` source and a Radio page (search, play, keep a station), Up next and history skip it; [x] 2026-11-11: no new `Source`: a station
+      is a recommendation-like track (not in the library) whose `ids.server` is `radio:<address>` (`features/radio/station.ts`),
+      played by `server:radio:<address>` (step 2); Radio page in the sidebar (`RadioView`: search, play, keep with a heart; kept
+      stations in the library's settings, `radio.rs`), history already skips remote tracks, a station is never starred or
+      scrobbled to a server (guards in `like.ts`, `servers.ts`). Not done: a phone tab, the station's own metadata (no ICY),
+      "live" instead of a progress bar in Now Playing, favicons, the directory's other searches (country, tag). Never seen
+      on a screen nor against a real station.
       (4) `S` AAC streams (symphonia's AAC + ADTS, `cargo deny`). The owner's choice 2026-11-11: AAC too.
 - [ ] `M` Release radar: new releases from artists in the library (YouTube Music / MusicBrainz).
 - [ ] `M` Credits and artist pages: who wrote / produced (MusicBrainz), a short bio (Wikipedia), links out.

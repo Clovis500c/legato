@@ -17,6 +17,7 @@ export type View =
   | { name: 'search' }
   | { name: 'addons' }
   | { name: 'mixes' }
+  | { name: 'radio' }
   | { name: 'stats' }
   | { name: 'smart'; id: string }
   | { name: 'notFound' }

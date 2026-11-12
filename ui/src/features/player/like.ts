@@ -52,7 +52,7 @@ export function lessLikeThis(t: LibraryTrack) {
 /** Your music server's song: liked = starred there too (Settings › Accounts' direction decides, in Rust). */
 function starOnServer(t: LibraryTrack, on: boolean) {
   const id = t.ids.server ?? app().tracks.find((x) => x.id === t.id)?.ids.server
-  if (id) api.serverStar(id, on).catch((e: unknown) => app().notify(String(e), { kind: 'error' }))
+  if (id && !id.startsWith('radio:')) api.serverStar(id, on).catch((e: unknown) => app().notify(String(e), { kind: 'error' }))
 }
 
 export async function toggleLike(t: LibraryTrack) {
