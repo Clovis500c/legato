@@ -46,6 +46,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'appearance', label: msg('Hide explicit songs'), keywords: msg('explicit lyrics parental clean children kids family') },
   { section: 'appearance', label: msg('Whole app in the cover’s color'), keywords: msg('tint ambient background color theme cover everywhere') },
   { section: 'playback', label: msg('Play with'), keywords: msg('single double click row') },
+  { section: 'appearance', label: msg('Sidebar entries'), keywords: msg('hide show menu left home mixes radio stats add music sections') },
   { section: 'appearance', label: msg('Counts in the sidebar'), keywords: msg('numbers songs') },
   { section: 'general', label: msg('Open on'), keywords: msg('start screen launch home') },
   { section: 'general', label: msg('Update channel'), keywords: msg('beta stable release early preview prerelease testing new features updates version') },

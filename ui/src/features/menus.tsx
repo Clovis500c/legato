@@ -85,6 +85,7 @@ import type { Addon } from './addons/registry'
 import { isOn, setAddon } from './addons/state'
 import { takesEdits } from './sources/servers'
 import { holds, playingFrom } from './library/holding'
+import { navOf, withHidden } from './sidebar/navHidden'
 import { isStation } from './radio/station'
 import { clearLoop, markLoop, useLoop } from './player/abLoop'
 import { addToPlaylist, markMusic, markNotExplicit, removeFromPlaylist, removePositions, removeTrackFromPlaylist, songs } from './library/edits'
@@ -739,6 +740,7 @@ export const SETTINGS_SECTIONS: [SettingsSection, string][] = [
 export function navMenu(to: View, tracks?: LibraryTrack[]): MenuEntry[] {
   const { go } = app()
   const { settings, update } = useSettings.getState()
+  const nav = navOf(to.name)
   return [
     { label: tr('Open'), icon: <ArrowSquareOut size={16} />, onSelect: () => go(to) },
     to.name === 'settings' && { label: tr('Go to'), icon: <Gear size={16} />, items: SETTINGS_SECTIONS.map(([section, label]) => ({ label: tr(label), onSelect: () => go({ name: 'settings', section }) })) },
@@ -746,6 +748,9 @@ export function navMenu(to: View, tracks?: LibraryTrack[]): MenuEntry[] {
     ...(tracks?.length ? tracksMenu(tracks) : []),
     '-',
     { label: tr('Counts in the sidebar'), checked: settings.sidebarCounts, onSelect: () => update({ sidebarCounts: !settings.sidebarCounts }) },
+    // One of the five entries: hidden from here, back in Settings › Appearance › Sidebar entries. The page stays reachable;
+    // on it, Home takes over.
+    nav && { label: tr('Hide from the sidebar'), icon: <EyeSlash size={16} />, onSelect: () => (update({ hiddenNav: withHidden(settings.hiddenNav, nav, true) }), navOf(app().view.name) === nav && app().go({ name: 'home' })) },
   ]
 }
 

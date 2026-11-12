@@ -70,6 +70,9 @@ export const PRESETS: Theme[] = [
 
 export const ACCENTS = ['#FF5A1F', '#E5383B', '#F2B705', '#2E8B57', '#2F6FEB', '#171614']
 
+/** The sidebar's entries that can be hidden (Settings, and the way to bring them back, are not among them). */
+export const NAV_ITEMS = ['home', 'mixes', 'radio', 'stats', 'add'] as const
+export type NavItem = (typeof NAV_ITEMS)[number]
 export const COLUMNS = ['album', 'year', 'genre', 'bpm', 'key', 'sources', 'plays', 'rating', 'added', 'duration'] as const
 /** List sorts (features/library/filter): checked on load. */
 const SORTS: readonly Sort[] = ['manual', 'added-new', 'added-old', 'most-played', 'recently-played', 'rating', 'title', 'title-desc', 'artist', 'album', 'year', 'year-new', 'genre', 'bpm', 'bpm-fast', 'duration', 'duration-short', 'random', 'recent']
@@ -356,6 +359,8 @@ export interface Settings {
   motion: boolean
   /** Track counts next to sidebar entries. */
   sidebarCounts: boolean
+  /** Sidebar entries hidden (right-click one, or Settings › Appearance). Per PC; a hidden page is still reachable. */
+  hiddenNav: NavItem[]
   /** Songs a source marked explicit left out of Songs, playlists and mixes. Off: a parent's choice, not a default. */
   hideExplicit: boolean
   /** Cover Art Archive covers on Home's "New from your artists" (a new host: archive.org). Off by default, for privacy. */
@@ -566,6 +571,7 @@ export const DEFAULTS: Settings = {
   font: 'theme',
   motion: true,
   sidebarCounts: true,
+  hiddenNav: [],
   hideExplicit: false,
   releaseCovers: false,
   // Covers on every song row, compact too (user's pick 2026-10-29, over the mockup's coverless compact rows).
@@ -816,6 +822,7 @@ export function sanitize(raw: unknown): Settings {
     font: pick(r.font, ['theme', ...FONTS] as const, DEFAULTS.font),
     motion: typeof r.motion === 'boolean' ? r.motion : DEFAULTS.motion,
     sidebarCounts: typeof r.sidebarCounts === 'boolean' ? r.sidebarCounts : DEFAULTS.sidebarCounts,
+    hiddenNav: NAV_ITEMS.filter((n) => Array.isArray(r.hiddenNav) && r.hiddenNav.includes(n)),
     hideExplicit: r.hideExplicit === true,
     releaseCovers: r.releaseCovers === true,
     listCovers: typeof r.listCovers === 'boolean' ? r.listCovers : DEFAULTS.listCovers,

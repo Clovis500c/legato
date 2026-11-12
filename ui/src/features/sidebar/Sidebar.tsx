@@ -134,6 +134,7 @@ export function Sidebar() {
   const hidden = useSettings((s) => s.settings.hiddenPlaylists)
   const order = useSettings((s) => s.settings.playlistOrder)
   const counts = useSettings((s) => s.settings.sidebarCounts)
+  const navOff = useSettings((s) => s.settings.hiddenNav)
   const opened = useOpenedLists((s) => s.list)
   const hiddenKeys = useMemo(() => new Set(hidden), [hidden])
   const shown = useMemo(() => {
@@ -212,11 +213,11 @@ export function Sidebar() {
     <aside className={`relative flex flex-col gap-2 ${wide ? 'min-w-0 flex-1' : 'shrink-0 phone:hidden'}`} style={wide ? undefined : { width }}>
       {/* The phone: Home and Mixes are tabs; Stats and Add music side by side. */}
       <nav className="flex shrink-0 flex-col rounded-lg bg-panel p-2 phone:grid phone:grid-cols-2 phone:gap-1">
-        {!phone && <NavItem on={is('home')} icon={House} label={tr('Home')} onClick={() => go({ name: 'home' })} onContextMenu={onMenu(() => navMenu({ name: 'home' }))} />}
-        {!phone && <NavItem on={is('mixes') || is('mix')} icon={Disc} label={tr('Mixes')} onClick={() => go({ name: 'mixes' })} onContextMenu={onMenu(() => navMenu({ name: 'mixes' }))} />}
-        {!phone && <NavItem on={is('radio')} icon={Radio} label={tr('Radio')} onClick={() => go({ name: 'radio' })} onContextMenu={onMenu(() => navMenu({ name: 'radio' }))} />}
-        <NavItem on={is('stats')} icon={ChartBar} label={tr('Stats')} onClick={() => go({ name: 'stats' })} onContextMenu={onMenu(() => navMenu({ name: 'stats' }))} />
-        <NavItem on={is('add')} icon={PlusCircle} label={tr('Add music')} onClick={() => go({ name: 'add' })} onContextMenu={onMenu(() => navMenu({ name: 'add' }))} />
+        {!phone && !navOff.includes('home') && <NavItem on={is('home')} icon={House} label={tr('Home')} onClick={() => go({ name: 'home' })} onContextMenu={onMenu(() => navMenu({ name: 'home' }))} />}
+        {!phone && !navOff.includes('mixes') && <NavItem on={is('mixes') || is('mix')} icon={Disc} label={tr('Mixes')} onClick={() => go({ name: 'mixes' })} onContextMenu={onMenu(() => navMenu({ name: 'mixes' }))} />}
+        {!phone && !navOff.includes('radio') && <NavItem on={is('radio')} icon={Radio} label={tr('Radio')} onClick={() => go({ name: 'radio' })} onContextMenu={onMenu(() => navMenu({ name: 'radio' }))} />}
+        {!navOff.includes('stats') && <NavItem on={is('stats')} icon={ChartBar} label={tr('Stats')} onClick={() => go({ name: 'stats' })} onContextMenu={onMenu(() => navMenu({ name: 'stats' }))} />}
+        {!navOff.includes('add') && <NavItem on={is('add')} icon={PlusCircle} label={tr('Add music')} onClick={() => go({ name: 'add' })} onContextMenu={onMenu(() => navMenu({ name: 'add' }))} />}
       </nav>
 
       {/* The mini player stays put at the bottom; only the list scrolls. */}

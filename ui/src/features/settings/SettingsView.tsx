@@ -9,7 +9,8 @@ import { pickFile, saveFile } from '../../shared/files'
 import { formatBytes, formatCount, timeAgo } from '../../shared/format'
 import { PRIVACY_PAGE } from '../../shared/links'
 import { byVia, countText, VIA_LABELS, WHY_LABELS } from './privacy'
-import { ACCENTS, ADAPTIVE_LEVELS, COLUMNS, COVER_CACHE_MB, DEFAULTS, DJ_FRESH, DJ_GAPS, VIZ_BANDINGS, VIZ_COLORMAPS, VIZ_COLORS, VIZ_FACES, VIZ_GRADIENTS, VIZ_PRESET_COLORS, VIZ_WEIGHTINGS, type AdaptiveLevel, type Alarm, type Column, type Settings } from '../../shared/theme/theme'
+import { NAV_LABEL, withHidden } from '../sidebar/navHidden'
+import { ACCENTS, ADAPTIVE_LEVELS, COLUMNS, NAV_ITEMS, COVER_CACHE_MB, DEFAULTS, DJ_FRESH, DJ_GAPS, VIZ_BANDINGS, VIZ_COLORMAPS, VIZ_COLORS, VIZ_FACES, VIZ_GRADIENTS, VIZ_PRESET_COLORS, VIZ_WEIGHTINGS, type AdaptiveLevel, type Alarm, type Column, type Settings } from '../../shared/theme/theme'
 import { Button } from '../../shared/ui/Button'
 import { Led, Segmented, Toggle } from '../../shared/ui/controls'
 import { PageHeader } from '../../shared/ui/PageHeader'
@@ -330,6 +331,16 @@ function Appearance() {
           </Row>
           <Row setting="releaseCovers" label={msg('Covers for new releases')} sub={tr('Home’s New from your artists shows each release’s cover from Cover Art Archive (coverartarchive.org, then archive.org). Off by default: those hosts then see which releases you look at')}>
             <Toggle label={tr('Covers for new releases')} checked={s.releaseCovers} onChange={(releaseCovers) => update({ releaseCovers })} />
+          </Row>
+          <Row setting="hiddenNav" label={msg('Sidebar entries')} sub={tr('Untick what you don’t use. A hidden page is still there: search, links and shortcuts open it')}>
+            <div className="flex flex-wrap gap-x-4 gap-y-2">
+              {NAV_ITEMS.map((n) => (
+                <label key={n} className="flex items-center gap-2 text-[0.8125rem]">
+                  <input type="checkbox" className="size-3.5 accent-ink" checked={!s.hiddenNav.includes(n)} onChange={(e) => update({ hiddenNav: withHidden(s.hiddenNav, n, !e.target.checked) })} />
+                  {tr(NAV_LABEL[n])}
+                </label>
+              ))}
+            </div>
           </Row>
           <Row setting="sidebarCounts" label={msg('Counts in the sidebar')} sub={tr('Number of songs next to each entry')} preview={<CountsScene sidebarCounts={s.sidebarCounts} />}>
             <Toggle label={tr('Counts in the sidebar')} checked={s.sidebarCounts} onChange={(sidebarCounts) => update({ sidebarCounts })} />

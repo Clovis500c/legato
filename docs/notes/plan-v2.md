@@ -200,6 +200,13 @@ Where a line says "reading", the owner hasn't confirmed it.
 - [x] `S-M` Starter stations when Your stations is empty: by the user's region (Windows' / the interface's language, never an IP
       lookup) and tastes (genres in their library and history, local only), from Radio Browser; the heart keeps one.
 
+- [x] `S` Hide sidebar sections (the owner): Home, Mixes, Radio, Stats and Add music. 2026-11-12: right-click an entry › "Hide from the
+      sidebar"; back with Settings › Appearance › "Sidebar entries" (a tick list; Settings is not in the sidebar, so the way back can't
+      be hidden). A hidden page stays reachable (search, links, shortcuts); hiding the page you are on goes to Home. Setting
+      `hiddenNav`, per PC (in `LOCAL_SETTINGS`, not carried by Sync Mode), settings search entry, everything visible by default, no
+      `DEFAULTS_VERSION` bump. Decided alone (2026-11-12): the tick list rather than a menu entry "Sections…" (the settings search finds
+      it); only the five entries, not the playlists list. Never seen on a screen.
+
 ## Best in class (user's ask 2026-10-30)
 
 What a listener would get, against Riff (rootscripts/riff: Electron, yt-dlp downloads, YouTube / SoundCloud, imports
