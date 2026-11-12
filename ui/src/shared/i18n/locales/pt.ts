@@ -2345,6 +2345,8 @@ const pt: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'O seu servidor só aceita a senha enviada tal como está (codificada em hexadecimal, o que não é cifragem). Com https, só o seu servidor pode lê-la. Enviar assim?',
   'Send my password as it is': 'Enviar a minha senha tal como está',
   'Hide explicit songs': 'Ocultar músicas explícitas',
+  'Theme “{name}” added': 'Tema «{name}» adicionado',
+  '24 themes at most: remove one first.': 'No máximo 24 temas: remova um primeiro.',
   'Your {name} songs': 'As suas músicas de {name}',
   'Your songs of the {name}': 'As suas músicas dos anos {name}',
   'The {name} in your library, your way': '{name} da sua biblioteca, à sua maneira',

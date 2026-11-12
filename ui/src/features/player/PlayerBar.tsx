@@ -35,6 +35,7 @@ import { toggleLike, useLiked } from './like'
 import { tr } from '../../shared/i18n/i18n'
 import { phoneApp } from '../../shared/platform'
 import { takeDrop } from './drop'
+import { ownFile, type DropKind } from '../library/dropKinds'
 import { pickUp, usePickup } from '../syncmode/pickup'
 import { usePip } from './pipMode'
 
@@ -354,9 +355,11 @@ export function PlayerBar() {
       if (e.payload.type !== 'drop') return
       const { paths } = e.payload
       const image = paths.find((p) => /\.(png|jpe?g)$/i.test(p))
-      // A remix file: its song plays with the Live Editor open on its settings.
-      const remix = paths.find((p) => /\.lmix$/i.test(p))
-      if (remix) return void import('../editor/remixFile').then((m) => m.openRemix(remix))
+      // Legato's own files: a remix plays with the Live Editor open on its settings; a song list, a theme or a backup opens
+      // like its page opens it.
+      const own = ownFile(paths)
+      if (own?.kind === 'remix') return void import('../editor/remixFile').then((m) => m.openRemix(own.path))
+      if (own) return void import('../library/dropFiles').then((m) => m.openDropped(own.kind as Exclude<DropKind, 'remix'>, own.path))
       void takeDrop(paths).then((took) => {
         if (!took && image)
           api

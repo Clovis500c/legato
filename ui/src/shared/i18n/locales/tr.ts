@@ -2345,6 +2345,8 @@ const tr: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Sunucunuz yalnızca olduğu gibi gönderilen parolayı kabul ediyor (onaltılık kodlanır, bu şifreleme değildir). https üzerinden yalnızca sunucunuz okuyabilir. Bu şekilde gönderilsin mi?',
   'Send my password as it is': 'Parolamı olduğu gibi gönder',
   'Hide explicit songs': 'Müstehcen şarkıları gizle',
+  'Theme “{name}” added': '“{name}” teması eklendi',
+  '24 themes at most: remove one first.': 'En çok 24 tema: önce birini kaldır.',
   'Your {name} songs': '{name} şarkıların',
   'Your songs of the {name}': '{name} dönemi şarkıların',
   'The {name} in your library, your way': 'Kitaplığındaki {name}, senin tarzında',

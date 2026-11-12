@@ -134,9 +134,14 @@ Where a line says "reading", the owner hasn't confirmed it.
       is a server of ours (CLAUDE.md: serverless). The owner's call between an unverified profile, or their bot
       signing as an exception to that rule. Discord's OAuth for a desktop app without a secret: to check; a new
       host, so a privacy row.
-- [ ] `M` Drag and drop of every file type that is Legato's own into the app: the remix file, and the others (list
+- [x] `M` Drag and drop of every file type that is Legato's own into the app: the remix file, and the others (list
       them first: shared playlists, backups, themes, playlist files; a plugin folder never installs without its
       permission review). Today a drop takes folders, songs and a QR picture.
+      2026-11-12: listed: the remix (`.lmix`), a backup (`.legato`), a theme (`.theme`), a song list (`.m3u`, `.m3u8`, `.xspf`,
+      `.csv`, `.tsv`, `.txt`). Dropped, each opens as its page opens it (`library/dropKinds.ts` picks by type, `dropFiles.ts`):
+      a list becomes a playlist, a theme joins the themes and is picked, a backup asks before replacing the library; Rust
+      checks size and shape as before. Not dropped on purpose: a plugin folder (it is read as a music folder; plugins install
+      only through their review), `.musicsync` files, share-code text files. Never tried with a real drop.
 - [x] `M` Share as a picture, dropped on the app, brings its music back: from the picture's metadata first, and from
       the picture itself when the metadata is gone (Discord strips it): a code the app can read in the pixels (the QR
       path exists: check what the card carries today).
