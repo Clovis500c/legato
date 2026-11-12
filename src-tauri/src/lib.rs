@@ -451,7 +451,21 @@ fn loose_files(lib: &Library) -> Vec<String> {
 async fn rescan(state: &AppState, dirs: Vec<String>) -> CmdResult<usize> {
     let loose = loose_files(&state.lib());
     let paths: Vec<PathBuf> = dirs.iter().chain(&loose).map(PathBuf::from).collect();
-    let tracks = tauri::async_runtime::spawn_blocking(move || music_core::local::scan(&paths)).await.map_err(err)?;
+    // Files read so far, told to the interface (at most every 200 ms, and the last): Songs shows it while a big folder reads.
+    let app = state.app.clone();
+    let last = std::sync::atomic::AtomicU64::new(0);
+    let started = std::time::Instant::now();
+    let tracks = tauri::async_runtime::spawn_blocking(move || {
+        music_core::local::scan_with(&paths, &|done, total| {
+            let now = started.elapsed().as_millis() as u64;
+            if done == total || now >= last.load(std::sync::atomic::Ordering::Relaxed) + 200 {
+                last.store(now, std::sync::atomic::Ordering::Relaxed);
+                let _ = app.emit("scan-progress", [done, total]);
+            }
+        })
+    })
+    .await
+    .map_err(err)?;
     state.lib().replace_local(&tracks).map_err(err)
 }
 

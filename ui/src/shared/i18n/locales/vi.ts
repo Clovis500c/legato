@@ -2345,6 +2345,7 @@ const vi: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Máy chủ của bạn chỉ nhận mật khẩu gửi nguyên văn (mã hóa thập lục phân, không phải mã hóa bảo mật). Qua https chỉ máy chủ của bạn đọc được. Gửi theo cách này?',
   'Send my password as it is': 'Gửi mật khẩu của tôi nguyên văn',
   'Hide explicit songs': 'Ẩn bài hát có nội dung nhạy cảm',
+  'Reading your files… {done} of {total}': 'Đang đọc tệp của bạn… {done} trên {total}',
   'Code to bring the song back': 'Mã để mang bài hát trở lại',
   'Remix “{name}” opened in the Live Editor': 'Đã mở bản phối “{name}” trong Trình chỉnh sửa trực tiếp',
   'Only a song playing from YouTube can be shared as a remix file': 'Chỉ bài hát đang phát từ YouTube mới chia sẻ được dưới dạng tệp phối',

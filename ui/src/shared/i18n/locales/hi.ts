@@ -2345,6 +2345,7 @@ const hi: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'आपका सर्वर पासवर्ड केवल जैसा है वैसा ही भेजने पर स्वीकार करता है (हेक्स में एन्कोड, जो एन्क्रिप्शन नहीं है)। https पर केवल आपका सर्वर इसे पढ़ सकता है। इसे ऐसे भेजें?',
   'Send my password as it is': 'मेरा पासवर्ड जैसा है वैसा भेजें',
   'Hide explicit songs': 'स्पष्ट (explicit) गाने छिपाएँ',
+  'Reading your files… {done} of {total}': 'आपकी फ़ाइलें पढ़ी जा रही हैं… {total} में से {done}',
   'Code to bring the song back': 'गाने को वापस लाने वाला कोड',
   'Remix “{name}” opened in the Live Editor': 'रीमिक्स “{name}” लाइव एडिटर में खुला',
   'Only a song playing from YouTube can be shared as a remix file': 'केवल YouTube से चल रहा गाना रीमिक्स फ़ाइल के रूप में साझा किया जा सकता है',

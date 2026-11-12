@@ -27,6 +27,7 @@ import { PlaylistCover } from './PlaylistCover'
 import { filterTracks, groupAlbums, groupArtists, groupStats, libraryStats, musicOnly, sortGroups as orderGroups, sortTracks, type Filter, type GroupSort, type Sort } from './filter'
 import { DuplicatesButton } from './dialogs'
 import { HiddenExplicit, HiddenVideos } from './HiddenVideos'
+import { useScan } from './scanProgress'
 import { useExplicit } from './useExplicit'
 import { columnsMenu, TrackTable } from './TrackTable'
 import { browse, inPicks } from './browse'
@@ -276,6 +277,7 @@ export function SongsView() {
   const browser = useSettings((s) => s.settings.columnBrowser)
   const picks = useBrowse()
   const stats = useMemo(() => libraryStats(tracks), [tracks])
+  const reading = useScan((s) => s.progress)
   const clean = useExplicit(tracks)
   const music = useMemo(() => musicOnly(clean.kept), [clean])
   const found = useMemo(() => filterTracks(music.kept, query, filter), [music, query, filter])
@@ -292,7 +294,7 @@ export function SongsView() {
 
   return (
     <>
-      <PageHeader title={tr('Songs')} sub={`${trn(shown.length, '{n} song', '{n} songs')} · ${totalTime(shown)}${stats.sources > 1 ? ` · ${tr('{pct}% linked', { pct: stats.linkedPct })}` : ''}`} />
+      <PageHeader title={tr('Songs')} sub={reading ? tr('Reading your files… {done} of {total}', { done: reading[0].toLocaleString(), total: reading[1].toLocaleString() }) : `${trn(shown.length, '{n} song', '{n} songs')} · ${totalTime(shown)}${stats.sources > 1 ? ` · ${tr('{pct}% linked', { pct: stats.linkedPct })}` : ''}`} />
       {/* Mockup: the round play and shuffle first, then the chips. The phone: play and the tools on one row, the chips under it. */}
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 pb-3 phone:gap-x-3">
         <div className="flex flex-wrap items-center gap-3 phone:contents">

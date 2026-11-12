@@ -2345,6 +2345,7 @@ const uk: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Ваш сервер приймає лише пароль, надісланий як є (у шістнадцятковому записі, це не шифрування). Через https його прочитає лише ваш сервер. Надіслати так?',
   'Send my password as it is': 'Надіслати пароль як є',
   'Hide explicit songs': 'Приховувати пісні з відвертим змістом',
+  'Reading your files… {done} of {total}': 'Читання ваших файлів… {done} з {total}',
   'Code to bring the song back': 'Код, що повертає пісню',
   'Remix “{name}” opened in the Live Editor': 'Реміксу «{name}» відкрито в живому редакторі',
   'Only a song playing from YouTube can be shared as a remix file': 'Поділитися файлом реміксу можна лише піснею, що грає з YouTube',

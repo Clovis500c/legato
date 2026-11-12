@@ -2345,6 +2345,7 @@ const es: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Tu servidor solo acepta la contraseña enviada tal cual (codificada en hexadecimal, que no es cifrado). Con https solo tu servidor puede leerla. ¿Enviarla así?',
   'Send my password as it is': 'Enviar mi contraseña tal cual',
   'Hide explicit songs': 'Ocultar canciones explícitas',
+  'Reading your files… {done} of {total}': 'Leyendo tus archivos… {done} de {total}',
   'Code to bring the song back': 'Código para recuperar la canción',
   'Remix “{name}” opened in the Live Editor': 'Remix «{name}» abierto en el Editor en vivo',
   'Only a song playing from YouTube can be shared as a remix file': 'Solo una canción que suena desde YouTube se puede compartir como archivo de remix',

@@ -218,6 +218,8 @@ export const api = {
   onPushFailed: (cb: (f: PushFailed) => void) => listen<PushFailed>('push-failed', (e) => cb(e.payload)),
   /** A second launch from a taskbar Jump List entry: `jumpPending` has it. */
   onJump: (cb: () => void) => listen('jump', () => cb()),
+  /** Files read so far by a scan of the local folders: [done, total] (the last one has done = total). */
+  onScan: (cb: (progress: [number, number]) => void) => listen<[number, number]>('scan-progress', (e) => cb(e.payload)),
   /** A second launch from a `legato://` link (protocol.rs): `linkPending` has it. */
   onLink: (cb: () => void) => listen('link', () => cb()),
   /** The `legato://` link this launch or a later one was started from, once (untrusted text). */

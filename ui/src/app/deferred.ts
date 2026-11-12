@@ -25,6 +25,7 @@ export function startDeferred(): () => void {
     ['Phone songs', () => import('../features/add/phoneMusic').then((m) => m.startPhoneMusic())],
     ['Jump List', () => import('../features/home/jumpList').then((m) => m.startJumpList())],
     ['Opened links', () => import('../features/share/openedLink').then((m) => m.startOpenedLinks())],
+    ['Scan progress', () => import('../features/library/scanProgress').then((m) => m.startScanProgress())],
     ['Alarm', () => import('../features/player/alarm').then((m) => m.startAlarm())],
     ['Listening rooms', () => import('../features/rooms/rooms').then((m) => m.startRooms())],
   ]

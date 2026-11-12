@@ -48,6 +48,12 @@ pub const MAX_LOOSE: usize = 20_000;
 /// All audio files under `roots`, recursively; an audio file given as a root, as it is (dropped alone). Each file once.
 /// Symlinked dirs skipped (no loops).
 pub fn scan(roots: &[PathBuf]) -> Vec<LocalSong> {
+    scan_with(roots, &|_, _| {})
+}
+
+/// `scan`, telling `progress(done, total)` as the files new or changed since the last scan are read (total counts only
+/// those: unchanged ones come from memory). Called from the reading threads, `done` rising by one each time.
+pub fn scan_with(roots: &[PathBuf], progress: &(dyn Fn(usize, usize) + Sync)) -> Vec<LocalSong> {
     let mut files = Vec::new();
     for r in roots {
         if is_audio(r) && r.is_file() {
@@ -63,7 +69,7 @@ pub fn scan(roots: &[PathBuf]) -> Vec<LocalSong> {
     // No date known: read again.
     let kept = |path: &PathBuf, stamp: &Stamp| old.get(path).filter(|(s, _)| stamp.1.is_some() && s == stamp).map(|(_, t)| t.clone());
     let todo: Vec<&Path> = files.iter().filter(|(p, s)| kept(p, s).is_none()).map(|(p, _)| p.as_path()).collect();
-    let mut fresh = read_all(&todo).into_iter();
+    let mut fresh = read_all(&todo, progress).into_iter();
     let mut now = HashMap::with_capacity(files.len());
     let out = files
         .into_iter()
@@ -116,8 +122,9 @@ pub fn take_drop(dropped: &[PathBuf], folders: &mut Vec<String>, loose: &mut Vec
 }
 
 /// Tags of `paths`, in order, read on a few threads: one file's disk wait overlaps another's parsing.
-fn read_all(paths: &[&Path]) -> Vec<LocalSong> {
+fn read_all(paths: &[&Path], progress: &(dyn Fn(usize, usize) + Sync)) -> Vec<LocalSong> {
     let next = AtomicUsize::new(0);
+    let done = AtomicUsize::new(0);
     let workers = std::thread::available_parallelism().map_or(1, |n| n.get()).min(8).min(paths.len());
     let mut got: Vec<(usize, LocalSong)> = std::thread::scope(|s| {
         let handles: Vec<_> = (0..workers)
@@ -128,6 +135,7 @@ fn read_all(paths: &[&Path]) -> Vec<LocalSong> {
                         let i = next.fetch_add(1, Ordering::Relaxed);
                         let Some(p) = paths.get(i) else { return mine };
                         mine.push((i, read_song(p)));
+                        progress(done.fetch_add(1, Ordering::Relaxed) + 1, paths.len());
                     }
                 })
             })
@@ -538,6 +546,21 @@ pub(crate) mod tests {
         tag.set_title("Something Else".into());
         tag.save_to_path(&p, lofty::config::WriteOptions::default()).unwrap();
         assert_eq!((read(&p).title.as_str(), read(&p).artist.as_str()), ("Something Else", "Unknown artist"));
+    }
+
+    #[test]
+    fn a_scan_tells_how_far_it_has_read() {
+        let dir = tempfile::tempdir().unwrap();
+        for i in 0..12 {
+            wav(&dir.path().join(format!("p{i:02}.wav")));
+        }
+        let seen = std::sync::Mutex::new(Vec::new());
+        let songs = scan_with(&[dir.path().to_path_buf()], &|done, total| seen.lock().unwrap().push((done, total)));
+        let mut seen = seen.into_inner().unwrap();
+        seen.sort_unstable();
+        // One report per file read, `done` counting 1 to 12 once each, `total` always the files to read.
+        assert_eq!(songs.len(), 12);
+        assert_eq!(seen, (1..=12).map(|d| (d, 12)).collect::<Vec<_>>());
     }
 
     #[test]
