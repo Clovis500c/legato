@@ -678,6 +678,18 @@ pub fn mixes(input: &Input) -> Vec<Mix> {
     tagged(&|t| t.genre.as_deref().map(str::trim).filter(|g| !g.is_empty() && g.chars().count() <= 40).map(|g| (g.to_lowercase(), g.to_string())), "genre", "favorites", &mut out, &taste);
     tagged(&|t| t.year.filter(|y| (1900..=2100).contains(y)).map(|y| (format!("{}", y / 10 * 10), format!("{}s", y / 10 * 10))), "decade", "favorites", &mut out, &taste);
 
+    // By tempo, from the tags of local files (a workout, winding down): songs at 120 BPM and above, or 90 and below.
+    for (id, title, reason, pass) in [("upbeat", "Up tempo", "Your songs at 120 BPM and above", (120..=400)), ("mellow", "Slow down", "Your songs at 90 BPM and below", (30..=90))] {
+        let cands: Vec<(i64, f64)> = input.tracks.iter().filter(|t| t.bpm.is_some_and(|b| pass.contains(&b))).map(|t| (t.id, score_of(t.id) + 0.5)).collect();
+        if cands.len() < TAG_MIN {
+            continue;
+        }
+        let ids = taste.pick(cands.into_iter(), Opts { cooldown: true, favored: None });
+        if ids.len() >= MIN_LEN && new_enough(&out, &ids) {
+            out.push(Mix { id: id.into(), title: title.into(), reason: reason.into(), track_ids: ids, kind: "favorites", words: Words::default(), found: Vec::new() });
+        }
+    }
+
     // Supermix: your favourites over the months, not one day's listens (slow decay on top of the usual score).
     let mut long: HashMap<i64, f64> = taste.score.iter().filter(|(_, s)| **s > 0.0).map(|(id, s)| (*id, *s)).collect();
     for p in &plays {
@@ -1028,6 +1040,24 @@ mod tests {
         let decade = out.iter().find(|m| m.id == "decade-1").unwrap_or_else(|| panic!("{out:?}"));
         assert_eq!(decade.words.name.as_deref(), Some("1950s"));
         assert!(out.iter().all(|m| !m.id.starts_with("genre-")));
+    }
+
+    #[test]
+    fn tempo_mixes_come_from_the_tempo_tags() {
+        // Played songs (no tempo: streamed) and 24 local songs of six artists by tempo: 12 fast, 12 slow, 6 in between.
+        let mut tracks = library_of(30, &["A", "B", "C", "D", "E", "F"]);
+        let makers = ["K1", "K2", "K3", "K4", "K5", "K6"];
+        tracks.extend((31..=60).map(|i| LibraryTrack { bpm: Some(match i - 31 { 0..=11 => 128, 12..=23 => 80, _ => 105 }), ..t(i, makers[(i as usize - 31) % 6]) }));
+        let plays: Vec<Play> = (1..=12).map(|i| play(i, NOW - DAY + i * 200, true)).collect();
+        let out = run(&tracks, &plays, &HashMap::new(), 1);
+        let up = out.iter().find(|m| m.id == "upbeat").unwrap_or_else(|| panic!("{out:?}"));
+        let slow = out.iter().find(|m| m.id == "mellow").unwrap_or_else(|| panic!("{out:?}"));
+        assert!(up.track_ids.iter().all(|id| (31..=42).contains(id)) && slow.track_ids.iter().all(|id| (43..=54).contains(id)));
+        // Too few tempo tags: no tempo mix.
+        for t in &mut tracks {
+            t.bpm = t.bpm.filter(|_| t.id < 36);
+        }
+        assert!(run(&tracks, &plays, &HashMap::new(), 1).iter().all(|m| m.id != "upbeat" && m.id != "mellow"));
     }
 
     #[test]

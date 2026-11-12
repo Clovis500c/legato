@@ -485,6 +485,9 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - [ ] `S` Focus / workout sessions: a timer, no-lyrics or high-BPM mix, a summary after. (Left by the autopilot
       (2026-11-05): no tempo or energy data yet, so no high-BPM mix: the roadmap's "Smarter listening" analysis first;
       the plain timer is the sleep timer.)
+      2026-11-12, the tempo half: with the tempo tags of local files, the Mixes page has "Up tempo" (120 BPM and above) and "Slow
+      down" (90 and below), 8 songs at least (`mixes.rs`). Left: the session itself (timer, no-lyrics filter, summary), a taste
+      call about what a session is. Never seen on a screen.
 - [x] `S` Hide explicit songs (a filter, YouTube Music's flag when there is one). (Left by the autopilot (2026-11-05):
       no explicit flag is stored. The sources give it (YouTube Music's E badge, Exportify's Explicit column, iTunes'
       `trackExplicitness`): a `Track` field, a schema step and three parsers, an `M`.)

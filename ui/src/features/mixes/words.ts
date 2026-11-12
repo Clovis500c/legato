@@ -25,6 +25,8 @@ const FIXED: Record<string, { title: string; reason: string }> = {
   fresh: { title: msg('Fresh in your library'), reason: msg('Just added, barely played yet') },
   gems: { title: msg('Hidden gems'), reason: msg('Saved but never played here, by artists you like') },
   rediscover: { title: msg('Rediscover'), reason: msg('Tracks you loved, not played for two months') },
+  upbeat: { title: msg('Up tempo'), reason: msg('Your songs at 120 BPM and above') },
+  mellow: { title: msg('Slow down'), reason: msg('Your songs at 90 BPM and below') },
   discover: { title: msg('Discover Mix'), reason: msg('New to you, from radios of the songs you love') },
 }
 
