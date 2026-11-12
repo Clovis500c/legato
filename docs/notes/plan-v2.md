@@ -106,8 +106,12 @@ Where a line says "reading", the owner hasn't confirmed it.
       = 2, a source saying explicit again can't undo it; `Library::set_explicit_ok`, no schema change). Not covered: Home's
       shelves and cards, the Up next queue already built, a playlist's play-all from a sidebar menu (they use the same
       lists, but only the pages above were filtered). Never seen on a screen.
-- [ ] `S-M` The share page (`/l`, since `867cc53`) as a good-looking preview of a playlist without the app, from the
+- [x] `S-M` The share page (`/l`, since `867cc53`) as a good-looking preview of a playlist without the app, from the
       compact links: a preview only, no player on the web (the owner's word).
+      2026-11-11: the page has a header card in a colour drawn from the playlist's name (`hueOf`), its songs, known time and
+      where they play (`summary`, from the link alone), numbered tiles in the same colours, "Open in Legato" first. Still no
+      covers (they would load from YouTube's host for the visitor) and no player. Never seen in a browser: `next build` and
+      Vitest only; the colours' contrast on the light theme is unjudged.
 - [ ] `M` Remixes shared outside the app: a small file of ours, `.lmix` (or close, the owner's call), and its compact
       link. It holds the song's YouTube link and the mix's Live Editor presets, never the audio (no mp3: Fixed
       limits, no download). Dropped on Legato, the song plays with the Live Editor open on those presets.
@@ -410,7 +414,7 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       smart playlist rules on them (mixes, DJ-like transitions by BPM).
 - [ ] `M` Mixes: genre / year tags (stored for local files only), Last.fm "Discoveries" (user's key); "Never in mixes"
       on a discovered song (not in the library: no row to hold the choice).
-- [ ] `M` Internet radio stations (Radio Browser's open directory).
+- [x] `M` Internet radio stations (Radio Browser's open directory).
       Skipped by the autonomous run (2026-11-11): bigger than `M` once looked at. The engine plays HTTP only as a
       server song (`server:` paths through the shell's server fetcher, `crates/player/src/http.rs`), and a live stream
       has no length; a station would be a new `Source` (14 interface files and 25 Rust sites branch on `server`), and

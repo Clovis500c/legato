@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Logo } from './Logo'
-import { codeOf, fromFragment, type Item, type Shared } from './sharelink'
+import { codeOf, fromFragment, hueOf, summary, type Item, type Shared } from './sharelink'
 
 const time = (secs: number) => `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`
 
@@ -32,6 +32,7 @@ export function SharedPlaylist() {
     window.addEventListener('hashchange', read)
     return () => window.removeEventListener('hashchange', read)
   }, [])
+  const facts = list ? summary(list) : { songs: 0, minutes: 0, youtube: 0, apple: 0 }
   const copy = () =>
     navigator.clipboard.writeText(`legato://playlist/${codeOf(location.hash)}`).then(
       () => setCopied(true),
@@ -50,10 +51,15 @@ export function SharedPlaylist() {
       )}
       {list && (
         <>
-          <header className="flex flex-col gap-2">
-            <p className="text-sm text-ink-2">A playlist shared with Legato</p>
+          <header className="flex flex-col gap-3 rounded-2xl p-6 text-white" style={{ background: `linear-gradient(135deg, hsl(${hueOf(list.name)} 55% 40%), hsl(${(hueOf(list.name) + 50) % 360} 60% 20%))` }}>
+            <p className="text-sm opacity-80">A playlist shared with Legato</p>
             <h1 className="text-4xl font-black tracking-tight break-words">{list.name || 'Playlist'}</h1>
-            <p className="text-sm text-ink-2">{list.items.length === 1 ? '1 song' : `${list.items.length.toLocaleString('en')} songs`}</p>
+            <p className="flex flex-wrap gap-x-3 gap-y-1 text-sm opacity-90">
+              <span>{list.items.length === 1 ? '1 song' : `${list.items.length.toLocaleString('en')} songs`}</span>
+              {facts.minutes > 0 && <span>· {facts.minutes >= 60 ? `${Math.floor(facts.minutes / 60)} h ${facts.minutes % 60} min` : `${facts.minutes} min`}</span>}
+              {facts.youtube > 0 && <span>· {facts.youtube.toLocaleString('en')} on YouTube</span>}
+              {facts.apple > 0 && <span>· {facts.apple.toLocaleString('en')} on Apple Music</span>}
+            </p>
           </header>
           <div className="flex flex-wrap items-center gap-3">
             <a href={`legato://playlist/${codeOf(location.hash)}`} className={`${button} bg-ink text-on-ink`}>
@@ -71,7 +77,9 @@ export function SharedPlaylist() {
               const [label, href] = listen(i)
               return (
                 <li key={n} className="flex items-center gap-4 border-t border-line-soft py-3">
-                  <span className="w-7 shrink-0 text-right text-sm text-ink-3 tabular-nums">{n + 1}</span>
+                  <span aria-hidden className="grid size-9 shrink-0 place-items-center rounded-lg text-sm font-bold text-white tabular-nums" style={{ background: `hsl(${(hueOf(list.name) + n * 7) % 360} 45% 38%)` }}>
+                    {n + 1}
+                  </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-medium">{i.kind === 'apple' ? 'A song on Apple Music' : i.title || 'A video on YouTube'}</span>
                     {i.kind !== 'apple' && i.artist && <span className="block truncate text-sm text-ink-2">{i.artist}</span>}

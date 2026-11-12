@@ -96,3 +96,16 @@ export async function fromFragment(hash: string): Promise<Shared> {
     throw e instanceof Error && e.message.startsWith('This link') ? e : new Error('This link is damaged')
   }
 }
+
+/** What the page says about a playlist, from the link alone (no lookup): songs, known listening time, where they come from. */
+export function summary(list: Shared) {
+  const secs = list.items.reduce((n, i) => n + (i.kind === 'youtube' ? i.secs : 0), 0)
+  return { songs: list.items.length, minutes: Math.round(secs / 60), youtube: list.items.filter((i) => i.kind === 'youtube').length, apple: list.items.filter((i) => i.kind === 'apple').length }
+}
+
+/** A colour for a name, 0 to 359: the same playlist always looks the same (the page has no cover to show). */
+export function hueOf(name: string): number {
+  let h = 0
+  for (const c of name) h = (h * 31 + c.codePointAt(0)!) % 360
+  return h
+}
