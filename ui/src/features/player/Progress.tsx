@@ -4,7 +4,9 @@ import { formatDuration } from '../../shared/format'
 import { Bar } from '../../shared/ui/controls'
 import { move, press, release, shown, type Drag } from './seekDrag'
 import { SHAPE_BARS, shapeBars, shapePath } from './seekShape'
+import { useLoop } from './abLoop'
 import { bookmarkTime, useBookmarks } from './bookmarks'
+import { songKey } from './effects'
 import { useSponsor } from './sponsor'
 import { usePlayer } from './store'
 import { tr } from '../../shared/i18n/i18n'
@@ -186,6 +188,7 @@ export function SeekBar({ className = '' }: { className?: string }) {
       />
       <PartMarks />
       <BookmarkMarks />
+      <LoopMark />
     </span>
   )
 }
@@ -207,6 +210,16 @@ function PartMarks() {
         ))}
     </span>
   )
+}
+
+/** The A–B loop (abLoop.ts) as a band on the bar: its start alone is a tick. */
+function LoopMark() {
+  const durationMs = usePlayer((s) => s.durationMs)
+  const { song, a, b } = useLoop()
+  const mine = usePlayer((s) => songKey(s.now) === song)
+  if (!durationMs || !mine || a === null) return null
+  const end = b ?? a
+  return <span aria-hidden className="pointer-events-none absolute top-1/2 -mt-[10px] h-[5px] rounded-full bg-accent/70" style={{ left: `${(a / durationMs) * 100}%`, width: b === null ? '2px' : `${(Math.max(end - a, 0) / durationMs) * 100}%` }} />
 }
 
 /** The playing song's bookmarks as small ticks above the bar. */

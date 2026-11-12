@@ -31,6 +31,7 @@ export type ActionId =
   | 'vizFull'
   | 'coverFull'
   | 'pip'
+  | 'loop'
   | 'search'
   | 'voice'
   | 'settings'
@@ -76,6 +77,7 @@ export const ACTIONS: ActionInfo[] = [
   { id: 'vizFull', label: msg('Visualizer full screen on / off'), keys: 'KeyV', global: null },
   { id: 'coverFull', label: msg('Cover display on / off'), keys: 'KeyC', global: null },
   { id: 'pip', label: msg('Picture-in-picture on / off'), keys: 'KeyP', global: null },
+  { id: 'loop', label: msg('A–B loop: start, end, clear'), keys: 'KeyL', global: null },
   { id: 'search', label: msg('Search'), keys: 'Ctrl+KeyK', global: null },
   // No default: Ctrl+Shift+letters are taken by text fields and other apps. The words it knows: voiceCommand.ts.
   { id: 'voice', label: msg('Search by voice'), keys: null, global: null },

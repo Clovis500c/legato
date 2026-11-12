@@ -518,8 +518,9 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       count-in / metronome on the song's tempo.
       2026-11-12, the A-B loop: the player's menu has A–B loop (Loop starts here / Loop ends here / Clear the loop); at the end the
       song goes back to the start, from the position the player reports (`abLoop.ts`, no engine change, so the turn is a
-      quarter of a second late on a file); it goes when another song starts. Left: key and chords shown, a keyboard shortcut and
-      a mark on the progress bar for the loop. Never tried by ear.
+      quarter of a second late on a file); it goes when another song starts. Left: key and chords shown, a metronome.
+      2026-11-12: the loop has a key (L: start, end, clear, in the shortcuts table) and a band on the progress bar. Decided
+      alone (2026-11-12): L, one key cycling the three steps, rather than three keys. Never tried by ear or on a screen.
 - [ ] `M-L` Profiles on one PC (each person's library, likes, history and Last.fm), switched from the top bar.
 - [ ] `L` Exclusive WASAPI output / bit-perfect for local files (foobar's audiophiles).
 - [ ] `L` Podcasts by RSS (open feeds only: no platform audio taken), resume per episode, speed.

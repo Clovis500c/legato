@@ -34,6 +34,18 @@ export function markLoop(end: boolean) {
   if (next.a !== null && next.b !== null) useStore.getState().notify(tr('Looping {a} to {b}', { a: clock(next.a), b: clock(next.b) }))
 }
 
+/** What one press of the loop key does: the first sets the start, the second the end, the third clears. */
+export const loopPress = (a: number | null, b: number | null): 'start' | 'end' | 'clear' => (a === null ? 'start' : b === null ? 'end' : 'clear')
+
+export function cycleLoop() {
+  const { now } = usePlayer.getState()
+  const { song, a, b } = useLoop.getState()
+  // Another song's loop is none.
+  const step = loopPress(song === songKey(now) ? a : null, song === songKey(now) ? b : null)
+  if (step === 'clear') clearLoop()
+  else markLoop(step === 'end')
+}
+
 export const clearLoop = () => useLoop.setState({ song: null, a: null, b: null })
 
 /** Follows the player: the loop turns the song back at its end, and goes when the song changes. Returns cleanup. */

@@ -10,6 +10,7 @@ import { accelerator, ACTIONS, bindings, comboOf, type ActionId, type Combo } fr
 import { useSettings } from './settings'
 import { useStore } from './store'
 import { toggleFullscreen } from './fullscreen'
+import { cycleLoop } from '../features/player/abLoop'
 import { useVoiceAsk } from '../features/search/voiceRun'
 
 const player = () => usePlayer.getState()
@@ -58,6 +59,7 @@ export const RUN: Record<ActionId, () => void> = {
   coverFull: () => !useVizFull.getState().open && !useKaraoke.getState().open && !pipOn() && toggleCoverFull(),
   // Not from a full screen (pipMode.ts).
   pip: togglePip,
+  loop: cycleLoop,
   search: () => !onTop() && document.querySelector<HTMLInputElement>('[data-search]')?.focus(),
   voice: () => !onTop() && useVoiceAsk.setState((s) => ({ n: s.n + 1 })),
   settings: () => !onTop() && useStore.getState().go({ name: 'settings', section: 'shortcuts' }),
