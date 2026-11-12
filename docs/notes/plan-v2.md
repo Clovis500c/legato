@@ -197,7 +197,7 @@ Where a line says "reading", the owner hasn't confirmed it.
       served as an icon). Not covered: a public name that resolves to a private address (the answer is only read as a picture); the
       website's "Internet radio" row says the icons come from the stations' own sites. Decided alone (2026-11-12): any public
       host rather than a list (stations' icons sit anywhere). Never seen on a screen.
-- [ ] `S-M` Starter stations when Your stations is empty: by the user's region (Windows' / the interface's language, never an IP
+- [x] `S-M` Starter stations when Your stations is empty: by the user's region (Windows' / the interface's language, never an IP
       lookup) and tastes (genres in their library and history, local only), from Radio Browser; the heart keeps one.
 
 ## Best in class (user's ask 2026-10-30)
@@ -244,7 +244,11 @@ ask for the autonomous run of 2026-11-05 evening,
 with the interface on top (U1, U2 below): ours does too much on a phone, and lacks the glow and the simplicity Liner
 has (inspiration only, never its code or assets). Never copied: their playback (YouTube's audio taken, their own
 copies, downloads for offline), their accounts, limits and paid plan.
-
+      2026-11-12: while Your stations is empty the page shows "Stations to start with": the most listened of the user's country
+      (`region()`: the interface's language, never an IP lookup) and of the two genres their local files' tags and listens weigh
+      most (`suggest.ts`), at most three requests (`radio_suggest`); the website's row says exactly what goes (a country code, up
+      to two genre words). The heart keeps one. Decided alone (2026-11-12): asked when the page opens (not on a button), once per
+      visit, since the page is the radio; the region is the interface language's (Windows' own region isn't read). Never seen.
 - [ ] 6. `S` A native window on Windows 11: snap layouts on our maximize button (`WM_NCHITTEST` → `HTMAXBUTTON`,
       beside `thumbbar.rs`), Windows' minimize and maximize animations.
       The owner's choice 2026-11-11: together, with the owner at the PC (not built blind).

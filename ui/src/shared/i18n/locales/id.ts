@@ -2345,6 +2345,8 @@ const id: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Server Anda hanya menerima kata sandi yang dikirim apa adanya (dikodekan heksadesimal, bukan enkripsi). Lewat https hanya server Anda yang bisa membacanya. Kirim dengan cara ini?',
   'Send my password as it is': 'Kirim kata sandi saya apa adanya',
   'Hide explicit songs': 'Sembunyikan lagu eksplisit',
+  'Stations to start with': 'Stasiun untuk memulai',
+  'Picked from the directory for your region and the genres in your library. Only a country code and genre words were sent.': 'Dipilih dari direktori menurut wilayah Anda dan genre di perpustakaan Anda. Hanya kode negara dan kata genre yang dikirim.',
   'Credits…': 'Kredit…',
   'Credits': 'Kredit',
   'MusicBrainz has no credits for this song.': 'MusicBrainz tidak punya kredit untuk lagu ini.',

@@ -2345,6 +2345,8 @@ const pt: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'O seu servidor só aceita a senha enviada tal como está (codificada em hexadecimal, o que não é cifragem). Com https, só o seu servidor pode lê-la. Enviar assim?',
   'Send my password as it is': 'Enviar a minha senha tal como está',
   'Hide explicit songs': 'Ocultar músicas explícitas',
+  'Stations to start with': 'Estações para começar',
+  'Picked from the directory for your region and the genres in your library. Only a country code and genre words were sent.': 'Escolhidas do diretório pela sua região e pelos géneros da sua biblioteca. Só foram enviados um código de país e palavras de género.',
   'Credits…': 'Créditos…',
   'Credits': 'Créditos',
   'MusicBrainz has no credits for this song.': 'O MusicBrainz não tem créditos desta música.',

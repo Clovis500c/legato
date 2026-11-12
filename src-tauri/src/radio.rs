@@ -50,6 +50,26 @@ pub async fn radio_search(query: String) -> CmdResult<Vec<Station>> {
     Ok(found)
 }
 
+/// Stations to start with, when none is kept: the most listened of the user's country (two letters, from the interface)
+/// and of up to two genres (words from their own library, chosen there): at most three requests, a few stations each.
+#[tauri::command]
+pub async fn radio_suggest(country: Option<String>, tags: Vec<String>) -> CmdResult<Vec<Station>> {
+    let country = country.map(|c| c.trim().to_uppercase()).filter(|c| c.len() == 2 && c.bytes().all(|b| b.is_ascii_uppercase()));
+    let tags: Vec<String> = tags.into_iter().map(|t| t.trim().to_lowercase()).filter(|t| !t.is_empty() && t.chars().count() <= 40 && t.chars().all(|c| c.is_alphanumeric() || " &+-'".contains(c))).take(2).collect();
+    let (dir, mut out): (_, Vec<Station>) = (RadioBrowser::default(), Vec::new());
+    if let Some(c) = &country {
+        out.extend(dir.popular(Some(c), None, 10).await.map_err(err)?);
+    }
+    for t in &tags {
+        out.extend(dir.popular(None, Some(t), 6).await.map_err(err)?);
+    }
+    let mut seen = std::collections::HashSet::new();
+    out.retain(|s| seen.insert(s.id.clone()));
+    out.truncate(20);
+    icons(&out);
+    Ok(out)
+}
+
 #[tauri::command]
 pub async fn radio_kept(state: State<'_, AppState>) -> CmdResult<Vec<Station>> {
     let all = kept(&state);

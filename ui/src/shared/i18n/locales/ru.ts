@@ -2345,6 +2345,8 @@ const ru: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Ваш сервер принимает только пароль, отправленный как есть (в шестнадцатеричной записи, это не шифрование). По https его прочитает только ваш сервер. Отправить так?',
   'Send my password as it is': 'Отправить пароль как есть',
   'Hide explicit songs': 'Скрывать песни с ненормативной лексикой',
+  'Stations to start with': 'Станции для начала',
+  'Picked from the directory for your region and the genres in your library. Only a country code and genre words were sent.': 'Выбраны из каталога по вашему региону и жанрам вашей библиотеки. Отправлены только код страны и названия жанров.',
   'Credits…': 'Авторы…',
   'Credits': 'Авторы',
   'MusicBrainz has no credits for this song.': 'В MusicBrainz нет данных об авторах этой песни.',

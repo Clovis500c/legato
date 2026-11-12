@@ -2345,6 +2345,8 @@ const tr: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Sunucunuz yalnızca olduğu gibi gönderilen parolayı kabul ediyor (onaltılık kodlanır, bu şifreleme değildir). https üzerinden yalnızca sunucunuz okuyabilir. Bu şekilde gönderilsin mi?',
   'Send my password as it is': 'Parolamı olduğu gibi gönder',
   'Hide explicit songs': 'Müstehcen şarkıları gizle',
+  'Stations to start with': 'Başlamak için istasyonlar',
+  'Picked from the directory for your region and the genres in your library. Only a country code and genre words were sent.': 'Bölgene ve kitaplığındaki türlere göre dizinden seçildi. Yalnızca bir ülke kodu ve tür sözcükleri gönderildi.',
   'Credits…': 'Katkıda bulunanlar…',
   'Credits': 'Katkıda bulunanlar',
   'MusicBrainz has no credits for this song.': 'MusicBrainz’de bu şarkı için bilgi yok.',

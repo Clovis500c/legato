@@ -2345,6 +2345,8 @@ const ko: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': '서버가 비밀번호를 그대로 보내는 방식만 받습니다(16진수로 인코딩될 뿐 암호화는 아닙니다). https에서는 서버만 읽을 수 있습니다. 이렇게 보낼까요?',
   'Send my password as it is': '내 비밀번호를 그대로 보내기',
   'Hide explicit songs': '선정적인 곡 숨기기',
+  'Stations to start with': '시작용 방송국',
+  'Picked from the directory for your region and the genres in your library. Only a country code and genre words were sent.': '지역과 라이브러리 장르에 맞춰 디렉터리에서 골랐습니다. 국가 코드와 장르 단어만 전송했습니다.',
   'Credits…': '크레딧…',
   'Credits': '크레딧',
   'MusicBrainz has no credits for this song.': 'MusicBrainz에 이 곡의 크레딧이 없습니다.',

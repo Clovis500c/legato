@@ -100,6 +100,28 @@ impl RadioBrowser {
         let n = count.clamp(1, 100).to_string();
         let mut url = url::Url::parse(&format!("{}/stations/search", self.api))?;
         url.query_pairs_mut().extend_pairs([("name", name), ("hidebroken", "true"), ("order", "votes"), ("reverse", "true"), ("limit", &n)]);
+        self.stations(url).await
+    }
+
+    /// The most listened stations of a country (`country`: its two letters) or of a genre (`tag`), `count` at most. Only
+    /// that code or that word leaves the PC.
+    pub async fn popular(&self, country: Option<&str>, tag: Option<&str>, count: usize) -> Result<Vec<Station>> {
+        let n = count.clamp(1, 50).to_string();
+        let mut url = url::Url::parse(&format!("{}/stations/search", self.api))?;
+        {
+            let mut q = url.query_pairs_mut();
+            q.extend_pairs([("hidebroken", "true"), ("order", "clickcount"), ("reverse", "true"), ("limit", n.as_str())]);
+            if let Some(c) = country {
+                q.append_pair("countrycode", c);
+            }
+            if let Some(t) = tag {
+                q.append_pair("tag", t).append_pair("tagExact", "true");
+            }
+        }
+        self.stations(url).await
+    }
+
+    async fn stations(&self, url: url::Url) -> Result<Vec<Station>> {
         let r = self.http.get(url).header(reqwest::header::USER_AGENT, AGENT).timeout(TIMEOUT).send().await.map_err(|_| anyhow::anyhow!("The radio directory doesn't answer"))?;
         match r.status().as_u16() {
             429 | 503 => bail!("The radio directory is busy, try again in a moment"),
@@ -178,5 +200,17 @@ mod tests {
         m.assert_async().await;
         assert!(open("file:///etc/passwd").await.is_err() && open("nonsense").await.is_err());
         assert!(open("http://127.0.0.1:9/x").await.err().unwrap().to_string().contains("doesn't answer"));
+    }
+
+    #[tokio::test]
+    async fn popular_asks_for_a_country_or_a_genre_and_nothing_else() {
+        let mut s = mockito::Server::new_async().await;
+        let by_country = s.mock("GET", "/json/stations/search").match_query(Matcher::AllOf(vec![Matcher::UrlEncoded("countrycode".into(), "FR".into()), Matcher::UrlEncoded("order".into(), "clickcount".into()), Matcher::UrlEncoded("limit".into(), "10".into())])).with_body(BODY).create_async().await;
+        let by_tag = s.mock("GET", "/json/stations/search").match_query(Matcher::AllOf(vec![Matcher::UrlEncoded("tag".into(), "jazz".into()), Matcher::UrlEncoded("tagExact".into(), "true".into())])).with_body("[]").create_async().await;
+        let r = RadioBrowser::with_urls(&format!("{}/json", s.url()));
+        assert_eq!(r.popular(Some("FR"), None, 10).await.unwrap().len(), 3);
+        assert!(r.popular(None, Some("jazz"), 6).await.unwrap().is_empty());
+        by_country.assert_async().await;
+        by_tag.assert_async().await;
     }
 }

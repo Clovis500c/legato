@@ -2345,6 +2345,8 @@ const hi: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'आपका सर्वर पासवर्ड केवल जैसा है वैसा ही भेजने पर स्वीकार करता है (हेक्स में एन्कोड, जो एन्क्रिप्शन नहीं है)। https पर केवल आपका सर्वर इसे पढ़ सकता है। इसे ऐसे भेजें?',
   'Send my password as it is': 'मेरा पासवर्ड जैसा है वैसा भेजें',
   'Hide explicit songs': 'स्पष्ट (explicit) गाने छिपाएँ',
+  'Stations to start with': 'शुरू करने के लिए स्टेशन',
+  'Picked from the directory for your region and the genres in your library. Only a country code and genre words were sent.': 'आपके क्षेत्र और आपकी लाइब्रेरी की शैलियों के अनुसार निर्देशिका से चुने गए। केवल एक देश कोड और शैली के शब्द भेजे गए।',
   'Credits…': 'क्रेडिट…',
   'Credits': 'क्रेडिट',
   'MusicBrainz has no credits for this song.': 'MusicBrainz के पास इस गाने के क्रेडिट नहीं हैं।',

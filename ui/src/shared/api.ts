@@ -468,6 +468,8 @@ export const api = {
   lmixLink: (mix: Lmix) => invoke<string>('lmix_link', { mix }),
   lmixFromLink: (link: string) => invoke<Lmix>('lmix_from_link', { link }),
   radioSearch: (query: string) => invoke<RadioStation[]>('radio_search', { query }),
+  /** Stations to start with: the most listened of a country (two letters) and of up to two genres. */
+  radioSuggest: (country: string | null, tags: string[]) => invoke<RadioStation[]>('radio_suggest', { country, tags }),
   radioKept: () => invoke<RadioStation[]>('radio_kept'),
   radioKeep: (station: RadioStation, keep: boolean) => invoke<RadioStation[]>('radio_keep', { station, keep }),
   /** Imported YouTube Music playlist: added on YouTube (Liked Music = like), then locally. */

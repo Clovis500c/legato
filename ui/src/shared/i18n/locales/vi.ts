@@ -2345,6 +2345,8 @@ const vi: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Máy chủ của bạn chỉ nhận mật khẩu gửi nguyên văn (mã hóa thập lục phân, không phải mã hóa bảo mật). Qua https chỉ máy chủ của bạn đọc được. Gửi theo cách này?',
   'Send my password as it is': 'Gửi mật khẩu của tôi nguyên văn',
   'Hide explicit songs': 'Ẩn bài hát có nội dung nhạy cảm',
+  'Stations to start with': 'Đài để bắt đầu',
+  'Picked from the directory for your region and the genres in your library. Only a country code and genre words were sent.': 'Chọn từ thư mục theo khu vực của bạn và các thể loại trong thư viện. Chỉ gửi mã quốc gia và từ thể loại.',
   'Credits…': 'Danh sách tham gia…',
   'Credits': 'Danh sách tham gia',
   'MusicBrainz has no credits for this song.': 'MusicBrainz không có thông tin về bài hát này.',

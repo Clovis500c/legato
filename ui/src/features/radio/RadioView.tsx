@@ -1,14 +1,16 @@
 import { Heart, Play, Radio } from '@phosphor-icons/react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useStore } from '../../app/store'
 import { api, type RadioStation } from '../../shared/api'
 import { remoteArt } from '../../shared/art'
+import { region } from '../../shared/format'
 import { tr, trn } from '../../shared/i18n/i18n'
 import { Cover } from '../../shared/ui/Cover'
 import { Button } from '../../shared/ui/Button'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { usePlayer } from '../player/store'
 import { stationQueue } from './station'
+import { topGenres } from './suggest'
 
 /**
  * Internet radio: search Radio Browser's open directory (the words typed go there, nothing else), play a station, keep
@@ -20,9 +22,21 @@ export function RadioView() {
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
   const fail = (e: unknown) => useStore.getState().notify(String(e), { kind: 'error' })
+  // Starter stations, while none is kept: the user's region (the interface's language, never an IP lookup) and the genres of
+  // their own library. Only a country code and up to two genre words go to the directory.
+  const [starters, setStarters] = useState<RadioStation[]>([])
+  const tracks = useStore((s) => s.tracks)
+  const stats = useStore((s) => s.stats)
+  const [loaded, setLoaded] = useState(false)
   useEffect(() => {
-    api.radioKept().then(setKept, fail)
+    api.radioKept().then((k) => (setKept(k), setLoaded(true)), fail)
   }, [])
+  const asked = useRef(false)
+  useEffect(() => {
+    if (!loaded || kept.length || asked.current) return
+    asked.current = true
+    api.radioSuggest(region(), topGenres(tracks, stats)).then(setStarters, () => {})
+  }, [loaded, kept.length, tracks, stats])
   const search = () => {
     if (!text.trim() || busy) return
     setBusy(true)
@@ -75,6 +89,13 @@ export function RadioView() {
         <h2 className="kicker flex items-center gap-2 pt-6 pb-1">
           <Radio size={14} /> {tr('Your stations')}
         </h2>
+        {!kept.length && starters.length > 0 && (
+          <>
+            <h2 className="kicker pt-6 pb-1">{tr('Stations to start with')}</h2>
+            <p className="pb-1 text-xs text-ink-2">{tr('Picked from the directory for your region and the genres in your library. Only a country code and genre words were sent.')}</p>
+            <ul className="flex flex-col">{starters.map(row(starters))}</ul>
+          </>
+        )}
         {kept.length ? <ul className="flex flex-col">{kept.map(row(kept))}</ul> : <p className="text-sm text-ink-2">{tr('Keep a station with its heart: it waits here.')}</p>}
       </div>
     </>
