@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { WatchReport } from '../../shared/api'
-import { embedStarts, physical, useWatch, watchCommand, watchUpdate } from './watch'
+import { embedReport, embedStarts, physical, useWatch, watchCommand, watchUpdate } from './watch'
 
 /** What the shell sends: every field there, null when the page said nothing. */
 const report = (r: Partial<WatchReport>): WatchReport => ({ state: null, time: null, duration: null, videoId: null, error: null, reason: null, click: false, ready: false, cropped: false, ...r })
@@ -32,6 +32,17 @@ describe('watch page (blocked embeds)', () => {
     useWatch.setState({ video: 'abcdefghijk' })
     expect(embedStarts('abcdefghijk', false)).toBe(false)
     expect(embedStarts('otherotherx', false)).toBe(true)
+    useWatch.setState({ video: null })
+  })
+
+  it('ignores the embed while the watch page plays its video', () => {
+    expect(embedReport('abcdefghijk', { error: 150 })).toBe('pass')
+    useWatch.setState({ video: 'abcdefghijk' })
+    // Its refusal would drop the watch page for another upload; its start would sound twice.
+    expect(embedReport('abcdefghijk', { error: 150 })).toBe('drop')
+    expect(embedReport('abcdefghijk', { state: 5, time: 0 })).toBe('drop')
+    expect(embedReport('abcdefghijk', { state: 1, time: 0.2 })).toBe('pause')
+    expect(embedReport('otherotherx', { state: 1 })).toBe('pass')
     useWatch.setState({ video: null })
   })
 

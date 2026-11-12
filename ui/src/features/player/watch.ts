@@ -22,6 +22,13 @@ export function embedStarts(video: string, hold: boolean): boolean {
   return !hold && !watching(video)
 }
 
+/** An embed's report while the watch page plays its video: not the song's (its error 150 would drop the watch page for
+ *  another upload). Started anyway (YouTube ignores a pause while a video starts): paused. */
+export function embedReport(video: string, u: YtUpdate): 'pass' | 'drop' | 'pause' {
+  if (!watching(video)) return 'pass'
+  return u.state === 1 ? 'pause' : 'drop'
+}
+
 /** Embed command (postMessage protocol names) → watch page command. Others have no meaning there. */
 export function watchCommand(func: string, args: unknown[]): WatchCmd | null {
   const n = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : 0)

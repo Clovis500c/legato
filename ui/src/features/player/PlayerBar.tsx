@@ -26,7 +26,7 @@ import { DOWN_MS, retryWait } from './ytDown'
 import { useCoverFull } from './coverFull'
 import { useKaraoke } from './karaokeMode'
 import { useVizFull } from './vizFull'
-import { closeWatch, cropWatch, embedStarts, placeWatch, sendWatch, useWatch, watching, watchUpdate } from './watch'
+import { closeWatch, cropWatch, embedReport, embedStarts, placeWatch, sendWatch, useWatch, watchUpdate } from './watch'
 import { frameAround } from '../../shared/artbox'
 import { bindLiveFrame, sendLive } from './live'
 import { useLiveSync } from './liveSync'
@@ -127,8 +127,10 @@ function YouTubeFrame({ videoId, tail = false, idle = false, cue = false }: { vi
         captionsOff.current = shown.current
         for (const m of ['captions', 'cc']) ytPost(frame.current, 'command', 'unloadModule', [m])
       }
-      // Started anyway (YouTube ignores a pause while a video starts): its watch page plays it, silenced here.
-      if (u.state === 1 && watching(shown.current)) return ytPost(frame.current, 'command', 'pauseVideo')
+      // Its watch page plays this video: the embed's words aren't the song's.
+      const seen = embedReport(shown.current, u)
+      if (seen === 'pause') ytPost(frame.current, 'command', 'pauseVideo')
+      if (seen !== 'pass') return
       onYoutube(u)
     }
     window.addEventListener('message', onMessage)
