@@ -209,7 +209,7 @@ player, Now Playing and the menus.
 Budget (2026-11-05, `scripts/budget.mjs`, CI after `vite build` on Windows): JS at launch 970 kB (307 kB gzip) in
 62 files, up from 853 kB after the lazy dialogs with what came since; the check fails over 340 kB gzip. Chunk names
 mislead: Rolldown names a shared chunk after one of its modules (`vizVu-*.js`, 49 kB, is mostly Phosphor icons the
-lazy pages share). Rust startup time stays out of CI: a shared runner's timings swing more than the regression it
+lazy pages share). 2026-11-13: the release build keeps only the regular, bold and fill weights of Phosphor's icons (`vite.phosphor.ts`): 891 kB (305 kB gzip) in 100 files. Rust startup time stays out of CI: a shared runner's timings swing more than the regression it
 would catch, so `pnpm bench` on a quiet PC keeps that table.
 
 | Date | Version | PC | Window shown, cold / restart | First paint, cold / restart | RAM MB: paused / playing 1 min / tray 10 min | CPU % of the PC: paused / playing / tray | Notes |

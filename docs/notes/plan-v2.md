@@ -709,6 +709,13 @@ Most useful first; the tag is the effort.
 
 Most useful first; the tag is the effort.
 
+- [x] `S` Free room in the first screen's JS (it sat at 340 kB gzip of 340, every menu entry cost): 2026-11-13, the release build drops
+      the thin, light and duotone weights from every Phosphor icon (each icon carried six, the app draws regular, bold and fill):
+      340 kB → 305 kB gzip at launch, 1050 → 891 kB raw (`vite.phosphor.ts`; a test reads the real icon files and fails if the
+      app asks for a dropped weight). Decided alone (2026-11-13): this over making `menus` lazy (a menu built on demand would
+      open late), and `DeviceIcon` went from light to regular; the budget stays at 340 kB so the room is the next features'.
+      Not done: other weights back is one line in `KEEP`. Only the Windows build was measured.
+
 - [x] `M` Library at scale, the rest: search with FTS5, scans in the background with progress.
       Skipped 2026-11-11 (measured, not needed): the library's search runs in the interface over the songs it already
       holds (`search/match.ts`, each song's folded names made once): 50 000 songs answer in about 7 ms a keystroke

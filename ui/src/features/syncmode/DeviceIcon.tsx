@@ -10,7 +10,7 @@ export function DeviceIcon({ os, form, here, label }: { os: DeviceOs; form: Devi
   const Logo = LOGOS[os]
   return (
     <span role="img" aria-label={label} className="relative grid size-11 shrink-0 place-items-center rounded-xl border border-line bg-bg text-ink">
-      <Shape size={24} weight="light" />
+      <Shape size={24} />
       <span className="absolute -right-1.5 -bottom-1.5 grid size-5 place-items-center rounded-full border border-line bg-raised text-ink-2">
         <Logo size={11} weight="fill" />
       </span>
