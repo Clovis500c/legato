@@ -263,7 +263,7 @@ ok").await;
         assert!(parse("AB:CD").is_none() && parse(&format!("{fp}Z")).is_none());
         // A host of its own: the pins are one table for every test running at once (the handshake tests use ::1).
         set("https://fingerprint-test.lan:8096", Some(&fp));
-        assert!(pinned("https://fingerprint-test.lan:8096/System/Info/Public") && !pinned("https://127.0.0.1:8096/"));
+        assert!(pinned("https://fingerprint-test.lan:8096/System/Info/Public") && !pinned("https://unpinned-host.lan:8096/"));
         set("https://fingerprint-test.lan:8096", None);
     }
 }
