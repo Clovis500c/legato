@@ -95,6 +95,8 @@ export const api = {
   /** Apple 30 s preview into the local engine. Returns the Apple Music page. */
   playPreview: (id: string, country: string) => invoke<string>('play_preview', { id, country }),
   sharePlaylist: (id: number) => invoke<ShareCode>('share_playlist', { id }),
+  /** A one-song share for the share card: its link and the QR modules drawn in the card's corner. */
+  songCode: (title: string, artist: string, youtube: string | null) => invoke<ShareCode>('song_code', { title, artist, youtube }),
   /** Parses a link or QR text; counts tracks already in the library. */
   sharePreview: (code: string) => invoke<SharePreview>('share_preview', { code }),
   /** QR text from a PNG / JPEG file. */
@@ -438,7 +440,8 @@ export const api = {
   /** Track cover to a file (png/jpg). source = art scheme path, crop = fractions (video bars cut). Returns the file written. */
   exportCover: (source: string, crop: Box | null, path: string) => invoke<string>('export_cover', { source, crop, path }),
   /** Share card (PNG bytes) saved as the picked .png or .jpg; returns the file written. */
-  savePicture: (png: Uint8Array, path: string) => invoke<string>('save_picture', { png: Array.from(png), path }),
+  /** `link`: a share link hidden in the PNG, so the picture dropped back on the app brings the music back. */
+  savePicture: (png: Uint8Array, path: string, link?: string) => invoke<string>('save_picture', { png: Array.from(png), path, link: link ?? null }),
   /** Discord Rich Presence add-on: track shown under the user's Discord application (null = nothing). */
   discordPresence: (clientId: string, presence: Presence | null) => invoke<void>('discord_presence', { clientId, presence }),
   discordOff: () => invoke<void>('discord_off'),

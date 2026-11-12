@@ -2345,6 +2345,7 @@ const ko: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': '서버가 비밀번호를 그대로 보내는 방식만 받습니다(16진수로 인코딩될 뿐 암호화는 아닙니다). https에서는 서버만 읽을 수 있습니다. 이렇게 보낼까요?',
   'Send my password as it is': '내 비밀번호를 그대로 보내기',
   'Hide explicit songs': '선정적인 곡 숨기기',
+  'Code to bring the song back': '곡을 다시 불러오는 코드',
   'Remix “{name}” opened in the Live Editor': '리믹스 “{name}”을(를) 라이브 편집기에서 열었습니다',
   'Only a song playing from YouTube can be shared as a remix file': 'YouTube에서 재생 중인 곡만 리믹스 파일로 공유할 수 있습니다',
   'Legato remix': 'Legato 리믹스',

@@ -272,6 +272,27 @@ const QR_FILE: u64 = 25 << 20;
 const QR_SIDE: u32 = 12_000;
 const QR_ALLOC: u64 = 256 << 20;
 
+/// A one-song share for the card: the YouTube video alone when there is one (a small code; the receiver asks YouTube
+/// for the names), else the names.
+pub fn song(title: &str, artist: &str, youtube: Option<&str>) -> Shared {
+    let cut = |s: &str| s.chars().take(MAX_TEXT as usize).collect::<String>();
+    let item = match youtube.filter(|id| id.len() == 11 && id.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_')) {
+        Some(id) => Item::Youtube { id: id.into(), artist: String::new(), title: String::new(), secs: 0 },
+        None => Item::Text { artist: cut(artist), title: cut(title) },
+    };
+    Shared { name: cut(title), items: vec![item] }
+}
+
+/// What a dropped share picture says: the link hidden in the card (a PNG text chunk), else the QR code in its pixels.
+/// Only text that reads as a share comes back from the hidden chunk.
+pub fn read_picture(path: &Path) -> Result<String> {
+    ensure!(std::fs::metadata(path).context("Can't open this image")?.len() <= QR_FILE, "This image is too big");
+    if let Some(text) = std::fs::read(path).ok().and_then(|b| crate::pngmeta::read_text(&b, crate::pngmeta::KEY)).filter(|t| parse(t).is_ok()) {
+        return Ok(text);
+    }
+    read_qr(path)
+}
+
 /// QR text from a screenshot or photo (PNG / JPEG).
 pub fn read_qr(path: &Path) -> Result<String> {
     ensure!(std::fs::metadata(path).context("Can't open this image")?.len() <= QR_FILE, "This image is too big");
@@ -434,6 +455,36 @@ mod tests {
         img.save(&path)?;
         assert_eq!(parse(&read_qr(&path)?)?, sample().compact());
         assert!(qr_modules(&"A".repeat(5000)).is_none());
+        Ok(())
+    }
+
+    /// A card as the app draws it: a picture with the song's QR code in a corner, and the link hidden in the file.
+    #[test]
+    fn a_song_card_brings_its_music_back_from_its_hidden_link_and_from_its_pixels_alone() -> Result<()> {
+        let shared = song("Nightcall", "Kavinsky", Some("dQw4w9WgXcQ"));
+        assert_eq!(shared.items, vec![Item::Youtube { id: "dQw4w9WgXcQ".into(), artist: String::new(), title: String::new(), secs: 0 }]);
+        assert!(matches!(song("T", "A", Some("../../x")).items[0], Item::Text { .. }), "an id that is not one is not trusted");
+        let (w, dark) = qr_modules(&to_qr_text(&shared)).unwrap();
+        let side = ((w + 8) * 6) as u32 + 300;
+        let card = image::RgbImage::from_fn(side, side, |x, y| {
+            let (mx, my) = ((x as usize).saturating_sub(300) / 6, (y as usize).saturating_sub(300) / 6);
+            let inside = x >= 300 && y >= 300 && (4..w + 4).contains(&mx) && (4..w + 4).contains(&my);
+            if inside && dark[(my - 4) * w + mx - 4] { image::Rgb([0, 0, 0]) } else if x < 300 || y < 300 { image::Rgb([40, 90, 160]) } else { image::Rgb([255, 255, 255]) }
+        });
+        let dir = tempfile::tempdir()?;
+        let mut png = Vec::new();
+        image::DynamicImage::ImageRgb8(card).write_to(&mut std::io::Cursor::new(&mut png), image::ImageFormat::Png)?;
+        // Pixels only (a chat stripped the metadata).
+        let bare = dir.path().join("bare.png");
+        std::fs::write(&bare, &png)?;
+        assert_eq!(parse(&read_picture(&bare)?)?, shared.compact());
+        // With the hidden link: read without looking at the pixels. Text that isn't a share is ignored.
+        let hidden = dir.path().join("hidden.png");
+        std::fs::write(&hidden, crate::pngmeta::add_text(&png, crate::pngmeta::KEY, &to_web_link(&shared)).unwrap())?;
+        assert_eq!(parse(&read_picture(&hidden)?)?, shared.compact());
+        let junk = dir.path().join("junk.png");
+        std::fs::write(&junk, crate::pngmeta::add_text(&png, crate::pngmeta::KEY, "rm -rf /").unwrap())?;
+        assert_eq!(parse(&read_picture(&junk)?)?, shared.compact(), "falls back to the pixels");
         Ok(())
     }
 

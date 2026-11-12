@@ -2345,6 +2345,7 @@ const id: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Server Anda hanya menerima kata sandi yang dikirim apa adanya (dikodekan heksadesimal, bukan enkripsi). Lewat https hanya server Anda yang bisa membacanya. Kirim dengan cara ini?',
   'Send my password as it is': 'Kirim kata sandi saya apa adanya',
   'Hide explicit songs': 'Sembunyikan lagu eksplisit',
+  'Code to bring the song back': 'Kode untuk mengembalikan lagu',
   'Remix “{name}” opened in the Live Editor': 'Remix “{name}” dibuka di Editor Langsung',
   'Only a song playing from YouTube can be shared as a remix file': 'Hanya lagu yang diputar dari YouTube yang bisa dibagikan sebagai berkas remix',
   'Legato remix': 'Remix Legato',

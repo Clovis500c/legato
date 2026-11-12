@@ -12,3 +12,18 @@ export function qrPath(size: number, modules: string, quiet: number): string {
   }
   return d
 }
+
+/** A QR code (size, row-major "0"/"1") on a white rounded square whose bottom right corner is at (right, bottom). */
+export function drawCode(ctx: Pick<CanvasRenderingContext2D, 'fillStyle' | 'beginPath' | 'roundRect' | 'fill' | 'fillRect'>, [n, bits]: [number, string], right: number, bottom: number, box = 190) {
+  const quiet = 3
+  const cell = Math.floor(box / (n + 2 * quiet))
+  const side = cell * (n + 2 * quiet)
+  const left = right - side
+  const top = bottom - side
+  ctx.fillStyle = '#fff'
+  ctx.beginPath()
+  ctx.roundRect(left, top, side, side, 14)
+  ctx.fill()
+  ctx.fillStyle = '#000'
+  for (let i = 0; i < bits.length; i++) if (bits[i] === '1') ctx.fillRect(left + (quiet + (i % n)) * cell, top + (quiet + Math.floor(i / n)) * cell, cell, cell)
+}

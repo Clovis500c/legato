@@ -2345,6 +2345,7 @@ const de: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Ihr Server akzeptiert nur das unverändert gesendete Passwort (hexadezimal kodiert, das ist keine Verschlüsselung). Über https kann nur Ihr Server es lesen. So senden?',
   'Send my password as it is': 'Mein Passwort unverändert senden',
   'Hide explicit songs': 'Explizite Songs ausblenden',
+  'Code to bring the song back': 'Code, der das Lied zurückbringt',
   'Remix “{name}” opened in the Live Editor': 'Remix „{name}“ im Live-Editor geöffnet',
   'Only a song playing from YouTube can be shared as a remix file': 'Nur ein Lied, das von YouTube abgespielt wird, lässt sich als Remix-Datei teilen',
   'Legato remix': 'Legato-Remix',

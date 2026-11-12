@@ -133,9 +133,15 @@ Where a line says "reading", the owner hasn't confirmed it.
 - [ ] `M` Drag and drop of every file type that is Legato's own into the app: the remix file, and the others (list
       them first: shared playlists, backups, themes, playlist files; a plugin folder never installs without its
       permission review). Today a drop takes folders, songs and a QR picture.
-- [ ] `M` Share as a picture, dropped on the app, brings its music back: from the picture's metadata first, and from
+- [x] `M` Share as a picture, dropped on the app, brings its music back: from the picture's metadata first, and from
       the picture itself when the metadata is gone (Discord strips it): a code the app can read in the pixels (the QR
       path exists: check what the card carries today).
+      2026-11-11: the card carried no code. Now ("Share as a picture", a toggle "Code to bring the song back", on): a small QR of the
+      song (`song_code`: the YouTube id alone, else the names) in the card's bottom right corner, and the song's web link hidden in the
+      saved PNG as a `tEXt` chunk "Legato" (`core::pngmeta`; a JPEG keeps the QR only). Dropped on the app, `read_picture` reads
+      the chunk first (only text that parses as a share counts), else the QR in the pixels; tested end to end on a drawn card
+      in both forms. Not done: the stats recap cards carry no code, the card from the web page. Untried: the QR's look and size
+      on the real card (190 px, bottom right, unjudged), a card through Discord's own re-encoding.
 - [ ] `M-L` Security, the drop first, before the remix file and the picture lines above (agreed 2026-11-11): every dropped or opened file is untrusted (size limits, strict parsers, no path
       taken from a file, nothing run, fuzz or property tests on each parser). Then a security pass of the whole app
       (IPC commands, deep links, the `art` scheme, the CSP, plugins, the phone remote and the overlay), findings fixed

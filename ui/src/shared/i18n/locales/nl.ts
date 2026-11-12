@@ -2345,6 +2345,7 @@ const nl: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Je server accepteert alleen het wachtwoord zoals het is (hexadecimaal gecodeerd, dat is geen versleuteling). Via https kan alleen je server het lezen. Zo versturen?',
   'Send my password as it is': 'Mijn wachtwoord verzenden zoals het is',
   'Hide explicit songs': 'Expliciete nummers verbergen',
+  'Code to bring the song back': 'Code om het nummer terug te halen',
   'Remix “{name}” opened in the Live Editor': 'Remix “{name}” geopend in de Live-editor',
   'Only a song playing from YouTube can be shared as a remix file': 'Alleen een nummer dat vanaf YouTube speelt, kan als remixbestand worden gedeeld',
   'Legato remix': 'Legato-remix',

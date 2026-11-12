@@ -1,7 +1,7 @@
 import { CaretLeft, CaretRight } from '@phosphor-icons/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from '../../app/store'
-import { api } from '../../shared/api'
+import { api, type ShareCode } from '../../shared/api'
 import { saveFile } from '../../shared/files'
 import { artistName } from '../../shared/artistName'
 import { bigTrackArt } from '../../shared/art'
@@ -32,6 +32,9 @@ export function ShareDialog() {
   const canvas = useRef<HTMLCanvasElement>(null)
   const [look, setLook] = useState<CardLook>('cover')
   const [withLine, setWithLine] = useState(true)
+  // The song's code: a QR in the card's corner and a link hidden in the saved PNG, so the picture brings the song back.
+  const [withCode, setWithCode] = useState(true)
+  const [code, setCode] = useState<ShareCode | null>(null)
   const l = mine?.lyrics ?? undefined
   const lines = useMemo(() => pickableLines(l?.lines, l?.plain ?? undefined), [l])
   // The line playing when the lyrics came (again for the next song); null until then.
@@ -48,19 +51,30 @@ export function ShareDialog() {
   const art = useMemo(() => (track ? bigTrackArt(track) : []), [track])
   const title = now?.title ?? ''
   const artist = now ? artistName(now.artist) : ''
+  const youtube = now?.youtubeId ?? track?.ids.youtube ?? null
+  useEffect(() => {
+    setCode(null)
+    if (!title) return
+    let live = true
+    api.songCode(title, artist, youtube).then((c) => live && setCode(c), () => {})
+    return () => {
+      live = false
+    }
+  }, [title, artist, youtube])
+  const cardCode = withCode ? code?.qr ?? null : null
   const [ready, setReady] = useState(false)
   useEffect(() => {
     if (!canvas.current || !now) return
     let live = true
     setReady(false)
-    drawCard(canvas.current, art, { title, artist, line }, look).then(
+    drawCard(canvas.current, art, { title, artist, line }, look, cardCode).then(
       () => live && setReady(true),
       () => live && setReady(true),
     )
     return () => {
       live = false
     }
-  }, [art, title, artist, line, look, now])
+  }, [art, title, artist, line, look, now, cardCode])
   useEffect(() => {
     if (!now) closeShare()
   }, [now])
@@ -86,7 +100,7 @@ export function ShareDialog() {
             { name: tr('JPEG image'), extensions: ['jpg'] },
           ],
         },
-        (path) => api.savePicture(bytes, path),
+        (path) => api.savePicture(bytes, path, withCode ? code?.link : undefined),
       )
       if (name) notify(tr('Picture saved: {file}', { file: name }))
     } catch (e) {
@@ -107,6 +121,10 @@ export function ShareDialog() {
           { value: 'theme', label: tr('Theme') },
         ]}
       />
+      <div className="flex items-center gap-3 text-sm">
+        <Toggle label={tr('Code to bring the song back')} checked={withCode} onChange={setWithCode} />
+        <span className="min-w-0 flex-1 truncate text-ink-2">{tr('Code to bring the song back')}</span>
+      </div>
       {lines.length > 0 && (
         <div className="flex items-center gap-3 text-sm">
           <Toggle label={tr('Lyric line')} checked={withLine} onChange={setWithLine} />

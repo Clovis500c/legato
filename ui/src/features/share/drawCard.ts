@@ -1,5 +1,6 @@
 import { isLetterboxed } from '../../shared/art'
 import { averageColor, type Rgb } from '../player/ambient'
+import { drawCode } from './qr'
 import { CARD, wrapText } from './shareCard'
 
 export type CardLook = 'cover' | 'theme'
@@ -27,7 +28,7 @@ const shade = (c: Rgb, k: number) => `rgb(${c.map((v) => Math.round(v * k)).join
  * The share card on `canvas` (CARD size): the cover, title, artist, a lyric line, "Legato" at the foot. Colors: the
  * cover's own, darkened (white words), or the theme's (its background and ink). The first readable picture of `art`.
  */
-export async function drawCard(canvas: HTMLCanvasElement, art: string[], text: CardText, look: CardLook): Promise<void> {
+export async function drawCard(canvas: HTMLCanvasElement, art: string[], text: CardText, look: CardLook, code?: [number, string] | null): Promise<void> {
   const { w, h, pad } = CARD
   canvas.width = w
   canvas.height = h
@@ -116,6 +117,9 @@ export async function drawCard(canvas: HTMLCanvasElement, art: string[], text: C
   ctx.fillStyle = ink2
   ctx.textBaseline = 'alphabetic'
   ctx.fillText('Legato', pad, h - 64)
+  // The song's QR code in the bottom right corner, on white with its quiet zone: read back from a screenshot even where
+  // a chat stripped the picture's hidden link.
+  if (code) drawCode(ctx, code, w - pad, h - 48)
 }
 
 /** The card as PNG bytes. */
