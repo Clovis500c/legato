@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { useStore } from '../../app/store'
 import { tr } from '../../shared/i18n/i18n'
 import { askText } from '../../shared/ui/Ask'
+import { useEditor } from '../editor/editor'
 import { songKey } from './effects'
 import { usePlayer } from './store'
 
@@ -25,6 +26,9 @@ export const parseTempo = (text: string): number | null => {
   const n = Math.round(Number(text.trim().replace(',', '.')))
   return Number.isFinite(n) && n >= 30 && n <= 400 ? n : null
 }
+
+/** Seconds between clicks at `bpm` as the song is heard: the Live Editor's speed and tempo, when on, play it faster or slower. */
+export const beatPeriod = (bpm: number, e: { on: boolean; speed: number; tempo: number }) => 60 / (bpm * (e.on ? e.speed * e.tempo : 1))
 
 let ctx: AudioContext | null = null
 let timer: ReturnType<typeof setInterval> | undefined
@@ -52,12 +56,12 @@ function startMetronome(bpm: number) {
   stopMetronome()
   ctx ??= new AudioContext()
   void ctx.resume()
-  const period = 60 / bpm
   next = ctx.currentTime + 0.1
   let beat = 0
   // Scheduled a quarter of a second ahead, every 50 ms, on the audio clock (a timer alone would drift).
   timer = setInterval(() => {
     if (!ctx) return
+    const period = beatPeriod(bpm, useEditor.getState().effects)
     for (const t of clicksBetween(next, period, ctx.currentTime, ctx.currentTime + 0.25)) click(t, beat++ % 4 === 0)
     while (next < ctx.currentTime + 0.25) next += period
   }, 50)
