@@ -240,6 +240,17 @@ pub struct MusicBrainz {
     gap: Duration,
 }
 
+/// Waits for this request's turn: one a second for every caller together (their rule is per address), since Home's
+/// round, a song lookup and an artist's links can overlap.
+async fn pace(gap: Duration) {
+    static NEXT: tokio::sync::Mutex<Option<tokio::time::Instant>> = tokio::sync::Mutex::const_new(None);
+    let mut next = NEXT.lock().await;
+    if let Some(at) = *next {
+        tokio::time::sleep_until(at).await;
+    }
+    *next = Some(tokio::time::Instant::now() + gap);
+}
+
 impl Default for MusicBrainz {
     fn default() -> Self {
         Self::with_urls(API)
@@ -257,6 +268,7 @@ impl MusicBrainz {
             bail!("Bad release search");
         }
         let url = url::Url::parse_with_params(&format!("{}/release-group/", self.api), [("query", query(artist, since).as_str()), ("fmt", "json"), ("limit", "50")])?;
+        pace(self.gap).await;
         let r = self.http.get(url).header(reqwest::header::USER_AGENT, AGENT).timeout(crate::linklist::REQUEST_TIMEOUT).send().await?;
         if r.status() == reqwest::StatusCode::SERVICE_UNAVAILABLE || r.status() == reqwest::StatusCode::TOO_MANY_REQUESTS {
             bail!("MusicBrainz is busy: try again later");
@@ -272,6 +284,7 @@ impl MusicBrainz {
             bail!("A title and an artist are needed");
         }
         let url = url::Url::parse_with_params(&format!("{}/recording/", self.api), [("query", recording_query(title, artist).as_str()), ("fmt", "json"), ("limit", "10")])?;
+        pace(self.gap).await;
         let r = self.http.get(url).header(reqwest::header::USER_AGENT, AGENT).timeout(crate::linklist::REQUEST_TIMEOUT).send().await?;
         if r.status() == reqwest::StatusCode::SERVICE_UNAVAILABLE || r.status() == reqwest::StatusCode::TOO_MANY_REQUESTS {
             bail!("MusicBrainz is busy: try again later");
@@ -289,12 +302,12 @@ impl MusicBrainz {
         }
         let url = url::Url::parse_with_params(&format!("{}/artist/", self.api), [("query", format!("artist:\"{}\"", quoted(name)).as_str()), ("fmt", "json"), ("limit", "5")])?;
         let Some(id) = pick_artist(&self.get(url).await?, name)? else { return Ok(Vec::new()) };
-        tokio::time::sleep(self.gap).await;
         let url = url::Url::parse_with_params(&format!("{}/artist/{id}", self.api), [("inc", "url-rels"), ("fmt", "json")])?;
         pick_links(&self.get(url).await?)
     }
 
     async fn get(&self, url: url::Url) -> Result<String> {
+        pace(self.gap).await;
         let r = self.http.get(url).header(reqwest::header::USER_AGENT, AGENT).timeout(crate::linklist::REQUEST_TIMEOUT).send().await?;
         if r.status() == reqwest::StatusCode::SERVICE_UNAVAILABLE || r.status() == reqwest::StatusCode::TOO_MANY_REQUESTS {
             bail!("MusicBrainz is busy: try again later");
@@ -496,6 +509,17 @@ mod tests {
         let got = pick_links(LINKS).unwrap();
         assert_eq!(got.iter().map(|l| l.kind.as_str()).collect::<Vec<_>>(), ["official homepage", "wikipedia", "discogs"]);
         assert!(pick_links(r#"{"relations":[]}"#).unwrap().is_empty() && pick_links("nonsense").is_err());
+    }
+
+    #[tokio::test]
+    async fn callers_together_ask_one_at_a_time_a_gap_apart() {
+        let mut s = mockito::Server::new_async().await;
+        s.mock("GET", "/artist/").match_query(mockito::Matcher::Any).with_body(r#"{"artists":[]}"#).expect(3).create_async().await;
+        let mb = MusicBrainz { gap: Duration::from_millis(300), ..MusicBrainz::with_urls(&s.url()) };
+        let start = std::time::Instant::now();
+        let (a, b, c) = tokio::join!(mb.artist_links("A"), mb.artist_links("B"), mb.artist_links("C"));
+        assert!(a.is_ok() && b.is_ok() && c.is_ok());
+        assert!(start.elapsed() >= Duration::from_millis(600), "{:?}", start.elapsed());
     }
 
     #[tokio::test]
