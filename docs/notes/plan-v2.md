@@ -615,8 +615,14 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       artists you listen to together (same session, same playlist: `walk::artist_path`, a Dijkstra on those links), at most 12
       artists, no chain = a notice. Decided alone (2026-11-12): the links are the listening graph the mixes already use, not a
       sound analysis (that line is still open), so a library with little history finds few walks. Never seen on a screen.
-- [ ] `M` Describe a playlist in words ("calm rainy Sunday, no lyrics"): matched against the library's tags and sonic
+- [x] `M` Describe a playlist in words ("calm rainy Sunday, no lyrics"): matched against the library's tags and sonic
       features locally; an LLM only with the user's own key (like Last.fm's), privacy row first.
+      2026-11-12, the local half: the sidebar's New playlist menu has "Describe a playlist…": a few English words become a smart
+      playlist, opened to edit (`smart/describe.ts`): decades and years, fast or slow (the tempo tag of local files), new,
+      favorites, forgotten, unplayed, and the genres and artists the library has; the words that meant nothing are said in a
+      notice. Left: the LLM half with the user's own key (a service and a privacy row to decide), "no lyrics" and moods (no
+      data to match yet: the sonic-analysis line), other languages than English. Decided alone (2026-11-12): rules over a
+      model (nothing leaves the PC), English words only. Never seen on a screen.
 - [ ] `M` Audiobooks from local files (m4b chapters, resume per book, speed, sleep at chapter end), apart from music.
 - [ ] `M` Stream Deck plugin and an Xbox Game Bar widget (play / skip / like / now playing) over the local hotkeys.
 - [ ] `M` Blind test game: snippets from the library or a playlist, guess title / artist, scores, local multiplayer

@@ -231,7 +231,7 @@ export function Sidebar() {
           <RoundButton label={tr('Sort playlists')} kind="plain" size="sm" className={wide ? '' : calm} onClick={(e) => openMenu(e, ORDERS.map((o) => ({ label: tr(o.label), checked: order === o.id, onSelect: () => useSettings.getState().update({ playlistOrder: o.id }) })))}>
             <SortAscending size={18} />
           </RoundButton>
-          <RoundButton label={tr('New playlist')} kind="plain" size="sm" onClick={(e) => openMenu(e, [{ label: tr('New playlist'), icon: <Plus size={16} />, onSelect: () => void create() }, { label: tr('New smart playlist'), icon: <Lightning size={16} />, onSelect: createSmart }, { label: tr('New folder'), icon: <FolderSimplePlus size={16} />, onSelect: () => void newFolder() }])}>
+          <RoundButton label={tr('New playlist')} kind="plain" size="sm" onClick={(e) => openMenu(e, [{ label: tr('New playlist'), icon: <Plus size={16} />, onSelect: () => void create() }, { label: tr('New smart playlist'), icon: <Lightning size={16} />, onSelect: createSmart }, { label: tr('Describe a playlist…'), icon: <MagnifyingGlass size={16} />, onSelect: () => void import('../smart/describeAction').then((m) => m.describeSmart()) }, { label: tr('New folder'), icon: <FolderSimplePlus size={16} />, onSelect: () => void newFolder() }])}>
             <Plus size={18} />
           </RoundButton>
         </div>
