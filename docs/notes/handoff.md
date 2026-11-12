@@ -2,51 +2,51 @@
 
 Where the work stands, for a session with no history here. Read this first, then only the parts of
 [plan-v2.md](plan-v2.md) you need. Rewrite it, short, when a branch, a release or the next step changes; its older
-versions are in git (`git log -p -- docs/notes/handoff.md`). Updated 2026-11-12 (the autonomous run's window 5 closed;
-Opus has reread up to `0025ab18`).
+versions are in git (`git log -p -- docs/notes/handoff.md`). Updated 2026-11-12 (the autonomous run's window 6 closed;
+Opus has reread everything, last reread `03ced7ce`).
 
 ## Where things stand
 - **Stable** 1.1.681 (2026-11-05): Windows installer, `latest.json`, the Android APK. **Beta** 1.1.801 (2026-11-07):
   an Android Java crash now lands in Copy diagnostics (for the QR-scan crash). GitHub's master = `8e9fb3f`.
-- **platforms** = master (`80310d3`, pushed) + 78 local commits (`git log origin/master..platforms | wc -l`, this
+- **platforms** = master (`80310d3`, pushed) + 84 local commits (`git log origin/master..platforms | wc -l`, this
   handoff included), none seen on a screen or heard. The reports (untracked, French): `docs/notes/report-2026-11-11.md`
-  (windows 1–4) and `docs/notes/report-2026-11-12.md` (window 5: Opus's rereads, Sonnet's lot 5). Each lists the commits
-  in order, what to try, what was skipped, what was decided alone, and the questions for the owner.
-  Nothing is pushed: pushes go `platforms:master`, only on the owner's word; docs only: `[skip release]` in the last
-  commit's first line.
-- **winget**: microsoft/winget-pkgs#474341 (Stable 1.1.681): CLA signed, Microsoft's validation passed, waiting for a
-  moderator. Each new Stable needs a new manifest (`packaging/README.md`).
-- **Website** https://clovis500c.github.io/legato/, deployed from master: 18 languages, the visitor's own one first.
-  The owner's answer on the push: not yet, they try `pnpm dev` first.
+  (windows 1–4) and `docs/notes/report-2026-11-12.md` (windows 5–6: commits in order, what to try, what was decided
+  alone, the questions for the owner: none open). Nothing is pushed: pushes go `platforms:master`, only on the owner's
+  word; docs only: `[skip release]` in the last commit's first line.
+- **winget**: microsoft/winget-pkgs#474341 (Stable 1.1.681): waiting for a moderator. Each new Stable needs a new
+  manifest (`packaging/README.md`).
+- **Website** https://clovis500c.github.io/legato/, deployed from master: 18 languages. The owner's answer on the push:
+  not yet, they try `pnpm dev` first.
 - **Never tried for real**: plan-v2 › Check live in the real app. The owner's finds there come first.
 - **Untracked, never committed**: `docs/notes/report-*.md` and `docs/notes/report-inbox.md` (the owner's reports, in
   French) and the old transcript `2026-10-30-001238-…txt` at the root.
 
-## To reread (Opus)
-`66d51a80` (Next on the last song), `4abbd68d` (the pin test's host), `9f8759c9` (Add to playlist outside the library),
-`afb764fd` (Wikipedia bio), `eae99997` (song credits), and the handoff commit that follows. The message that opened this
-window listed `4abbd68d`, `9f8759c9`, `afb764fd`, `eae99997`; `66d51a80` comes after `0025ab18` too, so it is in the list.
+## Try first (the owner)
+- Radio page: starter stations (no station kept yet), the station icons, Next / Previous in a list and on a station
+  at the end of a list (it pauses, no error).
+- « Add to playlist » for a song not in the library, from the player, Up next and a search result.
+- « Next » on the last song with Repeat off: it stops and waits at the start.
+- A song's « Credits… » and an artist's « Short bio » (MusicBrainz and Wikipedia, real answers).
+- Tempo written from Edit song info, then read back in another player: FLAC, MP3 and M4A.
 
 ## Next
 The first open lines of plan-v2 that need nobody, in the plan's order:
 - Equalizer presets per output device (headphones vs speakers) and AutoEQ profiles for known headphones.
 - Mixes: Last.fm "Discoveries" and "Never in mixes" on a discovered song (the owner's Last.fm key).
 - The end of Practice mode: key and chords shown, a metronome (the A–B loop is done).
-- Credits and artist pages: built in window 5 (song credits from MusicBrainz, the Wikipedia short bio); the plan line
-  stays open until Opus has reread `eae99997` and `afb764fd`.
+- Credits and artist pages: built (song credits, Wikipedia bio); the plan line stays open until ticked.
 Focus / workout sessions wait on the owner's word on what a session is. Then Features › Medium, Low, Workflow and
 Optimisation in the plan's order.
 
-**For Opus** (delicate or large): the rereads above; the security pass of the whole app (IPC commands, deep links, the
-`art` scheme, the CSP, plugins, the phone remote and the overlay), splitting `src-tauri/src/lib.rs` and
-`crates/core/src/library.rs`, the `L` lines (Linux and macOS builds, rooms over the internet, the mobile version, Cast,
-WASAPI), right-to-left languages (the translations), faster CI (not testable here), YouTube embeds reused, a crash without
-a Rust panic in the diagnostics.
+**For Opus** (delicate or large): the security pass of the whole app (IPC commands, deep links, the `art` scheme, the CSP,
+plugins, the phone remote and the overlay), splitting `src-tauri/src/lib.rs` and `crates/core/src/library.rs`, the `L`
+lines (Linux and macOS builds, rooms over the internet, the mobile version, Cast, WASAPI), right-to-left languages (the
+translations), faster CI (not testable here), YouTube embeds reused, a crash without a Rust panic in the diagnostics.
 
-**For the owner**: their tries of everything built (nothing was seen or heard; the window 5 list is in
-`report-2026-11-12.md`), the Discord profile's signing choice, snap layouts at the PC, the QR-scan crash on Android (Copy
-diagnostics from Beta 1.1.801), Spotify and SoundCloud (accounts, terms), the `.lmix` that carries local audio (export
-warning, personal servers; the compact link is done), what a Focus session is, and the push.
+**For the owner**: their tries above and of everything built, the Discord profile's signing choice, snap layouts at the
+PC, the QR-scan crash on Android (Copy diagnostics from Beta 1.1.801), Spotify and SoundCloud (accounts, terms), the
+`.lmix` that carries local audio (export warning, personal servers; the compact link is done), what a Focus session is,
+and the push.
 
 One step = `graphify query` first, code and tests, `pnpm check` green, one local commit on `platforms`, its plan-v2
 line ticked with what wasn't tried for real, `graphify update .`.
