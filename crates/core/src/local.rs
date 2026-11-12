@@ -389,10 +389,15 @@ pub fn write_tags(path: &Path, edit: &TagEdit) -> anyhow::Result<()> {
             Some(0) => tag.remove_key(ItemKey::RecordingDate),
             Some(y) => drop(tag.insert_text(ItemKey::RecordingDate, y.to_string())),
         }
-        match edit.bpm {
-            None => {}
-            Some(0) => tag.remove_key(ItemKey::IntegerBpm),
-            Some(b) => drop(tag.insert_text(ItemKey::IntegerBpm, b.to_string())),
+        // Vorbis comments (FLAC, Ogg) have no integer tempo, only BPM: the one this format takes, both taken off.
+        if edit.bpm.is_some() {
+            tag.remove_key(ItemKey::IntegerBpm);
+            tag.remove_key(ItemKey::Bpm);
+        }
+        if let Some(b) = edit.bpm.filter(|b| *b != 0)
+            && !tag.insert_text(ItemKey::IntegerBpm, b.to_string())
+        {
+            tag.insert_text(ItemKey::Bpm, b.to_string());
         }
         use lofty::tag::Tag;
         let number = |tag: &mut Tag, value: Option<u32>, set: fn(&mut Tag, u32), remove: fn(&mut Tag)| match value {
@@ -696,6 +701,30 @@ pub(crate) mod tests {
         assert_eq!(lyrics(&p).as_deref(), Some("[00:01.00]Saved again"));
         // No copy left behind.
         assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 1);
+    }
+
+    /// A FLAC with its STREAMINFO only (8 kHz mono, 16 bits, no frames): its tags are Vorbis comments.
+    fn flac(path: &Path) {
+        let mut b = b"fLaC".to_vec();
+        b.extend([0x80, 0, 0, 34]);
+        b.extend(4096u16.to_be_bytes());
+        b.extend(4096u16.to_be_bytes());
+        b.extend([0u8; 6]);
+        b.extend(((8000u64 << 44) | (15 << 36)).to_be_bytes());
+        b.extend([0u8; 16]);
+        std::fs::write(path, b).unwrap();
+    }
+
+    #[test]
+    fn a_flac_takes_its_tempo_and_gives_it_back() {
+        let dir = tempfile::tempdir().unwrap();
+        let p = dir.path().join("a.flac");
+        flac(&p);
+        // Vorbis comments have no integer-tempo field: written as BPM, read back, then taken off for good.
+        write_tags(&p, &TagEdit { bpm: Some(128), key: Some("8A".into()), ..Default::default() }).unwrap();
+        assert_eq!((file_tags(&p).bpm, file_tags(&p).key.as_deref()), (Some(128), Some("8A")));
+        write_tags(&p, &TagEdit { bpm: Some(0), ..Default::default() }).unwrap();
+        assert_eq!(file_tags(&p).bpm, None);
     }
 
     #[test]
