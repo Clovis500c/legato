@@ -9,7 +9,7 @@ import { Button } from '../../shared/ui/Button'
 import { RoundButton } from '../../shared/ui/controls'
 import { Dialog } from '../../shared/ui/Dialog'
 import { songKey } from './effects'
-import { applyFix, fixesWith, fixFromTaps, fixLabel, lineAt, lineEnd, NO_FIX, toLrc, withBreaks, wordTimes, type LyricsFix, type TimedWord } from './lyricsAt'
+import { applyFix, fixesWith, fixFromTaps, fixLabel, lineAt, NO_FIX, toLrc, withBreaks, type LyricsFix } from './lyricsAt'
 import { toggleKaraoke } from './karaokeMode'
 import { positionNow, usePosition } from './Progress'
 import { useNowTrack, usePlayer } from './store'
@@ -26,50 +26,8 @@ const REACTION_MS = 150
 /** ± buttons move the lyrics by this much. */
 const NUDGE_MS = 500
 
-/** Off by more than this from the song (seek, stall): the fill jumps to where the song is. */
-const RESYNC_MS = 250
-
 /**
- * The line being sung, filled word by word as the song goes (karaoke), glowing as Settings › Appearance › Glow says; at the source's own word times
- * when it has them (`timed`), else spread over the line. One animation per word on the
- * compositor's clock (smooth every frame); position reports only correct it when it's really off, never every tick
- * (that made it shake).
- */
-export function Sung({ text, start, end, timed }: { text: string; start: number; end: number; timed?: TimedWord[] | null }) {
-  const pos = usePosition(250)
-  const playing = usePlayer((s) => s.playing)
-  const box = useRef<HTMLSpanElement>(null)
-  const anims = useRef<Animation[]>([])
-  const words = useMemo(() => wordTimes(text, start, end, timed), [text, start, end, timed])
-  useEffect(() => {
-    const spans = [...(box.current?.children ?? [])]
-    anims.current = spans.map((el, i) =>
-      el.animate([{ '--fill': '0%' }, { '--fill': '100%' }], { duration: Math.max(1, words[i].t1 - words[i].t0), delay: words[i].t0 - start, fill: 'both', easing: 'linear' }),
-    )
-    return () => anims.current.forEach((a) => a.cancel())
-  }, [words, start])
-  useEffect(() => {
-    const want = pos + LEAD_MS - start
-    for (const a of anims.current) {
-      if (Math.abs(Number(a.currentTime ?? 0) - want) > RESYNC_MS) a.currentTime = want
-      // play() on a finished word would start it over (two parts lit at once): only out of a pause.
-      if (playing && a.playState === 'paused') a.play()
-      else if (!playing && a.playState === 'running') a.pause()
-    }
-  }, [pos, playing, start])
-  return (
-    <span ref={box} className="glow-sung">
-      {words.map((w, i) => (
-        <span key={i} className="sung">
-          {w.word}
-        </span>
-      ))}
-    </span>
-  )
-}
-
-/**
- * Synced lines: the current one filled as it's sung and kept in the middle; click a line to go there. ♪ where nothing
+ * Synced lines: the current one lit as a whole and kept in the middle; click a line to go there. ♪ where nothing
  * is sung.
  */
 function Synced({ lines: sung, durationMs, fix, onTap }: { lines: Lyrics['lines']; durationMs: number | null; fix: LyricsFix; onTap?: (lyricMs: number) => void }) {
@@ -106,7 +64,7 @@ function Synced({ lines: sung, durationMs, fix, onTap }: { lines: Lyrics['lines'
           {!l.text ? (
             <MusicNotesSimple size={26} weight="bold" aria-label={tr('Instrumental')} className={i === at ? 'animate-pulse' : ''} />
           ) : i === at ? (
-            <Sung text={l.text} start={l.ms} end={lineEnd(lines, i, durationMs)} timed={l.words} />
+            <span className="glow-sung">{l.text}</span>
           ) : (
             l.text
           )}

@@ -19,11 +19,8 @@ export function peekLine(lines: { ms: number; text: string }[], plain: string | 
   return plain?.split('\n').find((x) => x.trim()) ?? ''
 }
 
-/** A timed word of a line (LRCLIB's Lyricsfile, enhanced LRC): its text with the spaces around it. */
-export type TimedWord = { ms: number; text: string; endMs?: number | null }
-
-/** A synced line; endMs when the source gives it (YouTube Music), else guessed; words when the source times them. */
-export type Timed = { ms: number; text: string; endMs?: number | null; words?: TimedWord[] | null }
+/** A synced line (lines only: a source that times words gives its first word's time); endMs when the source gives it (YouTube Music), else guessed. */
+export type Timed = { ms: number; text: string; endMs?: number | null }
 
 /** Timing fixed by hand: song time = lyric time × rate + offset (ms). */
 export type LyricsFix = { offset: number; rate: number }
@@ -33,8 +30,7 @@ export const NO_FIX: LyricsFix = { offset: 0, rate: 1 }
 export function applyFix<T extends Timed>(lines: T[], fix: LyricsFix): T[] {
   if (fix.offset === 0 && fix.rate === 1) return lines
   const at = (ms: number) => Math.max(0, Math.round(ms * fix.rate + fix.offset))
-  const move = <W extends { ms: number; endMs?: number | null }>(x: W): W => ({ ...x, ms: at(x.ms), endMs: x.endMs == null ? x.endMs : at(x.endMs) })
-  return lines.map((l) => ({ ...move(l), ...(l.words && { words: l.words.map(move) }) }))
+  return lines.map((l) => ({ ...l, ms: at(l.ms), endMs: l.endMs == null ? l.endMs : at(l.endMs) }))
 }
 
 /** Taps further apart than this (lyric time) also fix the speed; closer, only the offset moves. */
@@ -80,35 +76,6 @@ export function withBreaks(lines: Timed[], durationMs: number | null): Timed[] {
   return out
 }
 
-/** When line `i` ends: its own end when the source gives it, else the next line (or ♪ break) or a guess from its length. */
-export function lineEnd(lines: Timed[], i: number, durationMs: number | null): number {
-  const guess = lines[i].endMs ?? lines[i].ms + sungMs(lines[i].text)
-  const next = i + 1 < lines.length ? lines[i + 1].ms : (durationMs ?? guess)
-  return Math.min(next, Math.max(guess, lines[i].ms + 1))
-}
-
-/**
- * Karaoke timing of a line being sung: when each word fills. The source's own word times when it has them, each word
- * until its end or the next one's start. Else (LRC has none) the line's time shared by length (a long word takes
- * longer), the words being the text split on spaces, spaces kept.
- */
-export function wordTimes(text: string, start: number, end: number, timed?: TimedWord[] | null): { word: string; t0: number; t1: number }[] {
-  if (timed?.length) {
-    return timed.map((w, i) => {
-      const next = i + 1 < timed.length ? timed[i + 1].ms : end
-      return { word: w.text, t0: w.ms, t1: Math.max(w.ms + 1, w.endMs ?? next) }
-    })
-  }
-  const words = text.split(/(\s+)/).filter(Boolean)
-  const total = Math.max(1, text.length)
-  let at = 0
-  return words.map((word) => {
-    const t0 = start + ((end - start) * at) / total
-    at += word.length
-    return { word, t0, t1: start + ((end - start) * at) / total }
-  })
-}
-
 /** The saved fixes (settings `lyricsSync`) with this song's replaced; null or a fix that changes nothing takes it out. */
 export function fixesWith(all: Record<string, LyricsFix>, song: string, fix: LyricsFix | null): Record<string, LyricsFix> {
   const out = { ...all }
@@ -124,17 +91,8 @@ function lrcStamp(ms: number): string {
   return `${two(Math.floor(cs / 6000))}:${two(Math.floor(cs / 100) % 60)}.${two(cs % 100)}`
 }
 
-/** Timed lines → LRC text the app reads back the same: words as enhanced LRC's `<mm:ss.xx>` stamps, the last word's
- * end as a closing one. What goes into a song's own file. */
-export function toLrc(lines: Timed[]): string {
-  return lines
-    .map((l) => {
-      if (!l.words?.length) return `[${lrcStamp(l.ms)}]${l.text}`
-      const end = l.words[l.words.length - 1].endMs
-      return `[${lrcStamp(l.ms)}]${l.words.map((w) => `<${lrcStamp(w.ms)}>${w.text}`).join('')}${end == null ? '' : `<${lrcStamp(end)}>`}`
-    })
-    .join('\n')
-}
+/** Timed lines → LRC text the app reads back the same. What goes into a song's own file. */
+export const toLrc = (lines: Timed[]): string => lines.map((l) => `[${lrcStamp(l.ms)}]${l.text}`).join('\n')
 
 /** "+0.5 s", with "· ×0.95" when the speed is fixed too. */
 export function fixLabel(fix: LyricsFix): string {

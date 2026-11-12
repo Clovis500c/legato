@@ -1,7 +1,8 @@
 //! Lyrics: LRC parsing, YouTube titles cleaned for lookup, best record picked, timings fitted to the version playing.
 //! "Slowed", "sped up", nightcore… are the same recording at another speed: synced lines are stretched by the ratio of
-//! the durations instead of being dropped. Word timings when the source has them: enhanced LRC's `<mm:ss.xx>` stamps,
-//! LRCLIB's Lyricsfile (YAML, https://lrclib.net/lyricsfile).
+//! the durations instead of being dropped. Lines only (2026-11-12): a source that times words (enhanced LRC's
+//! `<mm:ss.xx>` stamps, LRCLIB's Lyricsfile, YAML, https://lrclib.net/lyricsfile) gives its line the time of the first
+//! word; the other word times are dropped.
 
 use serde::{Deserialize, Serialize};
 use unicode_normalization::{UnicodeNormalization, char::is_combining_mark};
@@ -16,28 +17,13 @@ pub struct Line {
     /// When the line ends, when the source says (YouTube Music); LRC gives starts only.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub end_ms: Option<u32>,
-    /// Its words with their times, when the source has them: each filled as it is sung.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub words: Option<Vec<Word>>,
-}
-
-/// One timed word (or part of one) of a line: its text with the spaces around it, when it starts.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ts_rs::TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, rename = "LyricWord")]
-pub struct Word {
-    pub ms: u32,
-    pub text: String,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub end_ms: Option<u32>,
 }
 
 impl Line {
     /// Every time × `k` (a slowed or sped-up version playing).
     fn stretched(self, k: f32) -> Line {
         let at = |ms: u32| (ms as f32 * k).round() as u32;
-        let words = self.words.map(|ws| ws.into_iter().map(|w| Word { ms: at(w.ms), end_ms: w.end_ms.map(at), ..w }).collect());
-        Line { ms: at(self.ms), end_ms: self.end_ms.map(at), words, ..self }
+        Line { ms: at(self.ms), end_ms: self.end_ms.map(at), ..self }
     }
 }
 
@@ -71,8 +57,8 @@ pub struct Record {
 }
 
 /// `[mm:ss.xx] text` lines, several stamps per line allowed, `[offset:±ms]` applied, tags skipped. Sorted by time.
-/// Enhanced LRC's `<mm:ss.xx>` word stamps become the line's words (a line sung at several stamps keeps its text only:
-/// word stamps are absolute).
+/// Enhanced LRC's `<mm:ss.xx>` word stamps are dropped from the text; a line that starts on a stamp starts at it (the
+/// first word's time), unless it is sung at several stamps (word stamps are absolute).
 pub fn parse_lrc(text: &str) -> Vec<Line> {
     let mut offset: i64 = 0;
     let mut out = Vec::new();
@@ -91,48 +77,38 @@ pub fn parse_lrc(text: &str) -> Vec<Line> {
         }
         // LRC offset: positive = lyrics come sooner.
         let at = |ms: u32| (ms as i64 - offset).max(0) as u32;
-        let words = stamps.first().and_then(|&s| lrc_words(rest, s));
-        let text = match &words {
-            Some(ws) => ws.iter().map(|w| w.text.as_str()).collect::<String>().split_whitespace().collect::<Vec<_>>().join(" "),
-            None => rest.trim().to_string(),
-        };
-        let words = words.filter(|_| stamps.len() == 1).map(|ws| ws.into_iter().map(|w| Word { ms: at(w.ms), end_ms: w.end_ms.map(at), ..w }).collect::<Vec<_>>());
+        let (text, first) = lrc_words(rest).unwrap_or_else(|| (rest.trim().to_string(), None));
+        let first = first.filter(|_| stamps.len() == 1);
         for ms in stamps {
-            out.push(Line { ms: at(ms), text: text.clone(), end_ms: None, words: words.clone() });
+            out.push(Line { ms: at(first.unwrap_or(ms)), text: text.clone(), end_ms: None });
         }
     }
     out.sort_by_key(|l| l.ms);
     out
 }
 
-/// A line's `<mm:ss.xx>` word stamps: each word from its stamp, the text before the first one from the line's `start`,
-/// a stamp after the last word its end. None = no word stamp (`<` in plain text stays text).
-fn lrc_words(rest: &str, start: u32) -> Option<Vec<Word>> {
-    let mut words: Vec<Word> = Vec::new();
-    let (mut from, mut at, mut seen) = (0, start, false);
-    let mut i = 0;
+/// A line without its `<mm:ss.xx>` word stamps (spaces squeezed) and the time of the first one when no text comes
+/// before it (the first word's time). None = no word stamp (`<` in plain text stays text).
+fn lrc_words(rest: &str) -> Option<(String, Option<u32>)> {
+    let (mut text, mut first, mut seen) = (String::new(), None, false);
+    let (mut from, mut i) = (0, 0);
     while let Some(open) = rest[i..].find('<').map(|o| o + i) {
         let Some(close) = rest[open..].find('>').map(|c| c + open) else { break };
         let Some(ms) = stamp(&rest[open + 1..close]) else {
             i = open + 1;
             continue;
         };
-        let piece = &rest[from..open];
-        if !piece.trim().is_empty() {
-            words.push(Word { ms: at, text: piece.to_string(), end_ms: None });
+        text.push_str(&rest[from..open]);
+        if !seen {
+            first = text.trim().is_empty().then_some(ms);
         }
-        (from, at, seen, i) = (close + 1, ms, true, close + 1);
+        (from, seen, i) = (close + 1, true, close + 1);
     }
     if !seen {
         return None;
     }
-    let tail = &rest[from..];
-    if !tail.trim().is_empty() {
-        words.push(Word { ms: at, text: tail.to_string(), end_ms: None });
-    } else if let Some(last) = words.last_mut() {
-        last.end_ms = Some(at).filter(|&e| e >= last.ms);
-    }
-    (!words.is_empty()).then_some(words)
+    text.push_str(&rest[from..]);
+    Some((text.split_whitespace().collect::<Vec<_>>().join(" "), first))
 }
 
 /// Most a Lyricsfile may weigh here: a long song's word-synced file is ~100 kB.
@@ -161,10 +137,9 @@ struct FileLine {
 struct FileWord {
     text: String,
     start_ms: u32,
-    end_ms: Option<u32>,
 }
 
-/// Synced lines of a Lyricsfile (draft 1.0, CC0), words kept. None = another version (the draft says not to guess),
+/// Synced lines of a Lyricsfile (draft 1.0, CC0), each at its first word's time. None = another version (the draft says not to guess),
 /// malformed, over `LYRICSFILE_MAX`, or no line. Sorted by start; overlapping lines stay (the format allows them).
 pub fn parse_lyricsfile(doc: &str) -> Option<Vec<Line>> {
     if doc.len() > LYRICSFILE_MAX {
@@ -178,10 +153,11 @@ pub fn parse_lyricsfile(doc: &str) -> Option<Vec<Line>> {
         .lines
         .into_iter()
         .map(|l| {
-            let mut words: Vec<Word> = l.words.into_iter().map(|w| Word { end_ms: w.end_ms.filter(|&e| e >= w.start_ms), ms: w.start_ms, text: w.text }).collect();
-            words.sort_by_key(|w| w.ms);
+            let mut words = l.words;
+            words.sort_by_key(|w| w.start_ms);
+            let ms = words.first().map_or(l.start_ms, |w| w.start_ms);
             let text = if l.text.trim().is_empty() { words.iter().map(|w| w.text.as_str()).collect::<String>() } else { l.text };
-            Line { ms: l.start_ms, text: text.trim().to_string(), end_ms: l.end_ms.filter(|&e| e >= l.start_ms), words: (!words.is_empty()).then_some(words) }
+            Line { ms, text: text.trim().to_string(), end_ms: l.end_ms.filter(|&e| e >= ms) }
         })
         .collect();
     lines.sort_by_key(|l| l.ms);
@@ -493,7 +469,7 @@ mod tests {
     fn plain_lyrics_asked_again_after_a_day() {
         let plain = Lyrics { lines: Vec::new(), plain: Some("la".into()), instrumental: false, source: "YouTube Music".into(), own: false };
         assert!(keep_cached(&plain, 3600) && !keep_cached(&plain, 2 * 86_400));
-        let synced = Lyrics { lines: vec![Line { ms: 0, text: "la".into(), end_ms: None, words: None }], ..plain };
+        let synced = Lyrics { lines: vec![Line { ms: 0, text: "la".into(), end_ms: None }], ..plain };
         assert!(keep_cached(&synced, 365 * 86_400));
     }
 
@@ -536,10 +512,10 @@ mod tests {
         let lrc = "[ar:Someone]\n[offset:+500]\n[00:12.34]First\n[01:02.5][02:00.00]Chorus\n[00:20.123]\n[bad]Nope\n";
         let l = parse_lrc(lrc);
         assert_eq!(l, vec![
-            Line { ms: 11_840, text: "First".into(), end_ms: None, words: None },
-            Line { ms: 19_623, text: "".into(), end_ms: None, words: None },
-            Line { ms: 62_000, text: "Chorus".into(), end_ms: None, words: None },
-            Line { ms: 119_500, text: "Chorus".into(), end_ms: None, words: None },
+            Line { ms: 11_840, text: "First".into(), end_ms: None },
+            Line { ms: 19_623, text: "".into(), end_ms: None },
+            Line { ms: 62_000, text: "Chorus".into(), end_ms: None },
+            Line { ms: 119_500, text: "Chorus".into(), end_ms: None },
         ]);
         assert!(parse_lrc("no stamps here").is_empty());
     }
@@ -548,7 +524,7 @@ mod tests {
     fn the_songs_own_lyrics_timed_or_plain() {
         let timed = from_file("[ar:Someone]\n[00:01.00]One\n[00:03.50]\n[00:04.00]<00:04.00>Two <00:04.50>words").unwrap();
         assert_eq!((timed.lines.len(), timed.plain.as_deref(), timed.own, timed.source.as_str()), (3, Some("One\nTwo words"), true, ""));
-        assert_eq!(timed.lines[2].words.as_ref().map(Vec::len), Some(2));
+        assert_eq!(timed.lines[2].ms, 4000);
         // No stamps: plain, its header tags out, its sections in.
         let plain = from_file("[ti:Song]\r\n[Chorus]\r\nLa la\r\n[Chorus: Someone]\r\n").unwrap();
         assert_eq!((plain.lines.len(), plain.plain.as_deref()), (0, Some("[Chorus]\nLa la\n[Chorus: Someone]")));
@@ -556,32 +532,35 @@ mod tests {
         assert_eq!(from_file("[00:01.00]\n[00:02.00]"), None);
     }
 
-    fn w(ms: u32, text: &str, end_ms: Option<u32>) -> Word {
-        Word { ms, text: text.into(), end_ms }
-    }
-
     #[test]
-    fn reads_enhanced_lrc_word_stamps() {
-        let l = parse_lrc("[offset:+100]\n[00:12.00]<00:12.00>Hello <00:12.50>world<00:13.10>\n[00:20.00]Oh <00:20.60>yeah\n[00:30.00]I <3 you\n[00:40.00][00:50.00]<00:40.00>Twice <00:40.50>sung");
-        assert_eq!(l[0].text, "Hello world");
-        assert_eq!(l[0].words, Some(vec![w(11_900, "Hello ", None), w(12_400, "world", Some(13_000))]));
-        // Before the first stamp: from the line's start.
-        assert_eq!(l[1].words, Some(vec![w(19_900, "Oh ", None), w(20_500, "yeah", None)]));
+    fn enhanced_lrc_gives_lines_at_their_first_word() {
+        let l = parse_lrc("[offset:+100]\n[00:12.00]<00:12.40>Hello <00:12.90>world<00:13.10>\n[00:20.00]Oh <00:20.60>yeah\n[00:30.00]I <3 you\n[00:40.00][00:50.00]<00:40.50>Twice <00:41.00>sung");
+        // No guess: the first word's stamp is the line's time (offset applied), the other stamps are gone.
+        assert_eq!((l[0].ms, l[0].text.as_str()), (12_300, "Hello world"));
+        // Text before the first stamp is the first word: the line's own time stays.
+        assert_eq!((l[1].ms, l[1].text.as_str()), (19_900, "Oh yeah"));
         // Not a stamp: text.
-        assert_eq!((l[2].text.as_str(), &l[2].words), ("I <3 you", &None));
-        // Sung at two stamps: absolute word times would be wrong for one of them.
-        assert_eq!((l[3].text.as_str(), &l[3].words, l[4].text.as_str()), ("Twice sung", &None, "Twice sung"));
+        assert_eq!((l[2].ms, l[2].text.as_str()), (29_900, "I <3 you"));
+        // Sung at two stamps: absolute word times would be wrong for one of them, the lines' own stay.
+        assert_eq!((l[3].ms, l[3].text.as_str(), l[4].ms, l[4].text.as_str()), (39_900, "Twice sung", 49_900, "Twice sung"));
     }
 
     const STILL_ALIVE: &str = "version: \"1.0\"\nmetadata:\n  title: Still Alive\n  duration_ms: 176457\nlines:\n  - text: This was a triumph.\n    words:\n      - text: \"This \"\n        start_ms: 290\n      - text: \"was \"\n        start_ms: 536\n      - text: triumph.\n        start_ms: 923\n        end_ms: 3000\n    start_ms: 290\n    end_ms: 3840\n  - text: 'Overlapping, no words'\n    start_ms: 3000\nplain: |\n  This was a triumph.\n";
 
     #[test]
-    fn reads_a_lyricsfile_with_its_words() {
+    fn a_cached_line_with_words_still_reads() {
+        // Rows cached before 2026-11-12 hold word times: ignored, the line is the same.
+        let old = r#"{"lines":[{"ms":290,"text":"This was","words":[{"ms":290,"text":"This "}]}],"plain":null,"instrumental":false,"source":"LRCLIB"}"#;
+        let l: Lyrics = serde_json::from_str(old).unwrap();
+        assert_eq!((l.lines[0].ms, l.lines[0].text.as_str()), (290, "This was"));
+    }
+
+    #[test]
+    fn reads_a_lyricsfile_at_its_first_words() {
         let lines = parse_lyricsfile(STILL_ALIVE).unwrap();
         assert_eq!(lines.len(), 2);
         assert_eq!((lines[0].ms, lines[0].end_ms, lines[0].text.as_str()), (290, Some(3840), "This was a triumph."));
-        assert_eq!(lines[0].words, Some(vec![w(290, "This ", None), w(536, "was ", None), w(923, "triumph.", Some(3000))]));
-        assert_eq!((lines[1].ms, lines[1].end_ms, &lines[1].words), (3000, None, &None));
+        assert_eq!((lines[1].ms, lines[1].end_ms), (3000, None));
         // The version unquoted (a YAML number) reads the same.
         assert_eq!(parse_lyricsfile(&STILL_ALIVE.replace("\"1.0\"", "1.0")), Some(lines));
         // Another version, broken YAML, no lines, too big: not read.
@@ -598,14 +577,13 @@ mod tests {
     }
 
     #[test]
-    fn a_lyricsfile_wins_and_stretches_with_its_words() {
+    fn a_lyricsfile_wins_and_stretches() {
         let rec = Record { synced: Some("[00:00.29]This was a triumph.".into()), lyricsfile: Some(STILL_ALIVE.into()), ..Default::default() };
         let l = build(rec.clone(), Some(2.0), "LRCLIB");
         assert_eq!((l.lines[0].ms, l.lines[0].end_ms), (580, Some(7680)));
-        assert_eq!(l.lines[0].words.as_ref().unwrap()[2], w(1846, "triumph.", Some(6000)));
         // A Lyricsfile that can't be read: the LRC.
         let l = build(Record { lyricsfile: Some("version: '9'".into()), ..rec }, Some(1.0), "LRCLIB");
-        assert_eq!((l.lines.len(), &l.lines[0].words), (1, &None));
+        assert_eq!((l.lines.len(), l.lines[0].ms), (1, 290));
     }
 
     #[test]
@@ -677,7 +655,7 @@ mod tests {
 
     #[test]
     fn a_typed_line_finds_its_place_in_the_lyrics() {
-        let line = |text: &str| Line { ms: 0, text: text.into(), end_ms: None, words: None };
+        let line = |text: &str| Line { ms: 0, text: text.into(), end_ms: None };
         let l = Lyrics { lines: vec![line("Été, l’été !"), line(""), line("Under the bridge,"), line("down by the river")], plain: None, instrumental: false, source: String::new(), own: false };
         assert_eq!(fold("  L’ÉTÉ, déjà! "), "l ete deja");
         // Accents, case and punctuation aside; across a line break; the last word cut short.

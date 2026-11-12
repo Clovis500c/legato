@@ -173,7 +173,7 @@ fn timed_lyrics_of(page: &Value) -> Option<(Vec<Line>, String)> {
         let text = d.get("lyricLine").and_then(Value::as_str).unwrap_or("").trim();
         // ♪ alone = nothing sung: shown as a break.
         let text = if text.chars().all(|c| c == '♪' || c.is_whitespace()) { "" } else { text };
-        lines.push(Line { ms: ms(cue, "startTimeMilliseconds")?, text: text.to_string(), end_ms: ms(cue, "endTimeMilliseconds"), words: None });
+        lines.push(Line { ms: ms(cue, "startTimeMilliseconds")?, text: text.to_string(), end_ms: ms(cue, "endTimeMilliseconds") });
     }
     lines.sort_by_key(|l| l.ms);
     let source = all(page, "sourceMessage").into_iter().find_map(|v| v.as_str().map(String::from).or_else(|| text(v))).unwrap_or_default();
@@ -847,7 +847,7 @@ line two" }] }, "footer": { "runs": [{ "text": "Source: LyricFind" }] } } }] } }
         let yt = YouTubeMusic::with_api(&s.url(), COOKIE).unwrap();
         assert_eq!(yt.lyrics("v1").await.unwrap(), Some(YtLyrics::Plain("line one
 line two".into(), "Source: LyricFind".into())));
-        let line = |ms, text: &str, end| Line { ms, text: text.into(), end_ms: Some(end), words: None };
+        let line = |ms, text: &str, end| Line { ms, text: text.into(), end_ms: Some(end) };
         assert_eq!(yt.lyrics("v3").await.unwrap(), Some(YtLyrics::Timed(vec![line(1000, "First", 4100), line(5200, "Second", 7900), line(8000, "", 20000)], "Source: LyricFind".into())));
         assert_eq!(yt.lyrics("v2").await.unwrap(), None);
     }

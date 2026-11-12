@@ -170,6 +170,15 @@ Where a line says "reading", the owner hasn't confirmed it.
 
 ## The owner's asks of 2026-11-12
 
+- [x] `S` Lyrics line by line, no more word by word (the owner: more precise, fewer false word timings). 2026-11-12: the line
+      being sung is lit as a whole everywhere (the panel, Karaoke, the mini and picture-in-picture lines already showed lines);
+      the per-word fill, its estimated timing and the `Word` data are gone. A source that times words (enhanced LRC, LRCLIB's
+      Lyricsfile) gives its line the time of its first word, nothing more guessed; plain lyrics stay unlit. No setting existed
+      for it, so none removed. Cached lyrics stay valid with no migration (an old row's `words` is ignored when read; its line
+      times are the same), and a song's own file written by the editor holds plain line stamps. Decided alone (2026-11-12): keep
+      LRCLIB's word-synced Lyricsfile as a source (its first-word times are good line times) rather than ignore it; easy to
+      change in `lyrics.rs` `build`. Never seen on a screen.
+
 - [x] `S` Next on the last song of the queue did nothing (it marked the player paused while the sound went on). 2026-11-12:
       with Repeat off it now stops and waits at the song's start, like Stop; with Repeat all it already went back to the
       first song (unchanged). Decided alone (2026-11-12): stop rather than ask the autoplay for similar songs on a manual

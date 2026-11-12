@@ -13,8 +13,8 @@ import { songKey } from './effects'
 import { useBackdrop } from './immersive'
 import { closeKaraoke } from './karaokeMode'
 import { centerShift, plainShift, seatOf, type Seat } from './karaokeLines'
-import { applyFix, fixLabel, lineAt, lineEnd, NO_FIX, withBreaks, type LyricsFix, type Timed, type TimedWord } from './lyricsAt'
-import { Sung, useNowLyrics } from './LyricsPanel'
+import { applyFix, fixLabel, lineAt, NO_FIX, withBreaks, type LyricsFix, type Timed } from './lyricsAt'
+import { useNowLyrics } from './LyricsPanel'
 import { Backdrop } from './Backdrop'
 import { SeekBar, TimeText, usePosition } from './Progress'
 import { useNowTrack, usePlayer } from './store'
@@ -43,7 +43,7 @@ function useBox(ref: RefObject<HTMLElement | null>) {
   return box
 }
 
-const Line = memo(function Line({ text, seat, calm, start, end, timed }: { text: string; seat: Seat; calm: boolean; start: number; end: number; timed?: TimedWord[] | null }) {
+const Line = memo(function Line({ text, seat, calm }: { text: string; seat: Seat; calm: boolean }) {
   return (
     <p
       aria-hidden={seat === 'hidden'}
@@ -58,7 +58,7 @@ const Line = memo(function Line({ text, seat, calm, start, end, timed }: { text:
       {!text ? (
         <MusicNotesSimple size={56} weight="bold" aria-label={tr('Instrumental')} className={seat === 'now' && !calm ? 'inline animate-pulse' : 'inline'} />
       ) : seat === 'now' && !calm ? (
-        <Sung text={text} start={start} end={end} timed={timed} />
+        <span className="glow-sung">{text}</span>
       ) : (
         text
       )}
@@ -90,7 +90,7 @@ function Lines({ lines: sung, durationMs, fix, calm }: { lines: Timed[]; duratio
       >
         {lines.map((l, i) => {
           const seat = seatOf(i, at)
-          return <Line key={i} text={l.text} seat={seat} calm={calm} start={l.ms} end={seat === 'now' ? lineEnd(lines, i, durationMs) : 0} timed={l.words} />
+          return <Line key={i} text={l.text} seat={seat} calm={calm} />
         })}
       </div>
     </div>
@@ -122,7 +122,7 @@ const Calm = ({ children }: { children: ReactNode }) => <div className="m-auto f
 
 /**
  * Karaoke mode (K): the window in full screen, the lyrics big over the blurred cover. The line sung in the middle and
- * filled word by word, the next two dimmed, the one just sung fading; plain lyrics glide with the song. Arrows move
+ * lit as a whole, the next two dimmed, the one just sung fading; plain lyrics glide with the song. Arrows move
  * the timing (the lyrics panel's fix, same saved value), Esc leaves (karaoke.ts). It stays open across songs: the next
  * song's lyrics fill in when they come. Nothing runs here once it is closed.
  */

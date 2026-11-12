@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { NO_FIX, applyFix, fixFromTaps, lineAt, lineEnd, peekLine, toLrc, withBreaks, wordTimes } from './lyricsAt'
+import { NO_FIX, applyFix, fixFromTaps, lineAt, peekLine, toLrc, withBreaks } from './lyricsAt'
 
 describe('lineAt', () => {
   const lines = [{ ms: 1000 }, { ms: 2000 }, { ms: 2000 }, { ms: 5000 }]
@@ -10,6 +10,10 @@ describe('lineAt', () => {
     expect(lineAt(lines, 2500)).toBe(2)
     expect(lineAt(lines, 99_999)).toBe(3)
     expect(lineAt([], 10)).toBe(-1)
+  })
+  it('follows the clock: before the first line, on each, after the last, two at the same time', () => {
+    const l = [{ ms: 1000 }, { ms: 2000 }, { ms: 2000 }, { ms: 5000 }]
+    expect([500, 1000, 2000, 4999, 5000, 600_000].map((t) => lineAt(l, t))).toEqual([-1, 0, 2, 2, 3, 3])
   })
 })
 
@@ -40,32 +44,6 @@ describe('withBreaks', () => {
   })
 })
 
-describe('karaoke fill', () => {
-  it('fills word by word over the line, by length', () => {
-    expect(wordTimes('aa bb', 0, 5000)).toEqual([
-      { word: 'aa', t0: 0, t1: 2000 },
-      { word: ' ', t0: 2000, t1: 3000 },
-      { word: 'bb', t0: 3000, t1: 5000 },
-    ])
-  })
-  it('fills each word at its own time when the source times them', () => {
-    const timed = [{ ms: 1000, text: 'Hello ' }, { ms: 1600, text: 'world', endMs: 2200 }]
-    expect(wordTimes('Hello world', 1000, 4000, timed)).toEqual([
-      { word: 'Hello ', t0: 1000, t1: 1600 },
-      { word: 'world', t0: 1600, t1: 2200 },
-    ])
-    // The last word with no end of its own: until the line's.
-    expect(wordTimes('Hi', 0, 900, [{ ms: 100, text: 'Hi' }])).toEqual([{ word: 'Hi', t0: 100, t1: 900 }])
-    expect(wordTimes('aa', 0, 900, [])).toEqual([{ word: 'aa', t0: 0, t1: 900 }])
-  })
-  it('a line ends where the next starts, or after a guess from its length', () => {
-    const lines = [{ ms: 0, text: 'short' }, { ms: 2000, text: 'x'.repeat(50) }]
-    expect(lineEnd(lines, 0, null)).toBe(2000)
-    expect(lineEnd(lines, 1, null)).toBe(2000 + 4500)
-    expect(lineEnd(lines, 1, 4000)).toBe(4000)
-  })
-})
-
 describe('timing fixed by hand', () => {
   it('one tap shifts every line, two far apart fix the speed too', () => {
     // Line at 10 s in the lyrics heard at 12.5 s: everything 2.5 s later.
@@ -86,22 +64,16 @@ describe('timing fixed by hand', () => {
     const lines = [{ ms: 1000, text: 'a', endMs: 2000 }, { ms: 3000, text: 'b' }]
     expect(applyFix(lines, { offset: -1500, rate: 1 })).toEqual([{ ms: 0, text: 'a', endMs: 500 }, { ms: 1500, text: 'b', endMs: undefined }])
     expect(applyFix(lines, NO_FIX)).toBe(lines)
-    const worded = [{ ms: 1000, text: 'a b', words: [{ ms: 1000, text: 'a ' }, { ms: 1500, text: 'b', endMs: 1800 }] }]
-    expect(applyFix(worded, { offset: 500, rate: 2 })[0].words).toEqual([{ ms: 2500, text: 'a ', endMs: undefined }, { ms: 3500, text: 'b', endMs: 4100 }])
   })
   it('a line ends at its own end when the source gives one', () => {
     const lines = [{ ms: 0, text: 'a', endMs: 1200 }, { ms: 6000, text: 'b' }]
-    expect(lineEnd(lines, 0, null)).toBe(1200)
     expect(withBreaks(lines, null)).toEqual([lines[0], { ms: 1200, text: '' }, lines[1]])
   })
 })
 
 describe('toLrc', () => {
-  it('writes lines and their words back as LRC', () => {
+  it('writes the lines back as LRC', () => {
     expect(toLrc([{ ms: 1500, text: 'One' }, { ms: 62_340, text: '' }, { ms: 6_000_000, text: 'Late' }])).toBe('[00:01.50]One\n[01:02.34]\n[100:00.00]Late')
-    const worded = [{ ms: 12_000, text: 'Hello world', words: [{ ms: 12_000, text: 'Hello ' }, { ms: 12_500, text: 'world', endMs: 13_100 }] }]
-    expect(toLrc(worded)).toBe('[00:12.00]<00:12.00>Hello <00:12.50>world<00:13.10>')
-    expect(toLrc([{ ms: 0, text: 'a', words: [{ ms: 5, text: 'a' }] }])).toBe('[00:00.00]<00:00.01>a')
   })
 })
 
