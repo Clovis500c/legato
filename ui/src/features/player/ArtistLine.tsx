@@ -1,18 +1,12 @@
 import { useEffect, useMemo } from 'react'
-import { create } from 'zustand'
 import { useStore } from '../../app/store'
-import { api } from '../../shared/api'
-import { remoteArt } from '../../shared/art'
 import { artistName } from '../../shared/artistName'
 import { tr } from '../../shared/i18n/i18n'
 import { Cover } from '../../shared/ui/Cover'
 import { asksPicture } from '../addons/presence'
+import { fetchPicture, pictureKey, usePictures } from '../library/artistPicture'
 import { allArtists } from '../library/filter'
 import { usePlayer, type NowPlaying } from './store'
-
-// Artists' pictures found, by lowercased name (the art scheme's URL).
-// shortcut: one URL per artist for the session; bound it if a session ever shows thousands of artists.
-const usePictures = create<Record<string, string>>(() => ({}))
 
 /**
  * The big title's artists (the owner's ask 2026-11-07): each name, its round picture on its right once known; a click
@@ -26,12 +20,7 @@ export function ArtistLine({ now, className = '' }: { now: NowPlaying; className
   const ripe = usePlayer((s) => s.now?.via === 'youtube' && asksPicture(s.now, s.playing, s.positionMs))
   useEffect(() => {
     for (const name of names) {
-      const key = name.toLowerCase()
-      if (usePictures.getState()[key]) continue
-      void api.artistPicture(name, ripe).then(
-        (url) => url && usePictures.setState({ [key]: remoteArt(url) }),
-        () => {},
-      )
+      fetchPicture(name, ripe)
     }
   }, [names, ripe])
   const open = (artist: string) => {
@@ -41,7 +30,7 @@ export function ArtistLine({ now, className = '' }: { now: NowPlaying; className
   return (
     <div className={`flex max-w-full flex-wrap items-center gap-x-5 gap-y-2 ${className}`}>
       {names.map((name) => {
-        const art = pictures[name.toLowerCase()]
+        const art = pictures[pictureKey(name)]
         const inner = (
           <>
             <span className="min-w-0 truncate group-hover:underline">{artistName(name)}</span>

@@ -222,6 +222,12 @@ Where a line says "reading", the owner hasn't confirmed it.
       "Original" pseudo-version has none to share. They were missing from the full-screen player's menu because they lived only in the Live
       Editor panel's menu (no bug: never added to `playerMenu`); `playerMenu` has both now for a YouTube song. Not tried on a screen.
 
+- [x] `S` The artist's page photo is the big title's round picture (the owner: a one-song artist's page showed another picture). Cause: the page took
+      the first song's cover (or YouTube Music's raw art), while the big title shows `artist_picture`. 2026-11-12: one store
+      (`library/artistPicture.ts`) feeds both; the page asks Rust only for what it already keeps (no request, again when its own data
+      arrives). Decided alone (2026-11-12): with no kept picture the page keeps what it had (first song's cover, else YouTube Music's art).
+      Not seen on a screen.
+
 ## Best in class (user's ask 2026-10-30)
 
 What a listener would get, against Riff (rootscripts/riff: Electron, yt-dlp downloads, YouTube / SoundCloud, imports

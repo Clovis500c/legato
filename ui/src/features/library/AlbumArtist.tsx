@@ -29,6 +29,7 @@ import { ArtistAbout } from './ArtistAbout'
 import { albumRows } from './albumPage'
 import { discography } from './discography'
 import { groupAlbums, primaryArtist, type AlbumGroup } from './filter'
+import { photoOf, useArtistPicture } from './artistPicture'
 import { ArtistLinks } from './ArtistLinks'
 import { HiddenExplicit } from './HiddenVideos'
 import { useExplicit } from './useExplicit'
@@ -348,7 +349,9 @@ export function ArtistView({ artist }: { artist: string }) {
       (e) => (useStore.getState().notify(String(e), { kind: 'error' }), setAll(null)),
     )
   }
-  const photo = shown.length || !yt?.art ? firstArt(shown) : [remoteArt(yt.art)]
+  // The same picture as the round one beside the name on the big title; else the first song's cover, or YouTube Music's own.
+  const picture = useArtistPicture(artist, yt?.art)
+  const photo = photoOf(picture, shown.length || !yt?.art ? firstArt(shown) : [remoteArt(yt.art)])
   const tint = useCoverTint(photo[0])
   const header = (
     <PageHeader
