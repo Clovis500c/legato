@@ -624,6 +624,12 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       data to match yet: the sonic-analysis line), other languages than English. Decided alone (2026-11-12): rules over a
       model (nothing leaves the PC), English words only. Never seen on a screen.
 - [ ] `M` Audiobooks from local files (m4b chapters, resume per book, speed, sleep at chapter end), apart from music.
+      2026-11-12, one half, resume per book (the line stays open): a song of 20 minutes or more, a file of this PC or of a personal
+      server, is picked up where it was left: its place is kept every 10 s and when paused (this PC's storage, not synced), the
+      song starts there when played again, and a notice says so with "Start over" (`resumeLong.ts`, `resumePoints.ts`); near
+      either end the place is dropped, 200 songs at most. Left: m4b chapters (a container parser in Rust), a speed kept per
+      book (the Live Editor has speed), the books apart from music (a page). Decided alone (2026-11-12): local and server
+      files only (a YouTube video has no stable place), 20 minutes as the line. Never tried on a screen or by ear.
 - [ ] `M` Stream Deck plugin and an Xbox Game Bar widget (play / skip / like / now playing) over the local hotkeys.
 - [ ] `M` Blind test game: snippets from the library or a playlist, guess title / artist, scores, local multiplayer
       on one screen or over the LAN code.

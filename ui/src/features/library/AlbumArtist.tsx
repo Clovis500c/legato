@@ -1,4 +1,4 @@
-import { CaretLeft, Clock, DotsThree, Heart, MicrophoneStage, PersonSimpleWalk, Play, Plus, Radio, SpinnerGap } from '@phosphor-icons/react'
+import { CaretLeft, Clock, DotsThree, Heart, MicrophoneStage, Play, Plus, Radio, SpinnerGap } from '@phosphor-icons/react'
 import { PlayingBars, PlayingMark } from '../player/PlayingMark'
 import { artistName } from '../../shared/artistName'
 import { useShallow } from 'zustand/react/shallow'
@@ -31,7 +31,6 @@ import { discography } from './discography'
 import { groupAlbums, primaryArtist, type AlbumGroup } from './filter'
 import { photoOf, useArtistPicture } from './artistPicture'
 import { ArtistLinks } from './ArtistLinks'
-import { walkFrom } from './artistWalk'
 import { HiddenExplicit } from './HiddenVideos'
 import { useExplicit } from './useExplicit'
 import { PlayAll, ShuffleRound, totalTime } from './LibraryView'
@@ -355,7 +354,7 @@ export function ArtistView({ artist }: { artist: string }) {
   const photo = photoOf(picture, shown.length || !yt?.art ? firstArt(shown) : [remoteArt(yt.art)])
   const tint = useCoverTint(photo[0])
   // Only an artist of the library has a walk (it follows what you listen to together).
-  const walk: MenuEntry[] = shown.length ? ['-', { label: tr('Walk to another artist…'), icon: <PersonSimpleWalk size={16} />, onSelect: () => void walkFrom(artist) }] : []
+  const walk: MenuEntry[] = shown.length ? ['-', { label: tr('Walk to another artist…'), icon: <MicrophoneStage size={16} />, onSelect: () => void import('./artistWalk').then((m) => m.walkFrom(artist)) }] : []
   const header = (
     <PageHeader
       onContextMenu={onMenu(() => tracksMenu(playable, walk))}

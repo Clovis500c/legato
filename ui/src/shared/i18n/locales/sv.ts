@@ -2345,6 +2345,8 @@ const sv: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Din server tar bara emot lösenordet skickat som det är (hexkodat, vilket inte är kryptering). Över https kan bara din server läsa det. Skicka det så här?',
   'Send my password as it is': 'Skicka mitt lösenord som det är',
   'Hide explicit songs': 'Dölj explicita låtar',
+  'Resumed at {time}': 'Fortsatte vid {time}',
+  'Start over': 'Börja om',
   'Describe a playlist…': 'Beskriv en spellista…',
   'Describe the playlist: a decade, a genre of your library, calm or fast, new…': 'Beskriv spellistan: ett decennium, en genre i ditt bibliotek, lugn eller snabb, ny…',
   'No rule found in these words. Try a decade, a genre or artist of your library, calm or fast, new…': 'Ingen regel hittades i de här orden. Prova ett decennium, en genre eller artist i ditt bibliotek, lugnt eller snabbt, nytt…',

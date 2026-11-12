@@ -2345,6 +2345,8 @@ const ko: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': '서버가 비밀번호를 그대로 보내는 방식만 받습니다(16진수로 인코딩될 뿐 암호화는 아닙니다). https에서는 서버만 읽을 수 있습니다. 이렇게 보낼까요?',
   'Send my password as it is': '내 비밀번호를 그대로 보내기',
   'Hide explicit songs': '선정적인 곡 숨기기',
+  'Resumed at {time}': '{time}부터 이어서 재생',
+  'Start over': '처음부터',
   'Describe a playlist…': '플레이리스트 설명하기…',
   'Describe the playlist: a decade, a genre of your library, calm or fast, new…': '플레이리스트를 설명하세요: 연대, 라이브러리의 장르, 차분함 또는 빠름, 최신…',
   'No rule found in these words. Try a decade, a genre or artist of your library, calm or fast, new…': '이 단어에서 규칙을 찾지 못했습니다. 연대, 라이브러리의 장르나 아티스트, 차분함 또는 빠름, 최신을 시도해 보세요…',

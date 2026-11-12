@@ -2345,6 +2345,8 @@ const it: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Il tuo server accetta solo la password inviata così com’è (codificata in esadecimale, che non è cifratura). Con https solo il tuo server può leggerla. Inviarla così?',
   'Send my password as it is': 'Invia la mia password così com’è',
   'Hide explicit songs': 'Nascondi brani espliciti',
+  'Resumed at {time}': 'Ripreso da {time}',
+  'Start over': 'Ricomincia',
   'Describe a playlist…': 'Descrivi una playlist…',
   'Describe the playlist: a decade, a genre of your library, calm or fast, new…': 'Descrivi la playlist: un decennio, un genere della tua libreria, calma o veloce, nuovo…',
   'No rule found in these words. Try a decade, a genre or artist of your library, calm or fast, new…': 'Nessuna regola trovata in queste parole. Prova un decennio, un genere o un artista della tua libreria, calma o veloce, nuovo…',
