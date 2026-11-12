@@ -488,7 +488,10 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       on a discovered song (not in the library: no row to hold the choice).
       2026-11-12, the genre / year half: "Your {genre} songs" (up to 2) and "Your songs of the {decade}" (up to 2) mixes from the
       tags of local files (8 songs at least, left out when they repeat another mix; `mixes.rs`, titles in `words.ts`). Left open:
-      Last.fm "Discoveries" (the user's key) and "Never in mixes" on a discovered song. Never seen on a screen.
+      Last.fm "Discoveries" (the user's key). Never seen on a screen. 2026-11-12: "Never in mixes" on a discovered song: the menu of a
+      song that is not in the library has it; its title and artist are remembered (`blockedFinds`, as `match_key`s, 2000 at most) and
+      the mixes are made again without it (`mixes::without_blocked`). Left for the owner: Last.fm "Discoveries" (its public API has no
+      recommendations call any more: what it should mean is a call).
 - [x] `M` Internet radio stations (Radio Browser's open directory).
       Skipped by the autonomous run (2026-11-11): bigger than `M` once looked at. The engine plays HTTP only as a
       server song (`server:` paths through the shell's server fetcher, `crates/player/src/http.rs`), and a live stream

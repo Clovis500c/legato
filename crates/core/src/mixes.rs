@@ -428,6 +428,15 @@ fn new_enough(out: &[Mix], ids: &[i64]) -> bool {
     out.iter().all(|m| (m.track_ids.iter().filter(|id| set.contains(id)).count() as f64) < OVERLAP * ids.len() as f64)
 }
 
+/// The radios' songs without the ones the user said never to see in mixes (`blocked`: `matching::match_key` of title and
+/// artist, since a discovered song has no library row to hold the choice).
+pub fn without_blocked(found: Vec<(i64, Vec<Track>)>, blocked: &HashSet<String>) -> Vec<(i64, Vec<Track>)> {
+    if blocked.is_empty() {
+        return found;
+    }
+    found.into_iter().map(|(id, songs)| (id, songs.into_iter().filter(|t| !blocked.contains(&crate::matching::match_key(&t.title, &t.artist))).collect())).collect()
+}
+
 pub fn mixes(input: &Input) -> Vec<Mix> {
     // Talks, tutorials, gameplay: never in a mix (user's report 2026-10-22: Roblox scripting videos as Daily Mixes).
     let music: Vec<LibraryTrack> = input.tracks.iter().filter(|t| t.track.musicness != Some(Musicness::NotMusic)).cloned().collect();
@@ -1266,5 +1275,15 @@ mod tests {
         let m = out.iter().find(|m| m.id == "supermix").unwrap_or_else(|| panic!("{out:?}"));
         assert!((1..=6).all(|id| m.track_ids.contains(&id)) && (7..=12).all(|id| m.track_ids.contains(&id)), "{m:?}");
         assert_eq!((m.kind, m.reason.as_str()), ("favorites", "Your favorites over the months"));
+    }
+
+    #[test]
+    fn a_discovered_song_said_never_is_left_out_whatever_its_spelling() {
+        let song = |title: &str, artist: &str| Track { title: title.into(), artist: artist.into(), ..Default::default() };
+        let found = vec![(1, vec![song("Nightcall", "Kavinsky"), song("Odd Look", "Kavinsky")]), (2, vec![song("NIGHTCALL!", "kavinsky")])];
+        let blocked = HashSet::from([crate::matching::match_key("Nightcall", "Kavinsky")]);
+        let kept = without_blocked(found.clone(), &blocked);
+        assert_eq!(kept.iter().map(|(_, v)| v.iter().map(|t| t.title.as_str()).collect::<Vec<_>>()).collect::<Vec<_>>(), [vec!["Odd Look"], vec![]]);
+        assert_eq!(without_blocked(found.clone(), &HashSet::new()), found);
     }
 }
