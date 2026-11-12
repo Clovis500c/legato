@@ -33,6 +33,18 @@ pub async fn lmix_write(path: String, mix: Lmix) -> CmdResult<()> {
     tauri::async_runtime::spawn_blocking(move || std::fs::write(p, text).map_err(err)).await.map_err(err)?
 }
 
+/// A remix as a link to copy.
+#[tauri::command]
+pub async fn lmix_link(mix: Lmix) -> CmdResult<String> {
+    lmix::to_link(&mix)
+}
+
+/// A remix from a pasted or opened link: checked like a file.
+#[tauri::command]
+pub async fn lmix_from_link(link: String) -> CmdResult<Lmix> {
+    lmix::from_link(&link)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

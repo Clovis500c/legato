@@ -2345,6 +2345,8 @@ const nl: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Je server accepteert alleen het wachtwoord zoals het is (hexadecimaal gecodeerd, dat is geen versleuteling). Via https kan alleen je server het lezen. Zo versturen?',
   'Send my password as it is': 'Mijn wachtwoord verzenden zoals het is',
   'Hide explicit songs': 'Expliciete nummers verbergen',
+  'Copy this mix’s link': 'Link van deze mix kopiëren',
+  'Remix link copied': 'Remixlink gekopieerd',
   'A–B loop: start, end, clear': 'A–B-lus: begin, einde, wissen',
   'Up tempo': 'Hoog tempo',
   'Your songs at 120 BPM and above': 'Je nummers vanaf 120 BPM',

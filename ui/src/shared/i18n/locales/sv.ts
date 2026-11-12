@@ -2345,6 +2345,8 @@ const sv: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Din server tar bara emot lösenordet skickat som det är (hexkodat, vilket inte är kryptering). Över https kan bara din server läsa det. Skicka det så här?',
   'Send my password as it is': 'Skicka mitt lösenord som det är',
   'Hide explicit songs': 'Dölj explicita låtar',
+  'Copy this mix’s link': 'Kopiera länken till den här mixen',
+  'Remix link copied': 'Remixlänk kopierad',
   'A–B loop: start, end, clear': 'A–B-loop: början, slut, rensa',
   'Up tempo': 'Högt tempo',
   'Your songs at 120 BPM and above': 'Dina låtar från 120 BPM',

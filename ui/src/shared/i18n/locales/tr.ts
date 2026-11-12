@@ -2345,6 +2345,8 @@ const tr: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Sunucunuz yalnızca olduğu gibi gönderilen parolayı kabul ediyor (onaltılık kodlanır, bu şifreleme değildir). https üzerinden yalnızca sunucunuz okuyabilir. Bu şekilde gönderilsin mi?',
   'Send my password as it is': 'Parolamı olduğu gibi gönder',
   'Hide explicit songs': 'Müstehcen şarkıları gizle',
+  'Copy this mix’s link': 'Bu miksin bağlantısını kopyala',
+  'Remix link copied': 'Remiks bağlantısı kopyalandı',
   'A–B loop: start, end, clear': 'A–B döngüsü: başlangıç, bitiş, temizle',
   'Up tempo': 'Hızlı tempo',
   'Your songs at 120 BPM and above': '120 BPM ve üzeri şarkıların',

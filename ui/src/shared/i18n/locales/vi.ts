@@ -2345,6 +2345,8 @@ const vi: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Máy chủ của bạn chỉ nhận mật khẩu gửi nguyên văn (mã hóa thập lục phân, không phải mã hóa bảo mật). Qua https chỉ máy chủ của bạn đọc được. Gửi theo cách này?',
   'Send my password as it is': 'Gửi mật khẩu của tôi nguyên văn',
   'Hide explicit songs': 'Ẩn bài hát có nội dung nhạy cảm',
+  'Copy this mix’s link': 'Sao chép liên kết của bản mix này',
+  'Remix link copied': 'Đã sao chép liên kết bản phối',
   'A–B loop: start, end, clear': 'Vòng lặp A–B: đầu, cuối, xóa',
   'Up tempo': 'Nhịp nhanh',
   'Your songs at 120 BPM and above': 'Bài hát của bạn từ 120 BPM trở lên',

@@ -458,6 +458,9 @@ export const api = {
   /** A remix file (`.lmix`): read and checked by Rust, or written where the user chose. */
   lmixRead: (path: string) => invoke<Lmix>('lmix_read', { path }),
   lmixWrite: (path: string, mix: Lmix) => invoke<void>('lmix_write', { path, mix }),
+  /** A remix as a `legato://remix/…` link, and back (checked like a file). */
+  lmixLink: (mix: Lmix) => invoke<string>('lmix_link', { mix }),
+  lmixFromLink: (link: string) => invoke<Lmix>('lmix_from_link', { link }),
   radioSearch: (query: string) => invoke<RadioStation[]>('radio_search', { query }),
   radioKept: () => invoke<RadioStation[]>('radio_kept'),
   radioKeep: (station: RadioStation, keep: boolean) => invoke<RadioStation[]>('radio_keep', { station, keep }),

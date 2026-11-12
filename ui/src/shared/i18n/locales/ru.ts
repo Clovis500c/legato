@@ -2345,6 +2345,8 @@ const ru: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Ваш сервер принимает только пароль, отправленный как есть (в шестнадцатеричной записи, это не шифрование). По https его прочитает только ваш сервер. Отправить так?',
   'Send my password as it is': 'Отправить пароль как есть',
   'Hide explicit songs': 'Скрывать песни с ненормативной лексикой',
+  'Copy this mix’s link': 'Копировать ссылку на этот микс',
+  'Remix link copied': 'Ссылка на ремикс скопирована',
   'A–B loop: start, end, clear': 'Цикл A–B: начало, конец, сброс',
   'Up tempo': 'Быстрый темп',
   'Your songs at 120 BPM and above': 'Ваши песни от 120 BPM',

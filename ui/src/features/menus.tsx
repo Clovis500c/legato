@@ -934,6 +934,7 @@ export function editorMenu(hide: () => void): MenuEntry[] {
     { label: tr('Hear the changes'), checked: effects.on, onSelect: () => bypass(!effects.on) },
     { label: tr('Reset all'), icon: <ArrowCounterClockwise size={16} />, onSelect: reset },
     { label: tr('Share this mix as a file…'), icon: <ShareNetwork size={16} />, disabled: !player().now?.youtubeId, onSelect: () => void import('./editor/remixFile').then((m) => m.exportRemix()) },
+    { label: tr('Copy this mix’s link'), icon: <Link size={16} />, disabled: !player().now?.youtubeId, onSelect: () => void import('./editor/remixFile').then((m) => m.copyRemixLink()) },
     '-',
     { label: tr('Hide the Live Editor'), icon: <EyeSlash size={16} />, onSelect: hide },
   ]

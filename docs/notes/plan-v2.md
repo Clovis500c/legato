@@ -125,8 +125,10 @@ Where a line says "reading", the owner hasn't confirmed it.
       `Effects`) in `music_dsp::lmix` (64 KB, unknown fields refused, the settings clamped, tested with a fuzz loop);
       `lmix_read` / `lmix_write` in the shell; dropping one on the window plays the song and opens the editor on its settings
       (`features/editor/remixFile.ts`); Live Editor's menu has "Share this mix as a file…" (a YouTube song only). Left open:
-      the compact link, the Windows file type (double-click on a .lmix), the local-file form that carries audio (the owner's
-      answers first). Untried: a real drop, the editor's load race on a slow start (waits 5 s), the YouTube thumbnail as art.
+      the Windows file type (double-click on a .lmix), the local-file form that carries audio (the owner's answers first).
+      2026-11-12, the compact link: `legato://remix/<base64url of the settings that differ from neutral>` (about 280
+      characters), copied from the Live Editor's menu ("Copy this mix's link"), pasted anywhere or opened from the system, checked
+      like a file (`lmix::from_link`, fuzzed). Decided alone (2026-11-12): the link carries no audio and no new host. Untried: a real drop, the editor's load race on a slow start (waits 5 s), the YouTube thumbnail as art.
 - [ ] `M` Optional sign-in with Discord, for a profile (the owner will make a Discord bot anyway). Never required.
       First use: the share page shows who shared a playlist, their profile carried in the link so it can't be faked
       (the owner's word: encrypted in the link). Open before building: encryption alone doesn't stop a fake, a

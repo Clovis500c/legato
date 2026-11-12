@@ -1,5 +1,6 @@
 import { useStore } from '../../app/store'
 import { api } from '../../shared/api'
+import { isRemixLink } from '../editor/remixLink'
 import { isShareCode } from './shareCode'
 
 /**
@@ -11,7 +12,11 @@ export function startOpenedLinks(): () => void {
   const take = () =>
     void api
       .linkPending()
-      .then((text) => (text && isShareCode(text) ? useStore.setState({ incoming: text }) : undefined))
+      .then((text) => {
+        if (!text) return
+        if (isRemixLink(text)) void import('../editor/remixFile').then((m) => m.openRemixLink(text))
+        else if (isShareCode(text)) useStore.setState({ incoming: text })
+      })
       .catch(() => {})
   take()
   const off = api.onLink(take)

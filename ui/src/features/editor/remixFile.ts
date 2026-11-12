@@ -1,6 +1,6 @@
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
-import { api } from '../../shared/api'
+import { api, type Lmix } from '../../shared/api'
 import { saveFile } from '../../shared/files'
 import { tr } from '../../shared/i18n/i18n'
 import { remoteTrack, usePlayer } from '../player/store'
@@ -23,27 +23,45 @@ function editorOn(song: string): Promise<boolean> {
   })
 }
 
-/** A dropped remix file: its song plays with the Live Editor open on its settings. The file is checked by Rust. */
-export async function openRemix(path: string) {
+/** A remix (read from a file or a link, checked by Rust): its song plays with the Live Editor open on its settings. */
+async function playRemix(mix: Lmix) {
+  const song = remoteTrack({ title: mix.title || mix.name, artist: mix.artist || 'YouTube', album: null, durationMs: null, isrc: null, ids: { youtube: mix.video }, art: `https://i.ytimg.com/vi/${mix.video}/hqdefault.jpg`, musicness: null, explicit: false })
+  usePlayer.getState().playTracks([song], 0)
+  if (await editorOn(`yt:${mix.video}`)) applyPreset(mix.effects)
+  useSettings.getState().update({ editor: true })
+  usePlayer.getState().setFull(true)
+  useStore.getState().notify(tr('Remix “{name}” opened in the Live Editor', { name: mix.name }))
+}
+
+/** A dropped remix file. */
+export const openRemix = (path: string) => api.lmixRead(path).then(playRemix).catch(fail)
+
+/** A pasted or opened remix link. */
+export const openRemixLink = (link: string) => api.lmixFromLink(link).then(playRemix).catch(fail)
+
+/** The playing YouTube song with the settings now in the editor, as a link to copy. */
+export async function copyRemixLink() {
+  const mix = nowRemix()
+  if (!mix) return useStore.getState().notify(tr('Only a song playing from YouTube can be shared as a remix file'))
   try {
-    const mix = await api.lmixRead(path)
-    const song = remoteTrack({ title: mix.title || mix.name, artist: mix.artist || 'YouTube', album: null, durationMs: null, isrc: null, ids: { youtube: mix.video }, art: `https://i.ytimg.com/vi/${mix.video}/hqdefault.jpg`, musicness: null, explicit: false })
-    usePlayer.getState().playTracks([song], 0)
-    if (await editorOn(`yt:${mix.video}`)) applyPreset(mix.effects)
-    useSettings.getState().update({ editor: true })
-    usePlayer.getState().setFull(true)
-    useStore.getState().notify(tr('Remix “{name}” opened in the Live Editor', { name: mix.name }))
+    await navigator.clipboard.writeText(await api.lmixLink(mix))
+    useStore.getState().notify(tr('Remix link copied'))
   } catch (e) {
     fail(e)
   }
 }
 
+/** The song playing from YouTube with the editor's settings, or null. */
+function nowRemix(): Lmix | null {
+  const { now } = usePlayer.getState()
+  return now?.youtubeId ? { name: now.title || 'Remix', video: now.youtubeId, title: now.title, artist: now.artist, effects: useEditor.getState().effects } : null
+}
+
 /** The playing YouTube song with the settings now in the editor, as a file to share. */
 export async function exportRemix() {
-  const { now } = usePlayer.getState()
-  if (!now?.youtubeId) return useStore.getState().notify(tr('Only a song playing from YouTube can be shared as a remix file'))
-  const name = (now.title || 'Remix').replace(/[\\/:*?"<>|]/g, ' ').trim() || 'Remix'
-  const mix = { name: now.title || 'Remix', video: now.youtubeId, title: now.title, artist: now.artist, effects: useEditor.getState().effects }
+  const mix = nowRemix()
+  if (!mix) return useStore.getState().notify(tr('Only a song playing from YouTube can be shared as a remix file'))
+  const name = mix.name.replace(/[\\/:*?"<>|]/g, ' ').trim() || 'Remix'
   try {
     await saveFile({ defaultPath: `${name}.lmix`, filters: [{ name: tr('Legato remix'), extensions: ['lmix'] }] }, (path) => api.lmixWrite(path, mix))
   } catch (e) {

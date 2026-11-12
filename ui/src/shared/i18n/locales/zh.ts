@@ -2345,6 +2345,8 @@ const zh: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': '你的服务器只接受原样发送的密码（十六进制编码，并非加密）。通过 https 只有你的服务器能读到。要这样发送吗？',
   'Send my password as it is': '原样发送我的密码',
   'Hide explicit songs': '隐藏含露骨内容的歌曲',
+  'Copy this mix’s link': '复制此混音的链接',
+  'Remix link copied': '已复制混音链接',
   'A–B loop: start, end, clear': 'A–B 循环：起点、终点、清除',
   'Up tempo': '快节奏',
   'Your songs at 120 BPM and above': '你的 120 BPM 及以上的歌曲',
