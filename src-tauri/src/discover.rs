@@ -46,6 +46,12 @@ pub async fn artist_links(name: String) -> Result<Vec<music_connectors::musicbra
     MusicBrainz::default().artist_links(&name).await.map_err(|e| e.to_string())
 }
 
+/// An artist's page › Short bio (a click, after the links): the opening paragraph of the Wikipedia page MusicBrainz named.
+#[tauri::command]
+pub async fn artist_bio(page: String) -> Result<music_connectors::wikipedia::Bio, String> {
+    music_connectors::wikipedia::Wikipedia::default().bio(&page).await.map_err(|e| e.to_string())
+}
+
 #[tauri::command]
 pub async fn new_releases(state: State<'_, AppState>) -> Result<Vec<Release>, String> {
     let now = unix_now();

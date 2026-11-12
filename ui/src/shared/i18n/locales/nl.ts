@@ -2345,6 +2345,8 @@ const nl: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Je server accepteert alleen het wachtwoord zoals het is (hexadecimaal gecodeerd, dat is geen versleuteling). Via https kan alleen je server het lezen. Zo versturen?',
   'Send my password as it is': 'Mijn wachtwoord verzenden zoals het is',
   'Hide explicit songs': 'Expliciete nummers verbergen',
+  'Short bio': 'Korte biografie',
+  'From Wikipedia, under CC BY-SA': 'Van Wikipedia, onder CC BY-SA',
   'Added “{title}” to your library too': '“{title}” ook aan je bibliotheek toegevoegd',
   'Official website': 'Officiële website',
   'Social network': 'Sociaal netwerk',

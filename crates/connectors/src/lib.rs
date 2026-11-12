@@ -26,6 +26,7 @@ pub mod spotify_page;
 pub mod subsonic;
 pub mod sponsorblock;
 pub mod youtube;
+pub mod wikipedia;
 pub mod ytmusic;
 pub mod ytweb;
 

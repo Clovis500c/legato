@@ -2,7 +2,7 @@ import { ArrowSquareOut } from '@phosphor-icons/react'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { useState } from 'react'
 import { useStore } from '../../app/store'
-import { api } from '../../shared/api'
+import { api, type Bio } from '../../shared/api'
 import { artistName } from '../../shared/artistName'
 import { msg, tr } from '../../shared/i18n/i18n'
 import { Button } from '../../shared/ui/Button'
@@ -21,7 +21,11 @@ export function ArtistLinks({ artist }: { artist: string }) {
   const [found, setFound] = useState<Found | null>(null)
   // The artist being looked up: an answer lands with its own artist, never on the page moved to since.
   const [asking, setAsking] = useState<string | null>(null)
+  // A bio lands with its artist too.
+  const [bioOf, setBioOf] = useState<{ artist: string; bio: Bio } | null>(null)
   const links = linksFor(found, artist)
+  const wiki = links?.find((l) => l.kind === 'wikipedia')
+  const bio = bioOf?.artist === artist ? bioOf.bio : null
   const busy = asking === artist
   const find = () => {
     const asked = artist
@@ -29,6 +33,15 @@ export function ArtistLinks({ artist }: { artist: string }) {
     api
       .artistLinks(asked)
       .then((l) => setFound({ artist: asked, links: l }), (e) => useStore.getState().notify(String(e), { kind: 'error' }))
+      .finally(() => setAsking((a) => (a === asked ? null : a)))
+  }
+  const readBio = () => {
+    if (!wiki) return
+    const asked = artist
+    setAsking(asked)
+    api
+      .artistBio(wiki.url)
+      .then((b) => setBioOf({ artist: asked, bio: b }), (e) => useStore.getState().notify(String(e), { kind: 'error' }))
       .finally(() => setAsking((a) => (a === asked ? null : a)))
   }
   return (
@@ -48,7 +61,22 @@ export function ArtistLinks({ artist }: { artist: string }) {
               </Button>
             </li>
           ))}
+          {wiki && !bio && (
+            <li>
+              <Button variant="ghost" disabled={busy} onClick={readBio}>
+                {busy ? tr('Looking…') : tr('Short bio')}
+              </Button>
+            </li>
+          )}
         </ul>
+      )}
+      {bio && (
+        <div className="mt-3 max-w-2xl text-sm text-ink-2">
+          <p>{bio.text}</p>
+          <button type="button" onClick={() => void openUrl(bio.page).catch(() => {})} className="mt-1 text-xs underline-offset-2 hover:underline">
+            {tr('From Wikipedia, under CC BY-SA')}
+          </button>
+        </div>
       )}
     </Section>
   )

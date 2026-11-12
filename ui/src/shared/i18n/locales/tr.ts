@@ -2345,6 +2345,8 @@ const tr: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Sunucunuz yalnızca olduğu gibi gönderilen parolayı kabul ediyor (onaltılık kodlanır, bu şifreleme değildir). https üzerinden yalnızca sunucunuz okuyabilir. Bu şekilde gönderilsin mi?',
   'Send my password as it is': 'Parolamı olduğu gibi gönder',
   'Hide explicit songs': 'Müstehcen şarkıları gizle',
+  'Short bio': 'Kısa biyografi',
+  'From Wikipedia, under CC BY-SA': 'Vikipedi’den, CC BY-SA ile',
   'Added “{title}” to your library too': '“{title}” kitaplığına da eklendi',
   'Official website': 'Resmî web sitesi',
   'Social network': 'Sosyal ağ',
