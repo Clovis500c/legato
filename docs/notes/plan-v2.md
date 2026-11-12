@@ -670,10 +670,14 @@ Most useful first; the tag is the effort.
 - [x] `S` Trim CLAUDE.md to rules + pointers (structure details move to `docs/architecture.md`): cheaper sessions. 2026-11-11: only the Layout section had descriptive text; its crate one-liners moved to `docs/architecture.md` › Layout details, every rule line unchanged (the diff removes lines of Layout only). A small saving (about 10 lines): the other sections are rules. Decided alone (2026-11-11): the per-crate rules (SCHEMA_VERSION, plugins' limits, Android's) stay in CLAUDE.md rather than becoming pointers.
 - [ ] `M` Split `src-tauri/src/lib.rs` by feature (library, player, accounts, sources) like `detector.rs` / `editor.rs`;
       same for `crates/core/src/library.rs` (queries per table).
-- [ ] `M` Typed `invoke` wrappers: the types are generated, the wrappers in `api.ts` stay by hand (no `tauri-specta`), so a
+- [x] `M` Typed `invoke` wrappers: the types are generated, the wrappers in `api.ts` stay by hand (no `tauri-specta`), so a
       command's name and arguments are still checked by eye.
       2026-11-11: the names are checked (`api.test.ts` reads `generate_handler!`: a wrapper calling a command the
       shell doesn't have fails). Left: the arguments' names and types.
+      2026-11-12: the arguments' names too: `api.test.ts` reads every `#[tauri::command]` of `src-tauri/src` and fails when a wrapper
+      passes a key the command doesn't take or leaves out one it requires (a non-`Option` parameter, snake_case read as
+      camelCase); a typo made on purpose fails it, and today's wrappers pass. Left: the argument types (the generated ones are
+      only checked by `tsc` on the result side).
 - [ ] `M` Diagnostics: a crash that ends the process without a Rust panic (a native fault, a kill) leaves no line; Windows'
       event log and minidumps are not read.
 - [ ] `S` `graphify hook install` (the user's go) so the graph stays fresh without asking; then drop the `.gitattributes`
