@@ -31,6 +31,8 @@ const load = {
   importScreen: () => import('../features/add/ImportScreen').then((m) => ({ default: m.ImportScreen })),
   connectWizard: () => import('../features/sources/ConnectWizard').then((m) => ({ default: m.ConnectWizard })),
   duplicates: () => import('../features/library/DuplicatesDialog').then((m) => ({ default: m.DuplicatesDialog })),
+  columnBrowser: () => import('../features/library/ColumnBrowser').then((m) => ({ default: m.ColumnBrowser })),
+  sharePanel: () => import('../features/share/SharePanel').then((m) => ({ default: m.SharePanel })),
   credits: () => import('../features/library/CreditsDialog').then((m) => ({ default: m.CreditsDialog })),
   editInfo: () => import('../features/library/EditInfo').then((m) => ({ default: m.EditInfo })),
 }
@@ -87,6 +89,8 @@ export const ConnectWizard = page(load.connectWizard)
 export const DuplicatesDialog = page(load.duplicates)
 export const EditInfo = page(load.editInfo)
 export const CreditsDialog = page(load.credits)
+export const ColumnBrowser = page(load.columnBrowser)
+export const SharePanel = page(load.sharePanel)
 
 /** Starts Home's download now (before the library is in), the likeliest first screen. */
 export const preloadHome = () => void load.home()

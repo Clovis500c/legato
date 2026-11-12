@@ -12,8 +12,7 @@ import { Cover } from '../../shared/ui/Cover'
 import { groupAlbums, groupArtists } from '../library/filter'
 import { PlaylistCover } from '../library/PlaylistCover'
 import { usePlayer } from '../player/store'
-import { commandList } from './commandList'
-import { matchCommands } from './commands'
+import { matchCommands, type Command } from './commands'
 import { clearRecent, forgetRecent, useRecent } from './recent'
 import { libraryMatches } from './results'
 import { phoneApp } from '../../shared/platform'
@@ -122,7 +121,12 @@ export function SearchBar({ children }: { children?: ReactNode }) {
   const groups = useMemo(() => (wantLibrary ? { artists: groupArtists(tracks), albums: groupAlbums(tracks) } : null), [tracks, wantLibrary])
   const lib = useMemo(() => (groups ? libraryMatches(tracks, playlists, text, groups, stats) : null), [tracks, playlists, text, groups, stats])
   // Pages, actions and settings: made as the list opens (the keys bound and the language then).
-  const commands = useMemo(() => (wantLibrary ? commandList() : []), [wantLibrary])
+  // The list (and the settings' index it carries) loads the first time it is wanted, out of the launch.
+  const [makeList, setMakeList] = useState<(() => Command[]) | null>(null)
+  useEffect(() => {
+    if (wantLibrary && !makeList) void import('./commandList').then((m) => setMakeList(() => m.commandList))
+  }, [wantLibrary, makeList])
+  const commands = useMemo(() => (wantLibrary && makeList ? makeList() : []), [wantLibrary, makeList])
   const doable = useMemo(() => matchCommands(commands, text), [commands, text])
 
   const sections: { label?: ReactNode; items: Item[] }[] = []

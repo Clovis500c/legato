@@ -1,26 +1,16 @@
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useId, useMemo, useRef } from 'react'
-import { create } from 'zustand'
-import { useSettings } from '../../app/settings'
 import type { LibraryTrack } from '../../shared/api'
 import { artistName } from '../../shared/artistName'
 import { fold, formatCount } from '../../shared/format'
 import { tr, trn } from '../../shared/i18n/i18n'
-import { onMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
+import { onMenu } from '../../shared/ui/ContextMenu'
 import { dragSource } from '../../shared/ui/drag'
 import { tracksMenu } from '../menus'
-import { pickIn, type Browsed, type How, type Keyed, type Pane as Column, type Picks } from './browse'
+import { pickIn, type Browsed, type How, type Keyed, type Pane as Column } from './browse'
+import { useBrowse } from './browserPicks'
 
 const ROW = 28
-
-/** What the panes picked, kept while the app runs: another page and back finds it. */
-export const useBrowse = create<Picks>(() => ({ genres: [], artists: [], albums: [] }))
-
-/** Songs' Display options: the column browser on or off. */
-export function browserEntry(): MenuEntry {
-  const { settings, update } = useSettings.getState()
-  return { label: tr('Column browser'), checked: settings.columnBrowser, onSelect: () => update({ columnBrowser: !settings.columnBrowser }) }
-}
 
 /**
  * Songs' column browser: genres when songs have one, artists, then their albums; the list below shows what's picked. Like the list: Ctrl / Shift

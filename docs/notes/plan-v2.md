@@ -211,6 +211,11 @@ Where a line says "reading", the owner hasn't confirmed it.
       off Windows. 2026-11-12: the test builds its absolute path per system (`cfg!(windows)`); the rule is unchanged. Other `C:\`
       paths in tests only feed string logic (`is_audio`, `path_key`), checked passing on macOS. Not run on macOS here: the log's only
       failure; a later one past `-p legato` would show in the next run.
+      (2) Windows: the launch JS was 344 kB gzip against the 340 budget. 2026-11-12: made lazy what a launch does not need: the settings
+      index behind the search bar's command list (loaded the first time the list is wanted), the column browser's panes and the share
+      panel (`pages.ts`; the browser's state and menu entry stay in `browserPicks.ts`). Measured with `pnpm vite build` and
+      `node scripts/budget.mjs`: 344 → 336 kB gzip (1066 → 1041 kB raw); `BUDGET` unchanged. Not seen on a screen: the first search
+      list now waits one chunk load.
 
 ## Best in class (user's ask 2026-10-30)
 
