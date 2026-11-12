@@ -2856,6 +2856,7 @@ dependencies = [
  "libc",
  "music-connectors",
  "music-core",
+ "music-dsp",
  "music-player",
  "music-plugins",
  "music-shield",
