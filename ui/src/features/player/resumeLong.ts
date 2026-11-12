@@ -44,7 +44,8 @@ export function startResume(): () => void {
   }
   const off = usePlayer.subscribe((s, prev) => {
     const key = mine()
-    if (songKey(s.now) !== songKey(prev.now)) pending = key
+    // A new start (a new `now`, set once the engine has the file), the same song played again included.
+    if (s.now !== prev.now) pending = key
     else if (prev.playing && !s.playing) {
       // Paused: where it stopped (`keep` wants it playing, so the position is read here).
       if (key && s.durationMs) save(withPoint(load(), key, s.positionMs, s.durationMs, Date.now()))
