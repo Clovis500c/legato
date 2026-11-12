@@ -451,9 +451,9 @@ mod tests {
             }
         }
         let f = read(&x, &x, 48_000);
-        for i in 34..BANDS {
+        for (i, band) in f.bands[0].iter().enumerate().take(BANDS).skip(34) {
             let want = if i % 2 == 0 { -6.02 } else { -26.02 };
-            assert!((f.bands[0][i] - want).abs() < 0.5, "band {i}: {} vs {want}", f.bands[0][i]);
+            assert!((band - want).abs() < 0.5, "band {i}: {band} vs {want}");
         }
     }
 
