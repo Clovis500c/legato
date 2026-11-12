@@ -476,8 +476,11 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - [ ] `M` Credits and artist pages: who wrote / produced (MusicBrainz), a short bio (Wikipedia), links out.
       2026-11-12, the links out only: an artist's page has "Find links on MusicBrainz" (a click, two requests a second apart, the
       name only; `MusicBrainz::artist_links`: the artist by exact name with a score of 90, then its url relations, http(s) of 8
-      kinds, 12 at most), opened in the browser; the website's "Artist links" privacy row. Left: who wrote / produced (recording
-      relations: a request per song). Untried against the real MusicBrainz: the answers' shape is from their docs.
+      kinds, 12 at most), opened in the browser; the website's "Artist links" privacy row. Untried against the real MusicBrainz: the answers' shape is from their docs. 2026-11-12, who wrote / produced: a song's
+      "Credits…" (any song: library or not) opens a dialog that asks MusicBrainz as it opens (the recording by title, artist and length,
+      then its relations: two requests; producer, composer, lyricist, writer, arranger, mix, engineer, mastering, conductor,
+      voices and instruments, 40 at most, grouped by role); the website's "Song credits" row. Decided alone (2026-11-12): opening the
+      dialog is the click, so no request leaves before it.
       2026-11-12, the bio: once the links are shown and one is a Wikipedia page, "Short bio" (a click) asks that page for its
       opening paragraph (`wikipedia.rs`, one new host family: the article's own `xx.wikipedia.org`, address checked first), shown with
       "From Wikipedia, under CC BY-SA" linking to the article; the website's "Artist links" row says so. Untried against the real

@@ -52,6 +52,12 @@ pub async fn artist_bio(page: String) -> Result<music_connectors::wikipedia::Bio
     music_connectors::wikipedia::Wikipedia::default().bio(&page).await.map_err(|e| e.to_string())
 }
 
+/// Right-click › Credits… (opening it is the click, two requests): who wrote, produced and played on the song.
+#[tauri::command]
+pub async fn song_credits(title: String, artist: String, duration_ms: Option<u64>) -> Result<Vec<music_connectors::musicbrainz::SongCredit>, String> {
+    MusicBrainz::default().song_credits(&title, &artist, duration_ms).await.map_err(|e| e.to_string())
+}
+
 #[tauri::command]
 pub async fn new_releases(state: State<'_, AppState>) -> Result<Vec<Release>, String> {
     let now = unix_now();

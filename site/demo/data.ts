@@ -225,6 +225,7 @@ const ANSWERS: Record<string, (args: Record<string, unknown>) => unknown> = {
   jump_pending: () => null,
   radio_kept: () => [],
   artist_links: () => [],
+  song_credits: () => [],
   artist_bio: () => Promise.reject(new Error('No bio in the demo')),
   radio_search: () => [],
   radio_keep: () => [],

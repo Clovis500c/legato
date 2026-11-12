@@ -27,6 +27,7 @@ import {
   ImageSquare,
   Gear,
   Link,
+  Users,
   ListBullets,
   ListPlus,
   MagnifyingGlass,
@@ -88,7 +89,7 @@ import { isStation } from './radio/station'
 import { clearLoop, markLoop, useLoop } from './player/abLoop'
 import { addToPlaylist, markMusic, markNotExplicit, removeFromPlaylist, removePositions, removeTrackFromPlaylist, songs } from './library/edits'
 import { ownLiked, youtubeLiked } from './library/likedMusic'
-import { editInfo, findDuplicates } from './library/dialogs'
+import { editInfo, findDuplicates, showCredits } from './library/dialogs'
 import { repeatedRows } from './library/duplicates'
 import { PlaylistCover as PlaylistIcon } from './library/PlaylistCover'
 import { primaryArtist } from './library/filter'
@@ -524,6 +525,7 @@ export function trackMenu(t: LibraryTrack, ctx: { list?: LibraryTrack[]; index?:
     { label: tr('Copy title and artist'), icon: <Copy size={16} />, onSelect: () => copy(`${t.artist} – ${t.title}`, tr('Title and artist copied')) },
     saveCoverItem(t),
     ...pages(t).map((p) => ({ label: tr('Open in {service}', { service: p.label }), icon: <ArrowSquareOut size={16} />, onSelect: () => openUrl(p.url).catch(fail) })),
+    { label: tr('Credits…'), icon: <Users size={16} />, onSelect: () => showCredits(t) },
     t.ids.local && { label: tr('Edit song info…'), icon: <PencilSimple size={16} />, onSelect: () => editInfo([t]) },
     t.ids.local && { label: tr('Show in folder'), icon: <FolderOpen size={16} />, onSelect: () => revealItemInDir(t.ids.local!).catch(fail) },
     list.length > 1 && {

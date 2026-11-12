@@ -31,6 +31,7 @@ const load = {
   importScreen: () => import('../features/add/ImportScreen').then((m) => ({ default: m.ImportScreen })),
   connectWizard: () => import('../features/sources/ConnectWizard').then((m) => ({ default: m.ConnectWizard })),
   duplicates: () => import('../features/library/DuplicatesDialog').then((m) => ({ default: m.DuplicatesDialog })),
+  credits: () => import('../features/library/CreditsDialog').then((m) => ({ default: m.CreditsDialog })),
   editInfo: () => import('../features/library/EditInfo').then((m) => ({ default: m.EditInfo })),
 }
 
@@ -85,6 +86,7 @@ export const ImportScreen = page(load.importScreen)
 export const ConnectWizard = page(load.connectWizard)
 export const DuplicatesDialog = page(load.duplicates)
 export const EditInfo = page(load.editInfo)
+export const CreditsDialog = page(load.credits)
 
 /** Starts Home's download now (before the library is in), the likeliest first screen. */
 export const preloadHome = () => void load.home()

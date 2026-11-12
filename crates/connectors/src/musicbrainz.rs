@@ -306,6 +306,18 @@ impl MusicBrainz {
         pick_links(&self.get(url).await?)
     }
 
+    /// Two requests (the recording by title and artist, then its relations): who wrote, produced and played on a song.
+    /// Empty when no recording matches well.
+    pub async fn song_credits(&self, title: &str, artist: &str, duration_ms: Option<u64>) -> Result<Vec<SongCredit>> {
+        if title.trim().is_empty() || artist.trim().is_empty() {
+            bail!("A title and an artist are needed");
+        }
+        let url = url::Url::parse_with_params(&format!("{}/recording/", self.api), [("query", recording_query(title, artist).as_str()), ("fmt", "json"), ("limit", "5")])?;
+        let Some(id) = pick_recording(&self.get(url).await?, duration_ms)? else { return Ok(Vec::new()) };
+        let url = url::Url::parse_with_params(&format!("{}/recording/{id}", self.api), [("inc", "artist-rels work-rels work-level-rels"), ("fmt", "json")])?;
+        pick_credits(&self.get(url).await?)
+    }
+
     async fn get(&self, url: url::Url) -> Result<String> {
         pace(self.gap).await;
         let r = self.http.get(url).header(reqwest::header::USER_AGENT, AGENT).timeout(crate::linklist::REQUEST_TIMEOUT).send().await?;
@@ -317,6 +329,96 @@ impl MusicBrainz {
         }
         Ok(r.text().await?)
     }
+}
+
+/// One person's part in a song.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ts_rs::TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, rename = "SongCredit")]
+pub struct SongCredit {
+    /// "producer", "composer", "lyricist", "writer", "arranger", "mix", "engineer", "mastering", "conductor", an
+    /// instrument, "vocal"…
+    pub role: String,
+    pub name: String,
+}
+
+/// Roles shown, in the order shown (MusicBrainz's relation types).
+const CREDIT_ROLES: [&str; 12] = ["producer", "composer", "lyricist", "writer", "arranger", "mix", "engineer", "mastering", "conductor", "vocal", "instrument", "performer"];
+const MAX_CREDITS: usize = 40;
+
+/// The id of the first recording that scored `MIN_SCORE` and, when both lengths are known, is within 10 s of the song's.
+fn pick_recording(body: &str, duration_ms: Option<u64>) -> Result<Option<String>> {
+    #[derive(Deserialize)]
+    struct R {
+        id: String,
+        score: serde_json::Value,
+        length: Option<u64>,
+    }
+    #[derive(Deserialize)]
+    struct All {
+        #[serde(default)]
+        recordings: Vec<R>,
+    }
+    Ok(serde_json::from_str::<All>(body)?
+        .recordings
+        .into_iter()
+        .filter(|r| r.score.as_u64().or_else(|| r.score.as_str().and_then(|s| s.parse().ok())).is_some_and(|s| s >= u64::from(MIN_SCORE)))
+        .filter(|r| match (r.length, duration_ms) {
+            (Some(a), Some(b)) => a.abs_diff(b) <= 10_000,
+            _ => true,
+        })
+        .filter(|r| r.id.len() == 36 && r.id.bytes().all(|b| b.is_ascii_hexdigit() || b == b'-'))
+        .map(|r| r.id)
+        .next())
+}
+
+/// The credits of a recording: its own artist relations (producer, mix, instruments…) and its work's (composer, lyricist,
+/// writer), each person once per role, in the order of `CREDIT_ROLES`.
+fn pick_credits(body: &str) -> Result<Vec<SongCredit>> {
+    #[derive(Deserialize)]
+    struct Named {
+        name: String,
+    }
+    #[derive(Deserialize)]
+    struct Rel {
+        #[serde(rename = "type", default)]
+        kind: String,
+        artist: Option<Named>,
+        work: Option<Work>,
+        #[serde(default)]
+        attributes: Vec<String>,
+    }
+    #[derive(Deserialize)]
+    struct Work {
+        #[serde(default)]
+        relations: Vec<Rel>,
+    }
+    #[derive(Deserialize)]
+    struct Rec {
+        #[serde(default)]
+        relations: Vec<Rel>,
+    }
+    let rec: Rec = serde_json::from_str(body)?;
+    let mut out: Vec<SongCredit> = Vec::new();
+    let mut add = |r: &Rel| {
+        let Some(a) = &r.artist else { return };
+        // An instrument or a voice is named by what it is ("guitar", "lead vocals"), not by the relation.
+        let role = if matches!(r.kind.as_str(), "instrument" | "vocal") { r.attributes.first().cloned().unwrap_or_else(|| r.kind.clone()) } else { r.kind.clone() };
+        let name = a.name.trim();
+        let ok = CREDIT_ROLES.contains(&r.kind.as_str()) && !name.is_empty() && name.chars().count() <= 200 && role.chars().count() <= 60 && !out.iter().any(|c| c.role == role && c.name == name);
+        if ok {
+            out.push(SongCredit { role, name: name.to_string() });
+        }
+    };
+    for r in &rec.relations {
+        add(r);
+        if let Some(w) = &r.work {
+            w.relations.iter().for_each(&mut add);
+        }
+    }
+    out.sort_by_key(|c| CREDIT_ROLES.iter().position(|k| *k == c.role).unwrap_or(CREDIT_ROLES.len()));
+    out.truncate(MAX_CREDITS);
+    Ok(out)
 }
 
 /// A link of an artist's page on MusicBrainz, to open in the browser.
@@ -535,5 +637,35 @@ mod tests {
         s.mock("GET", "/other/artist/").match_query(mockito::Matcher::Any).with_status(503).create_async().await;
         let busy = MusicBrainz { gap: Duration::ZERO, ..MusicBrainz::with_urls(&format!("{}/other", s.url())) };
         assert!(busy.artist_links("x").await.is_err());
+    }
+
+    #[test]
+    fn credits_come_from_the_recording_and_its_work_each_person_once_per_role() {
+        let search = r#"{"recordings":[{"id":"11111111-2222-3333-4444-555555555555","score":"60","length":200000},{"id":"22222222-2222-3333-4444-555555555555","score":100,"length":420000},{"id":"33333333-2222-3333-4444-555555555555","score":98,"length":201500}]}"#;
+        assert_eq!(pick_recording(search, Some(200_000)).unwrap().as_deref(), Some("33333333-2222-3333-4444-555555555555"));
+        assert_eq!(pick_recording(search, None).unwrap().as_deref(), Some("22222222-2222-3333-4444-555555555555"));
+        assert_eq!(pick_recording(r#"{"recordings":[]}"#, None).unwrap(), None);
+        let rec = r#"{"relations":[
+          {"type":"producer","artist":{"name":"Vincent Belorgey"}},
+          {"type":"instrument","attributes":["guitar"],"artist":{"name":"A Player"}},
+          {"type":"producer","artist":{"name":"Vincent Belorgey"}},
+          {"type":"remixer","artist":{"name":"Someone"}},
+          {"type":"performance","work":{"relations":[{"type":"composer","artist":{"name":"Guillaume Brière"}},{"type":"lyricist","artist":{"name":"Lovefoxxx"}}]}},
+          {"type":"url","url":{"resource":"https://x.example"}}]}"#;
+        let got: Vec<(String, String)> = pick_credits(rec).unwrap().into_iter().map(|c| (c.role, c.name)).collect();
+        assert_eq!(got, [("producer", "Vincent Belorgey"), ("composer", "Guillaume Brière"), ("lyricist", "Lovefoxxx"), ("guitar", "A Player")].map(|(a, b)| (a.to_string(), b.to_string())));
+        assert!(pick_credits("nonsense").is_err());
+    }
+
+    #[tokio::test]
+    async fn song_credits_asks_the_recording_then_its_relations() {
+        let mut s = mockito::Server::new_async().await;
+        let search = s.mock("GET", "/recording/").match_query(mockito::Matcher::UrlEncoded("fmt".into(), "json".into())).with_body(r#"{"recordings":[{"id":"11111111-2222-3333-4444-555555555555","score":100}]}"#).create_async().await;
+        let rels = s.mock("GET", "/recording/11111111-2222-3333-4444-555555555555").match_query(mockito::Matcher::UrlEncoded("inc".into(), "artist-rels work-rels work-level-rels".into())).with_body(r#"{"relations":[{"type":"producer","artist":{"name":"P"}}]}"#).create_async().await;
+        let mb = MusicBrainz { gap: Duration::ZERO, ..MusicBrainz::with_urls(&s.url()) };
+        assert_eq!(mb.song_credits("Nightcall", "Kavinsky", None).await.unwrap(), [SongCredit { role: "producer".into(), name: "P".into() }]);
+        search.assert_async().await;
+        rels.assert_async().await;
+        assert!(mb.song_credits(" ", "Kavinsky", None).await.is_err());
     }
 }

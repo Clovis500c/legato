@@ -40,7 +40,7 @@ import { useOnline } from '../shared/online'
 import { usePhone } from '../shared/phone'
 import { region } from '../shared/format'
 import { ContextMenuHost, onMenu } from '../shared/ui/ContextMenu'
-import { DuplicatesHost, EditInfoHost } from '../features/library/dialogs'
+import { CreditsHost, DuplicatesHost, EditInfoHost } from '../features/library/dialogs'
 import { linkKind, shouldWelcome } from '../features/welcome/firstRun'
 import { isRemixLink } from '../features/editor/remixLink'
 import { isShareCode } from '../features/share/shareCode'
@@ -414,6 +414,7 @@ export function App() {
       <Toasts />
       <Asker />
       <EditInfoHost />
+      <CreditsHost />
       <ContextMenuHost fallback={appMenu} />
       <DuplicatesHost />
       {incoming && (

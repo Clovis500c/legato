@@ -1,7 +1,7 @@
 import { Copy } from '@phosphor-icons/react'
 import { useMemo } from 'react'
 import { create } from 'zustand'
-import { DuplicatesDialog, EditInfo } from '../../app/pages'
+import { CreditsDialog, DuplicatesDialog, EditInfo } from '../../app/pages'
 import { PageBoundary } from '../../app/PageBoundary'
 import { useStore } from '../../app/store'
 import type { LibraryTrack } from '../../shared/api'
@@ -46,6 +46,23 @@ export function DuplicatesButton() {
     <button type="button" onClick={() => findDuplicates()} className="flex h-8 items-center gap-1.5 rounded-full border border-line px-3 text-xs font-semibold text-ink-2 hover:bg-raised hover:text-ink">
       <Copy size={14} /> {trn(count, '{n} duplicate', '{n} duplicates')}
     </button>
+  )
+}
+
+const useCredits = create<{ track: LibraryTrack | null }>(() => ({ track: null }))
+
+/** Right-click › Credits…: who wrote, produced and played on a song (MusicBrainz, asked as it opens). */
+export const showCredits = (track: LibraryTrack) => useCredits.setState({ track })
+
+/** Mounted once in App. */
+export function CreditsHost() {
+  const track = useCredits((s) => s.track)
+  return (
+    track && (
+      <PageBoundary fallback={null}>
+        <CreditsDialog track={track} onClose={() => useCredits.setState({ track: null })} />
+      </PageBoundary>
+    )
   )
 }
 
