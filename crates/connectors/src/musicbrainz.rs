@@ -16,6 +16,7 @@
 
 use anyhow::{Result, bail};
 use serde::{Deserialize, Serialize};
+use std::time::Duration;
 
 pub const API: &str = "https://musicbrainz.org/ws/2";
 const AGENT: &str = concat!("Legato/", env!("CARGO_PKG_VERSION"), " ( https://github.com/Clovis500c/legato )");
@@ -235,6 +236,8 @@ pub fn pick(body: &str, artist: &str, since: &str) -> Result<Vec<Release>> {
 pub struct MusicBrainz {
     api: String,
     http: reqwest::Client,
+    /// Between two requests (their rule: one a second).
+    gap: Duration,
 }
 
 impl Default for MusicBrainz {
@@ -245,7 +248,7 @@ impl Default for MusicBrainz {
 
 impl MusicBrainz {
     pub fn with_urls(api: &str) -> Self {
-        Self { api: api.trim_end_matches('/').to_string(), http: crate::http() }
+        Self { api: api.trim_end_matches('/').to_string(), http: crate::http(), gap: Duration::from_millis(1_100) }
     }
 
     /// One request. A 503 is MusicBrainz's "too fast": the caller stops asking.
@@ -279,6 +282,97 @@ impl MusicBrainz {
         pick_releases(&r.text().await?, album, duration_ms)
     }
 
+    /// Two requests, a second apart (their rule): the artist by name, then its links. Empty when no artist has that name.
+    pub async fn artist_links(&self, name: &str) -> Result<Vec<ArtistLink>> {
+        if name.trim().is_empty() || name.chars().count() > 200 {
+            bail!("An artist's name is needed");
+        }
+        let url = url::Url::parse_with_params(&format!("{}/artist/", self.api), [("query", format!("artist:\"{}\"", quoted(name)).as_str()), ("fmt", "json"), ("limit", "5")])?;
+        let Some(id) = pick_artist(&self.get(url).await?, name)? else { return Ok(Vec::new()) };
+        tokio::time::sleep(self.gap).await;
+        let url = url::Url::parse_with_params(&format!("{}/artist/{id}", self.api), [("inc", "url-rels"), ("fmt", "json")])?;
+        pick_links(&self.get(url).await?)
+    }
+
+    async fn get(&self, url: url::Url) -> Result<String> {
+        let r = self.http.get(url).header(reqwest::header::USER_AGENT, AGENT).timeout(crate::linklist::REQUEST_TIMEOUT).send().await?;
+        if r.status() == reqwest::StatusCode::SERVICE_UNAVAILABLE || r.status() == reqwest::StatusCode::TOO_MANY_REQUESTS {
+            bail!("MusicBrainz is busy: try again later");
+        }
+        if !r.status().is_success() {
+            bail!("MusicBrainz answered {}", r.status().as_u16());
+        }
+        Ok(r.text().await?)
+    }
+}
+
+/// A link of an artist's page on MusicBrainz, to open in the browser.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ts_rs::TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, rename = "ArtistLink")]
+pub struct ArtistLink {
+    /// MusicBrainz's relation: "official homepage", "wikipedia", "bandcamp", "discogs"…
+    pub kind: String,
+    pub url: String,
+}
+
+/// Relations worth showing, in the order shown.
+const LINK_KINDS: [&str; 8] = ["official homepage", "wikipedia", "bandcamp", "discogs", "allmusic", "social network", "streaming", "youtube"];
+const MAX_LINKS: usize = 12;
+
+/// The id of the artist named `name` (exactly, any case) among a search's answers, best score first.
+fn pick_artist(body: &str, name: &str) -> Result<Option<String>> {
+    #[derive(Deserialize)]
+    struct A {
+        id: String,
+        name: String,
+        score: serde_json::Value,
+    }
+    #[derive(Deserialize)]
+    struct R {
+        #[serde(default)]
+        artists: Vec<A>,
+    }
+    let wanted = name.trim().to_lowercase();
+    Ok(serde_json::from_str::<R>(body)?
+        .artists
+        .into_iter()
+        .filter(|a| a.name.trim().to_lowercase() == wanted && a.score.as_u64().or_else(|| a.score.as_str().and_then(|s| s.parse().ok())).is_some_and(|s| s >= 90) && a.id.len() == 36 && a.id.bytes().all(|b| b.is_ascii_hexdigit() || b == b'-'))
+        .map(|a| a.id)
+        .next())
+}
+
+/// An artist's url relations kept: http(s) addresses of the kinds above, once each, at most `MAX_LINKS`.
+fn pick_links(body: &str) -> Result<Vec<ArtistLink>> {
+    #[derive(Deserialize)]
+    struct U {
+        resource: String,
+    }
+    #[derive(Deserialize)]
+    struct Rel {
+        #[serde(rename = "type", default)]
+        kind: String,
+        url: Option<U>,
+    }
+    #[derive(Deserialize)]
+    struct A {
+        #[serde(default)]
+        relations: Vec<Rel>,
+    }
+    let mut out: Vec<ArtistLink> = serde_json::from_str::<A>(body)?
+        .relations
+        .into_iter()
+        .filter_map(|r| {
+            let url = r.url?.resource;
+            let ok = (url.starts_with("https://") || url.starts_with("http://")) && url.len() <= 300 && !url.chars().any(|c| c.is_control() || c.is_whitespace());
+            (ok && LINK_KINDS.contains(&r.kind.as_str())).then_some(ArtistLink { kind: r.kind, url })
+        })
+        .collect();
+    out.sort_by_key(|l| LINK_KINDS.iter().position(|k| *k == l.kind));
+    let mut seen = std::collections::HashSet::new();
+    out.retain(|l| seen.insert(l.url.clone()));
+    out.truncate(MAX_LINKS);
+    Ok(out)
 }
 
 #[cfg(test)]
@@ -381,5 +475,41 @@ mod tests {
         assert!(mb.new_releases("A", "2026-01-01").await.unwrap_err().to_string().contains("404"));
         assert!(mb.new_releases("A", "last week").await.is_err());
         assert!(mb.new_releases(" ", "2026-01-01").await.is_err());
+    }
+
+    const SEARCH: &str = r#"{"artists":[{"id":"11111111-2222-3333-4444-555555555555","name":"Kavinsky","score":100},{"id":"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee","name":"Kavinsky Tribute","score":"95"},{"id":"bad","name":"kavinsky","score":100}]}"#;
+    const LINKS: &str = r#"{"relations":[
+      {"type":"discogs","url":{"resource":"https://www.discogs.com/artist/1"}},
+      {"type":"official homepage","url":{"resource":"https://kavinsky.example/"}},
+      {"type":"official homepage","url":{"resource":"https://kavinsky.example/"}},
+      {"type":"wikipedia","url":{"resource":"https://en.wikipedia.org/wiki/Kavinsky"}},
+      {"type":"lyrics","url":{"resource":"https://lyrics.example/k"}},
+      {"type":"bandcamp","url":{"resource":"javascript:alert(1)"}},
+      {"type":"social network","url":{"resource":"https://x.example/a b"}},
+      {"type":"streaming"}]}"#;
+
+    #[test]
+    fn the_artist_is_the_exact_name_with_a_good_score_and_links_are_filtered_and_ordered() {
+        assert_eq!(pick_artist(SEARCH, " KAVINSKY ").unwrap().as_deref(), Some("11111111-2222-3333-4444-555555555555"));
+        assert_eq!(pick_artist(SEARCH, "Nobody").unwrap(), None);
+        assert!(pick_artist("nonsense", "x").is_err());
+        let got = pick_links(LINKS).unwrap();
+        assert_eq!(got.iter().map(|l| l.kind.as_str()).collect::<Vec<_>>(), ["official homepage", "wikipedia", "discogs"]);
+        assert!(pick_links(r#"{"relations":[]}"#).unwrap().is_empty() && pick_links("nonsense").is_err());
+    }
+
+    #[tokio::test]
+    async fn artist_links_asks_twice_and_stops_when_the_name_is_unknown() {
+        let mut s = mockito::Server::new_async().await;
+        let search = s.mock("GET", "/artist/").match_query(mockito::Matcher::UrlEncoded("fmt".into(), "json".into())).match_header("user-agent", mockito::Matcher::Regex("^Legato/".into())).with_body(SEARCH).expect(2).create_async().await;
+        let lookup = s.mock("GET", "/artist/11111111-2222-3333-4444-555555555555").match_query(mockito::Matcher::UrlEncoded("inc".into(), "url-rels".into())).with_body(LINKS).expect(1).create_async().await;
+        let mb = MusicBrainz { gap: Duration::ZERO, ..MusicBrainz::with_urls(&s.url()) };
+        assert_eq!(mb.artist_links("Kavinsky").await.unwrap().len(), 3);
+        assert!(mb.artist_links("Nobody").await.unwrap().is_empty());
+        search.assert_async().await;
+        lookup.assert_async().await;
+        s.mock("GET", "/other/artist/").match_query(mockito::Matcher::Any).with_status(503).create_async().await;
+        let busy = MusicBrainz { gap: Duration::ZERO, ..MusicBrainz::with_urls(&format!("{}/other", s.url())) };
+        assert!(busy.artist_links("x").await.is_err());
     }
 }

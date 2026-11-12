@@ -224,6 +224,7 @@ const ANSWERS: Record<string, (args: Record<string, unknown>) => unknown> = {
   // Not started from the taskbar.
   jump_pending: () => null,
   radio_kept: () => [],
+  artist_links: () => [],
   radio_search: () => [],
   radio_keep: () => [],
   link_pending: () => null,

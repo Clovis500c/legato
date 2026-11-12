@@ -40,6 +40,12 @@ impl Drop for Round {
     }
 }
 
+/// An artist's page › Find links on MusicBrainz (one click, two requests): the artist's name goes there, nothing else.
+#[tauri::command]
+pub async fn artist_links(name: String) -> Result<Vec<music_connectors::musicbrainz::ArtistLink>, String> {
+    MusicBrainz::default().artist_links(&name).await.map_err(|e| e.to_string())
+}
+
 #[tauri::command]
 pub async fn new_releases(state: State<'_, AppState>) -> Result<Vec<Release>, String> {
     let now = unix_now();

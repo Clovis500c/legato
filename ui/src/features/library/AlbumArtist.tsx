@@ -29,6 +29,7 @@ import { ArtistAbout } from './ArtistAbout'
 import { albumRows } from './albumPage'
 import { discography } from './discography'
 import { groupAlbums, primaryArtist, type AlbumGroup } from './filter'
+import { ArtistLinks } from './ArtistLinks'
 import { HiddenExplicit } from './HiddenVideos'
 import { useExplicit } from './useExplicit'
 import { PlayAll, ShuffleRound, totalTime } from './LibraryView'
@@ -436,6 +437,7 @@ export function ArtistView({ artist }: { artist: string }) {
           <ArtistAbout text={yt.about} />
         </Section>
       )}
+      <ArtistLinks artist={artist} />
       <PageBoundary fallback={null}>{yt?.shelves.map((s) => <YouTubeShelf key={s.title} shelf={s} />)}</PageBoundary>
     </div>
   )

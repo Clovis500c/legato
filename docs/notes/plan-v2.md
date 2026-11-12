@@ -458,6 +458,11 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       Untried on a real AAC station; HE-AAC (SBR) and LATM streams are not read (said in docs/playback.md).
 - [ ] `M` Release radar: new releases from artists in the library (YouTube Music / MusicBrainz).
 - [ ] `M` Credits and artist pages: who wrote / produced (MusicBrainz), a short bio (Wikipedia), links out.
+      2026-11-12, the links out only: an artist's page has "Find links on MusicBrainz" (a click, two requests a second apart, the
+      name only; `MusicBrainz::artist_links`: the artist by exact name with a score of 90, then its url relations, http(s) of 8
+      kinds, 12 at most), opened in the browser; the website's "Artist links" privacy row. Left: who wrote / produced (recording
+      relations: a request per song), the Wikipedia bio (two more hosts). Untried against the real MusicBrainz: the answers'
+      shape is from their docs. Decided alone (2026-11-12): on a click, never on opening the page.
 - [ ] `M` Sweet fades (Plexamp): crossfade length picked per pair from the songs' ends (loudness, silence, tempo).
       (Left by the autopilot (2026-11-05): a song's end is only known measured (local files, Skip silence on) or
       heard once (a video, `ends.ts`), its tempo not at all; the overlap is the player's most fixed code, and a
