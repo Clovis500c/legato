@@ -142,7 +142,10 @@ export const pt: Copy = {
       { q: 'Como passo para um PC novo?', a: 'A Sincronização mantém vários PCs iguais. Para uma mudança única: Configurações › Geral › Faça backup da sua biblioteca, depois Restaurar um backup no PC novo, e entre de novo nas suas contas.' },
       { q: 'Como funcionam as atualizações?', a: 'O app consulta o GitHub ao abrir e instala uma nova versão entre duas músicas, ou quando nada está tocando. Você recebe as versões testadas antes (Estável); Configurações › Geral tem um canal Beta que traz cada mudança primeiro, e pode quebrar. No Android, o app segue o Beta e só baixa uma nova versão quando você toca em Atualizar.' },
       { q: 'Posso escrever um plugin?', a: 'Sim: uma pasta com um manifesto e um script, que pede suas permissões quando alguém o instala. O guia: [docs/plugins.md].', href: PLUGINS_GUIDE },
+      { q: 'O Windows avisa sobre o instalador: é seguro?', a: 'O instalador não está assinado com um certificado de assinatura de código do Windows, por isso o SmartScreen pode avisar da primeira vez: Mais informações › Executar mesmo assim. As atualizações são assinadas e a aplicação verifica-as antes de as instalar.' },
+      { q: 'Que ficheiro descarrego?', a: 'Legato_…_x64-setup.exe: execute-o. O .msi é a mesma aplicação, para PCs geridos. As versões novas instalam-se sozinhas entre duas músicas; Definições › Geral › Atualizações escolhe Stable (testada) ou Beta (cada alteração verde, mais cedo e mais crua).' },
     ],
   },
+  community: { title: 'Junte-se à comunidade', text: 'Perguntas, ideias, ajuda e novidades de outros ouvintes e do autor, no Discord.', join: 'Entrar no Discord', discussions: 'GitHub Discussions' },
   footer: { code: 'Código-fonte disponível. Grátis para usar. Código no [GitHub].', releases: 'Versões', docs: 'Docs para desenvolvedores', license: 'Licença', notices: 'Licenças de terceiros', font: 'Licença da fonte', marks: 'Spotify, YouTube e Apple Music são marcas de seus respectivos donos.' },
 }

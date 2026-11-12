@@ -142,7 +142,10 @@ export const fr: Copy = {
       { q: 'Comment passer à un nouveau PC ?', a: 'La synchronisation garde plusieurs PC identiques. Pour un déménagement unique : Paramètres › Général › Sauvegarder votre bibliothèque, puis Restaurer une sauvegarde sur le nouveau PC, et reconnectez-vous à vos comptes.' },
       { q: 'Comment fonctionnent les mises à jour ?', a: 'L’appli consulte GitHub au lancement et installe une nouvelle version entre deux titres, ou quand rien ne joue. Vous recevez les versions déjà éprouvées (Stable) ; Paramètres › Général propose un canal Bêta qui apporte chaque changement en premier, et peut casser. Sur Android, l’appli suit la Bêta et ne télécharge une nouvelle version que quand vous touchez Mettre à jour.' },
       { q: 'Puis-je écrire un plugin ?', a: 'Oui : un dossier avec un manifeste et un script, qui demande ses permissions quand quelqu’un l’installe. Le guide : [docs/plugins.md].', href: PLUGINS_GUIDE },
+      { q: 'Windows m’avertit à propos de l’installateur : est-ce sûr ?', a: 'L’installateur n’est pas signé avec un certificat de signature de code Windows, donc SmartScreen peut avertir la première fois : Informations complémentaires › Exécuter quand même. Les mises à jour sont signées, et l’appli les vérifie avant de les installer.' },
+      { q: 'Quel fichier télécharger ?', a: 'Legato_…_x64-setup.exe : lancez-le. Le .msi est la même appli, pour les PC gérés. Les nouvelles versions s’installent entre deux morceaux ; Réglages › Général › Mises à jour choisit Stable (éprouvée) ou Bêta (chaque changement validé, plus tôt et plus brut).' },
     ],
   },
+  community: { title: 'Rejoindre la communauté', text: 'Questions, idées, aide et nouvelles des autres auditeurs et de l’auteur, sur Discord.', join: 'Rejoindre le Discord', discussions: 'GitHub Discussions' },
   footer: { code: 'Source disponible. Gratuit. Le code est sur [GitHub].', releases: 'Versions', docs: 'Docs pour les développeurs', license: 'Licence', notices: 'Licences tierces', font: 'Licence de la police', marks: 'Spotify, YouTube et Apple Music sont des marques de leurs propriétaires.' },
 }

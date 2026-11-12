@@ -142,7 +142,10 @@ export const id: Copy = {
       { q: 'Bagaimana pindah ke PC baru?', a: 'Mode Sinkron menjaga beberapa PC tetap sama. Untuk pindah sekali saja: Pengaturan › Umum › Cadangkan koleksimu, lalu Pulihkan cadangan di PC baru, dan masuk lagi ke akun-akunmu.' },
       { q: 'Bagaimana pembaruan bekerja?', a: 'Aplikasi memeriksa GitHub saat dibuka dan memasang versi baru di antara dua lagu, atau saat tidak ada yang diputar. Kamu mendapat versi yang sudah dicoba lebih dulu (Stabil); Pengaturan › Umum punya kanal Beta yang membawa setiap perubahan lebih dulu, dan bisa rusak. Di Android, aplikasi mengikuti Beta dan hanya mengunduh versi baru saat kamu mengetuk Perbarui.' },
       { q: 'Bisakah aku menulis plugin?', a: 'Bisa: sebuah folder dengan manifest dan skrip, yang meminta izinnya saat seseorang memasangnya. Panduannya: [docs/plugins.md].', href: PLUGINS_GUIDE },
+      { q: 'Windows memperingatkan soal penginstal: apakah aman?', a: 'Penginstal tidak ditandatangani dengan sertifikat penandatanganan kode Windows, jadi SmartScreen mungkin memperingatkan pertama kali: More info › Run anyway. Pembaruan ditandatangani dan diperiksa aplikasi sebelum dipasang.' },
+      { q: 'File mana yang diunduh?', a: 'Legato_…_x64-setup.exe: jalankan. .msi adalah aplikasi yang sama, untuk PC terkelola. Versi baru terpasang sendiri di antara dua lagu; Pengaturan › Umum › Pembaruan memilih Stable (teruji) atau Beta (setiap perubahan hijau, lebih cepat dan lebih kasar).' },
     ],
   },
+  community: { title: 'Gabung dengan komunitas', text: 'Pertanyaan, ide, bantuan, dan kabar dari pendengar lain dan penulisnya, di Discord.', join: 'Gabung ke Discord', discussions: 'GitHub Discussions' },
   footer: { code: 'Sumber bisa dilihat. Gratis dipakai. Kode di [GitHub].', releases: 'Rilis', docs: 'Dokumen untuk pengembang', license: 'Lisensi', notices: 'Lisensi pihak ketiga', font: 'Lisensi font', marks: 'Spotify, YouTube, dan Apple Music adalah merek dagang pemiliknya.' },
 }

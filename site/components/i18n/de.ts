@@ -142,7 +142,10 @@ export const de: Copy = {
       { q: 'Wie ziehe ich auf einen neuen PC um?', a: 'Die Synchronisierung hält mehrere PCs gleich. Für einen einmaligen Umzug: Einstellungen › Allgemein › Bibliothek sichern, dann Sicherung wiederherstellen auf dem neuen PC, und melde dich wieder bei deinen Konten an.' },
       { q: 'Wie funktionieren Updates?', a: 'Die App prüft beim Start GitHub und installiert eine neue Version zwischen zwei Songs oder während nichts läuft. Du bekommst die Versionen, die zuerst erprobt wurden (Stabil); Einstellungen › Allgemein hat einen Beta-Kanal, der jede Änderung zuerst bringt und kaputtgehen kann. Unter Android folgt die App Beta und lädt eine neue Version nur herunter, wenn du auf Aktualisieren tippst.' },
       { q: 'Kann ich ein Plugin schreiben?', a: 'Ja: ein Ordner mit einem Manifest und einem Skript, das beim Installieren nach seinen Berechtigungen fragt. Die Anleitung: [docs/plugins.md].', href: PLUGINS_GUIDE },
+      { q: 'Windows warnt mich vor dem Installer: Ist er sicher?', a: 'Der Installer ist nicht mit einem Windows-Codesignatur-Zertifikat signiert, daher kann SmartScreen beim ersten Mal warnen: Weitere Informationen › Trotzdem ausführen. Updates sind signiert, und die App prüft sie vor der Installation.' },
+      { q: 'Welche Datei lade ich herunter?', a: 'Legato_…_x64-setup.exe: ausführen. Die .msi ist dieselbe App, für verwaltete PCs. Neue Versionen installieren sich zwischen zwei Liedern; Einstellungen › Allgemein › Updates wählt Stable (erprobt) oder Beta (jede grüne Änderung, früher und rauer).' },
     ],
   },
+  community: { title: 'Der Community beitreten', text: 'Fragen, Ideen, Hilfe und Neuigkeiten von anderen Hörern und vom Autor, auf Discord.', join: 'Dem Discord beitreten', discussions: 'GitHub Discussions' },
   footer: { code: 'Quellcode einsehbar. Kostenlos nutzbar. Code auf [GitHub].', releases: 'Releases', docs: 'Doku für Entwickler', license: 'Lizenz', notices: 'Lizenzen Dritter', font: 'Schriftlizenz', marks: 'Spotify, YouTube und Apple Music sind Marken ihrer jeweiligen Inhaber.' },
 }

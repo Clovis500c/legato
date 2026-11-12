@@ -142,7 +142,10 @@ export const vi: Copy = {
       { q: 'Chuyển sang PC mới thế nào?', a: 'Sync Mode giữ nhiều PC giống nhau. Để chuyển một lần: Cài đặt › Chung › Sao lưu thư viện của bạn, rồi Khôi phục bản sao lưu trên PC mới, và đăng nhập lại các tài khoản.' },
       { q: 'Cập nhật hoạt động thế nào?', a: 'Ứng dụng kiểm tra GitHub khi mở và cài phiên bản mới giữa hai bài hát, hoặc khi không phát gì. Bạn nhận các phiên bản đã được thử trước (Ổn định); Cài đặt › Chung có kênh Beta nhận mọi thay đổi đầu tiên, và có thể lỗi. Trên Android, ứng dụng theo kênh Beta và chỉ tải phiên bản mới khi bạn chạm Cập nhật.' },
       { q: 'Tôi có thể viết plugin không?', a: 'Có: một thư mục có manifest và một script, xin quyền khi có người cài nó. Hướng dẫn: [docs/plugins.md].', href: PLUGINS_GUIDE },
+      { q: 'Windows cảnh báo về trình cài đặt: có an toàn không?', a: 'Trình cài đặt không được ký bằng chứng chỉ ký mã của Windows, nên SmartScreen có thể cảnh báo lần đầu: More info › Run anyway. Bản cập nhật được ký và ứng dụng kiểm tra trước khi cài.' },
+      { q: 'Tải tệp nào?', a: 'Legato_…_x64-setup.exe: hãy chạy nó. Tệp .msi là cùng ứng dụng, cho máy tính được quản lý. Phiên bản mới tự cài giữa hai bài hát; Cài đặt › Chung › Cập nhật chọn Stable (đã thử) hoặc Beta (mọi thay đổi xanh, sớm hơn và thô hơn).' },
     ],
   },
+  community: { title: 'Tham gia cộng đồng', text: 'Câu hỏi, ý tưởng, trợ giúp và tin tức từ những người nghe khác và từ tác giả, trên Discord.', join: 'Tham gia Discord', discussions: 'GitHub Discussions' },
   footer: { code: 'Xem được mã nguồn. Dùng miễn phí. Mã trên [GitHub].', releases: 'Bản phát hành', docs: 'Tài liệu cho nhà phát triển', license: 'Giấy phép', notices: 'Giấy phép bên thứ ba', font: 'Giấy phép phông chữ', marks: 'Spotify, YouTube và Apple Music là thương hiệu của chủ sở hữu tương ứng.' },
 }

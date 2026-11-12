@@ -142,7 +142,10 @@ export const zh: Copy = {
       { q: '怎么换到新电脑？', a: 'Sync Mode 能让几台电脑保持一致。只搬一次的话：设置 › 常规 › 备份你的音乐库，然后在新电脑上 从备份恢复，再重新登录你的账号。' },
       { q: '更新是怎么进行的？', a: '应用启动时检查 GitHub，在两首歌之间或没有播放时安装新版本。你收到的是先经过测试的版本（稳定版）；设置 › 常规 里有测试版渠道，所有改动都会先到，但可能出问题。在 Android 上，应用跟随测试版，只在你点 更新 时才下载新版本。' },
       { q: '我能写插件吗？', a: '能：一个包含清单和脚本的文件夹，有人安装时它会申请所需的权限。指南：[docs/plugins.md]。', href: PLUGINS_GUIDE },
+      { q: 'Windows 对安装程序发出警告：安全吗？', a: '安装程序没有 Windows 代码签名证书的签名，所以首次运行时 SmartScreen 可能发出警告：更多信息 › 仍要运行。更新带有签名，应用在安装前会校验。' },
+      { q: '该下载哪个文件？', a: '运行 Legato_…_x64-setup.exe。.msi 是同一个应用，面向受管理的电脑。新版本会在两首歌之间自动安装；设置 › 常规 › 更新可选 Stable（经过试用）或 Beta（每个通过的更改，更早也更粗糙）。' },
     ],
   },
+  community: { title: '加入社区', text: '来自其他听众和作者的提问、想法、帮助和消息，在 Discord 上。', join: '加入 Discord', discussions: 'GitHub Discussions' },
   footer: { code: '源码公开。免费使用。代码在 [GitHub] 上。', releases: '版本发布', docs: '开发者文档', license: '许可证', notices: '第三方许可证', font: '字体许可证', marks: 'Spotify、YouTube 和 Apple Music 是其各自所有者的商标。' },
 }

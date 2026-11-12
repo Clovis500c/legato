@@ -3,7 +3,7 @@
 import { Translate } from '@phosphor-icons/react'
 import { useMotionValueEvent, useScroll } from 'motion/react'
 import { useState } from 'react'
-import { GITHUB } from './content'
+import { DISCORD, GITHUB } from './content'
 import { useCopy, useLangs } from './copy'
 import { LANGS, pageOf } from './langs'
 import { useLatest } from './latest'
@@ -38,6 +38,7 @@ export function Header() {
     [c.nav.privacy, '#privacy'],
     [c.nav.next, '#next'],
     [c.nav.faq, '#faq'],
+    [c.community.join, DISCORD],
     ['GitHub', GITHUB],
   ]
   return (

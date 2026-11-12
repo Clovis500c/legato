@@ -228,6 +228,15 @@ Where a line says "reading", the owner hasn't confirmed it.
       arrives). Decided alone (2026-11-12): with no kept picture the page keeps what it had (first song's cover, else YouTube Music's art).
       Not seen on a screen.
 
+- [x] `S` "Join the community" on the website (the owner): the public Discord invitation https://discord.gg/WsqAuCSxQU. 2026-11-12: in the header's links,
+      in a Community block after the FAQ (a Join the Discord button beside GitHub Discussions) and in the footer, in the site's 18
+      languages (`content.tsx`, `i18n/*.ts`). A link out: the visitor clicks, nothing is sent from the site or the app, so no `PRIVACY` /
+      `SERVICES` row (decided alone, 2026-11-12). Also added to the FAQ what only the README said (SmartScreen's warning, which file to
+      download, Stable or Beta) and "Simple Icons (CC0)" to the footer's credits. `pnpm build` in `site/` passes.
+- [ ] `M` Sign in with Discord, to show who shared (the owner's wish; only a note, nothing to build now): the version WITHOUT a bot first, an OAuth
+      sign-in without a secret, the profile carried in the link; later, optionally, the link signed by the owner's bot, an exception to
+      "serverless" that the owner must validate. Waits for their Discord application id.
+
 ## Best in class (user's ask 2026-10-30)
 
 What a listener would get, against Riff (rootscripts/riff: Electron, yt-dlp downloads, YouTube / SoundCloud, imports

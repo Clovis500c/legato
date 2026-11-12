@@ -142,7 +142,10 @@ export const sv: Copy = {
       { q: 'Hur flyttar jag till en ny dator?', a: 'Synkläge håller flera datorer lika. För en engångsflytt: Inställningar › Allmänt › Säkerhetskopiera ditt bibliotek, sedan Återställ en säkerhetskopia på den nya datorn, och logga in på dina konton igen.' },
       { q: 'Hur fungerar uppdateringar?', a: 'Appen kollar GitHub vid start och installerar en ny version mellan två låtar, eller medan inget spelas. Du får versionerna som provats först (Stabil); Inställningar › Allmänt har en betakanal som får varje ändring först, och kan krångla. På Android följer appen Beta och laddar ned en ny version bara när du trycker på Uppdatera.' },
       { q: 'Kan jag skriva ett plugin?', a: 'Ja: en mapp med ett manifest och ett skript, som ber om sina behörigheter när någon installerar det. Guiden: [docs/plugins.md].', href: PLUGINS_GUIDE },
+      { q: 'Windows varnar för installationsprogrammet: är det säkert?', a: 'Installationsprogrammet är inte signerat med ett Windows-certifikat för kodsignering, så SmartScreen kan varna första gången: Mer information › Kör ändå. Uppdateringar är signerade och appen kontrollerar dem innan de installeras.' },
+      { q: 'Vilken fil laddar jag ner?', a: 'Legato_…_x64-setup.exe: kör den. .msi är samma app, för hanterade datorer. Nya versioner installeras av sig själva mellan två låtar; Inställningar › Allmänt › Uppdateringar väljer Stable (beprövad) eller Beta (varje grön ändring, tidigare och råare).' },
     ],
   },
+  community: { title: 'Gå med i communityn', text: 'Frågor, idéer, hjälp och nyheter från andra lyssnare och från skaparen, på Discord.', join: 'Gå med i Discord', discussions: 'GitHub Discussions' },
   footer: { code: 'Källkoden tillgänglig. Gratis att använda. Koden på [GitHub].', releases: 'Utgåvor', docs: 'Dokumentation för utvecklare', license: 'Licens', notices: 'Tredjepartslicenser', font: 'Typsnittets licens', marks: 'Spotify, YouTube och Apple Music är varumärken som tillhör sina ägare.' },
 }

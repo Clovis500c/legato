@@ -6,6 +6,8 @@ import type { ReactNode } from 'react'
 // here changes there too. PRIVACY stays English in every language, the one reference for what leaves the PC.
 
 export const GITHUB = 'https://github.com/Clovis500c/legato'
+/** The public Discord invitation: a link out, the visitor clicks and nothing is sent from this site. */
+export const DISCORD = 'https://discord.gg/WsqAuCSxQU'
 export const PLUGINS_GUIDE = `${GITHUB}/blob/master/docs/plugins.md`
 
 export type IconName = 'Playlist' | 'Sparkle' | 'FolderSimple' | 'Devices' | 'PuzzlePiece' | 'Translate'
@@ -38,6 +40,7 @@ export type Copy = {
   next: { title: string; intro: string; head: Row; rows: Row[] }
   /** href: where an answer's `[label]` leads. */
   faq: { title: string; intro: string; items: { q: string; a: string; href?: string }[] }
+  community: { title: string; text: string; join: string; discussions: string }
   footer: { code: string; releases: string; docs: string; license: string; notices: string; font: string; marks: string }
 }
 
@@ -254,7 +257,10 @@ export const en: Copy = {
       { q: 'How do I move to a new PC?', a: 'Sync Mode keeps several PCs alike. For a one-time move: Settings › General › Back up your library, then Restore a backup on the new PC, and sign in to your accounts again.' },
       { q: 'How do updates work?', a: 'The app checks GitHub at launch and installs a new version between two songs, or while nothing plays. You get the versions that were tried first (Stable); Settings › General has a Beta channel that brings every change first, and may break. On Android, the app follows Beta and downloads a new version only when you tap Update.' },
       { q: 'Can I write a plugin?', a: 'Yes: a folder with a manifest and a script, which asks for its permissions when someone installs it. The guide: [docs/plugins.md].', href: PLUGINS_GUIDE },
+      { q: 'Windows warns me about the installer: is it safe?', a: 'The installer isn’t signed with a Windows code-signing certificate, so SmartScreen may warn the first time: More info › Run anyway. Updates are signed, and the app checks them before it installs them.' },
+      { q: 'Which file do I download?', a: 'Legato_…_x64-setup.exe: run it. The .msi is the same app, for managed PCs. New versions install themselves between two songs; Settings › General › Updates picks Stable (tried) or Beta (every green change, sooner and rougher).' },
     ],
   },
+  community: { title: 'Join the community', text: 'Questions, ideas, help and news from other listeners and from the author, on Discord.', join: 'Join the Discord', discussions: 'GitHub Discussions' },
   footer: { code: 'Source-available. Free to use. Code on [GitHub].', releases: 'Releases', docs: 'Docs for developers', license: 'License', notices: 'Third-party licenses', font: 'Font license', marks: 'Spotify, YouTube and Apple Music are trademarks of their owners.' },
 }

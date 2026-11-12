@@ -142,7 +142,10 @@ export const tr: Copy = {
       { q: 'Yeni bir bilgisayara nasıl geçerim?', a: 'Eşitleme Modu birkaç bilgisayarı aynı tutar. Tek seferlik bir taşıma için: Ayarlar › Genel › Kitaplığını yedekle, sonra yeni bilgisayarda Yedeği geri yükle ve hesaplarına yeniden giriş yap.' },
       { q: 'Güncellemeler nasıl çalışır?', a: 'Uygulama açılışta GitHub’ı denetler ve yeni sürümü iki şarkı arasında ya da hiçbir şey çalmazken kurar. Önce denenmiş sürümleri alırsın (Kararlı); Ayarlar › Genel’de her değişikliği ilk getiren ve bozulabilen bir Beta kanalı var. Android’de uygulama Beta’yı izler ve yeni sürümü yalnızca Güncelle’ye dokunduğunda indirir.' },
       { q: 'Eklenti yazabilir miyim?', a: 'Evet: bir manifest ve bir betik içeren bir klasör; biri onu kurduğunda izinlerini ister. Rehber: [docs/plugins.md].', href: PLUGINS_GUIDE },
+      { q: 'Windows yükleyici hakkında uyarıyor: güvenli mi?', a: 'Yükleyici bir Windows kod imzalama sertifikasıyla imzalı değil, bu yüzden SmartScreen ilk seferde uyarabilir: Daha fazla bilgi › Yine de çalıştır. Güncellemeler imzalıdır ve uygulama yüklemeden önce denetler.' },
+      { q: 'Hangi dosyayı indirmeliyim?', a: 'Legato_…_x64-setup.exe: çalıştırın. .msi aynı uygulamadır, yönetilen bilgisayarlar içindir. Yeni sürümler iki şarkı arasında kendiliğinden kurulur; Ayarlar › Genel › Güncellemeler Stable (denenmiş) veya Beta (her yeşil değişiklik, daha erken ve daha ham) seçer.' },
     ],
   },
+  community: { title: 'Topluluğa katıl', text: 'Diğer dinleyicilerden ve yazardan sorular, fikirler, yardım ve haberler, Discord’da.', join: 'Discord’a katıl', discussions: 'GitHub Discussions' },
   footer: { code: 'Kaynağı erişilebilir. Kullanımı ücretsiz. Kod [GitHub]’da.', releases: 'Sürümler', docs: 'Geliştiriciler için belgeler', license: 'Lisans', notices: 'Üçüncü taraf lisansları', font: 'Yazı tipi lisansı', marks: 'Spotify, YouTube ve Apple Music, sahiplerinin ticari markalarıdır.' },
 }

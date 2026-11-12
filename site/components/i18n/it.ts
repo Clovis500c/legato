@@ -142,7 +142,10 @@ export const it: Copy = {
       { q: 'Come passo a un nuovo PC?', a: 'La Sincronizzazione tiene uguali più PC. Per un trasloco una tantum: Impostazioni › Generali › Fai un backup della libreria, poi Ripristina un backup sul nuovo PC, e accedi di nuovo ai tuoi account.' },
       { q: 'Come funzionano gli aggiornamenti?', a: 'L’app controlla GitHub all’avvio e installa una nuova versione tra due brani, o mentre non suona niente. Ricevi le versioni provate prima (Stabile); Impostazioni › Generali ha un canale Beta che porta ogni modifica per primo, e può rompersi. Su Android, l’app segue Beta e scarica una nuova versione solo quando tocchi Aggiorna.' },
       { q: 'Posso scrivere un plugin?', a: 'Sì: una cartella con un manifest e uno script, che chiede i suoi permessi quando qualcuno lo installa. La guida: [docs/plugins.md].', href: PLUGINS_GUIDE },
+      { q: 'Windows mi avvisa sul programma di installazione: è sicuro?', a: 'Il programma di installazione non è firmato con un certificato di firma del codice di Windows, quindi SmartScreen può avvisare la prima volta: Ulteriori informazioni › Esegui comunque. Gli aggiornamenti sono firmati e l’app li controlla prima di installarli.' },
+      { q: 'Quale file scarico?', a: 'Legato_…_x64-setup.exe: eseguilo. Il .msi è la stessa app, per PC gestiti. Le nuove versioni si installano da sole tra due brani; Impostazioni › Generali › Aggiornamenti sceglie Stable (provata) o Beta (ogni modifica verde, prima e più grezza).' },
     ],
   },
+  community: { title: 'Unisciti alla community', text: 'Domande, idee, aiuto e novità da altri ascoltatori e dall’autore, su Discord.', join: 'Unisciti al Discord', discussions: 'GitHub Discussions' },
   footer: { code: 'Sorgente disponibile. Gratis da usare. Codice su [GitHub].', releases: 'Versioni', docs: 'Documentazione per sviluppatori', license: 'Licenza', notices: 'Licenze di terze parti', font: 'Licenza del carattere', marks: 'Spotify, YouTube e Apple Music sono marchi dei rispettivi proprietari.' },
 }

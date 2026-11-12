@@ -1,4 +1,4 @@
-import { figuresOf, GITHUB, linked, numbered, PRIVACY, type Copy } from './content'
+import { DISCORD, figuresOf, GITHUB, linked, numbered, PRIVACY, type Copy } from './content'
 import { COPIES } from './copies'
 import { CopyProvider } from './copy'
 import { Header } from './Header'
@@ -50,12 +50,23 @@ export function Home({ c }: { c: Copy }) {
         <Split id="faq" title={c.faq.title} intro={linked(c.faq.intro, `${GITHUB}/issues`)}>
           <Faq />
         </Split>
+        <Block id="community" title={c.community.title} intro={c.community.text}>
+          <p className="flex flex-wrap gap-3 text-sm font-semibold">
+            <a href={DISCORD} rel="noopener" className="rounded-full bg-ink px-5 py-2.5 text-on-ink">
+              {c.community.join}
+            </a>
+            <a href={`${GITHUB}/discussions`} className="rounded-full border border-line px-5 py-2.5">
+              {c.community.discussions}
+            </a>
+          </p>
+        </Block>
       </main>
       <footer className="border-t border-line-soft text-[13px] text-ink-3">
         <div className="mx-auto flex max-w-[1440px] flex-wrap justify-between gap-x-8 gap-y-3 px-(--pad) pt-7 pb-10">
           <p>{linked(c.footer.code, GITHUB, footerLink)}</p>
           <p className="flex flex-wrap gap-x-5 gap-y-2">
             {[
+              [c.community.join, DISCORD],
               [c.footer.releases, `${GITHUB}/releases`],
               [c.footer.docs, `${GITHUB}/tree/master/docs`],
               [c.footer.license, `${GITHUB}/blob/master/LICENSE`],
@@ -67,7 +78,7 @@ export function Home({ c }: { c: Copy }) {
               </a>
             ))}
           </p>
-          <p>{c.footer.marks}</p>
+          <p>{c.footer.marks} Simple Icons (CC0).</p>
         </div>
       </footer>
     </CopyProvider>

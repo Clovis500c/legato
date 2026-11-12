@@ -142,7 +142,10 @@ export const nl: Copy = {
       { q: 'Hoe verhuis ik naar een nieuwe pc?', a: 'Synchronisatie houdt meerdere pc’s gelijk. Voor een eenmalige verhuizing: Instellingen › Algemeen › Maak een back-up van je bibliotheek, dan Back-up terugzetten op de nieuwe pc, en log opnieuw in bij je accounts.' },
       { q: 'Hoe werken updates?', a: 'De app kijkt bij het starten op GitHub en installeert een nieuwe versie tussen twee nummers, of als er niets speelt. Je krijgt de versies die eerst getest zijn (Stabiel); Instellingen › Algemeen heeft een bètakanaal dat elke wijziging als eerste brengt, en kan haperen. Op Android volgt de app Beta en downloadt hij een nieuwe versie alleen als je op Bijwerken tikt.' },
       { q: 'Kan ik een plug-in schrijven?', a: 'Ja: een map met een manifest en een script, die om zijn rechten vraagt als iemand hem installeert. De handleiding: [docs/plugins.md].', href: PLUGINS_GUIDE },
+      { q: 'Windows waarschuwt voor het installatieprogramma: is het veilig?', a: 'Het installatieprogramma is niet ondertekend met een Windows-codeondertekeningscertificaat, dus SmartScreen kan de eerste keer waarschuwen: Meer informatie › Toch uitvoeren. Updates zijn ondertekend en de app controleert ze voor het installeren.' },
+      { q: 'Welk bestand download ik?', a: 'Legato_…_x64-setup.exe: voer het uit. De .msi is dezelfde app, voor beheerde pc’s. Nieuwe versies installeren zichzelf tussen twee nummers; Instellingen › Algemeen › Updates kiest Stable (beproefd) of Beta (elke groene wijziging, sneller en ruwer).' },
     ],
   },
+  community: { title: 'Word lid van de community', text: 'Vragen, ideeën, hulp en nieuws van andere luisteraars en van de maker, op Discord.', join: 'Naar de Discord', discussions: 'GitHub Discussions' },
   footer: { code: 'Broncode inzichtelijk. Gratis te gebruiken. Code op [GitHub].', releases: 'Releases', docs: 'Documentatie voor ontwikkelaars', license: 'Licentie', notices: 'Licenties van derden', font: 'Licentie van het lettertype', marks: 'Spotify, YouTube en Apple Music zijn handelsmerken van hun eigenaars.' },
 }

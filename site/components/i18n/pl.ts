@@ -142,7 +142,10 @@ export const pl: Copy = {
       { q: 'Jak przenieść się na nowy komputer?', a: 'Synchronizacja utrzymuje kilka komputerów w zgodzie. Na jednorazową przeprowadzkę: Ustawienia › Ogólne › Zrób kopię zapasową biblioteki, potem Przywróć kopię zapasową na nowym komputerze i zaloguj się ponownie do swoich kont.' },
       { q: 'Jak działają aktualizacje?', a: 'Aplikacja sprawdza GitHuba przy uruchomieniu i instaluje nową wersję między dwoma utworami albo gdy nic nie gra. Dostajesz wersje, które najpierw zostały wypróbowane (Stabilny); Ustawienia › Ogólne mają kanał Beta, który przynosi każdą zmianę jako pierwszy i może się psuć. Na Androidzie aplikacja jest na kanale Beta i pobiera nową wersję tylko wtedy, gdy stukniesz Aktualizuj.' },
       { q: 'Czy mogę napisać wtyczkę?', a: 'Tak: folder z manifestem i skryptem, który prosi o uprawnienia, gdy ktoś go instaluje. Przewodnik: [docs/plugins.md].', href: PLUGINS_GUIDE },
+      { q: 'Windows ostrzega przed instalatorem: czy jest bezpieczny?', a: 'Instalator nie jest podpisany certyfikatem podpisu kodu Windows, więc SmartScreen może ostrzec za pierwszym razem: Więcej informacji › Uruchom mimo to. Aktualizacje są podpisane, a aplikacja sprawdza je przed instalacją.' },
+      { q: 'Który plik pobrać?', a: 'Legato_…_x64-setup.exe: uruchom go. Plik .msi to ta sama aplikacja, dla zarządzanych komputerów. Nowe wersje instalują się same między dwoma utworami; Ustawienia › Ogólne › Aktualizacje wybiera Stable (sprawdzona) lub Beta (każda zielona zmiana, wcześniej i bardziej surowa).' },
     ],
   },
+  community: { title: 'Dołącz do społeczności', text: 'Pytania, pomysły, pomoc i wieści od innych słuchaczy i od autora, na Discordzie.', join: 'Dołącz do Discorda', discussions: 'GitHub Discussions' },
   footer: { code: 'Kod źródłowy dostępny. Darmowy w użyciu. Kod na [GitHubie].', releases: 'Wydania', docs: 'Dokumentacja dla programistów', license: 'Licencja', notices: 'Licencje stron trzecich', font: 'Licencja czcionki', marks: 'Spotify, YouTube i Apple Music są znakami towarowymi ich właścicieli.' },
 }
