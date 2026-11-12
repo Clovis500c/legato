@@ -8,4 +8,8 @@ url: string,
 /**
  * Upper case, as the directory writes it: MP3, AAC, OGG...
  */
-codec: string, bitrate: number, country: string, tags: Array<string>, };
+codec: string, bitrate: number, country: string, tags: Array<string>, 
+/**
+ * The station's icon (https on a public host, else empty): shown through the `art` scheme.
+ */
+favicon: string, };

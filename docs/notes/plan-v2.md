@@ -188,8 +188,15 @@ Where a line says "reading", the owner hasn't confirmed it.
       results, or Your stations) from its place, so Next / Previous reach the neighbours; each station goes to the engine alone
       (a live stream never hands over, a second one would only hold a stream open). With no list: as before. Decided alone
       (2026-11-12): the last station of a list still only pauses (Opus's `569969cf`), no wrap-around. Not tried by ear.
-- [ ] `S` Station icons: the directory gives a favicon per station; shown in the lists, Your stations, the player, Up next and the mini
+- [x] `S` Station icons: the directory gives a favicon per station; shown in the lists, Your stations, the player, Up next and the mini
       player, the initials staying as the fallback; safe (the `art` scheme only, nothing from the front end).
+      2026-11-12: `Station.favicon` (kept only when https on a public name: no IP number, port, user or `.local`-like name), shown in the
+      lists, Your stations and, as the track's cover, the player, Up next and the mini player; initials as the fallback. Safety: the
+      `art` scheme serves only the favicon addresses Rust itself handed out (search results, kept stations, registered at launch),
+      its redirects may go to another public https host within three hops, the usual 5 MB and type checks apply (an .ico is
+      served as an icon). Not covered: a public name that resolves to a private address (the answer is only read as a picture); the
+      website's "Internet radio" row says the icons come from the stations' own sites. Decided alone (2026-11-12): any public
+      host rather than a list (stations' icons sit anywhere). Never seen on a screen.
 - [ ] `S-M` Starter stations when Your stations is empty: by the user's region (Windows' / the interface's language, never an IP
       lookup) and tastes (genres in their library and history, local only), from Radio Browser; the heart keeps one.
 

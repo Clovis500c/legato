@@ -16,5 +16,5 @@ export function stationQueue(list: RadioStation[], s: RadioStation): { tracks: L
 /** A station as something the player queue plays: a recommendation-like track (not in the library), its address in `ids.server`. */
 export function stationTrack(s: RadioStation): LibraryTrack {
   const meta = [s.country, [s.codec, s.bitrate ? `${s.bitrate} kbit/s` : ''].filter(Boolean).join(' ')].filter(Boolean).join(' · ')
-  return remoteTrack({ title: s.name, artist: meta || 'Radio', album: null, durationMs: null, isrc: null, ids: { server: RADIO + s.url }, art: null, musicness: null, explicit: false })
+  return remoteTrack({ title: s.name, artist: meta || 'Radio', album: null, durationMs: null, isrc: null, ids: { server: RADIO + s.url }, art: s.favicon || null, musicness: null, explicit: false })
 }

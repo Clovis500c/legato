@@ -2,7 +2,9 @@ import { Heart, Play, Radio } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
 import { useStore } from '../../app/store'
 import { api, type RadioStation } from '../../shared/api'
+import { remoteArt } from '../../shared/art'
 import { tr, trn } from '../../shared/i18n/i18n'
+import { Cover } from '../../shared/ui/Cover'
 import { Button } from '../../shared/ui/Button'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { usePlayer } from '../player/store'
@@ -35,6 +37,7 @@ export function RadioView() {
     const mine = kept.some((k) => k.id === s.id)
     return (
       <li key={s.id} className="flex items-center gap-3 border-t border-line-soft py-2.5">
+        <Cover title={s.name} art={s.favicon ? [remoteArt(s.favicon)] : []} size={36} className="rounded-lg!" />
         <button type="button" aria-label={tr('Play {title}', { title: s.name })} onClick={() => {
             const q = stationQueue(list, s)
             usePlayer.getState().playTracks(q.tracks, q.index)

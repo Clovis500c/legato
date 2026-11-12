@@ -2616,7 +2616,10 @@ pub fn run() {
             app.manage(listenbrainz::Pending::default());
             // Keychain read off the main thread; the engine learns the way to server songs.
             let handle = app.handle().clone();
-            tauri::async_runtime::spawn_blocking(move || servers::start(&handle));
+            tauri::async_runtime::spawn_blocking(move || {
+                servers::start(&handle);
+                radio::start(&handle);
+            });
             #[cfg(desktop)]
             app.manage(plugins::Plugins::default());
             let dirs = folders(&app.state::<AppState>().lib());

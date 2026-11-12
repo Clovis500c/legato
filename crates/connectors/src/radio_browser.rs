@@ -23,6 +23,9 @@ pub struct Station {
     pub bitrate: u32,
     pub country: String,
     pub tags: Vec<String>,
+    /// The station's icon (https on a public host, else empty): shown through the `art` scheme.
+    #[serde(default)]
+    pub favicon: String,
 }
 
 #[derive(Deserialize)]
@@ -38,6 +41,8 @@ struct Found {
     country: String,
     #[serde(default)]
     tags: String,
+    #[serde(default)]
+    favicon: String,
     #[serde(default)]
     hls: u8,
     #[serde(default = "yes")]
@@ -67,6 +72,7 @@ fn parse(body: &str) -> Result<Vec<Station>> {
             bitrate: f.bitrate,
             country: f.country,
             tags: f.tags.split(',').map(str::trim).filter(|t| !t.is_empty()).map(String::from).collect(),
+            favicon: if crate::art::favicon_ok(f.favicon.trim()) { f.favicon.trim().to_string() } else { String::new() },
         })
         .collect();
     v.sort_by_key(rank);
@@ -117,8 +123,8 @@ mod tests {
     use mockito::Matcher;
 
     const BODY: &str = r#"[
-      {"stationuuid":"a1","name":"Chill AAC","url_resolved":"https://aac.example/stream","codec":"AAC","bitrate":64,"country":"France","tags":"chill, lounge,","hls":0,"lastcheckok":1},
-      {"stationuuid":"b2","name":" Jazz FM ","url_resolved":"http://jazz.example:8000/live","codec":"mp3","bitrate":128,"country":"UK","tags":"jazz","hls":0,"lastcheckok":1},
+      {"stationuuid":"a1","name":"Chill AAC","url_resolved":"https://aac.example/stream","codec":"AAC","bitrate":64,"country":"France","tags":"chill, lounge,","hls":0,"lastcheckok":1,"favicon":"https://cdn.aacradio.net/logo.png"},
+      {"stationuuid":"b2","name":" Jazz FM ","url_resolved":"http://jazz.example:8000/live","codec":"mp3","bitrate":128,"country":"UK","tags":"jazz","hls":0,"lastcheckok":1,"favicon":"http://192.168.1.2/x.png"},
       {"stationuuid":"c3","name":"Segments","url_resolved":"https://hls.example/a.m3u8","codec":"AAC","bitrate":96,"hls":1,"lastcheckok":1},
       {"stationuuid":"d4","name":"Dead","url_resolved":"https://dead.example/s","codec":"MP3","lastcheckok":0},
       {"stationuuid":"e5","name":"Odd","url_resolved":"ftp://x/y","codec":"MP3","lastcheckok":1},
@@ -131,6 +137,8 @@ mod tests {
         assert_eq!(v.iter().map(|s| s.id.as_str()).collect::<Vec<_>>(), ["b2", "f6", "a1"]);
         assert_eq!((v[0].name.as_str(), v[0].codec.as_str(), v[0].tags.as_slice()), ("Jazz FM", "MP3", ["jazz".to_string()].as_slice()));
         assert_eq!(v[2].tags, ["chill", "lounge"]);
+        // A favicon is kept only when it is an https address on a public name.
+        assert_eq!((v[0].favicon.as_str(), v[2].favicon.as_str()), ("", "https://cdn.aacradio.net/logo.png"));
         assert!(parse("not json").is_err());
     }
 

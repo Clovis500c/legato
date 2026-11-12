@@ -3,11 +3,11 @@
 
 use anyhow::{Context, Result, ensure};
 use music_core::cache::{Lru, Stats};
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap};
 use std::future::Future;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::{Arc, Mutex, PoisonError, RwLock};
 use tokio::sync::{OnceCell, Semaphore};
 use url::Url;
 
@@ -17,7 +17,48 @@ const MAX_IMAGE: usize = 5 << 20;
 /// Image hosts of YouTube, Google accounts, Apple, Spotify, Deezer and SoundCloud (exact names), and YouTube Music's own art paths (Liked Music's cover on
 /// gstatic, My Mix covers drawn by music.youtube.com): both load without a session. Plus signed-in servers' covers.
 pub fn allowed(url: &str) -> bool {
-    service(url) || server_signer(url).is_some()
+    service(url) || server_signer(url).is_some() || favicon(url)
+}
+
+/// Radio stations' favicons (a station's page chooses its host, so any host): only addresses the Rust side handed out
+/// itself (`allow_favicons`, from the directory's answers and the stations the user keeps), each one https on a public-looking
+/// host (`favicon_ok`). Bounded; the cache's size and type checks apply as to any cover.
+static FAVICONS: RwLock<BTreeSet<String>> = RwLock::new(BTreeSet::new());
+const MAX_FAVICONS: usize = 4_000;
+
+/// An https address on a named public host: no port, no user, no IP number, no `.local`-like name. A name that resolves
+/// to a private address is not caught (nor is DNS rebinding): the answer is only ever read as a picture.
+pub fn favicon_ok(url: &str) -> bool {
+    let Ok(u) = Url::parse(url) else { return false };
+    let Some(url::Host::Domain(host)) = u.host() else { return false };
+    let tld = host.rsplit('.').next().unwrap_or_default();
+    u.scheme() == "https"
+        && url.len() <= 300
+        && u.port().is_none()
+        && u.username().is_empty()
+        && host.contains('.')
+        && host.is_ascii()
+        && tld.len() >= 2
+        && tld.bytes().all(|b| b.is_ascii_alphabetic())
+        && !["local", "lan", "localhost", "internal", "home", "corp", "intranet", "test", "invalid", "example"].contains(&tld)
+}
+
+/// The favicons the interface may now ask for (the ones that pass `favicon_ok`).
+pub fn allow_favicons<'a>(urls: impl IntoIterator<Item = &'a str>) {
+    let mut all = FAVICONS.write().unwrap_or_else(PoisonError::into_inner);
+    if all.len() > MAX_FAVICONS {
+        all.clear();
+    }
+    all.extend(urls.into_iter().filter(|u| favicon_ok(u)).map(String::from));
+}
+
+fn favicon(url: &str) -> bool {
+    FAVICONS.read().unwrap_or_else(PoisonError::into_inner).contains(url)
+}
+
+/// A favicon's own redirect (an `http` → `https`, a CDN): to another public https host, within three hops.
+fn favicon_hop(previous: &[Url], to: &Url) -> bool {
+    previous.len() <= 3 && previous.first().is_some_and(|f| favicon(f.as_str())) && favicon_ok(to.as_str())
 }
 
 /// A service's image host (not a personal server's cover).
@@ -79,6 +120,7 @@ pub fn sniff(b: &[u8]) -> &'static str {
     match b {
         [0x89, b'P', b'N', b'G', ..] => "image/png",
         [b'G', b'I', b'F', ..] => "image/gif",
+        [0, 0, 1, 0, ..] => "image/x-icon",
         [b'R', b'I', b'F', b'F', _, _, _, _, b'W', b'E', b'B', b'P', ..] => "image/webp",
         _ => "image/jpeg",
     }
@@ -118,7 +160,7 @@ impl ArtCache {
     pub fn new(dir: PathBuf, cap: u64) -> Self {
         let _ = std::fs::create_dir_all(&dir);
         // Redirects stay on image hosts too; a server's cover (its token in a header) stays on that server's host.
-        let http = crate::builder().redirect(reqwest::redirect::Policy::custom(|a| if redirect_ok(a.previous().last(), a.url()) { a.follow() } else { a.stop() })).build().unwrap_or_default();
+        let http = crate::builder().redirect(reqwest::redirect::Policy::custom(|a| if redirect_ok(a.previous().last(), a.url()) || favicon_hop(a.previous(), a.url()) { a.follow() } else { a.stop() })).build().unwrap_or_default();
         Self { dir, cap: Arc::new(cap.into()), used: Arc::default(), pruning: Arc::default(), http, hot: Lru::new(HOT_BUDGET), inflight: Mutex::default(), resizers: Semaphore::new(RESIZERS) }
     }
 
@@ -289,6 +331,25 @@ mod tests {
         for bad in ["https://spotifycdn.com.evil.example/x", "http://i.ytimg.com/x", "https://evil.example/x.jpg", "https://googleusercontent.com.evil.example/x", "https://dzcdn.net/x.jpg", "https://evil.dzcdn.net/x.jpg", "https://sndcdn.com/x.jpg", "https://evil.sndcdn.com/x.jpg", "https://api.deezer.com/album/1/image", "file:///C:/x.jpg", "https://127.0.0.1/x", "https://www.gstatic.com/other/x.png", "https://music.youtube.com/watch?v=x", "https://coverartarchive.org/other", "https://archive.org/details/anything", "https://evil.archive.org.example/mbid-1/x.jpg", "http://coverartarchive.org/release-group/x"] {
             assert!(!allowed(bad), "{bad}");
         }
+    }
+
+    #[test]
+    fn a_favicon_is_asked_only_when_handed_out_and_on_a_public_https_name() {
+        for ok in ["https://cdn.radio.net/logo.png", "https://www.jazz-fm.co.uk/favicon.ico", "https://a.b.example.org/x?y=1"] {
+            assert!(favicon_ok(ok), "{ok}");
+        }
+        for bad in ["http://cdn.radio.net/logo.png", "https://127.0.0.1/x.png", "https://[::1]/x.png", "https://192.168.1.2/x.png", "https://nas.local/x.png", "https://router.lan/x.png", "https://localhost/x.png", "https://intranet/x.png", "https://cdn.radio.net:8443/x.png", "https://me@cdn.radio.net/x.png", "https://cdn.radio.net/", "file:///C:/x.png", "nonsense"] {
+            assert!(bad == "https://cdn.radio.net/" || !favicon_ok(bad), "{bad}");
+        }
+        let url = "https://handed-out.radio.net/a.png";
+        assert!(!allowed(url), "not handed out yet");
+        allow_favicons([url, "https://192.168.1.2/b.png"]);
+        assert!(allowed(url) && !allowed("https://192.168.1.2/b.png") && !allowed("https://other.radio.net/a.png"));
+        // Its own redirect may go to another public https host; a cover of a service may not.
+        let to = |u: &str| url::Url::parse(u).unwrap();
+        let first = [to(url)];
+        assert!(favicon_hop(&first, &to("https://cdn.elsewhere.net/a.png")) && !favicon_hop(&first, &to("https://10.0.0.1/a.png")) && !favicon_hop(&[to("https://i.ytimg.com/x")], &to("https://cdn.elsewhere.net/a.png")));
+        assert_eq!(sniff(&[0, 0, 1, 0, 1, 0]), "image/x-icon");
     }
 
     #[test]

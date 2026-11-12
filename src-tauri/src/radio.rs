@@ -14,6 +14,17 @@ fn kept(state: &AppState) -> Vec<Station> {
     state.lib().setting(KEY).ok().flatten().and_then(|v| serde_json::from_value(v).ok()).unwrap_or_default()
 }
 
+/// The icons of these stations may be asked through the `art` scheme from now on (only the ones Rust itself handed out).
+fn icons(stations: &[Station]) {
+    music_connectors::art::allow_favicons(stations.iter().map(|s| s.favicon.as_str()));
+}
+
+/// At launch: the kept stations' icons.
+pub fn start(app: &tauri::AppHandle) {
+    use tauri::Manager;
+    icons(&kept(&app.state::<AppState>()));
+}
+
 /// Trust boundary (a station comes back from the interface): an http(s) address, a name, bounded text.
 fn clean(s: Station) -> Option<Station> {
     let ok = s.url.len() <= 2_000 && (s.url.starts_with("https://") || s.url.starts_with("http://")) && !s.url.chars().any(char::is_control);
@@ -22,6 +33,7 @@ fn clean(s: Station) -> Option<Station> {
         name,
         country: s.country.chars().take(100).collect(),
         tags: s.tags.into_iter().take(10).map(|t| t.chars().take(50).collect()).collect(),
+        favicon: Some(s.favicon).filter(|f| music_connectors::art::favicon_ok(f)).unwrap_or_default(),
         codec: s.codec.chars().take(10).collect(),
         ..s
     })
@@ -33,12 +45,16 @@ pub async fn radio_search(query: String) -> CmdResult<Vec<Station>> {
     if query.is_empty() || query.chars().count() > 100 {
         return Err("Type a station's name".into());
     }
-    RadioBrowser::default().search(query, 30).await.map_err(err)
+    let found = RadioBrowser::default().search(query, 30).await.map_err(err)?;
+    icons(&found);
+    Ok(found)
 }
 
 #[tauri::command]
 pub async fn radio_kept(state: State<'_, AppState>) -> CmdResult<Vec<Station>> {
-    Ok(kept(&state))
+    let all = kept(&state);
+    icons(&all);
+    Ok(all)
 }
 
 /// Keeps a station (once), or lets it go.
@@ -62,7 +78,7 @@ mod tests {
     use super::*;
 
     fn station(url: &str, name: &str) -> Station {
-        Station { id: "a1".into(), name: name.into(), url: url.into(), codec: "MP3".into(), bitrate: 128, country: "France".into(), tags: vec!["jazz".into(); 20] }
+        Station { id: "a1".into(), name: name.into(), url: url.into(), codec: "MP3".into(), bitrate: 128, country: "France".into(), tags: vec!["jazz".into(); 20], favicon: String::new() }
     }
 
     #[test]
