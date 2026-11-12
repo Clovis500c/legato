@@ -305,12 +305,16 @@ impl ArtCache {
             req = req.header(*k, v);
         }
         // Its URL may hold a server's auth: never in an error.
-        let res = req.send().await.map_err(|e| e.without_url())?.error_for_status().map_err(|e| e.without_url())?;
+        let mut res = req.send().await.map_err(|e| e.without_url())?.error_for_status().map_err(|e| e.without_url())?;
         let image = res.headers().get(reqwest::header::CONTENT_TYPE).and_then(|v| v.to_str().ok()).is_some_and(|t| t.starts_with("image/"));
         ensure!(image, "Not an image");
         ensure!(res.content_length().is_none_or(|n| n <= MAX_IMAGE as u64), "Image too large");
-        let bytes = res.bytes().await?;
-        ensure!(bytes.len() <= MAX_IMAGE, "Image too large");
+        // Read in pieces: a body with no length (a station's favicon, any host) is cut at the cap, never held whole.
+        let mut bytes = Vec::new();
+        while let Some(chunk) = res.chunk().await? {
+            ensure!(bytes.len() + chunk.len() <= MAX_IMAGE, "Image too large");
+            bytes.extend_from_slice(&chunk);
+        }
         // A failed write still serves it; the next ask downloads again.
         let _ = self.write(&key(url), &bytes);
         Ok((bytes.to_vec(), sniff(&bytes)))
@@ -469,6 +473,22 @@ mod tests {
         settle(&cache);
         assert_eq!([on_disk("1.png").exists(), on_disk("2.png").exists(), on_disk("3.png").exists()], [true, false, true]);
         assert_eq!(cache.size(), 20);
+    }
+
+    #[tokio::test]
+    async fn a_body_with_no_length_is_cut_at_the_cap() {
+        let mut s = Server::new_async().await;
+        s.mock("GET", "/big.png").with_header("content-type", "image/png").with_chunked_body(|w| {
+            // Endless: only a reader that stops at the cap ever returns.
+            let piece = vec![0u8; 1 << 20];
+            loop {
+                w.write_all(&piece)?;
+            }
+        }).create_async().await;
+        let dir = tempfile::tempdir().unwrap();
+        let cache = ArtCache::new(dir.path().to_path_buf(), 1 << 30);
+        let got = tokio::time::timeout(std::time::Duration::from_secs(20), cache.fetch(&format!("{}/big.png", s.url()))).await.expect("stops at the cap");
+        assert!(got.unwrap_err().to_string().contains("too large"));
     }
 
     #[tokio::test]
