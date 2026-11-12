@@ -475,6 +475,9 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       whole album's numbers would need the release's track list, a second request); no genre (not in the search).
       Untried against the real MusicBrainz: the answer's shape is from their docs.
 - [ ] `M` Equalizer presets per output device (headphones vs speakers) and AutoEQ profiles for known headphones.
+      Skipped 2026-11-12 (not for this run): the engine only knows the default output device (`output.rs`), no name and no change event,
+      so per-device presets need platform code (a device-change watch on WASAPI, then the same on the other systems); AutoEQ profiles
+      are parametric filters from a large dataset to map onto the 10-band graphic EQ, a data and licence choice. For Opus and the owner.
 - [x] `M` BPM / key tags; genre / year of streamed songs (Spotify's export has a release date; iTunes a genre);
       smart playlist rules on them (mixes, DJ-like transitions by BPM).
       2026-11-12, local files' half: schema v22 (`bpm`, `key`, filled by the next scan from TBPM / tmpo and TKEY / initialkey;
