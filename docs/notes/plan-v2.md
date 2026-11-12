@@ -168,6 +168,14 @@ Where a line says "reading", the owner hasn't confirmed it.
       (plugins' API, themes, the link and file formats, contributing). The design is a piece Fable may do itself (the
       owner's word).
 
+## The owner's asks of 2026-11-12
+
+- [x] `S` Next on the last song of the queue did nothing (it marked the player paused while the sound went on). 2026-11-12:
+      with Repeat off it now stops and waits at the song's start, like Stop; with Repeat all it already went back to the
+      first song (unchanged). Decided alone (2026-11-12): stop rather than ask the autoplay for similar songs on a manual
+      Next (the autoplay setting still decides when a song ends by itself); easy to change in `store.ts` `step`. Not tried
+      on a screen: Vitest only (the sound itself is the engine's).
+
 ## Best in class (user's ask 2026-10-30)
 
 What a listener would get, against Riff (rootscripts/riff: Electron, yt-dlp downloads, YouTube / SoundCloud, imports

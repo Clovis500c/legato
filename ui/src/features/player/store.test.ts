@@ -456,3 +456,23 @@ describe('a YouTube video that never starts', () => {
     expect(loads()).toEqual(['video77'])
   })
 })
+
+describe('Next on the last song of the queue', () => {
+  beforeEach(() => usePlayer.setState({ shuffle: false }))
+
+  it('stops there with Repeat off, and starts again with Repeat all', async () => {
+    usePlayer.setState({ repeat: 'off' })
+    usePlayer.getState().playTracks([song(1), song(2)], 1)
+    await settle()
+    usePlayer.setState({ playing: true, positionMs: 90_000 })
+    usePlayer.getState().step(1)
+    await settle()
+    expect(usePlayer.getState()).toMatchObject({ index: 1, playing: false, positionMs: 0 })
+    usePlayer.setState({ repeat: 'all' })
+    usePlayer.getState().playTracks([song(1), song(2)], 1)
+    await settle()
+    usePlayer.getState().step(1)
+    await settle()
+    expect(usePlayer.getState().index).toBe(0)
+  })
+})

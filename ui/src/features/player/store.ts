@@ -877,6 +877,12 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     }
     if (i !== null) return void get().playAt(i, undefined, { auto })
     if (delta <= 0) return
+    // Next on the last song (Repeat off): it stops and waits at its start, like Stop. It used to only mark itself
+    // paused while the sound went on.
+    if (!auto) {
+      if (get().playing) get().toggle()
+      return get().seek(0)
+    }
     // Up next ran out: similar songs when the setting says so (autoplay.ts), else stop.
     if (auto && queueEnd) return void queueEnd().then((added) => (added ? get().step(1, true) : set({ playing: false })), () => set({ playing: false }))
     set({ playing: false })
