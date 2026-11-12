@@ -117,6 +117,12 @@ Where a line says "reading", the owner hasn't confirmed it.
       building: a note at export that sharing a song is the user's responsibility (their own music or rights), a
       size limit, whether a personal server's song counts as local, and the embedded audio treated as untrusted
       when opened (the Security line).
+      2026-11-11, the YouTube-link form: `.lmix` (JSON: format, version, name, video id, title, artist, the Live Editor's
+      `Effects`) in `music_dsp::lmix` (64 KB, unknown fields refused, the settings clamped, tested with a fuzz loop);
+      `lmix_read` / `lmix_write` in the shell; dropping one on the window plays the song and opens the editor on its settings
+      (`features/editor/remixFile.ts`); Live Editor's menu has "Share this mix as a file…" (a YouTube song only). Left open:
+      the compact link, the Windows file type (double-click on a .lmix), the local-file form that carries audio (the owner's
+      answers first). Untried: a real drop, the editor's load race on a slow start (waits 5 s), the YouTube thumbnail as art.
 - [ ] `M` Optional sign-in with Discord, for a profile (the owner will make a Discord bot anyway). Never required.
       First use: the share page shows who shared a playlist, their profile carried in the link so it can't be faked
       (the owner's word: encrypted in the link). Open before building: encryption alone doesn't stop a fake, a

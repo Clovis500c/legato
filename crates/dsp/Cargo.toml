@@ -8,6 +8,5 @@ publish.workspace = true
 realfft = "3.5.1"
 serde = { version = "1.0.229", features = ["derive"] }
 ts-rs.workspace = true
-
-[dev-dependencies]
 serde_json = "1.0.154"
+

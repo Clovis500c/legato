@@ -354,6 +354,9 @@ export function PlayerBar() {
       if (e.payload.type !== 'drop') return
       const { paths } = e.payload
       const image = paths.find((p) => /\.(png|jpe?g)$/i.test(p))
+      // A remix file: its song plays with the Live Editor open on its settings.
+      const remix = paths.find((p) => /\.lmix$/i.test(p))
+      if (remix) return void import('../editor/remixFile').then((m) => m.openRemix(remix))
       void takeDrop(paths).then((took) => {
         if (!took && image)
           api

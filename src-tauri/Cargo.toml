@@ -20,6 +20,7 @@ if-addrs = "0.15.0"
 keyring = "4.2.0"
 music-connectors = { version = "1.1.0", path = "../crates/connectors" }
 music-core = { version = "1.1.0", path = "../crates/core" }
+music-dsp = { version = "1.1.0", path = "../crates/dsp" }
 music-player = { version = "1.1.0", path = "../crates/player" }
 music-shield = { version = "1.1.0", path = "../crates/shield" }
 percent-encoding = "2.3.2"
