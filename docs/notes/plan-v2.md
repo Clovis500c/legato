@@ -630,6 +630,12 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       either end the place is dropped, 200 songs at most. Left: m4b chapters (a container parser in Rust), a speed kept per
       book (the Live Editor has speed), the books apart from music (a page). Decided alone (2026-11-12): local and server
       files only (a YouTube video has no stable place), 20 minutes as the line. Never tried on a screen or by ear.
+      2026-11-13, m4b chapters and sleep at chapter end: a library `.m4b` / `.m4a` / `.mp4` with a Nero `chpl` chapter list (what ffmpeg
+      and mp4v2 write) gets a "Chapters" submenu in the player's menu (go to one, the playing one checked) and "End of this
+      chapter" in the sleep timer (`core/chapters.rs` reads the `moov` box only; `track_chapters`; `player/chapters.ts`). Not
+      read: QuickTime text-track chapters (Audible and iTunes books may use them) and ID3 `CHAP` of mp3s: those show none.
+      Never tried on a real book. Left open: speed kept per book (the Live Editor saves its speed per song already, when
+      switched on), the books apart from music (a page).
 - [ ] `M` Stream Deck plugin and an Xbox Game Bar widget (play / skip / like / now playing) over the local hotkeys.
 - [ ] `M` Blind test game: snippets from the library or a playlist, guess title / artist, scores, local multiplayer
       on one screen or over the LAN code.

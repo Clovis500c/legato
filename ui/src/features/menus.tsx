@@ -102,6 +102,7 @@ import { loadPlugins, pluginCommands, runCommand } from './plugins/host'
 import { canPlay, isRemote, nowTrack, remoteTrack, usePlayer } from './player/store'
 import { startAutoDj } from './player/autoDj'
 import { startRadio, startRadioFrom } from './player/radio'
+import { chaptersMenu } from './player/chapters'
 import { sleepMenu } from './player/sleep'
 import { deleteFolder, newFolder, renameFolder, setFolder, togglePinned } from './sidebar/folderActions'
 import { closeKaraoke, nowFix, nudgeLyrics, toggleKaraoke } from './player/karaokeMode'
@@ -788,6 +789,7 @@ export function playerMenu({ controls = true }: { controls?: boolean } = {}): Me
     // The mix now in the editor (a version playing included), shared from the player's own menu too.
     video && { label: tr('Share this mix as a file…'), icon: <ShareNetwork size={16} />, onSelect: () => void import('./editor/remixFile').then((m) => m.exportRemix()) },
     video && { label: tr('Copy this mix’s link'), icon: <Link size={16} />, onSelect: () => void import('./editor/remixFile').then((m) => m.copyRemixLink()) },
+    chaptersMenu(),
     { label: tr('Sleep timer'), icon: <Moon size={16} />, items: sleepMenu() },
     !phoneApp && { label: tr('Alarm…'), icon: <Alarm size={16} />, onSelect: () => (setFull(false), app().go({ name: 'settings', section: 'playback', focus: 'Alarm' })) },
     { label: tr('Mini player'), icon: <PictureInPicture size={16} />, checked: mini || !!video, disabled: !!video, onSelect: () => useSettings.getState().update({ miniPlayer: !mini }) },

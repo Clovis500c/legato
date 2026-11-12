@@ -10,6 +10,7 @@ pub mod lyrics;
 pub mod history;
 pub mod itunes_xml;
 pub mod matching;
+pub mod chapters;
 pub mod mixes;
 pub mod walk;
 pub mod musicness;
