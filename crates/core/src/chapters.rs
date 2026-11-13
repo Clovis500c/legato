@@ -113,11 +113,12 @@ fn quicktime_chapters<R: Read + Seek>(r: &mut R, moov: &[u8]) -> Vec<Chapter> {
     let table = |kind: &[u8; 4]| find(text, &[b"mdia", b"minf", b"stbl", kind]);
     let Some(scale) = find(text, &[b"mdia", b"mdhd"]).and_then(|h| be32(h, if h.first() == Some(&1) { 20 } else { 12 })).filter(|&s| s > 0) else { return Vec::new() };
     let (Some(stts), Some(stsz), Some(stsc)) = (table(b"stts"), table(b"stsz"), table(b"stsc")) else { return Vec::new() };
-    // Chunk offsets: 32-bit `stco`, else 64-bit `co64`.
+    // Chunk offsets: 32-bit `stco`, else 64-bit `co64`. A chunk holds one sample or more and a run one chunk or more, so the first
+    // MAX_CHAPTERS of each are all a list that long uses: a forged table of millions (empty chunks) is not walked chunk by run.
     let offsets: Vec<u64> = if let Some(c) = table(b"stco") {
-        (0..be32(c, 4).unwrap_or(0) as usize).map_while(|i| be32(c, 8 + 4 * i).map(u64::from)).collect()
+        (0..be32(c, 4).unwrap_or(0) as usize).take(MAX_CHAPTERS).map_while(|i| be32(c, 8 + 4 * i).map(u64::from)).collect()
     } else if let Some(c) = table(b"co64") {
-        (0..be32(c, 4).unwrap_or(0) as usize).map_while(|i| c.get(8 + 8 * i..16 + 8 * i).map(|b| u64::from_be_bytes(b.try_into().unwrap_or([0; 8])))).collect()
+        (0..be32(c, 4).unwrap_or(0) as usize).take(MAX_CHAPTERS).map_while(|i| c.get(8 + 8 * i..16 + 8 * i).map(|b| u64::from_be_bytes(b.try_into().unwrap_or([0; 8])))).collect()
     } else {
         return Vec::new();
     };
@@ -128,7 +129,7 @@ fn quicktime_chapters<R: Read + Seek>(r: &mut R, moov: &[u8]) -> Vec<Chapter> {
     let fixed = be32(stsz, 4).unwrap_or(0);
     let size = |i: usize| if fixed > 0 { Some(fixed) } else { be32(stsz, 12 + 4 * i) };
     // Samples per chunk: (first chunk, samples) runs.
-    let runs: Vec<(u32, u32)> = (0..be32(stsc, 4).unwrap_or(0) as usize).map_while(|i| Some((be32(stsc, 8 + 12 * i)?, be32(stsc, 12 + 12 * i)?))).collect();
+    let runs: Vec<(u32, u32)> = (0..be32(stsc, 4).unwrap_or(0) as usize).take(MAX_CHAPTERS).map_while(|i| Some((be32(stsc, 8 + 12 * i)?, be32(stsc, 12 + 12 * i)?))).collect();
     // Where each sample sits in the file.
     let mut at: Vec<u64> = Vec::new();
     'chunks: for (ci, &chunk) in offsets.iter().enumerate() {
@@ -364,6 +365,30 @@ mod tests {
         for cut in 0..file.len() {
             let _ = read_chapters(&mut Cursor::new(file[..cut].to_vec()));
         }
+    }
+
+    #[test]
+    fn a_forged_chapter_table_of_empty_chunks_ends_at_once() {
+        // 200 000 chunks of no sample, 200 000 runs to look through for each: walked in full, minutes of work.
+        let n = 200_000u32;
+        let runs: Vec<u8> = [b32(0), b32(n), b32(1), b32(0), b32(1)].into_iter().chain((1..n).map(|_| [b32(u32::MAX), b32(1), b32(1)].concat())).flatten().collect();
+        let stbl = boxed(
+            b"stbl",
+            &[
+                boxed(b"stts", &[b32(0), b32(1), b32(1), b32(1000)].concat()),
+                boxed(b"stsc", &runs),
+                boxed(b"stsz", &[b32(0), b32(4), b32(1)].concat()),
+                boxed(b"stco", &[b32(0), b32(n), (0..n).flat_map(|_| b32(0)).collect()].concat()),
+            ]
+            .concat(),
+        );
+        let tkhd = |id: u32| boxed(b"tkhd", &[b32(0), b32(0), b32(0), b32(id), vec![0u8; 68]].concat());
+        let audio = boxed(b"trak", &[tkhd(1), boxed(b"tref", &boxed(b"chap", &b32(2)))].concat());
+        let text = boxed(b"trak", &[tkhd(2), boxed(b"mdia", &[boxed(b"mdhd", &[b32(0), b32(0), b32(0), b32(1000), b32(0)].concat()), boxed(b"minf", &stbl)].concat())].concat());
+        let file = [boxed(b"ftyp", b"M4B \0\0\0\0M4B "), boxed(b"moov", &[audio, text].concat())].concat();
+        let t = std::time::Instant::now();
+        assert!(read_chapters(&mut Cursor::new(file)).is_empty());
+        assert!(t.elapsed() < std::time::Duration::from_secs(5), "{:?}", t.elapsed());
     }
 
     #[test]
