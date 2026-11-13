@@ -153,7 +153,7 @@ Where a line says "reading", the owner hasn't confirmed it.
       the chunk first (only text that parses as a share counts), else the QR in the pixels; tested end to end on a drawn card
       in both forms. Not done: the stats recap cards carry no code, the card from the web page. Untried: the QR's look and size
       on the real card (190 px, bottom right, unjudged), a card through Discord's own re-encoding.
-- [ ] `M-L` Security, the drop first, before the remix file and the picture lines above (agreed 2026-11-11): every dropped or opened file is untrusted (size limits, strict parsers, no path
+- [x] `M-L` Security, the drop first, before the remix file and the picture lines above (agreed 2026-11-11): every dropped or opened file is untrusted (size limits, strict parsers, no path
       taken from a file, nothing run, fuzz or property tests on each parser). Then a security pass of the whole app
       (IPC commands, deep links, the `art` scheme, the CSP, plugins, the phone remote and the overlay), findings fixed
       with tests.
@@ -168,11 +168,13 @@ Where a line says "reading", the owner hasn't confirmed it.
       `https://127.0.0.1/`) past its public-only DNS (`plugins/net.rs`, now refused). Read, nothing found: `legato://` links
       (scheme, length, control characters, then only what a pasted code may be; a remix link's settings clamped), the CSP (no
       inline or eval script, frames YouTube only), IPC capabilities (window `main`, no remote origin), the phone remote and the
-      overlay (secret on every route, compared in constant time, private addresses only, strict headers). Left open: the `art`
-      scheme answers the third-party pages the app opens too (YouTube's watch page, Exportify, Apple Music, Google's sign-in
-      share the app's schemes) with `Access-Control-Allow-Origin: *`, so their scripts could read a local file's embedded cover
-      (`/local/<id>`, ids in order) or the user's own pictures by name; a fix (refuse those origins) must keep `<img>` and the
-      canvas reads working. Not read yet: each IPC command's arguments one by one.
+      overlay (secret on every route, compared in constant time, private addresses only, strict headers). Fixed after: the `art`
+      scheme answered the third-party pages the app opens too (YouTube's watch page, Exportify, Apple Music, Google's sign-in)
+      with `Access-Control-Allow-Origin: *`; now any webview but `main` gets a 403 (`art::ours`). Decided alone: by webview
+      label, not by `Origin` (an `<img>` sends none). IPC arguments read: every path comes from a file dialog of our own
+      window (no path taken from a file: theme pictures and covers by checked name, `valid_cover_name`), URLs opened only
+      through the opener's default scope (https, mailto, tel) or fixed `ms-settings:` pages, network frames bounded (rooms,
+      nearby, devices: 256 B to 64 MB), plugin calls checked against granted permissions in Rust. Nothing else found.
 - [ ] `L` The website made beautiful (the owner: too basic today) and given documentation sections for developers
       (plugins' API, themes, the link and file formats, contributing). The design is a piece Fable may do itself (the
       owner's word).
