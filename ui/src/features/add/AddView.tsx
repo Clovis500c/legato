@@ -1,4 +1,5 @@
-import { ArrowRight, ClipboardText, Desktop, DeviceMobile, FolderPlus, ListPlus, MagnifyingGlass, Plus, QrCode } from '@phosphor-icons/react'
+import { ClipboardText, Desktop, DeviceMobile, FolderPlus, ListPlus, MagnifyingGlass, Plus, QrCode } from '@phosphor-icons/react'
+import { ArrowRight } from '../../shared/ui/directional'
 import { open } from '@tauri-apps/plugin-dialog'
 import { useEffect, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
@@ -39,7 +40,7 @@ function SearchHero() {
           e.preventDefault()
           if (q.trim()) searchFor(q.trim())
         }}
-        className="flex h-14 items-center gap-3 rounded-full border border-line bg-raised pr-2 pl-5 transition-colors focus-within:border-ink-3"
+        className="flex h-14 items-center gap-3 rounded-full border border-line bg-raised pe-2 ps-5 transition-colors focus-within:border-ink-3"
       >
         <MagnifyingGlass size={22} className="shrink-0 text-ink-2" />
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={tr('Song, artist or album')} aria-label={tr('Search')} className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-ink-3" />

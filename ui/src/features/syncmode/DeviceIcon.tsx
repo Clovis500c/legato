@@ -11,10 +11,10 @@ export function DeviceIcon({ os, form, here, label }: { os: DeviceOs; form: Devi
   return (
     <span role="img" aria-label={label} className="relative grid size-11 shrink-0 place-items-center rounded-xl border border-line bg-bg text-ink">
       <Shape size={24} />
-      <span className="absolute -right-1.5 -bottom-1.5 grid size-5 place-items-center rounded-full border border-line bg-raised text-ink-2">
+      <span className="absolute -end-1.5 -bottom-1.5 grid size-5 place-items-center rounded-full border border-line bg-raised text-ink-2">
         <Logo size={11} weight="fill" />
       </span>
-      {here !== undefined && <span className={`absolute -top-1 -right-1 size-3 rounded-full border-2 border-raised ${here ? 'bg-[#23A55A]' : 'bg-line'}`} />}
+      {here !== undefined && <span className={`absolute -top-1 -end-1 size-3 rounded-full border-2 border-raised ${here ? 'bg-[#23A55A]' : 'bg-line'}`} />}
     </span>
   )
 }

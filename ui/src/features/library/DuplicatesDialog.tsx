@@ -31,8 +31,8 @@ function Group({ group, keep, onKeep, onMerge, busy }: { group: LibraryTrack[]; 
               <SourceIcon key={s} source={s} size={12} />
             ))}
           </span>
-          <span className="w-16 text-right text-xs text-ink-3 tabular-nums">{trn(stats[t.id]?.[0] ?? 0, '{n} play', '{n} plays')}</span>
-          <span className="w-10 text-right text-xs text-ink-3 tabular-nums">{formatDuration(t.durationMs)}</span>
+          <span className="w-16 text-end text-xs text-ink-3 tabular-nums">{trn(stats[t.id]?.[0] ?? 0, '{n} play', '{n} plays')}</span>
+          <span className="w-10 text-end text-xs text-ink-3 tabular-nums">{formatDuration(t.durationMs)}</span>
         </label>
       ))}
       <Button variant="ghost" className="mt-1 self-end" disabled={busy} onClick={onMerge}>

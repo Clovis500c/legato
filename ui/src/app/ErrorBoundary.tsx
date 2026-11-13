@@ -26,7 +26,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, { failed: 
     return (
       <div role="alert" className="grid min-h-screen place-items-center bg-bg p-6 text-ink">
         {/* The window has no frame and App's header, with its drag region and buttons, is gone: a strip to move it by, and Close. */}
-        <div data-tauri-drag-region className="fixed inset-x-0 top-0 flex h-13 items-center justify-end pr-2">
+        <div data-tauri-drag-region className="fixed inset-x-0 top-0 flex h-13 items-center justify-end pe-2">
           <button className="grid h-9 w-11 place-items-center rounded-md text-ink transition hover:bg-danger hover:text-white" aria-label={tr('Close')} title={tr('Close')} onClick={() => void getCurrentWindow().close()}>
             <X size={16} />
           </button>

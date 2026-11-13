@@ -50,7 +50,7 @@ export function Stars({ value, onChange, size = 14, className = '' }: { value: n
           <span key={i} className="relative block shrink-0" style={{ width: size, height: size }}>
             <Star size={size} className="absolute inset-0 text-ink-4" />
             {fill > 0 && (
-              <span className="absolute inset-y-0 left-0 overflow-hidden" style={{ width: `${fill * 100}%` }}>
+              <span className="absolute inset-y-0 start-0 overflow-hidden" style={{ width: `${fill * 100}%` }}>
                 <Star size={size} weight="fill" className={`block ${hover === null ? 'text-ink-2' : 'text-ink-3'}`} />
               </span>
             )}

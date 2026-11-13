@@ -1,4 +1,5 @@
-import { ArrowCounterClockwise, CaretRight, Export, FloppyDisk, Plus } from '@phosphor-icons/react'
+import { ArrowCounterClockwise, Export, FloppyDisk, Plus } from '@phosphor-icons/react'
+import { CaretRight } from '../../shared/ui/directional'
 import { save } from '@tauri-apps/plugin-dialog'
 import { revealItemInDir } from '@tauri-apps/plugin-opener'
 import { useRef, useState, type ReactNode } from 'react'
@@ -37,7 +38,7 @@ function Slider({ label, value, min, max, step, rest, center = false, show, onCh
         className="bar handle"
         style={{ backgroundImage: `linear-gradient(to right, var(--line) ${a}%, var(--ink) ${a}%, var(--ink) ${b}%, var(--line) ${b}%)` }}
       />
-      <span className={`text-right font-mono tabular-nums ${value === rest ? 'text-ink-3' : 'text-ink'}`}>{show(value)}</span>
+      <span className={`text-end font-mono tabular-nums ${value === rest ? 'text-ink-3' : 'text-ink'}`}>{show(value)}</span>
     </div>
   )
 }
@@ -182,7 +183,7 @@ function ExportCopy({ path, effects }: { path: string; effects: Effects }) {
           <div role="progressbar" aria-label={tr('Exporting')} aria-valuenow={progress === null ? undefined : Math.round(progress * 100)} className="h-1 flex-1 overflow-hidden rounded-full bg-line">
             <div className={`h-full bg-ink transition-[width] ${progress === null ? 'w-1/3 animate-pulse' : ''}`} style={progress === null ? undefined : { width: `${progress * 100}%` }} />
           </div>
-          <span className="w-9 text-right font-mono text-ink-2 tabular-nums">{progress === null ? '…' : pct(progress)}</span>
+          <span className="w-9 text-end font-mono text-ink-2 tabular-nums">{progress === null ? '…' : pct(progress)}</span>
           <button onClick={() => void api.exportStop()} className="text-ink-2 hover:text-ink">
             {tr('Cancel')}
           </button>

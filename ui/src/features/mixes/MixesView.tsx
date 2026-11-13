@@ -1,4 +1,5 @@
-import { ArrowCounterClockwise, ArrowRight, Play, Prohibit, ThumbsDown } from '@phosphor-icons/react'
+import { ArrowCounterClockwise, Play, Prohibit, ThumbsDown } from '@phosphor-icons/react'
+import { ArrowRight } from '../../shared/ui/directional'
 import { useMemo, useState } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
@@ -62,7 +63,7 @@ function MixTile({ mix, size }: { mix: Mix; size: number }) {
   const { label, mark } = mixMark(mix)
   return (
     <span className="relative grid shrink-0 place-items-center rounded-cover border border-line-soft bg-recess" style={{ width: size, height: size }}>
-      <span className="absolute top-3 left-3 flex items-center gap-1.5 text-xs font-medium text-ink-3">
+      <span className="absolute top-3 start-3 flex items-center gap-1.5 text-xs font-medium text-ink-3">
         <Led on /> {label}
       </span>
       <span className="font-mono font-semibold text-ink-2" style={{ fontSize: size * (mark.length > 2 ? 0.22 : 0.32) }}>
@@ -87,7 +88,7 @@ function MixCover({ mix, tracks, size }: { mix: Mix; tracks: LibraryTrack[]; siz
         <Cover title={mixTitle(mix)} art={trackArt(songs[0])} size={size} className="rounded-none! border-0!" />
       )}
       {/* Badge on the art: fixed dark chip, readable over any cover. */}
-      <span className="absolute top-2.5 left-2.5 flex items-center gap-1.5 rounded-full bg-black/60 px-2 py-0.5 text-xs font-medium text-white">
+      <span className="absolute top-2.5 start-2.5 flex items-center gap-1.5 rounded-full bg-black/60 px-2 py-0.5 text-xs font-medium text-white">
         <span className="size-1.5 rounded-full bg-white" /> {label}
       </span>
     </span>

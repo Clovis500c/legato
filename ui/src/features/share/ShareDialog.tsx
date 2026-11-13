@@ -1,4 +1,4 @@
-import { CaretLeft, CaretRight } from '@phosphor-icons/react'
+import { CaretLeft, CaretRight } from '../../shared/ui/directional'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from '../../app/store'
 import { api, type ShareCode } from '../../shared/api'

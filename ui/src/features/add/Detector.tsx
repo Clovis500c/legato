@@ -218,7 +218,7 @@ export function Detector({ onFound }: { onFound: (t: Track) => void }) {
             <Button onClick={() => void listen()} disabled={token === null}>
               {input === 'mic' ? <Microphone size={15} weight="fill" /> : <Desktop size={15} weight="fill" />} {tr('Listen')}
             </Button>
-            <button onClick={() => setEditing(true)} className="text-left text-[0.6875rem] text-ink-3 hover:text-ink">
+            <button onClick={() => setEditing(true)} className="text-start text-[0.6875rem] text-ink-3 hover:text-ink">
               {token ? tr('AudD token · Change') : tr('A few free recognitions a day · Add your own AudD token')}
             </button>
           </div>

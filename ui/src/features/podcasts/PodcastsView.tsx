@@ -111,7 +111,7 @@ export function PodcastsView() {
                 {kept.map((k) => (
                   <li key={k.url} className="flex items-center gap-3 border-t border-line-soft py-2.5">
                     <Cover title={k.title} art={k.image ? [remoteArt(k.image)] : []} size={36} className="rounded-lg!" />
-                    <button type="button" onClick={() => open(k.url)} className="min-w-0 flex-1 text-left">
+                    <button type="button" onClick={() => open(k.url)} className="min-w-0 flex-1 text-start">
                       <span className="block truncate font-medium">{k.title}</span>
                       <span className="block truncate text-xs text-ink-2">{k.author}</span>
                     </button>

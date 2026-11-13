@@ -38,7 +38,7 @@ function Dropdown({ icon, label, items }: { icon: ReactNode; label: string; item
       className="flex h-9 items-center gap-2 rounded-lg border border-line bg-raised px-3 text-[0.8125rem] hover:border-ink-3"
     >
       <span className="text-ink-3">{icon}</span>
-      <span className="min-w-0 flex-1 truncate text-left">{label}</span>
+      <span className="min-w-0 flex-1 truncate text-start">{label}</span>
       <CaretDown size={12} className="text-ink-3" />
     </button>
   )
@@ -160,7 +160,7 @@ function Preview({ d }: { d: DiscordSettings }) {
         <span className="relative shrink-0">
           <Cover title={p.title} art={track ? trackArt(track) : []} size={64} className="rounded-lg! border-0!" />
           {/* Discord draws the artist's picture only over a cover it can fetch. */}
-          {p.art && p.artistArt && <img src={remoteArt(p.artistArt)} alt="" className="absolute -right-1.5 -bottom-1.5 size-6 rounded-full border-2 border-[#232428] object-cover" />}
+          {p.art && p.artistArt && <img src={remoteArt(p.artistArt)} alt="" className="absolute -end-1.5 -bottom-1.5 size-6 rounded-full border-2 border-[#232428] object-cover" />}
         </span>
         <div className="flex min-w-0 flex-1 flex-col gap-0.5 text-[0.8125rem]">
           <p className="truncate font-semibold text-white">{first}</p>

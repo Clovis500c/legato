@@ -24,7 +24,7 @@ export function PageHeader({ kicker, title, sub, actions, side, art, tint, onCon
           <div className="flex flex-wrap items-center gap-3 px-6 py-5 phone:gap-1.5 phone:px-4 phone:py-3">
             {actions}
             {/* A narrow pane wraps it under the actions. */}
-            {side && <div className="ml-auto flex min-w-0 flex-wrap items-center gap-2 phone:gap-1">{side}</div>}
+            {side && <div className="ms-auto flex min-w-0 flex-wrap items-center gap-2 phone:gap-1">{side}</div>}
           </div>
         )}
       </div>

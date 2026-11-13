@@ -117,9 +117,9 @@ function Setup({ folder, onClose, onDone }: { folder: string; onClose: () => voi
           if (e.key === 'Enter' && probe && ready && !busy) void start()
         }}
         onKeyUp={(e) => setCaps(e.getModifierState('CapsLock'))}
-        className="flex-1 rounded-md border border-line bg-bg py-2 pr-9 pl-3 text-sm outline-none focus:border-ink-3"
+        className="flex-1 rounded-md border border-line bg-bg py-2 pe-9 ps-3 text-sm outline-none focus:border-ink-3"
       />
-      <button type="button" aria-label={shown ? tr('Hide password') : tr('Show password')} title={shown ? tr('Hide password') : tr('Show password')} onClick={() => setShown(!shown)} className="absolute inset-y-0 right-0 px-2.5 text-ink-2 hover:text-ink">
+      <button type="button" aria-label={shown ? tr('Hide password') : tr('Show password')} title={shown ? tr('Hide password') : tr('Show password')} onClick={() => setShown(!shown)} className="absolute inset-y-0 end-0 px-2.5 text-ink-2 hover:text-ink">
         {shown ? <EyeSlash size={16} /> : <Eye size={16} />}
       </button>
     </div>
@@ -132,7 +132,7 @@ function Setup({ folder, onClose, onDone }: { folder: string; onClose: () => voi
   }
   const copy = () => void navigator.clipboard.writeText(password).then(() => useStore.getState().notify(tr('Copied to clipboard'), { kind: 'ok' }))
   const choice = (on: boolean, title: string, sub: string, icon: ReactNode) => (
-    <button role="radio" aria-checked={protect === on} onClick={() => setProtect(on)} className={`flex gap-3 rounded-lg border p-3 text-left transition ${protect === on ? 'border-ink bg-bg' : 'border-line hover:bg-bg'}`}>
+    <button role="radio" aria-checked={protect === on} onClick={() => setProtect(on)} className={`flex gap-3 rounded-lg border p-3 text-start transition ${protect === on ? 'border-ink bg-bg' : 'border-line hover:bg-bg'}`}>
       <span className="mt-0.5">{icon}</span>
       <span className="flex flex-col gap-0.5">
         <span className="text-[0.8125rem] font-semibold">{title}</span>

@@ -1,4 +1,5 @@
-import { CaretLeft, Clock, DotsThree, Heart, MicrophoneStage, Play, Plus, Radio, SpinnerGap } from '@phosphor-icons/react'
+import { Clock, DotsThree, Heart, MicrophoneStage, Play, Plus, Radio, SpinnerGap } from '@phosphor-icons/react'
+import { CaretLeft } from '../../shared/ui/directional'
 import { PlayingBars, PlayingMark } from '../player/PlayingMark'
 import { artistName } from '../../shared/artistName'
 import { useShallow } from 'zustand/react/shallow'
@@ -72,11 +73,11 @@ const SOURCES: Source[] = ['spotify', 'youtube', 'apple', 'server', 'local']
 function AlbumHead() {
   return (
     <div role="row" className="mb-1 grid h-9 items-center gap-4 border-b border-line px-2 text-xs text-ink-3 phone:hidden" style={ALBUM_GRID}>
-      <span className="text-right">#</span>
+      <span className="text-end">#</span>
       <span>{tr('Title')}</span>
       <span>{tr('Artist')}</span>
       <span>{tr('Sources')}</span>
-      <span className="text-right">{tr('Plays')}</span>
+      <span className="text-end">{tr('Plays')}</span>
       <span />
       <span className="flex justify-end" title={tr('Duration')}>
         <Clock size={14} />
@@ -106,7 +107,7 @@ function AlbumRow({ list, i, number }: { list: LibraryTrack[]; i: number; number
           )}
         </span>
         {playable && (
-          <RoundButton label={tr('Play {title}', { title: t.title })} kind="plain" size="xs" className="-my-1 -mr-1.5 sr-only text-ink! group-hover:not-sr-only group-hover:grid group-focus-within:not-sr-only group-focus-within:grid" onClick={() => play(list, i)}>
+          <RoundButton label={tr('Play {title}', { title: t.title })} kind="plain" size="xs" className="-my-1 -me-1.5 sr-only text-ink! group-hover:not-sr-only group-hover:grid group-focus-within:not-sr-only group-focus-within:grid" onClick={() => play(list, i)}>
             <Play weight="fill" size={12} />
           </RoundButton>
         )}
@@ -118,12 +119,12 @@ function AlbumRow({ list, i, number }: { list: LibraryTrack[]; i: number; number
           <SourceIcon key={s} source={s} size={13} />
         ))}
       </span>
-      <span className="text-right text-xs text-ink-3 tabular-nums phone:hidden">{plays ? formatCount(plays) : ''}</span>
+      <span className="text-end text-xs text-ink-3 tabular-nums phone:hidden">{plays ? formatCount(plays) : ''}</span>
       {/* No hover on the phone: an unliked heart stays out of a finger's way (the menu likes it). */}
       <RoundButton label={liked ? tr('Remove from Liked Music') : tr('Add to Liked Music')} aria-pressed={liked} kind="plain" size="xs" className={liked ? 'text-ink!' : 'opacity-0 group-hover:opacity-100 focus:opacity-100 phone:invisible'} onClick={(e) => (e.stopPropagation(), void toggleLike(t), pop(e.currentTarget))}>
         <Heart size={15} weight={liked ? 'fill' : 'regular'} />
       </RoundButton>
-      <span className="text-right text-[0.8125rem] text-ink-2 tabular-nums">{formatDuration(t.durationMs)}</span>
+      <span className="text-end text-[0.8125rem] text-ink-2 tabular-nums">{formatDuration(t.durationMs)}</span>
     </li>
   )
 }
@@ -152,7 +153,7 @@ function SongRow({ list, i, cover, extra, sub, number }: { list: LibraryTrack[];
         {sub && <span className="truncate text-xs text-ink-2">{sub}</span>}
       </span>
       {extra}
-      <span className="w-12 shrink-0 text-right text-xs text-ink-3 tabular-nums">{formatDuration(t.durationMs)}</span>
+      <span className="w-12 shrink-0 text-end text-xs text-ink-3 tabular-nums">{formatDuration(t.durationMs)}</span>
     </li>
   )
 }
@@ -177,7 +178,7 @@ function MissingRow({ track, number }: { track: Track; number: number }) {
     <li onClick={() => phone && void play()} onDoubleClick={() => void play()} className={`group grid h-10 items-center gap-4 rounded-md px-2 text-ink-3 hover:bg-raised ${PHONE_GRID}`} style={ALBUM_GRID}>
       <span className="flex justify-end text-[0.8125rem] tabular-nums">
         <span className="group-hover:hidden group-focus-within:hidden">{number}</span>
-        <RoundButton label={tr('Play {title}', { title: track.title })} kind="plain" size="xs" className="-my-1 -mr-1.5 sr-only text-ink! group-hover:not-sr-only group-hover:grid group-focus-within:not-sr-only group-focus-within:grid" onClick={() => void play()}>
+        <RoundButton label={tr('Play {title}', { title: track.title })} kind="plain" size="xs" className="-my-1 -me-1.5 sr-only text-ink! group-hover:not-sr-only group-hover:grid group-focus-within:not-sr-only group-focus-within:grid" onClick={() => void play()}>
           <Play weight="fill" size={12} />
         </RoundButton>
       </span>
@@ -187,7 +188,7 @@ function MissingRow({ track, number }: { track: Track; number: number }) {
       <RoundButton label={tr('Add {title}', { title: track.title })} kind="plain" size="xs" disabled={busy} onClick={(e) => (e.stopPropagation(), void add())}>
         <Plus size={14} />
       </RoundButton>
-      <span className="text-right text-[0.8125rem] tabular-nums">{formatDuration(track.durationMs)}</span>
+      <span className="text-end text-[0.8125rem] tabular-nums">{formatDuration(track.durationMs)}</span>
     </li>
   )
 }

@@ -1,4 +1,5 @@
-import { ArrowLeft, FolderSimple, Play, Plus, Shuffle, SlidersHorizontal } from '@phosphor-icons/react'
+import { FolderSimple, Play, Plus, Shuffle, SlidersHorizontal } from '@phosphor-icons/react'
+import { ArrowLeft } from '../../shared/ui/directional'
 import { artistName } from '../../shared/artistName'
 import { useShallow } from 'zustand/react/shallow'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
@@ -63,7 +64,7 @@ function ResultRow({ title, sub, art, badges, sources, ms, onPlay, menu, right }
         <p className="truncate text-[0.8125rem] text-ink-2">{sub}</p>
       </div>
       <span className="flex items-center gap-2 text-ink-3 phone:hidden">{sources}</span>
-      <span className="w-11 text-right text-sm text-ink-3 tabular-nums phone:hidden">{formatDuration(ms)}</span>
+      <span className="w-11 text-end text-sm text-ink-3 tabular-nums phone:hidden">{formatDuration(ms)}</span>
       {right}
     </li>
   )
@@ -164,10 +165,10 @@ function VideoCard({ hit, onPlay, onAdded, onPick }: { hit: SearchHit; onPlay: (
   const add = () => void api.addTrack(trackOf(hit)).then(async (id) => (onAdded(id), await useStore.getState().refreshChanged()), (e) => useStore.setState({ error: String(e) }))
   return (
     <li onContextMenu={onMenu(() => hitMenu(hit, add, false, onPlay))} className="min-w-0">
-      <button onClick={onPlay} className="flex w-full flex-col gap-2.5 rounded-lg p-3 text-left transition-colors hover:bg-raised">
+      <button onClick={onPlay} className="flex w-full flex-col gap-2.5 rounded-lg p-3 text-start transition-colors hover:bg-raised">
         <span className="relative block aspect-video overflow-hidden rounded-cover border border-line-soft bg-recess">
           {src && <img src={src} alt="" loading="lazy" crossOrigin="anonymous" className="size-full object-cover" />}
-          {hit.durationMs && <span className="absolute right-1.5 bottom-1.5 rounded bg-black/80 px-1.5 text-[0.6875rem] text-white tabular-nums">{formatDuration(hit.durationMs)}</span>}
+          {hit.durationMs && <span className="absolute end-1.5 bottom-1.5 rounded bg-black/80 px-1.5 text-[0.6875rem] text-white tabular-nums">{formatDuration(hit.durationMs)}</span>}
         </span>
         <span className="flex min-w-0 flex-col gap-0.5">
           <span className="line-clamp-2 text-sm font-medium">{hit.title}</span>
@@ -354,7 +355,7 @@ export function SearchView() {
   const topArtist = best && 'artist' in best ? best.artist : undefined
   const topSong = best && 'song' in best ? best.song : null
   const topHit = !best ? (songs[0] ?? videos[0] ?? null) : null
-  const display = 'truncate text-left text-[2rem] leading-[2.375rem] font-bold tracking-[-0.01em] phone:text-xl phone:leading-7'
+  const display = 'truncate text-start text-[2rem] leading-[2.375rem] font-bold tracking-[-0.01em] phone:text-xl phone:leading-7'
   const topCard = (cover: ReactNode, name: ReactNode, line: string, own: boolean, buttons: ReactNode) => (
     <Section title={tr('Top result')} className="w-[300px] shrink-0 phone:w-full">
       {/* The phone: one row (cover, name, play), not a third of the screen. */}
@@ -370,7 +371,7 @@ export function SearchView() {
               <FolderSimple size={16} /> {tr('In your library')}
             </span>
           )}
-          <span className="ml-auto flex items-center gap-2">{buttons}</span>
+          <span className="ms-auto flex items-center gap-2">{buttons}</span>
         </div>
       </div>
     </Section>

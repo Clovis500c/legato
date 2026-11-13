@@ -8,7 +8,7 @@ import { cssVars, DEFAULTS, isVideo, resolveTheme, sanitize, type Settings, type
 import { effectiveFade } from '../features/player/fade'
 import { usePlayer } from '../features/player/store'
 import { useStore } from './store'
-import { loadLang, resolveLang, useLang, type Lang } from '../shared/i18n/i18n'
+import { isRtl, loadLang, resolveLang, useLang, type Lang } from '../shared/i18n/i18n'
 
 const systemDark = window.matchMedia('(prefers-color-scheme: dark)')
 // Windows' Animation effects off: every CSS animation and transition stops too, whatever Settings › Animations says.
@@ -113,6 +113,8 @@ function apply(s: Settings) {
         if (wanted !== lang) return
         useLang.setState({ lang })
         document.documentElement.lang = lang
+        // Right-to-left languages mirror the layout (logical Tailwind classes follow `dir`).
+        document.documentElement.dir = isRtl(lang) ? 'rtl' : 'ltr'
         // Tray menu and taskbar buttons too.
         void api.setUiLanguage(lang).catch(() => {})
       },

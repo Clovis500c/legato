@@ -1,6 +1,7 @@
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { useShallow } from 'zustand/react/shallow'
-import { ArrowRight, ArrowSquareOut, Check, Copy, Info, X } from '@phosphor-icons/react'
+import { ArrowSquareOut, Check, Copy, Info, X } from '@phosphor-icons/react'
+import { ArrowRight } from '../../shared/ui/directional'
 import { useState } from 'react'
 import { useStore } from '../../app/store'
 import type { Credentials } from '../../shared/api'
@@ -12,7 +13,7 @@ import { tr } from '../../shared/i18n/i18n'
 function CopyField({ value }: { value: string }) {
   const [done, setDone] = useState(false)
   return (
-    <div className="flex h-10.5 items-center gap-2.5 rounded-[9px] border border-line bg-raised pr-1.5 pl-3">
+    <div className="flex h-10.5 items-center gap-2.5 rounded-[9px] border border-line bg-raised pe-1.5 ps-3">
       <code className="flex-1 truncate font-mono text-[0.6875rem]">{value}</code>
       <button
         type="button"
@@ -35,7 +36,7 @@ export function ConnectWizard({ service, onClose }: { service: 'spotify'; onClos
 
   return (
     <form
-      className="flex w-120 shrink-0 flex-col gap-6 overflow-y-auto border-l border-line bg-panel px-8 py-10"
+      className="flex w-120 shrink-0 flex-col gap-6 overflow-y-auto border-s border-line bg-panel px-8 py-10"
       onSubmit={async (e) => {
         e.preventDefault()
         if (step < last) return setStep(step + 1)

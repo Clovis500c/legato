@@ -16,7 +16,7 @@ export function HiddenFold({ count, children, className = '', menu, text }: { co
   if (!count) return null
   return (
     <div className={`flex shrink-0 flex-col rounded-lg border border-line-soft ${className}`}>
-      <button onClick={() => setOpen(!open)} onContextMenu={onMenu(() => [{ label: open ? tr('Hide list') : tr('Show'), onSelect: () => setOpen(!open) }, '-', ...(menu?.() ?? [])])} aria-expanded={open} className="flex items-center justify-between gap-3 px-3 py-2 text-left text-xs text-ink-2">
+      <button onClick={() => setOpen(!open)} onContextMenu={onMenu(() => [{ label: open ? tr('Hide list') : tr('Show'), onSelect: () => setOpen(!open) }, '-', ...(menu?.() ?? [])])} aria-expanded={open} className="flex items-center justify-between gap-3 px-3 py-2 text-start text-xs text-ink-2">
         {text ?? trn(count, '{n} video hidden because it isn’t music', '{n} videos hidden because they aren’t music')}
         <span className="flex shrink-0 items-center gap-1.5 rounded-full border border-line px-3 py-1 font-medium text-ink hover:bg-raised">
           {open ? tr('Hide list') : tr('Show')}

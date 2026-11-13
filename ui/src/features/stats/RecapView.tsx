@@ -1,4 +1,5 @@
-import { ArrowLeft, CaretLeft, CaretRight, Copy, DownloadSimple } from '@phosphor-icons/react'
+import { Copy, DownloadSimple } from '@phosphor-icons/react'
+import { ArrowLeft, CaretLeft, CaretRight } from '../../shared/ui/directional'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from '../../app/store'
 import { api, type LibraryTrack, type Play } from '../../shared/api'

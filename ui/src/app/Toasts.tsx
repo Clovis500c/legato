@@ -16,9 +16,9 @@ const icons: Record<Toast['kind'], { Icon: typeof CheckCircle; color: string }> 
 // Above the player bar and Now Playing's controls, or under the top bar (Settings › General › Notifications).
 const places: Record<Settings['toastPlace'], string> = {
   bottom: 'inset-x-0 bottom-[116px] items-center',
-  bottomRight: 'right-0 bottom-[116px] items-end',
+  bottomRight: 'end-0 bottom-[116px] items-end',
   top: 'inset-x-0 top-14 items-center',
-  topRight: 'right-0 top-14 items-end',
+  topRight: 'end-0 top-14 items-end',
 }
 
 /** Newest at the bottom. */
@@ -34,7 +34,7 @@ export function Toasts() {
       {toasts.map((t) => {
         const { Icon, color } = icons[t.kind]
         return (
-          <div key={t.id} role={t.kind === 'error' ? 'alert' : 'status'} className="toast pointer-events-auto flex max-w-[min(560px,100%)] items-center gap-3 rounded-lg border border-line bg-raised py-2 pr-2 pl-3.5 text-[0.8125rem] text-ink shadow-[0_12px_32px_var(--shadow)]">
+          <div key={t.id} role={t.kind === 'error' ? 'alert' : 'status'} className="toast pointer-events-auto flex max-w-[min(560px,100%)] items-center gap-3 rounded-lg border border-line bg-raised py-2 pe-2 ps-3.5 text-[0.8125rem] text-ink shadow-[0_12px_32px_var(--shadow)]">
             <Icon size={18} weight="fill" style={{ color }} className="shrink-0" />
             <span className="min-w-0 flex-1 py-0.5">{t.text}</span>
             {t.action && (

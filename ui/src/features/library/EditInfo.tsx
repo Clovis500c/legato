@@ -153,7 +153,7 @@ export function EditInfo({ tracks, onClose }: { tracks: LibraryTrack[]; onClose:
                             setForm(withRelease(form, r))
                             setReleases(null)
                           }}
-                          className="flex w-full flex-col px-3 py-1.5 text-left hover:bg-raised focus-visible:bg-raised"
+                          className="flex w-full flex-col px-3 py-1.5 text-start hover:bg-raised focus-visible:bg-raised"
                         >
                           <span className="truncate text-[0.8125rem] font-medium">{r.album}</span>
                           <span className="truncate text-xs text-ink-2">{[r.albumArtist, r.year, r.kind, r.track !== null && (r.tracks ? tr('Track {n} of {total}', { n: r.track, total: r.tracks }) : tr('Track {n}', { n: r.track })), r.disc !== null && r.disc > 1 && tr('Disc {n}', { n: r.disc }), r.country].filter(Boolean).join(' · ')}</span>

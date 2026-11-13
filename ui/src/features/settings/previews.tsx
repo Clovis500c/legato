@@ -155,13 +155,13 @@ export function TunerScene({ tuner }: Pick<Settings, 'tuner'>) {
 export function MiniPlayerScene({ miniPlayer }: Pick<Settings, 'miniPlayer'>) {
   return (
     <Frame label={tr('Mini player preview')}>
-      <div className="absolute inset-y-0 left-0 w-5 border-r border-line-soft bg-panel" />
-      <div className="absolute top-2 left-7 flex flex-col gap-1.5">
+      <div className="absolute inset-y-0 start-0 w-5 border-e border-line-soft bg-panel" />
+      <div className="absolute top-2 start-7 flex flex-col gap-1.5">
         <Lines w="w-12" />
         <Lines w="w-9" />
       </div>
       {miniPlayer && (
-        <div className="absolute right-1.5 bottom-2 w-11 overflow-hidden rounded-[3px] border border-line bg-panel shadow-[0_3px_8px_var(--shadow)]">
+        <div className="absolute end-1.5 bottom-2 w-11 overflow-hidden rounded-[3px] border border-line bg-panel shadow-[0_3px_8px_var(--shadow)]">
           <Art className="aspect-video w-full" />
           <div className="p-1">
             <span className="block h-[2px] w-6 rounded-full bg-ink" />
@@ -257,7 +257,7 @@ export function MotionScene({ motion }: Pick<Settings, 'motion'>) {
   return (
     <Frame label={tr('Animations preview')} className="flex items-center px-3">
       <span className="h-px w-full bg-line" />
-      <span className={`absolute top-1/2 left-3 size-3 -translate-y-1/2 rounded-full bg-accent ${motion ? 'preview-glide' : 'preview-jump'}`} />
+      <span className={`absolute top-1/2 start-3 size-3 -translate-y-1/2 rounded-full bg-accent ${motion ? 'preview-glide' : 'preview-jump'}`} />
     </Frame>
   )
 }
@@ -346,7 +346,7 @@ export function MixCoverScene({ mixCovers }: Pick<Settings, 'mixCovers'>) {
       )}
       {mixCovers === 'single' && <SampleArt className="size-full" />}
       {mixCovers === 'template' && <span className="grid size-full place-items-center font-mono text-lg font-semibold text-ink-2">01</span>}
-      <span className="absolute top-1 left-1 rounded-full bg-black/60 px-1 text-[0.4375rem] font-medium text-white">{tr('Daily')}</span>
+      <span className="absolute top-1 start-1 rounded-full bg-black/60 px-1 text-[0.4375rem] font-medium text-white">{tr('Daily')}</span>
     </div>
   )
 }

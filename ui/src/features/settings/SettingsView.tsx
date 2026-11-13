@@ -455,12 +455,12 @@ function PrivacySection() {
                 <span title={c.host} className="truncate font-mono">
                   {c.host}
                 </span>
-                <span className="text-right text-ink-2 tabular-nums">{countText(c)}</span>
+                <span className="text-end text-ink-2 tabular-nums">{countText(c)}</span>
                 <span className="truncate text-ink-2">
                   {tr(WHY_LABELS[c.why])}
                   {c.blocked > 0 && ` · ${tr('Blocked: {n}', { n: formatCount(c.blocked) })}`}
                 </span>
-                <span className="text-right text-xs text-ink-3">{timeAgo(c.last)}</span>
+                <span className="text-end text-xs text-ink-3">{timeAgo(c.last)}</span>
               </div>
             ))}
           </div>
@@ -1089,7 +1089,7 @@ function SettingsSearch({ onPick }: { onPick: (e: SettingEntry) => void }) {
         <div className="flex flex-col gap-px">
           {hits.length === 0 && <p className="px-2 py-2 text-xs text-ink-3">{tr('No setting matches.')}</p>}
           {hits.map((e) => (
-            <button key={`${e.section}/${e.label}`} onClick={() => pick(e)} className="flex flex-col rounded-md px-2 py-1.5 text-left hover:bg-raised">
+            <button key={`${e.section}/${e.label}`} onClick={() => pick(e)} className="flex flex-col rounded-md px-2 py-1.5 text-start hover:bg-raised">
               <span className="text-[0.8125rem]">{tr(e.label)}</span>
               <span className="kicker">{tr(sections.find((s) => s.id === e.section)!.label)}</span>
             </button>
@@ -1133,7 +1133,7 @@ export function SettingsView({ section }: { section: SettingsSection }) {
               than its scroller (-mx-4) moved the whole page 8 px sideways. no-scrollbar plain: not a utility, no variant. */}
           <div className="no-scrollbar contents phone:-mx-2 phone:flex phone:w-[calc(100%+1rem)] phone:gap-1.5 phone:overflow-x-auto phone:px-2">
             {sections.filter((s) => !phoneApp || !DESKTOP_ONLY_SECTIONS.has(s.id)).map((s) => (
-              <button key={s.id} aria-current={s.id === section ? 'page' : undefined} onClick={() => go({ name: 'settings', section: s.id })} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-left phone:min-h-10 phone:shrink-0 phone:gap-2 phone:rounded-full phone:whitespace-nowrap ${s.id === section ? 'bg-raised font-semibold' : 'text-ink-2 hover:text-ink'}`}>
+              <button key={s.id} aria-current={s.id === section ? 'page' : undefined} onClick={() => go({ name: 'settings', section: s.id })} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-start phone:min-h-10 phone:shrink-0 phone:gap-2 phone:rounded-full phone:whitespace-nowrap ${s.id === section ? 'bg-raised font-semibold' : 'text-ink-2 hover:text-ink'}`}>
                 {s.icon} <span className="flex-1">{tr(s.label)}</span>
                 {s.id === 'sources' && signIn && <span title={tr('A service needs you to sign in again')} className="size-2 rounded-full bg-danger" />}
               </button>

@@ -1,4 +1,5 @@
-import { ArrowDown, ArrowRight, ArrowUp, ArrowUUpLeft, CalendarStar, ChartBar, ClockCounterClockwise, DotsSixVertical, EyeSlash, ListPlus, MusicNotes, Play, Playlist, PlusCircle, Shuffle, SlidersHorizontal, Sparkle, YoutubeLogo } from '@phosphor-icons/react'
+import { ArrowDown, ArrowUp, ArrowUUpLeft, CalendarStar, ChartBar, ClockCounterClockwise, DotsSixVertical, EyeSlash, ListPlus, MusicNotes, Play, Playlist, PlusCircle, Shuffle, SlidersHorizontal, Sparkle, YoutubeLogo } from '@phosphor-icons/react'
+import { ArrowRight } from '../../shared/ui/directional'
 import { artistName } from '../../shared/artistName'
 import { useShallow } from 'zustand/react/shallow'
 import { openUrl } from '@tauri-apps/plugin-opener'
@@ -63,7 +64,7 @@ function SongList({ tracks }: { tracks: LibraryTrack[] }) {
     <ul className="-mx-2 grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-x-4">
       {tracks.map((t, i) => (
         <li key={t.id} onContextMenu={onMenu(() => trackMenu(t, { list: tracks, index: i }))}>
-          <button onClick={() => play(tracks, i)} className="group flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-raised">
+          <button onClick={() => play(tracks, i)} className="group flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-start transition-colors hover:bg-raised">
             <span className="relative shrink-0">
               <Cover title={t.album ?? t.title} art={trackArt(t)} size={48} />
               <span aria-hidden className="absolute inset-0 grid place-items-center rounded-cover bg-black/45 text-white opacity-0 group-hover:opacity-100">
@@ -85,8 +86,8 @@ function SongList({ tracks }: { tracks: LibraryTrack[] }) {
  * and two lines (a press and hold gives Play). */
 function JumpTile({ art, title, onOpen, onPlay, menu }: { art: ReactNode; title: string; onOpen: () => void; onPlay: () => void; menu: () => MenuEntry[] }) {
   return (
-    <div onContextMenu={onMenu(menu)} className="group flex h-14 items-center gap-3 overflow-hidden rounded-md bg-raised pr-2 transition-colors hover:bg-line phone:gap-2">
-      <button onClick={onOpen} className="flex h-full min-w-0 flex-1 items-center gap-3 text-left phone:gap-2.5">
+    <div onContextMenu={onMenu(menu)} className="group flex h-14 items-center gap-3 overflow-hidden rounded-md bg-raised pe-2 transition-colors hover:bg-line phone:gap-2">
+      <button onClick={onOpen} className="flex h-full min-w-0 flex-1 items-center gap-3 text-start phone:gap-2.5">
         <span className="grid size-14 shrink-0 place-items-center overflow-hidden">{art}</span>
         <span className="truncate text-sm font-medium phone:line-clamp-2 phone:text-[0.8125rem] phone:leading-4 phone:whitespace-normal">{title}</span>
       </button>
@@ -178,7 +179,7 @@ function YourWeek() {
   const long = new Intl.DateTimeFormat(locale(), { weekday: 'long' })
   const { topArtist, topSong } = week
   const same = Math.abs(diff) < 60_000
-  const tile = 'flex min-w-0 items-center gap-3 rounded-md border border-line-soft p-3 text-left transition-colors hover:bg-raised'
+  const tile = 'flex min-w-0 items-center gap-3 rounded-md border border-line-soft p-3 text-start transition-colors hover:bg-raised'
   // Three blocks centred on one line (user's request 2026-10-23): time, days, then top artist and song share the rest.
   return (
     <div className="flex flex-wrap items-center gap-x-10 gap-y-5 rounded-lg border border-line bg-panel p-5">
@@ -407,7 +408,7 @@ function CustomizeHome({ onClose }: { onClose: () => void }) {
               () => ({ kind: 'home', id: x.id }),
               () => tr(sectionLabels[x.id]),
             )}
-            className={`relative flex cursor-grab items-center gap-3 rounded-xl border border-line bg-raised p-2.5 pr-3 transition-[opacity,box-shadow] hover:border-ink-3 active:cursor-grabbing ${dragging === x.id ? 'opacity-40' : ''}`}
+            className={`relative flex cursor-grab items-center gap-3 rounded-xl border border-line bg-raised p-2.5 pe-3 transition-[opacity,box-shadow] hover:border-ink-3 active:cursor-grabbing ${dragging === x.id ? 'opacity-40' : ''}`}
           >
             {dropAt === i && <span aria-hidden className="absolute inset-x-2 -top-[5px] h-0.5 rounded-full bg-ink" />}
             {dropAt === i + 1 && i === list.length - 1 && <span aria-hidden className="absolute inset-x-2 -bottom-[5px] h-0.5 rounded-full bg-ink" />}

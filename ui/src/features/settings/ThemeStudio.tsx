@@ -27,27 +27,27 @@ function ThemeThumb({ t }: { t: Palette & Partial<Pick<Theme, 'background' | 'ra
           <span className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url("${coverImage(t.background.image)}")`, filter: `blur(${t.background.blur / 4}px)` }} />
         ))}
       {t.background && <span className="absolute inset-0" style={{ background: `color-mix(in srgb, ${t.bg} ${t.background.dim}%, transparent)` }} />}
-      <span className="absolute inset-y-0 left-0 w-[24%]" style={{ background: see(t.panel) }} />
-      <span className="absolute top-3 left-[5%] size-1.5 rounded-full" style={{ background: t.accent }} />
+      <span className="absolute inset-y-0 start-0 w-[24%]" style={{ background: see(t.panel) }} />
+      <span className="absolute top-3 start-[5%] size-1.5 rounded-full" style={{ background: t.accent }} />
       {[0, 1, 2].map((i) => (
-        <span key={i} className="absolute left-[5%] h-[3px] w-[13%] rounded-full" style={{ top: 12 + i * 8, marginLeft: i ? 0 : 9, background: i ? t.ink4 : t.ink }} />
+        <span key={i} className="absolute start-[5%] h-[3px] w-[13%] rounded-full" style={{ top: 12 + i * 8, marginLeft: i ? 0 : 9, background: i ? t.ink4 : t.ink }} />
       ))}
-      <span className="absolute top-3 left-[30%] h-1.5 w-[32%] rounded-full" style={{ background: t.ink }} />
+      <span className="absolute top-3 start-[30%] h-1.5 w-[32%] rounded-full" style={{ background: t.ink }} />
       {[0, 1, 2].map((i) => (
-        <span key={i} className="absolute left-[30%] flex w-[64%] items-center gap-1.5" style={{ top: 25 + i * 13 }}>
+        <span key={i} className="absolute start-[30%] flex w-[64%] items-center gap-1.5" style={{ top: 25 + i * 13 }}>
           <span className="size-2.5 shrink-0" style={{ background: t.recess, borderRadius: r }} />
           <span className="h-[3px] rounded-full" style={{ width: `${55 - i * 12}%`, background: i === 1 ? t.accent : t.ink2 }} />
         </span>
       ))}
       <span className="absolute inset-x-0 bottom-0 h-5" style={{ background: see(t.panel), borderTop: `1px solid ${t.line}` }} />
-      <span className="absolute bottom-1 left-1/2 size-3 -translate-x-1/2 rounded-full" style={{ background: t.accent }} />
+      <span className="absolute bottom-1 start-1/2 size-3 -translate-x-1/2 rounded-full" style={{ background: t.accent }} />
     </span>
   )
 }
 
 function ThemeCard({ t, on, onClick, badge }: { t: Theme; on: boolean; onClick: () => void; badge?: string }) {
   return (
-    <button onClick={onClick} aria-pressed={on} className="flex flex-col gap-2 text-left">
+    <button onClick={onClick} aria-pressed={on} className="flex flex-col gap-2 text-start">
       <span className={`block overflow-hidden rounded-lg border-2 ${on ? 'border-ink' : 'border-transparent outline outline-1 outline-line'}`}>
         <ThemeThumb t={t} />
       </span>
@@ -87,7 +87,7 @@ function Range({ label, value, min, max, unit, onChange }: { label: string; valu
     <label className="flex items-center gap-3 text-xs">
       <span className="w-28 shrink-0 text-ink-2">{label}</span>
       <input type="range" aria-label={label} min={min} max={max} value={value} onChange={(e) => onChange(+e.target.value)} className="bar flex-1" style={{ backgroundImage: `linear-gradient(to right, var(--ink) ${((value - min) / (max - min)) * 100}%, var(--line) 0)` }} />
-      <span className="w-12 text-right font-mono tabular-nums">
+      <span className="w-12 text-end font-mono tabular-nums">
         {value}
         {unit}
       </span>

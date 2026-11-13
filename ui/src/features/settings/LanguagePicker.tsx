@@ -87,7 +87,7 @@ export function LanguagePicker({ value, onChange }: { value: string; onChange: (
     <>
       <button ref={button} type="button" aria-haspopup="listbox" aria-expanded={open} aria-label={tr('Language')} onClick={() => setOpen(!open)} className="flex h-9 w-fit min-w-64 items-center gap-2.5 rounded-full border border-line bg-raised px-3.5 text-[0.8125rem] font-medium hover:bg-panel">
         {current.country ? <Flag country={current.country} /> : <Here size={16} className="text-ink-2" />}
-        <span className="flex-1 text-left">{value === 'system' ? (phoneApp ? tr('This phone ({language})', { language: system.name }) : tr('Windows ({language})', { language: system.name })) : current.name}</span>
+        <span className="flex-1 text-start">{value === 'system' ? (phoneApp ? tr('This phone ({language})', { language: system.name }) : tr('Windows ({language})', { language: system.name })) : current.name}</span>
         <CaretDown size={12} weight="bold" className={`text-ink-3 transition ${open ? 'rotate-180' : ''}`} />
       </button>
       {open &&

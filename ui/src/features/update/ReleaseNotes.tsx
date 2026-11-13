@@ -22,7 +22,7 @@ export function ReleaseNotes({ text }: { text: string }) {
       {parts.map((p, i) => (
         <span key={i} className="flex flex-col gap-0.5">
           {p.title && <span className="font-semibold text-ink">{say(p.title)}</span>}
-          <ul className="list-disc pl-4">
+          <ul className="list-disc ps-4">
             {p.lines.map((l, j) => (
               <li key={j}>{l}</li>
             ))}

@@ -394,7 +394,7 @@ export function PlayerBar() {
   return (
     // On the window's background, under the panels (docs/design.md).
     // Phone layout: a mini player (cover, song, like, previous / play / next, a progress line); Now Playing has the rest.
-    <footer ref={volumeWheelRef} onContextMenu={onMenu(playerMenu)} className="relative flex h-22 shrink-0 items-center justify-between gap-6 px-4 phone:h-16 phone:gap-2 phone:px-3">
+    <footer dir="ltr" ref={volumeWheelRef} onContextMenu={onMenu(playerMenu)} className="relative flex h-22 shrink-0 items-center justify-between gap-6 px-4 phone:h-16 phone:gap-2 phone:px-3">
       {/* In key order: each iframe keeps its place as the two swap roles (a moved iframe reloads). */}
       {now?.youtubeId &&
         [...(tail ? [tail] : []), { key: frameKey, videoId: now.youtubeId }]

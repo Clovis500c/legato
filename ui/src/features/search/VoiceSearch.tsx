@@ -110,7 +110,7 @@ export function VoiceSearch() {
                     setMenu(null)
                     o.run()
                   }}
-                  className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-bg focus-visible:bg-bg"
+                  className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-start hover:bg-bg focus-visible:bg-bg"
                 >
                   <span className="grid size-9 shrink-0 place-items-center rounded-full bg-bg text-ink-2">{o.icon}</span>
                   <span className="flex flex-col">

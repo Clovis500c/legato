@@ -1,4 +1,5 @@
-import { CaretLeft, CaretRight, Check } from '@phosphor-icons/react'
+import { Check } from '@phosphor-icons/react'
+import { CaretLeft, CaretRight } from './directional'
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { create } from 'zustand'
@@ -128,7 +129,7 @@ function Panel({ items, x, y, up, anchor, focusFirst, onBack }: { items: MenuEnt
               closeMenu()
               it.onSelect?.()
             }}
-            className={`flex h-9 w-full shrink-0 items-center gap-3 rounded-lg px-2.5 text-left text-[0.8125rem] outline-none focus:bg-panel disabled:opacity-40 ${it.danger ? 'text-danger' : ''}`}
+            className={`flex h-9 w-full shrink-0 items-center gap-3 rounded-lg px-2.5 text-start text-[0.8125rem] outline-none focus:bg-panel disabled:opacity-40 ${it.danger ? 'text-danger' : ''}`}
           >
             <span className={`grid w-5 shrink-0 place-items-center ${it.danger ? '' : 'text-ink-2'}`}>{it.checked !== undefined ? it.checked && <Check size={15} weight="bold" /> : it.icon}</span>
             <span className="flex-1 truncate">{it.label}</span>
@@ -191,7 +192,7 @@ function Sheet({ items }: { items: MenuEntry[] }) {
       >
         <span aria-hidden className="mx-auto mb-1.5 h-1 w-9 shrink-0 rounded-full bg-ink-4" />
         {at && (
-          <button aria-label={tr('Back')} onClick={() => setTrail(trail.slice(0, -1))} className="flex h-12 shrink-0 items-center gap-3 rounded-lg px-3 text-left text-[0.9375rem] font-semibold outline-none focus-visible:bg-panel">
+          <button aria-label={tr('Back')} onClick={() => setTrail(trail.slice(0, -1))} className="flex h-12 shrink-0 items-center gap-3 rounded-lg px-3 text-start text-[0.9375rem] font-semibold outline-none focus-visible:bg-panel">
             <CaretLeft size={18} className="text-ink-2" />
             <span className="flex-1 truncate">{at.label}</span>
           </button>
@@ -211,7 +212,7 @@ function Sheet({ items }: { items: MenuEntry[] }) {
                 closeMenu()
                 it.onSelect?.()
               }}
-              className={`flex h-12 w-full shrink-0 items-center gap-3.5 rounded-lg px-3 text-left text-[0.9375rem] outline-none focus-visible:bg-panel active:bg-panel disabled:opacity-40 ${it.danger ? 'text-danger' : ''}`}
+              className={`flex h-12 w-full shrink-0 items-center gap-3.5 rounded-lg px-3 text-start text-[0.9375rem] outline-none focus-visible:bg-panel active:bg-panel disabled:opacity-40 ${it.danger ? 'text-danger' : ''}`}
             >
               <span className={`grid w-5 shrink-0 place-items-center ${it.danger ? '' : 'text-ink-2'}`}>{it.checked !== undefined ? it.checked && <Check size={17} weight="bold" /> : it.icon}</span>
               <span className="flex-1 truncate">{it.label}</span>

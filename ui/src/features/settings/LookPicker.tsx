@@ -68,9 +68,9 @@ export function LookPicker() {
 
   return (
     <>
-      <button ref={button} type="button" aria-haspopup="listbox" aria-expanded={open} aria-label={tr('Visualizer style')} onClick={() => setOpen(!open)} className="flex h-10 w-fit min-w-56 items-center gap-2.5 rounded-full border border-line bg-raised py-1 pr-3.5 pl-1.5 text-[0.8125rem] font-medium hover:bg-panel">
+      <button ref={button} type="button" aria-haspopup="listbox" aria-expanded={open} aria-label={tr('Visualizer style')} onClick={() => setOpen(!open)} className="flex h-10 w-fit min-w-56 items-center gap-2.5 rounded-full border border-line bg-raised py-1 pe-3.5 ps-1.5 text-[0.8125rem] font-medium hover:bg-panel">
         <VizThumb look={style} className="h-7 w-14 rounded-full bg-panel" />
-        <span className="flex-1 text-left">{current?.label ?? tr(VISUALIZER_LABELS.plugin)}</span>
+        <span className="flex-1 text-start">{current?.label ?? tr(VISUALIZER_LABELS.plugin)}</span>
         <CaretDown size={12} weight="bold" className={`text-ink-3 transition ${open ? 'rotate-180' : ''}`} />
       </button>
       {open &&

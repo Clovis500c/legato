@@ -180,7 +180,7 @@ function Off() {
           <ul className="flex flex-col gap-1.5" role="radiogroup" aria-label={tr('Rooms nearby')}>
             {rooms.map((r) => (
               <li key={r.id}>
-                <button type="button" role="radio" aria-checked={pick === r.id} disabled={r.full} onClick={() => setPick(r.id)} className={`flex w-full items-center justify-between gap-3 rounded-lg border px-3.5 py-2.5 text-left transition disabled:opacity-50 ${pick === r.id ? 'border-ink' : 'border-line hover:bg-raised'}`}>
+                <button type="button" role="radio" aria-checked={pick === r.id} disabled={r.full} onClick={() => setPick(r.id)} className={`flex w-full items-center justify-between gap-3 rounded-lg border px-3.5 py-2.5 text-start transition disabled:opacity-50 ${pick === r.id ? 'border-ink' : 'border-line hover:bg-raised'}`}>
                   <span className="flex min-w-0 flex-col">
                     <span className="truncate text-sm font-medium">{tr('{name}’s room', { name: r.host })}</span>
                     <span className="text-xs text-ink-2">{r.full ? tr('Full') : trn(r.people, '{n} listening', '{n} listening')}</span>

@@ -86,7 +86,7 @@ export function BlindTest() {
                   type="button"
                   disabled={answer !== null}
                   onClick={() => pick(i)}
-                  className={`w-full rounded-lg border px-4 py-3 text-left transition ${answer === null ? 'border-line bg-raised hover:border-ink-4' : i === right ? 'border-accent-ink bg-raised' : i === answer ? 'border-line bg-recess text-ink-3 line-through' : 'border-line bg-bg text-ink-3'}`}
+                  className={`w-full rounded-lg border px-4 py-3 text-start transition ${answer === null ? 'border-line bg-raised hover:border-ink-4' : i === right ? 'border-accent-ink bg-raised' : i === answer ? 'border-line bg-recess text-ink-3 line-through' : 'border-line bg-bg text-ink-3'}`}
                 >
                   <span className="font-medium">{c.title}</span> <span className="text-ink-2">· {c.artist}</span>
                 </button>

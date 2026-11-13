@@ -27,7 +27,7 @@ function Permissions({ list, fresh }: { list: string[]; fresh?: string[] }) {
             {risky ? <Warning size={15} className="mt-0.5 shrink-0 text-[#F0B232]" /> : <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-ink-3" />}
             <span>
               {text}
-              {fresh?.includes(p) && <span className="ml-1.5 rounded-full border border-line px-1.5 text-[0.625rem] text-ink-2">{tr('New')}</span>}
+              {fresh?.includes(p) && <span className="ms-1.5 rounded-full border border-line px-1.5 text-[0.625rem] text-ink-2">{tr('New')}</span>}
             </span>
           </li>
         )

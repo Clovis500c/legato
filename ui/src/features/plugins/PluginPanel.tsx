@@ -26,8 +26,8 @@ function Tracks({ ids }: { ids: number[] }) {
     <ol className="flex flex-col">
       {list.map((t, i) => (
         <li key={t.id}>
-          <button onClick={() => usePlayer.getState().playTracks(list, i)} className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left text-[0.8125rem] hover:bg-raised">
-            <span className="w-5 text-right font-mono text-[0.6875rem] text-ink-3">{i + 1}</span>
+          <button onClick={() => usePlayer.getState().playTracks(list, i)} className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-start text-[0.8125rem] hover:bg-raised">
+            <span className="w-5 text-end font-mono text-[0.6875rem] text-ink-3">{i + 1}</span>
             <span className="min-w-0 flex-1 truncate">{t.title}</span>
             <span className="max-w-[40%] truncate text-xs text-ink-2">{artistName(t.artist)}</span>
           </button>
@@ -61,7 +61,7 @@ function Node({ plugin, node }: { plugin: string; node: PanelNode }) {
         <label className="flex items-center gap-3 text-[0.8125rem]">
           <span className="w-32 shrink-0 truncate text-ink-2">{node.label}</span>
           <input type="range" aria-label={node.label} min={node.min} max={node.max} step={node.step || 'any'} defaultValue={node.value} key={node.value} onChange={(e) => send(plugin, node.id, +e.target.value)} className="bar flex-1" style={{ backgroundImage: `linear-gradient(to right, var(--ink) ${((node.value - node.min) / (node.max - node.min || 1)) * 100}%, var(--line) 0)` }} />
-          <span className="w-12 text-right font-mono text-xs tabular-nums">{node.value}</span>
+          <span className="w-12 text-end font-mono text-xs tabular-nums">{node.value}</span>
         </label>
       )
     case 'input':

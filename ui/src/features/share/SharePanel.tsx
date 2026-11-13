@@ -72,7 +72,7 @@ function Nearby({ id }: { id: number }) {
           <span className="font-mono text-[2.125rem] leading-none tracking-[0.12em] tabular-nums">
             {code.slice(0, 3)} {code.slice(3)}
           </span>
-          <span className="text-right text-xs text-ink-2">{status?.state === 'sent' ? tr('Sent.') : tr('On the other app: Add music › Import, type this code. Valid 10 min.')}</span>
+          <span className="text-end text-xs text-ink-2">{status?.state === 'sent' ? tr('Sent.') : tr('On the other app: Add music › Import, type this code. Valid 10 min.')}</span>
         </div>
       )}
     </div>
@@ -117,7 +117,7 @@ export function SharePanel({ id, name, onClose }: { id: number; name: string; on
           )}
           <div className="flex flex-col gap-1.5">
             <span className="kicker">{tr('Link · opens in any browser, or paste it anywhere in Legato (Ctrl+V)')}</span>
-            <div className="flex h-10.5 items-center gap-2.5 rounded-[9px] border border-line bg-raised pr-1.5 pl-3">
+            <div className="flex h-10.5 items-center gap-2.5 rounded-[9px] border border-line bg-raised pe-1.5 ps-3">
               <code className="flex-1 truncate font-mono text-[0.6875rem]">{code.link}</code>
               <Button variant="ghost" className="px-2.5! py-1! text-[0.6875rem]" onClick={copy}>
                 {copied ? <Check size={13} /> : <Copy size={13} />} {copied ? tr('Copied') : tr('Copy')}

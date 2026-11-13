@@ -154,7 +154,7 @@ function AddDevice({ mode: first, name, onClose }: { mode: 'show' | 'enter'; nam
                     <path d={qrPath(offer.qr[0], offer.qr[1], 4)} fill="#000000" />
                   </svg>
                 )}
-                <div className="flex flex-col gap-2 text-center sm:text-left">
+                <div className="flex flex-col gap-2 text-center sm:text-start">
                   <span className="font-mono text-4xl tracking-[0.2em] tabular-nums">{offer.code}</span>
                   <p className="text-xs text-ink-2">{tr('Type it on the other device (Settings › Sync Mode › Add a device › Enter a code), or scan the QR code with Legato on a phone.')}</p>
                   <p className="text-xs text-ink-3">{tr('Closes in {time}', { time: left(offer.until, now) })}</p>

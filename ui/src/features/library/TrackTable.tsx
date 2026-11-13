@@ -154,11 +154,11 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
         {t.album}
       </span>
     ) : c === 'year' ? (
-      <span key={c} role="gridcell" className="text-right text-xs text-ink-3 tabular-nums">
+      <span key={c} role="gridcell" className="text-end text-xs text-ink-3 tabular-nums">
         {t.year}
       </span>
     ) : c === 'bpm' || c === 'key' ? (
-      <span key={c} role="gridcell" className="text-right text-xs text-ink-3 tabular-nums">
+      <span key={c} role="gridcell" className="text-end text-xs text-ink-3 tabular-nums">
         {c === 'bpm' ? t.bpm : t.key}
       </span>
     ) : c === 'genre' ? (
@@ -166,7 +166,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
         {t.genre}
       </span>
     ) : c === 'plays' ? (
-      <span key={c} role="gridcell" className="text-right text-xs text-ink-3 tabular-nums">
+      <span key={c} role="gridcell" className="text-end text-xs text-ink-3 tabular-nums">
         {stats[t.id]?.[0] ? formatCount(stats[t.id][0]) : ''}
       </span>
     ) : c === 'rating' ? (
@@ -175,7 +175,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
         <Stars value={stats[t.id]?.[2] ?? 0} onChange={(half) => void rate(t.id, half)} size={13} className={stats[t.id]?.[2] ? '' : 'opacity-0 group-hover:opacity-100 focus-visible:opacity-100'} />
       </span>
     ) : c === 'added' ? (
-      <span key={c} role="gridcell" className="text-right text-xs text-ink-3 tabular-nums">
+      <span key={c} role="gridcell" className="text-end text-xs text-ink-3 tabular-nums">
         {addedDate(t.addedAt)}
       </span>
     ) : c === 'sources' ? (
@@ -185,7 +185,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
         ))}
       </span>
     ) : (
-      <span key={c} role="gridcell" className="text-right text-[0.8125rem] text-ink-2 tabular-nums">
+      <span key={c} role="gridcell" className="text-end text-[0.8125rem] text-ink-2 tabular-nums">
         {formatDuration(t.durationMs)}
       </span>
     )
@@ -194,7 +194,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
     <div role="grid" aria-rowcount={tracks.length} aria-multiselectable className="flex min-h-0 flex-1 flex-col">
       {chosen.length > 0 && (
         <div className="mb-2 flex shrink-0 flex-wrap items-center gap-1.5 rounded-xl border border-line bg-raised px-3 py-1.5">
-          <span className="mr-auto text-[0.8125rem] font-semibold">{trn(chosen.length, '{n} song selected', '{n} songs selected')}</span>
+          <span className="me-auto text-[0.8125rem] font-semibold">{trn(chosen.length, '{n} song selected', '{n} songs selected')}</span>
           <RoundButton label={tr('Play')} kind="plain" size="sm" onClick={() => play(chosen, 0)}>
             <Play size={14} weight="fill" />
           </RoundButton>
@@ -216,7 +216,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
         </div>
       )}
       <div role="row" onContextMenu={onMenu(columnsMenu)} className="mb-2 grid h-9 shrink-0 items-center gap-4 border-b border-line px-2 phone:hidden" style={grid}>
-        <span role="columnheader" className="text-right text-xs text-ink-3">#</span>
+        <span role="columnheader" className="text-end text-xs text-ink-3">#</span>
         <Head label={tr('Title')} sorts={headSorts.title} sort={sort} onSort={onSort} />
         {artistCol && <Head label={tr('Artist')} sorts={['artist', 'artist']} sort={sort} onSort={onSort} />}
         {lead.map((c) => (
@@ -291,7 +291,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
                       )}
                     </span>
                     {playable && (
-                      <RoundButton label={tr('Play {title}', { title: t.title })} kind="plain" size="xs" className="-my-1 -mr-1.5 hidden text-ink! group-focus-within:grid group-hover:grid" onClick={() => play(tracks, v.index)}>
+                      <RoundButton label={tr('Play {title}', { title: t.title })} kind="plain" size="xs" className="-my-1 -me-1.5 hidden text-ink! group-focus-within:grid group-hover:grid" onClick={() => play(tracks, v.index)}>
                         <Play weight="fill" size={12} />
                       </RoundButton>
                     )}

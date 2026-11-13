@@ -86,7 +86,7 @@ function AccountLine({ on, icon, title, pitch, state, children }: { on: boolean;
         <p className="text-[0.8125rem] font-semibold">{title}</p>
         <p className="text-xs text-ink-2">{pitch}</p>
       </div>
-      <div className="flex items-center gap-4 @max-lg:w-full @max-lg:flex-wrap @max-lg:gap-x-3 @max-lg:gap-y-2 @max-lg:pl-[4.125rem]">
+      <div className="flex items-center gap-4 @max-lg:w-full @max-lg:flex-wrap @max-lg:gap-x-3 @max-lg:gap-y-2 @max-lg:ps-[4.125rem]">
         <span className="kicker">{state}</span>
         {children}
       </div>
@@ -112,7 +112,7 @@ function ServiceRow({ service }: { service: 'spotify' }) {
         )}
       </AccountLine>
       {connected && (
-        <div className="ml-13 @max-lg:ml-0">
+        <div className="ms-13 @max-lg:ms-0">
           <DirectionPicker service={sourceLabel[service]} value={dirs.spotify ?? 'both'} onChange={(d) => setDir('spotify', d)} receives={false} />
         </div>
       )}
@@ -151,7 +151,7 @@ function SpotifyWeb() {
       </AccountLine>
       {/* With a key the row above shows it. */}
       {!keyed && (
-        <div className="ml-13 @max-lg:ml-0">
+        <div className="ms-13 @max-lg:ms-0">
           <DirectionPicker service="Spotify" value={dirs.spotify ?? 'both'} onChange={(d) => setDir('spotify', d)} receives={false} />
         </div>
       )}
@@ -224,7 +224,7 @@ function LastfmRow() {
         )}
       </AccountLine>
       {form && !user && (
-        <div className="ml-13 @max-lg:ml-0 flex flex-col gap-2 rounded-lg border border-line bg-bg p-3 text-xs">
+        <div className="ms-13 @max-lg:ms-0 flex flex-col gap-2 rounded-lg border border-line bg-bg p-3 text-xs">
           <p className="text-ink-2">
             {tr('1. Create a free API account on last.fm (any name, no callback needed). 2. Paste its API key and shared secret. 3. Allow Legato on the page that opens.')}{' '}
             <button type="button" className="font-semibold text-ink underline" onClick={() => void openUrl('https://www.last.fm/api/account/create')}>
@@ -291,7 +291,7 @@ function ListenbrainzRow() {
         )}
       </AccountLine>
       {form && !user && (
-        <div className="ml-13 @max-lg:ml-0 flex flex-col gap-2 rounded-lg border border-line bg-bg p-3 text-xs">
+        <div className="ms-13 @max-lg:ms-0 flex flex-col gap-2 rounded-lg border border-line bg-bg p-3 text-xs">
           <p className="text-ink-2">
             {tr('Sign in on listenbrainz.org (free), copy the user token from its settings and paste it here.')}{' '}
             <button type="button" className="font-semibold text-ink underline" onClick={() => void openUrl('https://listenbrainz.org/settings/')}>
@@ -348,7 +348,7 @@ function GoogleAccounts() {
       </AccountLine>
       {data?.signedIn && (
         <>
-          <ul className="ml-13 @max-lg:ml-0 flex flex-col rounded-lg border border-line-soft">
+          <ul className="ms-13 @max-lg:ms-0 flex flex-col rounded-lg border border-line-soft">
             {data.accounts.map((a) => {
               const on = data.picked.includes(accountKey(a))
               const first = data.picked[0] === accountKey(a)
@@ -366,7 +366,7 @@ function GoogleAccounts() {
                     <Toggle label={tr('Sync {name}', { name: a.name })} checked={on} onChange={(v) => toggle(a, v)} />
                   </div>
                   {on && (
-                    <div className="ml-[42px] @max-lg:ml-0">
+                    <div className="ms-[42px] @max-lg:ms-0">
                       <DirectionPicker service="YouTube Music" value={dirs[`youtube:${accountKey(a)}`] ?? 'both'} onChange={(d) => setDir(`youtube:${accountKey(a)}`, d)} />
                     </div>
                   )}
@@ -374,7 +374,7 @@ function GoogleAccounts() {
               )
             })}
           </ul>
-          <div className="ml-13 @max-lg:ml-0 flex items-center gap-3 rounded-lg bg-recess px-3 py-2.5">
+          <div className="ms-13 @max-lg:ms-0 flex items-center gap-3 rounded-lg bg-recess px-3 py-2.5">
             <div className="flex-1">
               <p className="text-[0.8125rem] font-medium">{tr('Playlists and Liked Music')}</p>
               <p className="text-xs text-ink-2">{busy ? tr('Importing…') : lastSync ? tr('Last import {when}: {n} playlists', { when: timeAgo(lastSync.at), n: lastSync.report.playlists }) : tr('Imported when you sign in. Import again any time to pick up changes.')}</p>
@@ -383,14 +383,14 @@ function GoogleAccounts() {
               <ArrowsClockwise size={14} className={busy ? 'animate-spin' : ''} /> {tr('Import playlists now')}
             </Button>
           </div>
-          <div data-setting="Update every 15 minutes" className="ml-13 @max-lg:ml-0 flex items-center gap-3 px-3">
+          <div data-setting="Update every 15 minutes" className="ms-13 @max-lg:ms-0 flex items-center gap-3 px-3">
             <div className="flex-1">
               <p className="text-[0.8125rem] font-medium">{tr('Update every 15 minutes')}</p>
               <p className="text-xs text-ink-2">{tr('While the app is open, your playlists and Liked Music come in again by themselves. If Google limits this PC, it waits longer.')}</p>
             </div>
             <Toggle label={tr('Update every 15 minutes')} checked={autoSync} onChange={(on) => updateSettings({ autoSync: on })} />
           </div>
-          <div className="ml-13 @max-lg:ml-0 flex gap-2">
+          <div className="ms-13 @max-lg:ms-0 flex gap-2">
             <Button variant="ghost" onClick={() => signIn(true)}>
               <UserPlus size={14} /> {waiting ? tr('Waiting for Google…') : tr('Add another Google account')}
             </Button>
@@ -398,7 +398,7 @@ function GoogleAccounts() {
               <SignOut size={14} /> {tr('Sign out')}
             </Button>
           </div>
-          <p className="ml-13 @max-lg:ml-0 text-xs text-ink-2">{tr('Synced accounts bring their playlists and Liked Music into your library. YouTube Music doesn’t offer an official way in without keys: this uses the site’s own access, like Pear Desktop, and may break if YouTube changes it.')}</p>
+          <p className="ms-13 @max-lg:ms-0 text-xs text-ink-2">{tr('Synced accounts bring their playlists and Liked Music into your library. YouTube Music doesn’t offer an official way in without keys: this uses the site’s own access, like Pear Desktop, and may break if YouTube changes it.')}</p>
         </>
       )}
     </div>
@@ -440,7 +440,7 @@ function ServerAccount({ s }: { s: ServerStatus }) {
           {tr('Sign out')}
         </Button>
       </AccountLine>
-      <div className="ml-13 @max-lg:ml-0 flex flex-col gap-2 text-xs text-ink-2">
+      <div className="ms-13 @max-lg:ms-0 flex flex-col gap-2 text-xs text-ink-2">
         {s.syncedAt !== null && <p>{s.playlists ? tr('Last sync {when} · {playlists}', { when: timeAgo(s.syncedAt), playlists: trn(s.playlists, '{n} playlist', '{n} playlists') }) : tr('Last sync {when}', { when: timeAgo(s.syncedAt) })}</p>}
         {s.error && <p className="text-ink">{explain(s.error).text}</p>}
         {s.relay && (
@@ -533,7 +533,7 @@ function PlexSignIn({ onSignedIn }: { onSignedIn: (s: ServerStatus) => Promise<v
         <p className="text-ink-2">{tr('Which server?')}</p>
         <div className="flex flex-col gap-1.5">
           {servers.map((s) => (
-            <button key={s.id} type="button" disabled={!!busy} onClick={() => void pick(s.id)} className="flex min-h-10 items-center gap-2.5 rounded-md border border-line px-3 py-2 text-left hover:bg-hover disabled:opacity-50">
+            <button key={s.id} type="button" disabled={!!busy} onClick={() => void pick(s.id)} className="flex min-h-10 items-center gap-2.5 rounded-md border border-line px-3 py-2 text-start hover:bg-hover disabled:opacity-50">
               <HardDrives size={16} className="shrink-0 text-ink-2" />
               <span className="min-w-0 flex-1 truncate text-ink">{s.name}</span>
               {!s.owned && <span className="shrink-0 text-ink-2">{tr('Shared with you')}</span>}
@@ -634,7 +634,7 @@ function ServerRow() {
         </AccountLine>
       )}
       {form && !list.length && (
-        <div className="ml-13 @max-lg:ml-0 flex flex-col gap-2.5 rounded-lg border border-line bg-bg p-3 text-xs">
+        <div className="ms-13 @max-lg:ms-0 flex flex-col gap-2.5 rounded-lg border border-line bg-bg p-3 text-xs">
           <div className="flex flex-col gap-1.5">
             <span className="text-ink-2">{tr('Server type')}</span>
             <Segmented label={tr('Server type')} value={kind} onChange={setKind} options={SERVER_KINDS} />
@@ -756,9 +756,9 @@ function LocalFolders() {
     <div data-setting="Local files" className="flex flex-col gap-3 px-4 py-3.5">
       <AccountLine on={folders.length > 0} icon={<SourceIcon source="local" size={16} />} title={tr('Local files')} pitch={tr('MP3, FLAC, WAV, OGG, M4A. Linked to your YouTube and Spotify tracks and played first, gapless.')} state={busy ? tr('Scanning…') : trn(files, '{n} file', '{n} files')} />
       {folders.length > 0 && (
-        <ul className="ml-13 @max-lg:ml-0 flex flex-col rounded-lg border border-line-soft">
+        <ul className="ms-13 @max-lg:ms-0 flex flex-col rounded-lg border border-line-soft">
           {folders.map((f) => (
-            <li key={f} className="flex items-center gap-2 border-b border-line-soft py-1 pr-1 pl-3 last:border-0">
+            <li key={f} className="flex items-center gap-2 border-b border-line-soft py-1 pe-1 ps-3 last:border-0">
               <span className="flex-1 truncate font-mono text-[0.6875rem]">{f}</span>
               <RoundButton label={tr('Remove {folder}', { folder: f })} kind="plain" size="xs" disabled={busy} onClick={() => run(() => api.setLocalFolders(folders.filter((x) => x !== f)))}>
                 <X size={12} />
@@ -768,14 +768,14 @@ function LocalFolders() {
         </ul>
       )}
       {refused && (
-        <p className="ml-13 @max-lg:ml-0 text-xs text-ink">
+        <p className="ms-13 @max-lg:ms-0 text-xs text-ink">
           {tr(MUSIC_REFUSED)}{' '}
           <button onClick={() => openAppInfo()} className="font-medium underline-offset-2 hover:underline">
             {tr('Open app info')}
           </button>
         </p>
       )}
-      <div className="ml-13 @max-lg:ml-0 flex gap-2">
+      <div className="ms-13 @max-lg:ms-0 flex gap-2">
         <Button disabled={busy} onClick={() => void add()}>
           {phoneApp ? <DeviceMobile size={14} /> : <FolderPlus size={14} />} {phoneApp ? tr('Find my songs') : tr('Add folder')}
         </Button>

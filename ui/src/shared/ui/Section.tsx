@@ -46,7 +46,7 @@ export function CardRow({ children }: { children: ReactNode }) {
 export function MediaCard({ title, sub, art, round, onOpen, onPlay, menu, busy }: { title: string; sub: string; art: ReactNode; round?: boolean; onOpen: () => void; onPlay?: () => void; menu?: () => MenuEntry[]; busy?: boolean }) {
   return (
     <li onContextMenu={menu && onMenu(menu)} className="group relative flex w-[200px] shrink-0 snap-start rounded-lg p-3 transition-colors hover:bg-raised">
-      <button onClick={onOpen} className="flex min-w-0 flex-1 flex-col gap-2.5 text-left">
+      <button onClick={onOpen} className="flex min-w-0 flex-1 flex-col gap-2.5 text-start">
         <span className={`grid size-[176px] overflow-hidden ${round ? 'rounded-full' : 'rounded-cover'}`}>{art}</span>
         <span className="flex min-w-0 flex-col gap-0.5">
           <span className="truncate text-base font-medium">{title}</span>
@@ -54,7 +54,7 @@ export function MediaCard({ title, sub, art, round, onOpen, onPlay, menu, busy }
         </span>
       </button>
       {onPlay && (
-        <RoundButton label={tr('Play {title}', { title })} kind="primary" size="md" className={`absolute top-[138px] right-[22px] shadow-[0_8px_16px_rgb(0_0_0/0.3)] ${busy ? '' : 'translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 focus:translate-y-0 focus:opacity-100'}`} onClick={onPlay}>
+        <RoundButton label={tr('Play {title}', { title })} kind="primary" size="md" className={`absolute top-[138px] end-[22px] shadow-[0_8px_16px_rgb(0_0_0/0.3)] ${busy ? '' : 'translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 focus:translate-y-0 focus:opacity-100'}`} onClick={onPlay}>
           {busy ? <SpinnerGap size={16} className="animate-spin" /> : <Play weight="fill" size={16} />}
         </RoundButton>
       )}

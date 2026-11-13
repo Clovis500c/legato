@@ -49,6 +49,10 @@ function french(table: Record<string, string>): Record<string, string> {
   return Object.fromEntries(Object.entries(table).map(([k, v]) => [k, v.replace(/ ([:;?!»])/g, ' $1').replace(/« /g, '« ')]))
 }
 
+/** Languages written right to left: the page's `dir` follows (Settings applies it). */
+export const RTL: readonly string[] = ['ar', 'he']
+export const isRtl = (code: string) => RTL.includes(code)
+
 export const useLang = create<{ lang: Lang }>(() => ({ lang: 'en' }))
 export const lang = () => useLang.getState().lang
 

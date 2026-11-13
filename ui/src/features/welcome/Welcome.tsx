@@ -1,4 +1,5 @@
-import { ArrowRight, ArrowSquareOut, Key, MagnifyingGlass, MusicNotes, ShieldCheck, type Icon } from '@phosphor-icons/react'
+import { ArrowSquareOut, Key, MagnifyingGlass, MusicNotes, ShieldCheck, type Icon } from '@phosphor-icons/react'
+import { ArrowRight } from '../../shared/ui/directional'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { useEffect, useState } from 'react'
 import { useSettings } from '../../app/settings'

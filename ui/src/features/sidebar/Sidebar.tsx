@@ -30,7 +30,7 @@ import { saveSmart, smartMenu } from '../smart/actions'
 /** Home, Mixes, Stats, Add music: icon Regular at rest, Fill when on (docs/design.md). */
 function NavItem({ on, icon: Icon, label, onClick, onContextMenu }: { on: boolean; icon: typeof House; label: string; onClick: () => void; onContextMenu?: (e: React.MouseEvent) => void }) {
   return (
-    <button aria-current={on ? 'page' : undefined} onClick={onClick} onContextMenu={onContextMenu} className={`flex h-10 w-full items-center gap-4 rounded-md px-3 text-left phone:h-12 phone:gap-3 text-[0.9375rem] font-medium transition ${on ? 'text-ink' : 'text-ink-2 hover:text-ink'}`}>
+    <button aria-current={on ? 'page' : undefined} onClick={onClick} onContextMenu={onContextMenu} className={`flex h-10 w-full items-center gap-4 rounded-md px-3 text-start phone:h-12 phone:gap-3 text-[0.9375rem] font-medium transition ${on ? 'text-ink' : 'text-ink-2 hover:text-ink'}`}>
       <Icon key={String(on)} size={22} weight={on ? 'fill' : 'regular'} className={on ? 'icon-in' : ''} />
       <span className="min-w-0 flex-1 truncate">{label}</span>
     </button>
@@ -75,7 +75,7 @@ function LibItem({ e }: { e: Entry }) {
   )
   const over = useDrag((s) => s.target === target)
   return (
-    <button aria-current={e.on ? 'page' : undefined} aria-expanded={e.open} onClick={() => openEntry(e)} onContextMenu={onMenu(e.menu)} data-drop={p ? target : undefined} className={`flex h-full w-full items-center gap-3 rounded-md text-left transition ${e.depth ? 'pr-2 pl-6' : 'px-2'} ${e.on || over ? 'bg-raised' : 'hover:bg-raised'} ${over ? 'ring-2 ring-ink' : ''}`}>
+    <button aria-current={e.on ? 'page' : undefined} aria-expanded={e.open} onClick={() => openEntry(e)} onContextMenu={onMenu(e.menu)} data-drop={p ? target : undefined} className={`flex h-full w-full items-center gap-3 rounded-md text-start transition ${e.depth ? 'pe-2 ps-6' : 'px-2'} ${e.on || over ? 'bg-raised' : 'hover:bg-raised'} ${over ? 'ring-2 ring-ink' : ''}`}>
       <span className={`grid size-12 shrink-0 place-items-center overflow-hidden ${e.round ? 'rounded-full' : 'rounded-cover'}`}>{e.art}</span>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-medium text-ink">{e.label}</span>
@@ -94,7 +94,7 @@ const calm = 'opacity-0 group-hover/lib:opacity-100 focus-visible:opacity-100 gr
 /** Your library open wide: a card per entry, cover above (opening one brings its page back). */
 function LibCard({ e }: { e: Entry }) {
   return (
-    <button aria-expanded={e.open} onClick={() => openEntry(e)} onContextMenu={onMenu(e.menu)} className="flex w-full flex-col gap-2.5 rounded-lg p-3 text-left transition-colors hover:bg-raised">
+    <button aria-expanded={e.open} onClick={() => openEntry(e)} onContextMenu={onMenu(e.menu)} className="flex w-full flex-col gap-2.5 rounded-lg p-3 text-start transition-colors hover:bg-raised">
       <span className={`grid size-44 place-items-center overflow-hidden ${e.round ? 'rounded-full' : 'rounded-cover'}`}>{e.art}</span>
       <span className="min-w-0">
         <span className="block truncate text-base font-medium">{e.label}</span>
@@ -222,7 +222,7 @@ export function Sidebar() {
 
       {/* The mini player stays put at the bottom; only the list scrolls. */}
       <section aria-label={tr('Your library')} className="group/lib flex min-h-0 flex-1 flex-col rounded-lg bg-panel">
-        <div onContextMenu={onMenu(playlistsMenu)} className="flex shrink-0 items-center gap-1 pt-3 pr-2 pl-4">
+        <div onContextMenu={onMenu(playlistsMenu)} className="flex shrink-0 items-center gap-1 pt-3 pe-2 ps-4">
           <h2 className="flex-1 text-base font-medium">{tr('Your library')}</h2>
           {/* Expand and Sort under the pointer or the keyboard (a calm sidebar, plan-v2 › U2); open wide and the phone: shown. */}
           <RoundButton label={wide ? tr('Collapse Your library') : tr('Expand Your library')} aria-pressed={wide} kind="plain" size="sm" className={`${wide ? 'nudge-l' : 'nudge-r'} ${wide ? '' : calm} phone:hidden`} onClick={() => update({ libraryWide: !wide })}>
@@ -280,7 +280,7 @@ export function Sidebar() {
             e.preventDefault()
             update({ sidebarWidth: fit(width + step) })
           }}
-          className="absolute inset-y-2 -right-1.5 z-10 w-2 cursor-col-resize rounded-full transition-colors hover:bg-line focus-visible:bg-line"
+          className="absolute inset-y-2 -end-1.5 z-10 w-2 cursor-col-resize rounded-full transition-colors hover:bg-line focus-visible:bg-line"
         />
       )}
     </aside>

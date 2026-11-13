@@ -226,7 +226,7 @@ function FindVersions({ tracks }: { tracks: LibraryTrack[] }) {
     }
   }
   return (
-    <Button variant="ghost" className="ml-auto py-1! font-sans text-xs tracking-normal normal-case" disabled={busy} onClick={run}>
+    <Button variant="ghost" className="ms-auto py-1! font-sans text-xs tracking-normal normal-case" disabled={busy} onClick={run}>
       <MagnifyingGlass size={13} /> {busy ? tr('Searching…') : tr('Find full versions ({n})', { n: formatCount(Math.min(tracks.length, 150)) })}
     </Button>
   )
@@ -258,7 +258,7 @@ function Playability({ tracks }: { tracks: LibraryTrack[] }) {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute top-[calc(100%+6px)] right-0 z-50 flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2 rounded-xl border border-line bg-panel p-3.5 text-xs shadow-[0_12px_32px_var(--shadow)]">
+          <div className="absolute top-[calc(100%+6px)] end-0 z-50 flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2 rounded-xl border border-line bg-panel p-3.5 text-xs shadow-[0_12px_32px_var(--shadow)]">
             {parts.map((p, i) => (
               <span key={p} className="flex items-center gap-2">
                 <Led on={i === 0} /> {p}
@@ -305,7 +305,7 @@ export function SongsView() {
           <AutoDjRound tracks={shown} />
           <SourceChips tracks={tracks} value={filter} onChange={setFilter} />
         </div>
-        <div className="flex min-w-0 flex-wrap items-center gap-2 phone:order-1 phone:ml-auto phone:gap-1">
+        <div className="flex min-w-0 flex-wrap items-center gap-2 phone:order-1 phone:ms-auto phone:gap-1">
           <DuplicatesButton />
           <Playability tracks={shown} />
           <SortMenu />
@@ -342,7 +342,7 @@ function EditableTitle({ id, name }: { id: number; name: string }) {
   const [draft, setDraft] = useState<string | null>(null)
   if (draft === null)
     return (
-      <button onClick={() => setDraft(name)} title={tr('Rename')} className="truncate text-left hover:underline hover:decoration-line">
+      <button onClick={() => setDraft(name)} title={tr('Rename')} className="truncate text-start hover:underline hover:decoration-line">
         {name}
       </button>
     )
@@ -440,7 +440,7 @@ export function AlbumsView() {
           className="-mx-3 pb-6"
           render={(a) => (
             <div onContextMenu={onMenu(() => tracksMenu(a.tracks, ['-', { label: tr('Go to artist'), icon: <MicrophoneStage size={16} />, onSelect: () => go({ name: 'artist', artist: a.artist }) }]))} className="group relative rounded-lg p-3 transition-colors hover:bg-raised">
-              <button onClick={() => go({ name: 'album', album: a.album, artist: a.artist })} className="flex w-full flex-col gap-2.5 text-left">
+              <button onClick={() => go({ name: 'album', album: a.album, artist: a.artist })} className="flex w-full flex-col gap-2.5 text-start">
                 <span className="relative aspect-square w-full">
                   <Cover title={a.album} art={firstArt(a.tracks)} size={176} className="size-full! text-[1.75rem]!" />
                 </span>
@@ -453,7 +453,7 @@ export function AlbumsView() {
               </button>
               {/* Over the cover's bottom right, whatever the card's width. */}
               <span className="pointer-events-none absolute inset-x-3 top-3 aspect-square">
-                <RoundButton label={tr('Play {title}', { title: a.album })} kind="primary" size="md" className="pointer-events-auto absolute right-2.5 bottom-2.5 translate-y-2 opacity-0 shadow-[0_8px_16px_rgb(0_0_0/0.3)] group-hover:translate-y-0 group-hover:opacity-100 focus:translate-y-0 focus:opacity-100" onClick={() => usePlayer.getState().playTracks(a.tracks, 0)}>
+                <RoundButton label={tr('Play {title}', { title: a.album })} kind="primary" size="md" className="pointer-events-auto absolute end-2.5 bottom-2.5 translate-y-2 opacity-0 shadow-[0_8px_16px_rgb(0_0_0/0.3)] group-hover:translate-y-0 group-hover:opacity-100 focus:translate-y-0 focus:opacity-100" onClick={() => usePlayer.getState().playTracks(a.tracks, 0)}>
                   <Play weight="fill" size={16} />
                 </RoundButton>
               </span>
@@ -477,8 +477,8 @@ export function ArtistsView() {
       <VirtualList items={artists} rowHeight={57} className="-mx-2 px-2 pb-6">
         {(a, i) => (
           <div role="listitem" key={a.artist} onContextMenu={onMenu(() => tracksMenu(a.tracks))} className="h-full">
-            <button onClick={() => go({ name: 'artist', artist: a.artist })} className="flex h-full w-full items-center gap-4 rounded-md px-2 text-left transition-colors hover:bg-raised">
-              <span className="w-8 text-right text-[0.8125rem] text-ink-3 tabular-nums">{i + 1}</span>
+            <button onClick={() => go({ name: 'artist', artist: a.artist })} className="flex h-full w-full items-center gap-4 rounded-md px-2 text-start transition-colors hover:bg-raised">
+              <span className="w-8 text-end text-[0.8125rem] text-ink-3 tabular-nums">{i + 1}</span>
               <Cover title={a.artist} art={trackArt(a.cover)} size={40} className="rounded-full!" />
               <span className="flex-1 truncate text-sm font-medium">{artistName(a.artist)}</span>
               <span className="text-[0.8125rem] text-ink-3">

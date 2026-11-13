@@ -17,12 +17,12 @@ function Deck({ seen, kind }: { seen: Seen[]; kind: ImportKind }) {
   return (
     <div aria-hidden className="relative -mx-6 h-40 phone:-mx-4 overflow-hidden">
       {seen.length === 0 && (
-        <span className="absolute top-3 left-1/2 -ml-16 grid size-32 place-items-center rounded-cover border border-line-soft bg-raised text-ink-3">
+        <span className="absolute top-3 start-1/2 -ms-16 grid size-32 place-items-center rounded-cover border border-line-soft bg-raised text-ink-3">
           <Icon size={40} />
         </span>
       )}
       {seen.map((s) => (
-        <span key={s.seq} style={card(s, newest)} className="import-card absolute top-3 left-1/2 -ml-16">
+        <span key={s.seq} style={card(s, newest)} className="import-card absolute top-3 start-1/2 -ms-16">
           <Cover title={s.title} art={s.cover ? [remoteArt(s.cover)] : []} size={128} />
         </span>
       ))}

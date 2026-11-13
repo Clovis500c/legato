@@ -129,7 +129,7 @@ export function StatsView() {
           <ol className="flex flex-col">
             {s.topSongs.map((r, i) => (
               <li key={r.item.id} onContextMenu={onMenu(() => trackMenu(r.item, { list: songs, index: i }))} onDoubleClick={() => play(songs, i)} className="group flex h-13 items-center gap-3.5 rounded-md px-2 hover:bg-raised">
-                <span className="w-5 shrink-0 text-right text-xs text-ink-3 tabular-nums">
+                <span className="w-5 shrink-0 text-end text-xs text-ink-3 tabular-nums">
                   <span className="group-hover:hidden">{i + 1}</span>
                   <button aria-label={tr('Play {title}', { title: r.item.title })} onClick={() => play(songs, i)} className="hidden text-ink group-hover:inline">
                     <Play size={13} weight="fill" />
@@ -149,8 +149,8 @@ export function StatsView() {
           <ol className="flex flex-col">
             {s.topArtists.map((r, i) => (
               <li key={r.item.name}>
-                <button onClick={() => go({ name: 'artist', artist: r.item.name })} className="flex h-13 w-full items-center gap-3.5 rounded-md px-2 text-left hover:bg-raised">
-                  <span className="w-5 shrink-0 text-right text-xs text-ink-3 tabular-nums">{i + 1}</span>
+                <button onClick={() => go({ name: 'artist', artist: r.item.name })} className="flex h-13 w-full items-center gap-3.5 rounded-md px-2 text-start hover:bg-raised">
+                  <span className="w-5 shrink-0 text-end text-xs text-ink-3 tabular-nums">{i + 1}</span>
                   <Cover title={r.item.name} art={trackArt(r.item.cover)} size={40} className="rounded-full!" />
                   <span className="min-w-0 flex-1 truncate text-[0.8125rem] font-semibold">{r.item.name}</span>
                   <span className="shrink-0 text-xs text-ink-3 tabular-nums">{hours(r.ms)}</span>
@@ -168,7 +168,7 @@ export function StatsView() {
               const own = tracks.filter((t) => t.album === r.item.album)
               return (
                 <li key={`${r.item.album}\u0000${r.item.artist}`} onContextMenu={onMenu(() => tracksMenu(own))} className="w-37.5 shrink-0">
-                  <button onClick={() => go({ name: 'album', album: r.item.album, artist: r.item.artist })} className="group flex w-full flex-col gap-2 text-left">
+                  <button onClick={() => go({ name: 'album', album: r.item.album, artist: r.item.artist })} className="group flex w-full flex-col gap-2 text-start">
                     <Cover title={r.item.album} art={trackArt(r.item.cover)} size={150} className="lift" />
                     <span className="truncate text-[0.8125rem] font-semibold group-hover:underline">{r.item.album}</span>
                     <span className="-mt-1.5 truncate text-xs text-ink-2">

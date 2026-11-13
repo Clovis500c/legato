@@ -1,4 +1,5 @@
-import { ArrowsIn, ArrowsOut, CaretDown, CaretLeft, CaretRight, CopySimple, Gear, Minus, PuzzlePiece, Square, Warning, WifiSlash, X } from '@phosphor-icons/react'
+import { ArrowsIn, ArrowsOut, CaretDown, CopySimple, Gear, Minus, PuzzlePiece, Square, Warning, WifiSlash, X } from '@phosphor-icons/react'
+import { CaretLeft, CaretRight } from '../shared/ui/directional'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
@@ -123,7 +124,7 @@ function TopBar() {
   }, [])
   return (
     // Over Now Playing: a veil from the top keeps logo, Close player and window buttons readable on any cover.
-    <header data-tauri-drag-region className={`relative z-30 flex h-13 shrink-0 items-center gap-3 pr-2 pl-5 phone:gap-1 phone:pr-2 phone:pl-1 ${full ? 'bg-[linear-gradient(to_bottom,color-mix(in_srgb,var(--bg)_80%,transparent),transparent)] phone:hidden' : ''}`}>
+    <header data-tauri-drag-region className={`relative z-30 flex h-13 shrink-0 items-center gap-3 pe-2 ps-5 phone:gap-1 phone:pe-2 phone:ps-1 ${full ? 'bg-[linear-gradient(to_bottom,color-mix(in_srgb,var(--bg)_80%,transparent),transparent)] phone:hidden' : ''}`}>
       {/* The phone: the logo or Back, never both (Home is a tab there). */}
       <button data-brand onClick={() => go({ name: 'home' })} title={tr('Home')} className={`flex items-center gap-2.5 rounded-md px-2 py-1 ${canBack && !full ? 'phone:hidden' : ''}`}>
         <Logo />
@@ -156,7 +157,7 @@ function TopBar() {
         </span>
       )}
       {!full && (
-        <span className="flex items-center gap-1 pr-2">
+        <span className="flex items-center gap-1 pe-2">
           <button className={`${winBtn} rounded-full! phone:hidden ${page === 'addons' ? 'bg-raised' : ''}`} aria-label={tr('Add-ons')} title={tr('Add-ons')} onClick={() => go({ name: 'addons' })} onContextMenu={onMenu(() => navMenu({ name: 'addons' }))}>
             <PuzzlePiece size={18} weight={page === 'addons' ? 'fill' : 'regular'} />
           </button>
@@ -208,7 +209,7 @@ function Alerts() {
             <summary className="cursor-pointer">
               {trn(errors.length, '{n} error during sync', '{n} errors during sync')}
             </summary>
-            <ul className="mt-1.5 list-disc pl-4 text-ink-2">
+            <ul className="mt-1.5 list-disc ps-4 text-ink-2">
               {errors.map((e) => (
                 <li key={e}>{e}</li>
               ))}

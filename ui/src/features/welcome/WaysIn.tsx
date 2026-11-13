@@ -1,4 +1,5 @@
-import { ArrowRight, GoogleLogo, LinkSimple, MagnifyingGlass, YoutubeLogo } from '@phosphor-icons/react'
+import { GoogleLogo, LinkSimple, MagnifyingGlass, YoutubeLogo } from '@phosphor-icons/react'
+import { ArrowRight } from '../../shared/ui/directional'
 import { useState } from 'react'
 import { useStore } from '../../app/store'
 import { tr } from '../../shared/i18n/i18n'
@@ -54,7 +55,7 @@ function LinkCard({ onLeave }: { onLeave?: () => void }) {
           <input value={text} onChange={(e) => setText(e.target.value)} placeholder={phoneApp ? tr('Paste a link') : tr('Spotify, Deezer, Apple Music, YouTube or SoundCloud link')} aria-label={tr('Paste a link')} spellCheck={false} className={`${FIELD} w-full`} style={kind ? { paddingRight: '2.25rem' } : undefined} />
           {/* The service the pasted link comes from. */}
           {kind && (
-            <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-ink-2">
+            <span className="pointer-events-none absolute inset-y-0 end-3 flex items-center text-ink-2">
               <LinkBrand kind={kind} />
             </span>
           )}
