@@ -2345,6 +2345,8 @@ const pt: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'O seu servidor só aceita a senha enviada tal como está (codificada em hexadecimal, o que não é cifragem). Com https, só o seu servidor pode lê-la. Enviar assim?',
   'Send my password as it is': 'Enviar a minha senha tal como está',
   'Hide explicit songs': 'Ocultar músicas explícitas',
+  'Practice speed': 'Velocidade de estudo',
+  'Normal speed': 'Velocidade normal',
   'Output device': 'Dispositivo de saída',
   'System default': 'Padrão do sistema',
   'Refresh': 'Atualizar',

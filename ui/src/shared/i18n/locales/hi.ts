@@ -2345,6 +2345,8 @@ const hi: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'आपका सर्वर पासवर्ड केवल जैसा है वैसा ही भेजने पर स्वीकार करता है (हेक्स में एन्कोड, जो एन्क्रिप्शन नहीं है)। https पर केवल आपका सर्वर इसे पढ़ सकता है। इसे ऐसे भेजें?',
   'Send my password as it is': 'मेरा पासवर्ड जैसा है वैसा भेजें',
   'Hide explicit songs': 'स्पष्ट (explicit) गाने छिपाएँ',
+  'Practice speed': 'अभ्यास की गति',
+  'Normal speed': 'सामान्य गति',
   'Output device': 'आउटपुट डिवाइस',
   'System default': 'सिस्टम डिफ़ॉल्ट',
   'Refresh': 'ताज़ा करें',

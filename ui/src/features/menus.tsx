@@ -99,7 +99,7 @@ import { repeatedRows } from './library/duplicates'
 import { PlaylistCover as PlaylistIcon } from './library/PlaylistCover'
 import { primaryArtist } from './library/filter'
 import { isFull, viaLabel, vias } from './player/sources'
-import { bypass, deletePreset, deleteVersion, playVersion, presetEffects, reset, useEditor } from './editor/editor'
+import { bypass, deletePreset, deleteVersion, playVersion, presetEffects, reset, setEffects, useEditor } from './editor/editor'
 import { loadPlugins, pluginCommands, runCommand } from './plugins/host'
 import { canPlay, isRemote, nowTrack, remoteTrack, usePlayer } from './player/store'
 import { startAutoDj } from './player/autoDj'
@@ -807,6 +807,7 @@ export function playerMenu({ controls = true }: { controls?: boolean } = {}): Me
     t && bookmarkItem(t.id),
     loopItem(),
     outputItem(),
+    t && practiceSpeed(),
     { label: tr('Count in, then play'), icon: <Timer size={16} />, onSelect: () => void import('./player/countIn').then((m) => m.countInPlay(t?.bpm)) },
     { label: tr('Metronome'), icon: <Timer size={16} />, checked: useMetronome.getState().bpm !== null, onSelect: () => void toggleMetronome(t?.bpm) },
     t?.album && { label: tr('Go to album'), icon: <Disc size={16} />, onSelect: () => (setFull(false), app().go({ name: 'album', album: t.album!, artist: primaryArtist(t.artist) })) },
@@ -1019,6 +1020,14 @@ export function addonMenu(a: Addon, open: () => void): MenuEntry[] {
 /** Listen together on this network: the room's view (start, join, or the room you're in). */
 function roomItem(): MenuEntry {
   return { label: inRoom(useRoom.getState().status) ? tr('Listening room') : tr('Listen together…'), icon: <UsersThree size={16} />, onSelect: openRoom }
+}
+
+/** Practice speed: the Live Editor's tempo (pitch kept), a few steps. The song's edit is left dirty as any Live Editor change is; Reset in the editor undoes it. */
+const PRACTICE = [0.5, 0.75, 0.9, 1] as const
+function practiceSpeed(): MenuEntry {
+  const now = useEditor.getState().effects
+  const cur = now.on ? now.tempo : 1
+  return { label: tr('Practice speed'), icon: <Timer size={16} />, items: PRACTICE.map((x) => ({ label: x === 1 ? tr('Normal speed') : `${Math.round(x * 100)}%`, checked: Math.abs(cur - x) < 0.005, onSelect: () => setEffects({ tempo: x, on: true }) })) }
 }
 
 /** Output device: the system's list (kept from the last time; refreshed now), the picked one checked. Only with a choice to make. */

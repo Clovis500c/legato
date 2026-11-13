@@ -2345,6 +2345,8 @@ const de: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Ihr Server akzeptiert nur das unverändert gesendete Passwort (hexadezimal kodiert, das ist keine Verschlüsselung). Über https kann nur Ihr Server es lesen. So senden?',
   'Send my password as it is': 'Mein Passwort unverändert senden',
   'Hide explicit songs': 'Explizite Songs ausblenden',
+  'Practice speed': 'Übungstempo',
+  'Normal speed': 'Normales Tempo',
   'Output device': 'Ausgabegerät',
   'System default': 'Systemstandard',
   'Refresh': 'Aktualisieren',
