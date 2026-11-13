@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { keyAction, mediaNow, needsPush, phoneButton, phoneCover, phoneMessage } from './media'
+import { keyAction, mediaNow, needsPush, phoneButton, phoneCover, phoneMessage, phoneQueue } from './media'
 
 describe('phone cover', () => {
   it('takes the first cover the art scheme serves, as its 256 px thumbnail', async () => {
@@ -74,6 +74,21 @@ describe('when to push', () => {
     expect(phoneButton('next')).toEqual({ key: 'next' })
     expect(phoneButton('seek:42000')).toEqual({ seek: 42000 })
     expect(phoneButton('seek:x')).toBeNull()
+    expect(phoneButton('play:7')).toEqual({ play: 7 })
+    expect(phoneButton('play:-1')).toBeNull()
+    expect(phoneButton('play:x')).toBeNull()
     expect(phoneButton('format')).toBeNull()
+  })
+})
+
+describe('the queue sent to the phone widget', () => {
+  const list = ['a', 'b', 'c', 'd'].map((t) => ({ title: t, artist: `${t}!` }))
+  it('starts at the current song and follows the play order', () => {
+    expect(JSON.parse(phoneQueue(list, [2, 0, 3, 1], 0))).toEqual({ queue: [{ i: 0, t: 'a', a: 'a!' }, { i: 3, t: 'd', a: 'd!' }, { i: 1, t: 'b', a: 'b!' }] })
+  })
+  it('is cut to its size and skips what is gone', () => {
+    expect(JSON.parse(phoneQueue(list, [0, 1, 2, 3], 0, 2)).queue).toHaveLength(2)
+    expect(JSON.parse(phoneQueue(list, [0, 9, 1], 0)).queue.map((r: { i: number }) => r.i)).toEqual([0, 1])
+    expect(JSON.parse(phoneQueue([], [], -1))).toEqual({ queue: [] })
   })
 })

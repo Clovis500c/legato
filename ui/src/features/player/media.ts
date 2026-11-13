@@ -47,11 +47,22 @@ export function phoneMessage(info: MediaNow | null): string {
   return JSON.stringify({ title: info.title, artist: info.artist, playing: info.playing, positionMs: info.positionMs, durationMs: info.durationMs ?? -1 })
 }
 
-/** A button of the phone's notification: play, pause, next, previous or seek:<ms>. */
-export function phoneButton(text: string): { key: MediaKey } | { seek: number } | null {
+/** The queue for the phone's home-screen widget (`Widgets.kt`): the current song and what follows in play order, 30 rows at most, each with its index in the list (`play:<i>` plays it). */
+export function phoneQueue(list: readonly { title: string; artist: string }[], order: readonly number[], index: number, max = 30): string {
+  const from = Math.max(0, order.indexOf(index))
+  const rows = order.slice(from, from + max).flatMap((i) => (list[i] ? [{ i, t: list[i].title.slice(0, 120), a: list[i].artist.slice(0, 120) }] : []))
+  return JSON.stringify({ queue: rows })
+}
+
+/** A button of the phone's notification and widgets: play, pause, next, previous, seek:<ms> or play:<list index>. */
+export function phoneButton(text: string): { key: MediaKey } | { seek: number } | { play: number } | null {
   if (text.startsWith('seek:')) {
     const ms = Number(text.slice(5))
     return Number.isFinite(ms) ? { seek: ms } : null
+  }
+  if (text.startsWith('play:')) {
+    const i = Number(text.slice(5))
+    return Number.isInteger(i) && i >= 0 ? { play: i } : null
   }
   return ['play', 'pause', 'next', 'previous'].includes(text) ? { key: text as MediaKey } : null
 }
@@ -100,6 +111,12 @@ export function startMedia(): () => void {
   const phone = (window as unknown as { LegatoMedia?: PhoneBridge }).LegatoMedia
   let last: Pushed | null = null
   let lastTrack: number | undefined
+  // The widget's queue follows the list, its order and the song, not the position (a blind test shows nothing).
+  const sendQueue = () => {
+    if (!phone) return
+    const s = usePlayer.getState()
+    phone.postMessage(useBlind.getState().open ? '{"queue":[]}' : phoneQueue(s.list, s.order, s.index))
+  }
   const push = () => {
     const { playing, positionMs, durationMs } = usePlayer.getState()
     // A blind test: Windows' media panel and the phone's notification would give the song away.
@@ -117,6 +134,7 @@ export function startMedia(): () => void {
       return
     }
     phone.postMessage(phoneMessage(info))
+    sendQueue()
     // Its cover follows, unless another song came first.
     if (fresh && info) {
       const id = lastTrack
@@ -126,6 +144,7 @@ export function startMedia(): () => void {
     }
   }
   const unsub = usePlayer.subscribe((s, prev) => {
+    if (s.list !== prev.list || s.order !== prev.order || s.index !== prev.index) sendQueue()
     if (s.now !== prev.now || s.playing !== prev.playing || s.positionMs !== prev.positionMs || s.durationMs !== prev.durationMs) push()
   })
   const offBlind = useBlind.subscribe(push)
@@ -145,6 +164,9 @@ export function startMedia(): () => void {
       if (!b) return
       if ('seek' in b) {
         if (p.now) p.seek(b.seek)
+      } else if ('play' in b) {
+        // A row of the queue widget: only a song still at that place.
+        if (p.list[b.play] && !useBlind.getState().open) void p.playAt(b.play)
       } else {
         const action = keyAction(b.key, p.playing)
         if (action === 'toggle') p.toggle()

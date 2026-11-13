@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.graphics.Bitmap
 import android.graphics.BitmapShader
 import android.graphics.Canvas
@@ -15,6 +16,7 @@ import android.graphics.Paint
 import android.graphics.Shader
 import android.view.View
 import android.widget.RemoteViews
+import android.widget.RemoteViewsService
 
 // Home-screen widgets. They only draw what `MediaState` already holds (what the page said is playing, its cover from the
 // art cache): no network, no secret. Their buttons send the notification's actions to PlaybackService, which hands them to
@@ -25,6 +27,14 @@ object Widgets {
     val manager = AppWidgetManager.getInstance(context)
     redraw(context, manager, RectangleWidget::class.java) { rectangle(context) }
     redraw(context, manager, DiscWidget::class.java) { disc(context) }
+    try {
+      val ids = manager.getAppWidgetIds(ComponentName(context, QueueWidget::class.java))
+      if (ids.isNotEmpty()) {
+        manager.notifyAppWidgetViewDataChanged(ids, R.id.widget_list)
+      }
+    } catch (e: Exception) {
+      // Same as above: the next change tries again.
+    }
   }
 
   private fun redraw(context: Context, manager: AppWidgetManager, provider: Class<*>, build: () -> RemoteViews) {
@@ -58,6 +68,20 @@ object Widgets {
     views.setOnClickPendingIntent(R.id.widget_previous, button(context, "previous", 11))
     views.setOnClickPendingIntent(R.id.widget_play, button(context, if (MediaState.playing) "pause" else "play", 12))
     views.setOnClickPendingIntent(R.id.widget_next, button(context, "next", 13))
+    return views
+  }
+
+  /** The queue widget's frame: its rows come from QueueService; a tap on a row sends `play:<index>` (the current song's row: play or pause). */
+  fun queueHead(context: Context, id: Int): RemoteViews {
+    val views = RemoteViews(context.packageName, R.layout.widget_queue)
+    val rows = Intent(context, QueueService::class.java).putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id)
+    rows.data = Uri.parse(rows.toUri(Intent.URI_INTENT_SCHEME))
+    views.setRemoteAdapter(R.id.widget_list, rows)
+    views.setEmptyView(R.id.widget_list, R.id.widget_empty)
+    // A template the rows fill in (their action): it has to be mutable, and it names PlaybackService, never anything else.
+    val template = PendingIntent.getService(context, 30, Intent(context, PlaybackService::class.java), PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+    views.setPendingIntentTemplate(R.id.widget_list, template)
+    views.setOnClickPendingIntent(R.id.widget_empty, open(context))
     return views
   }
 
@@ -129,6 +153,52 @@ object Widgets {
     val scale = side.toFloat() / longest
     return Bitmap.createScaledBitmap(bitmap, maxOf(1, (bitmap.width * scale).toInt()), maxOf(1, (bitmap.height * scale).toInt()), true)
   }
+}
+
+/** The queue widget: what plays and what follows, a tap plays that song. */
+class QueueWidget : AppWidgetProvider() {
+  override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
+    for (id in appWidgetIds) appWidgetManager.updateAppWidget(id, Widgets.queueHead(context, id))
+  }
+}
+
+/** The rows of the queue widget, from `MediaState.queue` (the page's, nothing loaded here). */
+class QueueService : RemoteViewsService() {
+  override fun onGetViewFactory(intent: Intent): RemoteViewsService.RemoteViewsFactory = QueueRows(applicationContext)
+}
+
+class QueueRows(private val context: Context) : RemoteViewsService.RemoteViewsFactory {
+  private var rows: List<QueueRow> = emptyList()
+
+  override fun onCreate() {}
+
+  override fun onDataSetChanged() {
+    rows = MediaState.queue
+  }
+
+  override fun onDestroy() {}
+
+  override fun getCount(): Int = rows.size
+
+  override fun getViewAt(position: Int): RemoteViews {
+    val views = RemoteViews(context.packageName, R.layout.widget_queue_row)
+    val row = rows.getOrNull(position) ?: return views
+    views.setTextViewText(R.id.widget_title, row.title)
+    views.setTextViewText(R.id.widget_artist, row.artist)
+    // The first row is the song playing: lit, and a tap on it plays or pauses.
+    views.setTextColor(R.id.widget_title, if (position == 0) 0xFF8AB4F8.toInt() else 0xFFFFFFFF.toInt())
+    val action = if (position == 0) (if (MediaState.playing) "pause" else "play") else "play:" + row.index
+    views.setOnClickFillInIntent(R.id.widget_row, Intent().putExtra(PlaybackService.ACTION, action))
+    return views
+  }
+
+  override fun getLoadingView(): RemoteViews? = null
+
+  override fun getViewTypeCount(): Int = 1
+
+  override fun getItemId(position: Int): Long = position.toLong()
+
+  override fun hasStableIds(): Boolean = false
 }
 
 /** The disc widget (the cover as a record, play and next). */

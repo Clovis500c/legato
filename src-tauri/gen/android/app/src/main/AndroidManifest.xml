@@ -77,6 +77,24 @@
                 android:resource="@xml/widget_disc_info" />
         </receiver>
 
+        <receiver
+            android:name=".QueueWidget"
+            android:exported="false"
+            android:label="@string/widget_queue_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_queue_info" />
+        </receiver>
+
+        <!-- The queue widget's rows, served to the launcher through the system. -->
+        <service
+            android:name=".QueueService"
+            android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
         <service
             android:name=".PlaybackService"
             android:exported="false"

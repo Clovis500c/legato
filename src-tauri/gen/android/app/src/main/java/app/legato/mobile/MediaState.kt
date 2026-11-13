@@ -6,6 +6,9 @@ import android.util.Base64
 import androidx.webkit.JavaScriptReplyProxy
 import org.json.JSONObject
 
+// One row of the queue the page sends for the widget: its index in the page's list, title and artist.
+class QueueRow(val index: Int, val title: String, val artist: String)
+
 // What the page says is playing (title, artist, play state, position, cover) and the way back to it: the notification's
 // and the lock screen's buttons answer the page, which owns the queue. Read by PlaybackService.
 object MediaState {
@@ -16,6 +19,7 @@ object MediaState {
   @Volatile var durationMs = -1L
   @Volatile var stamp = 0L
   @Volatile var cover: Bitmap? = null
+  @Volatile var queue: List<QueueRow> = emptyList()
   @Volatile var onChange: (() -> Unit)? = null
   @Volatile private var page: JavaScriptReplyProxy? = null
 
@@ -24,7 +28,15 @@ object MediaState {
     page = reply
     try {
       val o = JSONObject(json)
-      if (o.has("cover")) {
+      if (o.has("queue")) {
+        val rows = o.getJSONArray("queue")
+        val next = ArrayList<QueueRow>()
+        for (k in 0 until minOf(rows.length(), 30)) {
+          val r = rows.getJSONObject(k)
+          next.add(QueueRow(r.getInt("i"), r.getString("t"), r.optString("a", "")))
+        }
+        queue = next
+      } else if (o.has("cover")) {
         val data = Base64.decode(o.getString("cover"), Base64.DEFAULT)
         cover = if (data.isEmpty()) null else BitmapFactory.decodeByteArray(data, 0, data.size)
       } else {
