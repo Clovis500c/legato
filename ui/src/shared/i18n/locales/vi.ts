@@ -2345,6 +2345,7 @@ const vi: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Máy chủ của bạn chỉ nhận mật khẩu gửi nguyên văn (mã hóa thập lục phân, không phải mã hóa bảo mật). Qua https chỉ máy chủ của bạn đọc được. Gửi theo cách này?',
   'Send my password as it is': 'Gửi mật khẩu của tôi nguyên văn',
   'Hide explicit songs': 'Ẩn bài hát có nội dung nhạy cảm',
+  'Copy the list as OPML': 'Sao chép danh sách dạng OPML',
   'Living-room mode': 'Chế độ phòng khách',
   'Larger interface for a PC on a TV: the arrow keys move between controls, Enter presses, Esc goes back': 'Giao diện lớn hơn cho máy tính nối với TV: phím mũi tên chuyển giữa các nút, Enter nhấn, Esc quay lại',
   'living room tv television arrows remote gamepad big screen 10 foot': 'phòng khách tv ti vi mũi tên điều khiển lớn',

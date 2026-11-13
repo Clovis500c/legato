@@ -485,6 +485,7 @@ export const api = {
   /** Podcasts (podcast.rs): a feed read now, the shows kept, keeping or letting one go. */
   podcastFeed: (url: string) => invoke<PodcastFeed>('podcast_feed', { url }),
   podcastKept: () => invoke<PodcastFeed[]>('podcast_kept'),
+  podcastExport: () => invoke<string>('podcast_export'),
   podcastImport: (opml: string) => invoke<PodcastFeed[]>('podcast_import', { opml }),
   /** The output device (outputs.rs): the system's list and the pick, null = the system's default. */
   outputDevices: () => invoke<OutputDevices>('output_devices'),

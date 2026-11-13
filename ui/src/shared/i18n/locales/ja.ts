@@ -2345,6 +2345,7 @@ const ja: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'お使いのサーバーは、パスワードをそのまま送る方式しか受け付けません（16進数に変換されるだけで、暗号化ではありません）。https なら読めるのはサーバーだけです。この方法で送りますか？',
   'Send my password as it is': 'パスワードをそのまま送る',
   'Hide explicit songs': '露骨な表現を含む曲を隠す',
+  'Copy the list as OPML': '一覧を OPML としてコピー',
   'Living-room mode': 'リビングルームモード',
   'Larger interface for a PC on a TV: the arrow keys move between controls, Enter presses, Esc goes back': 'テレビにつないだ PC 向けに画面を大きくします。矢印キーでコントロール間を移動し、Enter で押し、Esc で戻ります',
   'living room tv television arrows remote gamepad big screen 10 foot': 'リビング テレビ 矢印 リモコン 大きい',

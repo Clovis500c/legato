@@ -54,6 +54,12 @@ pub async fn podcast_keep(state: State<'_, AppState>, show: Feed, keep: bool) ->
     Ok(all)
 }
 
+/// The kept shows as OPML text, for the clipboard.
+#[tauri::command]
+pub async fn podcast_export(state: State<'_, AppState>) -> CmdResult<String> {
+    Ok(music_connectors::podcast::to_opml(&kept(&state)))
+}
+
 /// An OPML file's text (pasted by the user): its shows are kept with no request made, up to the limit.
 #[tauri::command]
 pub async fn podcast_import(state: State<'_, AppState>, opml: String) -> CmdResult<Vec<Feed>> {

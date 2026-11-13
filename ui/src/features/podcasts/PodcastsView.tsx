@@ -121,6 +121,13 @@ export function PodcastsView() {
             ) : (
               <p className="text-sm text-ink-2">{tr('Open a feed and keep it with its heart: it waits here.')}</p>
             )}
+            {kept.length > 0 && (
+              <div className="pt-4">
+                <Button variant="ghost" onClick={() => void api.podcastExport().then((t) => navigator.clipboard.writeText(t)).then(() => useStore.getState().notify(tr('Copied to clipboard')), fail)}>
+                  {tr('Copy the list as OPML')}
+                </Button>
+              </div>
+            )}
             <details className="pt-6">
               <summary className="cursor-pointer text-sm text-ink-2">{tr('Import from an OPML file')}</summary>
               <p className="py-2 text-xs text-ink-2">{tr('Paste the text of the OPML file your podcast app exported. The shows are kept; nothing is asked of their servers.')}</p>

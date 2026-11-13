@@ -213,6 +213,23 @@ pub fn opml(xml: &str) -> Vec<Feed> {
     out
 }
 
+fn escape(s: &str) -> String {
+    s.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;").replace('"', "&quot;")
+}
+
+/// The shows as an OPML file, what other podcast apps import.
+pub fn to_opml(shows: &[Feed]) -> String {
+    let rows: String = shows.iter().map(|f| format!("    <outline type=\"rss\" text=\"{0}\" title=\"{0}\" xmlUrl=\"{1}\"/>
+", escape(&f.title), escape(&f.url))).collect();
+    format!("<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<opml version=\"2.0\">
+  <head><title>Legato podcasts</title></head>
+  <body>
+{rows}  </body>
+</opml>
+")
+}
+
 /// Reads the feed at `address` (http or https, 8 MB at most).
 pub async fn fetch(address: &str) -> Result<Feed> {
     let url = http_url(address).ok_or_else(|| anyhow!("Type a podcast feed's address (http or https)"))?;
@@ -303,6 +320,13 @@ mod tests {
           <outline text="bad" xmlUrl="ftp://x/y"/></outline></body></opml>"#;
         let f = opml(x);
         assert_eq!(f.iter().map(|f| (f.title.as_str(), f.url.as_str())).collect::<Vec<_>>(), [("A & B", "https://a.example/rss"), ("Cee", "http://c.example/feed")]);
+    }
+
+    #[test]
+    fn opml_out_and_back_in() {
+        let shows = vec![Feed { url: "https://a.example/rss?x=1&y=2".into(), title: "A \"&\" <B>".into(), author: String::new(), image: String::new(), episodes: Vec::new() }];
+        let back = opml(&to_opml(&shows));
+        assert_eq!((back[0].title.as_str(), back[0].url.as_str()), ("A \"&\" <B>", "https://a.example/rss?x=1&y=2"));
     }
 
     #[test]

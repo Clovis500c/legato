@@ -2345,6 +2345,7 @@ const id: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Server Anda hanya menerima kata sandi yang dikirim apa adanya (dikodekan heksadesimal, bukan enkripsi). Lewat https hanya server Anda yang bisa membacanya. Kirim dengan cara ini?',
   'Send my password as it is': 'Kirim kata sandi saya apa adanya',
   'Hide explicit songs': 'Sembunyikan lagu eksplisit',
+  'Copy the list as OPML': 'Salin daftar sebagai OPML',
   'Living-room mode': 'Mode ruang tamu',
   'Larger interface for a PC on a TV: the arrow keys move between controls, Enter presses, Esc goes back': 'Antarmuka lebih besar untuk PC yang tersambung ke TV: tombol panah berpindah antar kontrol, Enter menekan, Esc kembali',
   'living room tv television arrows remote gamepad big screen 10 foot': 'ruang tamu tv televisi panah remote besar',

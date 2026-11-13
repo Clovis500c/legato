@@ -2345,6 +2345,7 @@ const pt: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'O seu servidor só aceita a senha enviada tal como está (codificada em hexadecimal, o que não é cifragem). Com https, só o seu servidor pode lê-la. Enviar assim?',
   'Send my password as it is': 'Enviar a minha senha tal como está',
   'Hide explicit songs': 'Ocultar músicas explícitas',
+  'Copy the list as OPML': 'Copiar a lista como OPML',
   'Living-room mode': 'Modo sala de estar',
   'Larger interface for a PC on a TV: the arrow keys move between controls, Enter presses, Esc goes back': 'Interface maior para um PC ligado à TV: as setas passam de um controle a outro, Enter aperta, Esc volta',
   'living room tv television arrows remote gamepad big screen 10 foot': 'sala tv televisão setas controle grande',
