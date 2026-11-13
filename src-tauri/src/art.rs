@@ -26,6 +26,15 @@ pub async fn respond(app: tauri::AppHandle, req: Request<Vec<u8>>) -> Response<C
     .expect("static response parts")
 }
 
+/// Only our own interface's webview is served (`main`, the window in tauri.conf.json); every other is a third party's page.
+pub fn ours(webview: &str) -> bool {
+    webview == "main"
+}
+
+pub fn refused() -> Response<Cow<'static, [u8]>> {
+    Response::builder().status(StatusCode::FORBIDDEN).body(Cow::Borrowed(&[][..])).expect("static response parts")
+}
+
 /// Largest piece of a video sent at once.
 const VIDEO_PIECE: u64 = 2 << 20;
 
@@ -121,7 +130,15 @@ pub async fn remote(app: &tauri::AppHandle, url: &str, size: Option<u32>) -> Opt
 
 #[cfg(test)]
 mod tests {
-    use super::{byte_range, valid_cover_name};
+    use super::{byte_range, ours, valid_cover_name};
+
+    #[test]
+    fn only_our_interface_is_served() {
+        assert!(ours("main"));
+        for third in [crate::ytwatch::LABEL, "ytm-sign-in", "exportify", "apple-music", "spotify-web", ""] {
+            assert!(!ours(third), "{third}");
+        }
+    }
 
     #[test]
     fn video_ranges() {

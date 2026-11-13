@@ -2568,6 +2568,10 @@ pub fn run() {
             }
         })
         .register_asynchronous_uri_scheme_protocol("art", |ctx, req, responder| {
+            // Third-party pages the app opens (YouTube, Exportify, Google's sign-in) never read local covers or the user's pictures.
+            if !art::ours(ctx.webview_label()) {
+                return responder.respond(art::refused());
+            }
             let app = ctx.app_handle().clone();
             tauri::async_runtime::spawn(async move { responder.respond(art::respond(app, req).await) });
         })
