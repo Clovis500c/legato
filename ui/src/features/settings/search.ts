@@ -31,6 +31,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'playback', label: msg('Volume per source'), keywords: msg('volume per source remember files youtube spotify different') },
   { section: 'playback', label: msg('Focus and workout sessions'), keywords: msg('focus workout session timer study run sport') },
   { section: 'playback', label: msg('Last.fm suggestions'), keywords: msg('lastfm discoveries similar artists new music') },
+  { section: 'playback', label: msg('Blind test'), keywords: msg('blind test guess game quiz music snippet') },
   { section: 'playback', label: msg('Fade between songs'), keywords: msg('crossfade transition fade out in') },
   { section: 'playback', label: msg('Early endings'), keywords: msg('silence end screen outro video ends early custom end detect') },
   { section: 'playback', label: msg('Skip silence'), keywords: msg('silence quiet start end intro outro gap trim skip hidden track gapless') },

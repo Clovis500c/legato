@@ -401,6 +401,8 @@ export interface Settings {
   crossfade: number
   /** Songs longer than this many minutes skipped as the queue moves on (0 = off). */
   skipLong: number
+  /** Adds Blind test… to the app menu: ten snippets of the library, four answers, a score, the player hidden (off: not in the menu). */
+  blindTest: boolean
   /** Adds a Last.fm suggestions button to Mixes: songs by artists close to the three you play most, asked of Last.fm with the user's own key (off: no button, nothing asked). */
   lastfmDiscoveries: boolean
   /** Adds Focus session… and Workout session… to the player's menu: a timer, a mix of your songs, the music fading out at the end (off: not in the menu). */
@@ -599,6 +601,7 @@ export const DEFAULTS: Settings = {
   libraryWide: false,
   crossfade: 2,
   skipLong: 0,
+  blindTest: false,
   lastfmDiscoveries: false,
   focusSessions: false,
   volumePerSource: false,
@@ -852,6 +855,7 @@ export function sanitize(raw: unknown): Settings {
     pipClassic: typeof r.pipClassic === 'boolean' ? r.pipClassic : DEFAULTS.pipClassic,
     crossfade: typeof r.crossfade === 'number' && Number.isFinite(r.crossfade) ? Math.min(12, Math.max(0, Math.round(r.crossfade))) : DEFAULTS.crossfade,
     skipLong: typeof r.skipLong === 'number' && Number.isFinite(r.skipLong) ? Math.min(60, Math.max(0, Math.round(r.skipLong))) : DEFAULTS.skipLong,
+    blindTest: r.blindTest === true,
     lastfmDiscoveries: r.lastfmDiscoveries === true,
     focusSessions: r.focusSessions === true,
     volumePerSource: r.volumePerSource === true,

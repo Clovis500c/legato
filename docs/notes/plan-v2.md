@@ -712,8 +712,14 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       tests only, never on a real book of either kind; a QuickTime track with an unusual layout (chapters in the audio file's own
       sample description, text in UTF-16 without a mark) shows none.
 - [ ] `M` Stream Deck plugin and an Xbox Game Bar widget (play / skip / like / now playing) over the local hotkeys.
-- [ ] `M` Blind test game: snippets from the library or a playlist, guess title / artist, scores, local multiplayer
+- [x] `M` Blind test game: snippets from the library or a playlist, guess title / artist, scores, local multiplayer
       on one screen or over the LAN code.
+      2026-11-13 (night, no owner to ask): Settings › Playback › Blind test (off by default) puts "Blind test…" in the app menu. Decided
+      alone (2026-11-13): a game is ten songs of the library (a minute at least, one version each, playable), a 20 s snippet of each
+      from 30 % in, four answers (the right one and three other library songs), a score at the end, "Play again". The title cannot
+      leak because the game is a full-window cover over the player (`features/blind`, a lazy page), the sound plays underneath. Left
+      out: guessing the artist alone, a timer on the answer, several players (local multiplayer or over the LAN), a game from one
+      playlist. Never played by ear or on a screen; the snippet seek waits for the song's length and may land a moment late.
 - [ ] `M` Theme and plugin gallery without a server: an index file in a GitHub repo, browsed from Add-ons, installed after
       the usual permission review; authors submit by pull request.
 - [ ] `M` Sharing: remote wormhole words (needs the user's OK on the public relay), webcam QR scanning, `musicapp://` links

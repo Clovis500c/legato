@@ -953,6 +953,9 @@ function PlaybackSection() {
           <Row setting="lastfmDiscoveries" label={msg('Last.fm suggestions')} sub={tr('Adds a Last.fm suggestions button to Mixes: songs by artists close to the three you play most, from Last.fm with your own key; their names go to Last.fm')}>
             <Toggle label={tr('Last.fm suggestions')} checked={s.lastfmDiscoveries} onChange={(lastfmDiscoveries) => update({ lastfmDiscoveries })} />
           </Row>
+          <Row setting="blindTest" label={msg('Blind test')} sub={tr('Adds Blind test… to the app menu: ten snippets of your library, four answers, a score; nothing of the player gives the song away')}>
+            <Toggle label={tr('Blind test')} checked={s.blindTest} onChange={(blindTest) => update({ blindTest })} />
+          </Row>
         </div>
       </Group>
       <Group title={msg('Auto-DJ')}>

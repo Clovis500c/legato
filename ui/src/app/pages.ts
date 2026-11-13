@@ -27,6 +27,7 @@ const load = {
   welcome: () => import('../features/welcome/Welcome').then((m) => ({ default: m.Welcome })),
   nowPlaying: () => import('../features/player/NowPlaying').then((m) => ({ default: m.NowPlaying })),
   lyrics: () => import('../features/player/LyricsPanel').then((m) => ({ default: m.LyricsPanel })),
+  blindTest: () => import('../features/blind/BlindTest').then((m) => ({ default: m.BlindTest })),
   importDialog: () => import('../features/share/ImportDialog').then((m) => ({ default: m.ImportDialog })),
   importScreen: () => import('../features/add/ImportScreen').then((m) => ({ default: m.ImportScreen })),
   connectWizard: () => import('../features/sources/ConnectWizard').then((m) => ({ default: m.ConnectWizard })),
@@ -84,6 +85,7 @@ export const Welcome = page(load.welcome)
 export const NowPlaying = page(load.nowPlaying)
 export const LyricsPanel = page(load.lyrics)
 export const ImportDialog = page(load.importDialog)
+export const BlindTest = page(load.blindTest)
 export const ImportScreen = page(load.importScreen)
 export const ConnectWizard = page(load.connectWizard)
 export const DuplicatesDialog = page(load.duplicates)

@@ -2,7 +2,7 @@ import { ArrowsIn, ArrowsOut, CaretDown, CaretLeft, CaretRight, CopySimple, Gear
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import { AddonsView, AddView, ConnectWizard, CoverScreen, HealthView, PipScreen, HomeView, ImportDialog, ImportScreen, Karaoke, MixesView, MixView, NotFoundView, RadioView, NowPlaying, preloadHome, RoomDialog, SearchView, SettingsView, ShareDialog, SmartView, StatsView, VizScreen, Welcome } from './pages'
+import { AddonsView, AddView, BlindTest, ConnectWizard, CoverScreen, HealthView, PipScreen, HomeView, ImportDialog, ImportScreen, Karaoke, MixesView, MixView, NotFoundView, RadioView, NowPlaying, preloadHome, RoomDialog, SearchView, SettingsView, ShareDialog, SmartView, StatsView, VizScreen, Welcome } from './pages'
 // Up next running out: similar songs (registers itself with the player).
 import '../features/player/autoplay'
 import { AlbumView, ArtistView } from '../features/library/AlbumArtist'
@@ -32,6 +32,7 @@ import { PlayerBar } from '../features/player/PlayerBar'
 import { SidePanel } from '../features/player/SidePanel'
 import { useNowTrack, usePlayer } from '../features/player/store'
 import { SearchBar } from '../features/search/SearchBar'
+import { useBlind } from '../features/blind/blindOpen'
 import { VoiceSearch } from '../features/search/VoiceSearch'
 import { Sidebar } from '../features/sidebar/Sidebar'
 import { api } from '../shared/api'
@@ -229,6 +230,7 @@ const pageKey = (v: View) => ('id' in v ? `${v.name}:${v.id}` : 'album' in v ? `
 export function App() {
   const { view, go, refresh, incoming } = useStore(useShallow((s) => ({ view: s.view, go: s.go, refresh: s.refresh, incoming: s.incoming })))
   const full = usePlayer((s) => s.full)
+  const blind = useBlind((s) => s.open)
   const importing = useStore((s) => !!s.importRun && !s.importRun.hidden)
   const karaoke = useKaraoke((s) => s.open)
   const vizFull = useVizFull((s) => s.open)
@@ -425,6 +427,11 @@ export function App() {
       <CreditsHost />
       <ContextMenuHost fallback={appMenu} />
       <DuplicatesHost />
+      {blind && (
+        <PageBoundary fallback={null}>
+          <BlindTest />
+        </PageBoundary>
+      )}
       {incoming && (
         <PageBoundary fallback={null}>
           <ImportDialog key={incoming} code={incoming} />

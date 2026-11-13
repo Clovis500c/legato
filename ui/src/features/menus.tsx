@@ -70,6 +70,7 @@ import {
   BookmarkSimple,
   Alarm,
   ArrowsIn,
+  Question,
 } from '@phosphor-icons/react'
 import { openUrl, revealItemInDir } from '@tauri-apps/plugin-opener'
 import { useSettings } from '../app/settings'
@@ -104,6 +105,7 @@ import { startAutoDj } from './player/autoDj'
 import { startRadio, startRadioFrom } from './player/radio'
 import { chaptersMenu } from './player/chapters'
 import { sleepMenu } from './player/sleep'
+import { openBlind } from './blind/blindOpen'
 import { deleteFolder, newFolder, renameFolder, setFolder, togglePinned } from './sidebar/folderActions'
 import { closeKaraoke, nowFix, nudgeLyrics, toggleKaraoke } from './player/karaokeMode'
 import { canVizFull, toggleVizFull, useVizFull } from './player/vizFull'
@@ -1023,6 +1025,7 @@ export function appMenu(): MenuEntry[] {
     { label: tr('Forward'), icon: <ArrowRight size={16} />, disabled: !fwd.length, onSelect: goForward },
     '-',
     { label: tr('Sync library'), icon: <ArrowsClockwise size={16} />, disabled: !status.youtube.connected && !status.spotify.connected, onSelect: () => void sync() },
+    useSettings.getState().settings.blindTest && { label: tr('Blind test…'), icon: <Question size={16} />, onSelect: openBlind },
     { label: tr('Add music'), icon: <PlusCircle size={16} />, onSelect: () => go({ name: 'add' }) },
     {
       label: tr('New playlist'),
