@@ -170,6 +170,19 @@ Where a line says "reading", the owner hasn't confirmed it.
 
 ## The owner's asks of 2026-11-13
 
+- [ ] `M` Erase every trace of "Music App" (the owner's QCM, 2026-11-13: almost nobody used that version, so the formats are renamed too and
+      only ONE catch-up for data on disk stays, in `src-tauri/src/rename.rs`, behind `identity::installed()`). Steps, one commit each:
+      - [x] share codes: the QR prefix `MA1:` → `LG1:`, `musicapp://` links no longer read (`share.rs`, `shareCode.ts`, fuzz, tests).
+      - [ ] local network: `_musicapp._tcp` / `_musicappsync._tcp` and their handshake words.
+      - [ ] sync files: `.musicsync` → `.legatosync`, the `Music App Sync` folder, caught up once by `rename.rs`.
+      - [ ] the pages' messages (`musicapp-ytwatch:`, `musicApp`, `__musicApp*`), the plugin user agent, the site's package name.
+      - [ ] texts and docs: `CLAUDE.md` (no more "Names kept"), architecture, sync-mode, plugins, the 17 + 18 languages.
+      - [ ] final `grep`, `cargo fmt`, what stays and why.
+- [ ] `S` Remove the rename catch-up (when every PC of the owner runs the new name): delete `src-tauri/src/rename.rs` and its call in
+      `lib.rs`, the old Run entry handling in `autostart.rs` (`OLD_NAME`, `music-app.exe`), the old-install cleanup in
+      `src-tauri/windows/hooks.nsh`, the old identifier in `e2e/e2e.test.ts` and `scripts/bench.test.ts`; the list is kept up to date
+      as the steps above land.
+
 - [x] `S` A shared song plays instead of opening "Import a shared playlist" (the owner): a link, a nearby send or the picture of "Share as
       a picture" that holds ONE song now plays it (`share_song`, `share/playShared.ts`); several songs open the same box as before.
       2026-11-13: the library's own row when it has the song, else the song as the sender gave it (YouTube video with its names, an

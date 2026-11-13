@@ -1,4 +1,4 @@
-//! MA1 share code: playlist as compact binary, zlib (deflate + Adler-32 checksum), then text.
+//! LG1 share code: playlist as compact binary, zlib (deflate + Adler-32 checksum), then text.
 //! One entry per track, best id first: YouTube (full playback for anyone), Apple Music, else artist + title.
 //! Spotify ids / ISRC skipped: receiver without Premium or Apple API can't resolve them; text it can search.
 //! Version 2: a YouTube entry carries the sender's artist, title and length, so the receiver adds the song as is, no
@@ -37,9 +37,7 @@ const MAX_TEXT: u64 = 300;
 /// Decompressed cap: zip bomb guard.
 const MAX_RAW: u64 = 4 << 20;
 pub const LINK: &str = "legato://playlist/";
-/// Links made by Music App (the app's first name): still read.
-const OLD_LINK: &str = "musicapp://playlist/";
-pub const QR: &str = "MA1:";
+pub const QR: &str = "LG1:";
 /// The website's page that shows a shared playlist in any browser. The code rides in the fragment, which a browser
 /// keeps to itself: GitHub's server never sees the playlist.
 pub const WEB_LINK: &str = "https://clovis500c.github.io/legato/l/#";
@@ -254,7 +252,7 @@ pub fn to_web_link(s: &Shared) -> String {
     format!("{WEB_LINK}{}", URL_SAFE_NO_PAD.encode(encode(s)))
 }
 
-/// For QR codes: `MA1:` + base45, all in QR alphanumeric mode. Ids only.
+/// For QR codes: `LG1:` + base45, all in QR alphanumeric mode. Ids only.
 pub fn to_qr_text(s: &Shared) -> String {
     format!("{QR}{}", base45(&encode(&s.compact())))
 }
@@ -308,7 +306,7 @@ pub fn read_qr(path: &Path) -> Result<String> {
 /// Link or QR text. Whitespace inside links tolerated (chat apps wrap lines).
 pub fn parse(text: &str) -> Result<Shared> {
     let text = text.trim();
-    if let Some(rest) = text.strip_prefix(LINK).or_else(|| text.strip_prefix(OLD_LINK)).or_else(|| text.strip_prefix(WEB_LINK)) {
+    if let Some(rest) = text.strip_prefix(LINK).or_else(|| text.strip_prefix(WEB_LINK)) {
         let clean: String = rest.chars().filter(|c| !c.is_whitespace()).collect();
         return decode(&URL_SAFE_NO_PAD.decode(clean).context("Share link is damaged")?);
     }
@@ -357,9 +355,10 @@ mod tests {
         // Chat app wrapped the link.
         let link = to_link(&sample());
         assert_eq!(parse(&format!("  {}\n{} ", &link[..30], &link[30..])).unwrap(), sample());
-        // Made by Music App, before the rename.
-        assert_eq!(parse(&link.replace(LINK, OLD_LINK)).unwrap(), sample());
-        assert!(to_qr_text(&sample()).bytes().all(|b| B45.contains(&b) || b"MA1:".contains(&b)));
+        // The links and QR codes of the first name (Music App, `musicapp://`, `MA1:`) are not read any more.
+        assert!(parse(&link.replace(LINK, "musicapp://playlist/")).is_err());
+        assert!(parse(&to_qr_text(&sample()).replace(QR, "MA1:")).is_err());
+        assert!(to_qr_text(&sample()).bytes().all(|b| B45.contains(&b) || b"LG1:".contains(&b)));
     }
 
     #[test]
@@ -432,7 +431,7 @@ mod tests {
         assert!(decode(&bytes).is_err());
         assert!(decode(&encode(&sample())[..10]).is_err());
         assert!(parse("hello").is_err());
-        assert!(parse("MA1:abc").is_err());
+        assert!(parse("LG1:abc").is_err());
         assert!(parse(&format!("{LINK}%%%")).is_err());
         let mut z = ZlibEncoder::new(Vec::new(), Compression::fast());
         z.write_all(&[VERSION + 1, 0, 0]).unwrap();

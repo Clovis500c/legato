@@ -85,7 +85,7 @@ fn share_codes_and_links_never_panic_and_stay_bounded() {
             assert!(s.items.len() <= 10_000);
         }
     });
-    hammer(&[link.as_bytes(), web.as_bytes(), qr.as_bytes(), b"MA1:", b"legato://playlist/", b"https://clovis500c.github.io/legato/l/#"], 2_000, |b| {
+    hammer(&[link.as_bytes(), web.as_bytes(), qr.as_bytes(), b"LG1:", b"legato://playlist/", b"https://clovis500c.github.io/legato/l/#"], 2_000, |b| {
         if let Ok(s) = share::parse(&text(b)) {
             assert!(s.items.len() <= 10_000);
         }
