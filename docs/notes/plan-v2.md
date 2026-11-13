@@ -647,6 +647,12 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       "From Wikipedia, under CC BY-SA" linking to the article; the website's "Artist links" row says so. Untried against the real
       Wikipedia (mock tests only). Decided alone (2026-11-12): on a click, never on opening the page.
 - [ ] `M` Sweet fades (Plexamp): crossfade length picked per pair from the songs' ends (loudness, silence, tempo).
+      2026-11-13, by tempo: Settings › Playback › Sweet fades (off by default): `sweet.ts` `sweetSeconds(a, b, base)` picks each
+      pair's fade out and fade in from the library's `bpm` (whole phrases of 8 beats when the tempos are within 4%, half and
+      double time counted; the set seconds within 12%; at most 3 s beyond; unknown tempo or no fade: unchanged), `songFade`
+      and the fade in of a song that starts on its own use it. Tested as a pure function only. Left: silence and loudness at
+      the ends (the player knows them only after a song has played; they need the local analysis to store them per song).
+      Decided alone (2026-11-13): tempo first, because it is the one signal the library already holds per song.
       2026-11-13, not started (decided alone): the fade is applied in three places (`songFade`, `playAt`'s `fadeIn`, the
       engine's own crossfade for files), and a per-pair length wants to be heard on real songs, not built blind at night.
       (Left by the autopilot (2026-11-05): a song's end is only known measured (local files, Skip silence on) or

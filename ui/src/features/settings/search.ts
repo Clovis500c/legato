@@ -37,6 +37,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'playback', label: msg('Blind test'), keywords: msg('blind test guess game quiz music snippet') },
   { section: 'playback', label: msg('Podcasts'), keywords: msg('podcasts rss feed episodes show audio') },
   { section: 'playback', label: msg('Fade between songs'), keywords: msg('crossfade transition fade out in') },
+  { section: 'playback', label: msg('Sweet fades'), keywords: msg('fade crossfade tempo bpm beat dj') },
   { section: 'playback', label: msg('Early endings'), keywords: msg('silence end screen outro video ends early custom end detect') },
   { section: 'playback', label: msg('Skip silence'), keywords: msg('silence quiet start end intro outro gap trim skip hidden track gapless') },
   { section: 'playback', label: msg('Skip non-music parts'), keywords: msg('sponsorblock intro skit talking outro music video skip segments community') },

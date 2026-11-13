@@ -119,7 +119,7 @@ function apply(s: Settings) {
       () => {},
     )
   }
-  usePlayer.setState({ fade: effectiveFade(s), gaplessAlbums: s.gaplessAlbums, smartShuffle: s.smartShuffle, skipLong: s.skipLong, earlyEnds: s.earlyEnds, skipSilence: s.skipSilence, levelling: s.levelling, skipNonMusic: s.skipNonMusic, songShape: s.progressStyle === 'shape' })
+  usePlayer.setState({ fade: effectiveFade(s), gaplessAlbums: s.gaplessAlbums, sweetFades: s.sweetFades, smartShuffle: s.smartShuffle, skipLong: s.skipLong, earlyEnds: s.earlyEnds, skipSilence: s.skipSilence, levelling: s.levelling, skipNonMusic: s.skipNonMusic, songShape: s.progressStyle === 'shape' })
   useStore.setState({ toastPrefs: { important: s.toastShow === 'important', scale: { short: 0.5, normal: 1, long: 2 }[s.toastTime] } })
   const root = document.documentElement.style
   const theme = resolveTheme(s, systemDark.matches, systemAccent, coverAccent)

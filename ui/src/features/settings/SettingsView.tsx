@@ -964,6 +964,9 @@ function PlaybackSection() {
           <Row setting="skipLong" label={msg('Skip long songs')} sub={s.skipLong ? tr('Songs over {n} min are skipped as the queue moves on', { n: s.skipLong }) : tr('Off')}>
             <input type="range" aria-label={tr('Skip long songs')} min={0} max={60} step={1} value={s.skipLong} onChange={(e) => update({ skipLong: +e.target.value })} className="bar w-40" style={{ backgroundImage: `linear-gradient(to right, var(--ink) ${(s.skipLong / 60) * 100}%, var(--line) 0)` }} />
           </Row>
+          <Row setting="sweetFades" label={msg('Sweet fades')} sub={tr('Sets each fade between two songs from their tempos: whole beats when they match, short when they clash')}>
+            <Toggle label={tr('Sweet fades')} checked={s.sweetFades} onChange={(sweetFades) => update({ sweetFades })} />
+          </Row>
           <Row setting="youtubeChapters" label={msg('Chapters of long YouTube videos')} sub={tr('Asks YouTube for the chapters of a long video that plays (its own markers, or the times in its description) and adds Chapters to the player\'s menu')}>
             <Toggle label={tr('Chapters of long YouTube videos')} checked={s.youtubeChapters} onChange={(youtubeChapters) => update({ youtubeChapters })} />
           </Row>

@@ -6,6 +6,7 @@ import type { Box } from '../../shared/artbox'
 import { region } from '../../shared/format'
 import { endListen, progress, startListen } from './listens'
 import { albumGoesOn, demoGain, demoLength, fadeGain, NO_FADE, overlapDue, PICK_IN_S, type Fade } from './fade'
+import { sweetSeconds } from './sweet'
 import { insertAt, keepQueued, moveInOrder, moveToSlot, nextIndex, playOrder, queued, tooLong, type Repeat } from './queue'
 import { RECENT_S, smartOrder } from './shuffle'
 import { isNative, nativePath, SERVER_PATH, serverDown, toFind, vias, viaOfPath, type Via } from './sources'
@@ -62,6 +63,8 @@ interface PlayerState {
   skipLong: number
   /** Settings › Playback › No fade within an album: songs of one album played in a row, no fades between them. */
   gaplessAlbums: boolean
+  /** Settings › Playback › Sweet fades: each fade between two songs follows their tempos (sweet.ts). */
+  sweetFades: boolean
   /** Settings › Playback › Smart shuffle: artists spread, songs heard lately last (shuffle.ts). */
   smartShuffle: boolean
   /** Settings › Playback › Early endings: a video ends where its song does (ends.ts). */
@@ -227,10 +230,21 @@ const albumGoesOnAt = (p: PlayerState, i: number | null) => p.gaplessAlbums && !
  * fade out is due only: before it, the fade out doesn't touch the volume anyway.
  */
 export function songFade(p: PlayerState): Fade {
-  if (!p.gaplessAlbums || !overlapDue(p.positionMs, p.durationMs, p.fade)) return p.fade
-  const i = nextIndex(p.order, p.index, 1, p.repeat, true, (j) => passOver(p.list[j], p.skipLong))
-  return albumGoesOnAt(p, i) ? { ...p.fade, out: 0 } : p.fade
+  const next = () => nextIndex(p.order, p.index, 1, p.repeat, true, (j) => passOver(p.list[j], p.skipLong))
+  // Sweet fades: the fade out follows the pair's tempos, looked at in the last 15 s only (the longest a fade runs is 12).
+  let fade = p.fade
+  if (p.sweetFades && p.durationMs && p.positionMs >= p.durationMs - SWEET_WINDOW_MS) {
+    const i = next()
+    if (i !== null) fade = { ...fade, out: sweetSeconds(p.list[p.index], p.list[i], fade.out) }
+  }
+  if (!p.gaplessAlbums || !overlapDue(p.positionMs, p.durationMs, fade)) return fade
+  return albumGoesOnAt(p, next()) ? { ...fade, out: 0 } : fade
 }
+
+const SWEET_WINDOW_MS = 15_000
+
+/** Seconds of fade in for song `t` coming on its own after the one playing now: the set ones, or the pair's under Sweet fades. */
+const fadeInFor = (p: PlayerState, t: LibraryTrack) => (p.sweetFades ? sweetSeconds(p.list[p.index], t, p.fade.in) : p.fade.in)
 
 // Engine status lags commands: until it reports one of these paths, statuses are stale. [] = ignore all.
 let expect: string[] | null = null
@@ -578,6 +592,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   fade: NO_FADE,
   skipLong: 0,
   gaplessAlbums: true,
+  sweetFades: false,
   smartShuffle: true,
   earlyEnds: true,
   skipSilence: false,
@@ -679,7 +694,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const base: NowPlaying = { title: t.title, artist: t.artist, trackId: t.id, via: how }
     // Preview: 30 s from Apple, no resume point.
     const start = how === 'preview' ? 0 : from
-    set({ index, playId: get().playId + 1, playing: !hold, hold, positionMs: start, startAt: start, fadeFrom: 0, durationMs: t.durationMs, upcoming: [], tail: how === 'youtube' ? stopTail(get().tail) : null, fadeIn: auto ? (albumGoesOnAt(get(), index) ? 0 : get().fade.in) : get().fade.skip ? Math.min(get().fade.in, PICK_IN_S) : 0 })
+    set({ index, playId: get().playId + 1, playing: !hold, hold, positionMs: start, startAt: start, fadeFrom: 0, durationMs: t.durationMs, upcoming: [], tail: how === 'youtube' ? stopTail(get().tail) : null, fadeIn: auto ? (albumGoesOnAt(get(), index) ? 0 : fadeInFor(get(), t)) : get().fade.skip ? Math.min(get().fade.in, PICK_IN_S) : 0 })
     sent = -1
     useSponsor.setState({ video: undefined, segs: [] })
     parts = { playId: get().playId, prev: start / 1000, done: new Set() }
