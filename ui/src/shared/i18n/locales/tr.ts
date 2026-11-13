@@ -905,7 +905,6 @@ const tr: Record<string, string> = {
   'YouTube controls on the video': 'Videoda YouTube kontrolleri',
   "YouTube's own title, buttons and hover menu on the video. From the next track.": 'YouTube’un kendi başlığı, düğmeleri ve fareyle üzerine gelince açılan menüsü videoda. Bir sonraki şarkıdan itibaren.',
   'Search settings': 'Ayarlarda ara',
-  'More settings': 'Diğer ayarlar',
   'No setting matches.': 'Eşleşen ayar yok.',
   // Settings search keywords (features/settings/search.ts)
   'language translation translate english french interface': 'dil çeviri çevir ingilizce fransızca türkçe arayüz language',
@@ -2345,6 +2344,7 @@ const tr: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Sunucunuz yalnızca olduğu gibi gönderilen parolayı kabul ediyor (onaltılık kodlanır, bu şifreleme değildir). https üzerinden yalnızca sunucunuz okuyabilir. Bu şekilde gönderilsin mi?',
   'Send my password as it is': 'Parolamı olduğu gibi gönder',
   'Hide explicit songs': 'Müstehcen şarkıları gizle',
+  'Advanced': 'Gelişmiş',
   'Customize menus…': 'Menüleri özelleştir…',
   'Lists of songs': 'Şarkı listeleri',
   'Folders': 'Klasörler',

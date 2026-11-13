@@ -905,7 +905,6 @@ const de: Record<string, string> = {
   'YouTube controls on the video': 'YouTube-Steuerelemente auf dem Video',
   "YouTube's own title, buttons and hover menu on the video. From the next track.": 'YouTubes eigener Titel, Buttons und Hover-Menü auf dem Video. Ab dem nächsten Titel.',
   'Search settings': 'Einstellungen durchsuchen',
-  'More settings': 'Weitere Einstellungen',
   'No setting matches.': 'Keine Einstellung passt.',
   // Settings search keywords (features/settings/search.ts)
   'language translation translate english french interface': 'sprache übersetzung übersetzen englisch französisch deutsch oberfläche language translation',
@@ -2345,6 +2344,7 @@ const de: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Ihr Server akzeptiert nur das unverändert gesendete Passwort (hexadezimal kodiert, das ist keine Verschlüsselung). Über https kann nur Ihr Server es lesen. So senden?',
   'Send my password as it is': 'Mein Passwort unverändert senden',
   'Hide explicit songs': 'Explizite Songs ausblenden',
+  'Advanced': 'Erweitert',
   'Customize menus…': 'Menüs anpassen …',
   'Lists of songs': 'Songlisten',
   'Folders': 'Ordner',

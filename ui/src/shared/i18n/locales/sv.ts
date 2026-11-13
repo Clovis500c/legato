@@ -905,7 +905,6 @@ const sv: Record<string, string> = {
   'YouTube controls on the video': 'YouTube-kontroller på videon',
   "YouTube's own title, buttons and hover menu on the video. From the next track.": 'YouTubes egen titel, knappar och hovringsmeny på videon. Från nästa låt.',
   'Search settings': 'Sök i inställningarna',
-  'More settings': 'Fler inställningar',
   'No setting matches.': 'Ingen inställning matchar.',
   // Settings search keywords (features/settings/search.ts)
   'language translation translate english french interface': 'språk översättning översätta engelska franska svenska gränssnitt language',
@@ -2345,6 +2344,7 @@ const sv: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Din server tar bara emot lösenordet skickat som det är (hexkodat, vilket inte är kryptering). Över https kan bara din server läsa det. Skicka det så här?',
   'Send my password as it is': 'Skicka mitt lösenord som det är',
   'Hide explicit songs': 'Dölj explicita låtar',
+  'Advanced': 'Avancerat',
   'Customize menus…': 'Anpassa menyer…',
   'Lists of songs': 'Låtlistor',
   'Folders': 'Mappar',

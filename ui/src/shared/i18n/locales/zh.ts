@@ -905,7 +905,6 @@ const zh: Record<string, string> = {
   'YouTube controls on the video': '视频上的 YouTube 控件',
   "YouTube's own title, buttons and hover menu on the video. From the next track.": '视频上 YouTube 自己的标题、按钮和悬停菜单。从下一首开始生效。',
   'Search settings': '搜索设置',
-  'More settings': '更多设置',
   'No setting matches.': '没有匹配的设置。',
   // Settings search keywords (features/settings/search.ts)
   'language translation translate english french interface': '语言 翻译 英语 法语 中文 界面 language translation translate english french interface',
@@ -2345,6 +2344,7 @@ const zh: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': '你的服务器只接受原样发送的密码（十六进制编码，并非加密）。通过 https 只有你的服务器能读到。要这样发送吗？',
   'Send my password as it is': '原样发送我的密码',
   'Hide explicit songs': '隐藏含露骨内容的歌曲',
+  'Advanced': '高级',
   'Customize menus…': '自定义菜单…',
   'Lists of songs': '歌曲列表',
   'Folders': '文件夹',

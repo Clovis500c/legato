@@ -905,7 +905,6 @@ const id: Record<string, string> = {
   'YouTube controls on the video': 'Kontrol YouTube di video',
   "YouTube's own title, buttons and hover menu on the video. From the next track.": 'Judul, tombol, dan menu hover milik YouTube di video. Mulai lagu berikutnya.',
   'Search settings': 'Cari pengaturan',
-  'More settings': 'Pengaturan lainnya',
   'No setting matches.': 'Tidak ada pengaturan yang cocok.',
   // Settings search keywords (features/settings/search.ts)
   'language translation translate english french interface': 'bahasa terjemahan terjemahkan inggris prancis indonesia antarmuka language',
@@ -2345,6 +2344,7 @@ const id: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Server Anda hanya menerima kata sandi yang dikirim apa adanya (dikodekan heksadesimal, bukan enkripsi). Lewat https hanya server Anda yang bisa membacanya. Kirim dengan cara ini?',
   'Send my password as it is': 'Kirim kata sandi saya apa adanya',
   'Hide explicit songs': 'Sembunyikan lagu eksplisit',
+  'Advanced': 'Lanjutan',
   'Customize menus…': 'Sesuaikan menu…',
   'Lists of songs': 'Daftar lagu',
   'Folders': 'Folder',

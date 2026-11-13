@@ -90,7 +90,7 @@ arranged for a thumb). Liner's calm is the spirit, never its look. The rules:
   sleep timer, playlists, rating, bookmarks, go to album or artist.
 - **Your library tab:** Stats and Add music side by side (Home and Mixes are tabs), then the library list.
 - **Settings:** the sections as one row of chips under the settings search; in each section the common groups first,
-  the rare ones folded under "More settings" at the foot (`settings/phoneFold.ts`), a search result opening its fold.
+  the rare ones folded under "Advanced" at the foot (`settings/phoneFold.ts`), a search result opening its fold.
 - **List rows:** 56 px at least, two lines (title; artist or one detail), the menu's ⋯ at the end, a tap plays.
 - **Dialogs are sheets** too (`shared/ui/Dialog.tsx`): the full width from the bottom edge, rounded on top, their
   buttons above the system bar.

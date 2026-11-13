@@ -905,7 +905,6 @@ const nl: Record<string, string> = {
   'YouTube controls on the video': 'YouTube-bediening op de video',
   "YouTube's own title, buttons and hover menu on the video. From the next track.": 'De eigen titel, knoppen en hovermenu van YouTube op de video. Vanaf het volgende nummer.',
   'Search settings': 'Instellingen zoeken',
-  'More settings': 'Meer instellingen',
   'No setting matches.': 'Geen instelling gevonden.',
   // Settings search keywords (features/settings/search.ts)
   'language translation translate english french interface': 'taal vertaling vertalen engels frans nederlands interface language translation',
@@ -2345,6 +2344,7 @@ const nl: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Je server accepteert alleen het wachtwoord zoals het is (hexadecimaal gecodeerd, dat is geen versleuteling). Via https kan alleen je server het lezen. Zo versturen?',
   'Send my password as it is': 'Mijn wachtwoord verzenden zoals het is',
   'Hide explicit songs': 'Expliciete nummers verbergen',
+  'Advanced': 'Geavanceerd',
   'Customize menus…': 'Menu’s aanpassen…',
   'Lists of songs': 'Lijsten met nummers',
   'Folders': 'Mappen',

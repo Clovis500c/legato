@@ -905,7 +905,6 @@ const ko: Record<string, string> = {
   'YouTube controls on the video': '동영상 위 YouTube 컨트롤',
   "YouTube's own title, buttons and hover menu on the video. From the next track.": '동영상 위의 YouTube 자체 제목, 버튼, 호버 메뉴. 다음 곡부터 적용.',
   'Search settings': '설정 검색',
-  'More settings': '추가 설정',
   'No setting matches.': '일치하는 설정이 없습니다.',
   // Settings search keywords (features/settings/search.ts)
   'language translation translate english french interface': '언어 번역 영어 프랑스어 한국어 인터페이스 language translation translate english french interface',
@@ -2345,6 +2344,7 @@ const ko: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': '서버가 비밀번호를 그대로 보내는 방식만 받습니다(16진수로 인코딩될 뿐 암호화는 아닙니다). https에서는 서버만 읽을 수 있습니다. 이렇게 보낼까요?',
   'Send my password as it is': '내 비밀번호를 그대로 보내기',
   'Hide explicit songs': '선정적인 곡 숨기기',
+  'Advanced': '고급',
   'Customize menus…': '메뉴 사용자 지정…',
   'Lists of songs': '곡 목록',
   'Folders': '폴더',

@@ -905,7 +905,6 @@ const hi: Record<string, string> = {
   'YouTube controls on the video': 'वीडियो पर YouTube कंट्रोल',
   "YouTube's own title, buttons and hover menu on the video. From the next track.": 'वीडियो पर YouTube का अपना टाइटल, बटन और होवर मेन्यू। अगले ट्रैक से।',
   'Search settings': 'सेटिंग खोजें',
-  'More settings': 'और सेटिंग',
   'No setting matches.': 'कोई सेटिंग मेल नहीं खाती।',
   // Settings search keywords (features/settings/search.ts)
   'language translation translate english french interface': 'भाषा अनुवाद अंग्रेज़ी फ़्रेंच हिंदी इंटरफ़ेस language translation translate english french interface',
@@ -2345,6 +2344,7 @@ const hi: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'आपका सर्वर पासवर्ड केवल जैसा है वैसा ही भेजने पर स्वीकार करता है (हेक्स में एन्कोड, जो एन्क्रिप्शन नहीं है)। https पर केवल आपका सर्वर इसे पढ़ सकता है। इसे ऐसे भेजें?',
   'Send my password as it is': 'मेरा पासवर्ड जैसा है वैसा भेजें',
   'Hide explicit songs': 'स्पष्ट (explicit) गाने छिपाएँ',
+  'Advanced': 'उन्नत',
   'Customize menus…': 'मेनू अनुकूलित करें…',
   'Lists of songs': 'गानों की सूचियाँ',
   'Folders': 'फ़ोल्डर',

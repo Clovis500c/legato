@@ -1222,7 +1222,7 @@ export function SettingsView({ section }: { section: SettingsSection }) {
               <div data-settings-page className={`flex flex-col gap-6 ${page === 'appearance' ? '' : 'max-w-190'}`}>
                 {/* Over the folded groups at the page's foot (styles.css shows it when there is one). */}
                 <h2 data-fold-head className="hidden pt-2 text-base font-semibold" style={{ order: 999 }}>
-                  {tr('More settings')}
+                  {tr('Advanced')}
                 </h2>
                 <GeneralSection />
                 <PlaybackSection />

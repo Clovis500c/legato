@@ -905,7 +905,6 @@ const ja: Record<string, string> = {
   'YouTube controls on the video': '動画上のYouTubeコントロール',
   "YouTube's own title, buttons and hover menu on the video. From the next track.": '動画上のYouTube自体のタイトル、ボタン、ホバーメニュー。次の曲から反映。',
   'Search settings': '設定を検索',
-  'More settings': 'その他の設定',
   'No setting matches.': '一致する設定はありません。',
   // Settings search keywords (features/settings/search.ts)
   'language translation translate english french interface': '言語 翻訳 英語 フランス語 日本語 インターフェース language translation translate english french interface',
@@ -2345,6 +2344,7 @@ const ja: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'お使いのサーバーは、パスワードをそのまま送る方式しか受け付けません（16進数に変換されるだけで、暗号化ではありません）。https なら読めるのはサーバーだけです。この方法で送りますか？',
   'Send my password as it is': 'パスワードをそのまま送る',
   'Hide explicit songs': '露骨な表現を含む曲を隠す',
+  'Advanced': '詳細設定',
   'Customize menus…': 'メニューをカスタマイズ…',
   'Lists of songs': '曲のリスト',
   'Folders': 'フォルダー',
