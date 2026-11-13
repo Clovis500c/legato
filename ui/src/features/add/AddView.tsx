@@ -1,4 +1,5 @@
-import { ClipboardText, Desktop, DeviceMobile, FolderPlus, ListPlus, MagnifyingGlass, Plus, QrCode } from '@phosphor-icons/react'
+import { Camera, ClipboardText, Desktop, DeviceMobile, FolderPlus, ListPlus, MagnifyingGlass, Plus, QrCode } from '@phosphor-icons/react'
+import { useSettings } from '../../app/settings'
 import { ArrowRight } from '../../shared/ui/directional'
 import { open } from '@tauri-apps/plugin-dialog'
 import { useEffect, useState } from 'react'
@@ -72,6 +73,9 @@ function SearchHero() {
 /** Shared playlist: link or QR text typed / pasted here (Ctrl+V anywhere works too). */
 function ImportCode() {
   const [text, setText] = useState('')
+  // Settings › Playback › Scan QR codes with the webcam (off by default, desktop): the camera opens at this click only.
+  const webcam = useSettings((s) => s.settings.webcamScan) && !phoneApp
+  const scan = () => void import('../share/webcam').then((m) => m.scanWebcam()).then((code) => code && useStore.setState({ incoming: code.trim() }))
   const [busy, setBusy] = useState(false)
   const digits = /^\d{3}\s?\d{3}$/.test(text.trim())
   return (
@@ -94,6 +98,11 @@ function ImportCode() {
         className="mt-auto flex gap-2"
       >
         <input value={text} onChange={(e) => setText(e.target.value)} placeholder={tr('Link or 6-digit code')} aria-label={tr('Share link or code')} className={`${FIELD} flex-1 font-mono text-xs`} />
+        {webcam && (
+          <RoundButton label={tr('Scan with the webcam')} kind="plain" size="sm" type="button" onClick={scan}>
+            <Camera size={14} />
+          </RoundButton>
+        )}
         <RoundButton label={tr('Import')} kind="ink" size="sm" type="submit" disabled={!text.trim() || busy}>
           <ArrowRight size={14} />
         </RoundButton>
