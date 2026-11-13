@@ -58,6 +58,18 @@ fn chunks(lines: &[String]) -> Vec<std::ops::Range<usize>> {
     out
 }
 
+/// A line trimmed to `MAX_LINE` characters and one request's bytes (200 wide characters pass the service's 500).
+fn cut(line: &str) -> String {
+    let mut out = String::new();
+    for c in line.trim().chars().take(MAX_LINE) {
+        if out.len() + c.len_utf8() > CHUNK {
+            break;
+        }
+        out.push(c);
+    }
+    out
+}
+
 /// A language code the service takes: letters, at most two parts ("fr", "pt-BR").
 fn code(c: &str) -> bool {
     !c.is_empty() && c.len() <= 8 && c.split('-').all(|p| !p.is_empty() && p.chars().all(|ch| ch.is_ascii_alphabetic()))
@@ -76,7 +88,7 @@ impl MyMemory {
         if lines.len() > MAX_LINES {
             bail!("Too many lines to translate");
         }
-        let lines: Vec<String> = lines.iter().map(|l| l.trim().chars().take(MAX_LINE).collect()).collect();
+        let lines: Vec<String> = lines.iter().map(|l| cut(l)).collect();
         let pair = format!("{}|{to}", from.unwrap_or("Autodetect"));
         let mut out: Vec<String> = Vec::with_capacity(lines.len());
         for run in chunks(&lines) {
@@ -123,6 +135,15 @@ mod tests {
         assert_eq!(runs, [0..4, 4..8, 8..10]);
         assert_eq!(chunks(&[]), Vec::<std::ops::Range<usize>>::new());
         assert_eq!(chunks(&["y".repeat(900)]), vec![0..1]);
+    }
+
+    #[tokio::test]
+    async fn a_long_line_in_a_wide_script_still_fits_one_request() {
+        let mut s = Server::new_async().await;
+        // 200 characters of 3 bytes = 600 bytes, past the service's 500: cut at a character, under the cap.
+        let m = s.mock("GET", "/get").match_query(Matcher::UrlEncoded("q".into(), "日".repeat(150))).with_body(r#"{"responseData":{"translatedText":"day"},"responseStatus":200}"#).expect(1).create_async().await;
+        assert_eq!(MyMemory::with_urls(&s.url()).translate(&v(&[&"日".repeat(300)]), None, "en").await.unwrap(), ["day"]);
+        m.assert_async().await;
     }
 
     #[tokio::test]
