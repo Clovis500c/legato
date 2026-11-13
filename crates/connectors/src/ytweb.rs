@@ -87,8 +87,10 @@ pub fn parse_chapters(v: &Value) -> Vec<Chapter> {
         .into_iter()
         .filter_map(|m| {
             let seconds = m.pointer("/onTap/watchEndpoint/startTimeSeconds").and_then(Value::as_u64)?;
-            Some(Chapter { start_ms: seconds * 1000, title: m.get("title").and_then(text).unwrap_or_default().trim().to_string() })
+            Some(Chapter { start_ms: seconds.checked_mul(1000)?, title: m.get("title").and_then(text).unwrap_or_default().trim().chars().take(200).collect() })
         })
+        // As many as a description may give (`chapters::from_text`).
+        .take(2_000)
         .collect();
     if own.len() >= 3 && own.windows(2).all(|w| w[0].start_ms < w[1].start_ms) {
         return own;
@@ -316,6 +318,9 @@ mod tests {
 " }, { "text": "9:30 C" }] } } } });
         assert_eq!(parse_chapters(&old).len(), 3);
         assert!(parse_chapters(&json!({ "contents": {} })).is_empty());
+        // A forged marker far past any video's length is not a chapter (and does not overflow).
+        let huge = json!({ "a": [marker("x", 0), marker("y", 10), marker("z", u64::MAX)] });
+        assert!(parse_chapters(&huge).is_empty());
         // Markers out of order are not trusted: the description is read instead.
         let bad = json!({ "a": [marker("x", 50), marker("y", 10), marker("z", 90)], "videoSecondaryInfoRenderer": { "attributedDescription": { "content": "0:00 A
 1:00 B
