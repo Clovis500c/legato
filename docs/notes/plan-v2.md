@@ -657,8 +657,13 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       badge's name and the column are from memory of their formats, mock tests only.
       The owner's choice 2026-11-11: filtered everywhere, but only hidden, with a way back for the user if the flag is
       wrong: see the open line under "The owner's answers of 2026-11-11".
-- [ ] `S-M` Volume: per-source volume memory (its own setting and a switch rule, a taste: the owner's call). The
+- [x] `S-M` Volume: per-source volume memory (its own setting and a switch rule, a taste: the owner's call). The
       curve stays as it is (the owner's word, 2026-11-07).
+      2026-11-13 (night, no owner to ask): Settings › Playback › Volume per source (off by default, synced like the others). On, the volume
+      set while a source plays (files, a personal server, YouTube, Spotify) is kept for it and comes back when a song from it starts after
+      one from another; a source not heard yet takes the volume it arrives at; a mute is not remembered (`volumePerSource.ts`, this PC's
+      storage). Decided alone (2026-11-13): the switch rule is "the source changes", per source of the playing song, not per
+      song; the curve is untouched. Never tried by ear or on a screen.
 - [ ] `M` Concerts near the user from followed artists (a public API with no account; privacy row).
 - [x] `M` A path between two artists (Plexamp's "Sonic Adventure"): a mix that walks from one to the other.
       2026-11-12: an artist page's menu (the ⋯ button and a right-click on the header) has "Walk to another artist…": you type a

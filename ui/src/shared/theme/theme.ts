@@ -401,6 +401,8 @@ export interface Settings {
   crossfade: number
   /** Songs longer than this many minutes skipped as the queue moves on (0 = off). */
   skipLong: number
+  /** Each source (files, a personal server, YouTube, Spotify) remembers the volume last set on it and comes back to it when a song from it starts (off: one volume for all). */
+  volumePerSource: boolean
   fade: FadeSettings
   /** No fade between songs of one album played in a row (live and continuous albums never dip). */
   gaplessAlbums: boolean
@@ -593,6 +595,7 @@ export const DEFAULTS: Settings = {
   libraryWide: false,
   crossfade: 2,
   skipLong: 0,
+  volumePerSource: false,
   fade: { advanced: false, out: 2, in: 2, outCurve: 'scurve', inCurve: 'scurve', skip: true, pause: 0 },
   gaplessAlbums: true,
   pauseOnUnplug: true,
@@ -843,6 +846,7 @@ export function sanitize(raw: unknown): Settings {
     pipClassic: typeof r.pipClassic === 'boolean' ? r.pipClassic : DEFAULTS.pipClassic,
     crossfade: typeof r.crossfade === 'number' && Number.isFinite(r.crossfade) ? Math.min(12, Math.max(0, Math.round(r.crossfade))) : DEFAULTS.crossfade,
     skipLong: typeof r.skipLong === 'number' && Number.isFinite(r.skipLong) ? Math.min(60, Math.max(0, Math.round(r.skipLong))) : DEFAULTS.skipLong,
+    volumePerSource: r.volumePerSource === true,
     fade: sanitizeFade(r.fade),
     gaplessAlbums: typeof r.gaplessAlbums === 'boolean' ? r.gaplessAlbums : DEFAULTS.gaplessAlbums,
     pauseOnUnplug: typeof r.pauseOnUnplug === 'boolean' ? r.pauseOnUnplug : DEFAULTS.pauseOnUnplug,

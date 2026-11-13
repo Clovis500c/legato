@@ -1,6 +1,7 @@
 import { api } from '../shared/api'
 import { reportError } from '../shared/diag'
 import { preloadPages } from './pages'
+import { useSettings } from './settings'
 
 /**
  * What waits for the first screen (Rust side: src-tauri/src/deferred.rs): Discord's presence, Last.fm, ListenBrainz, your music server's plays, Sync Mode's
@@ -29,6 +30,7 @@ export function startDeferred(): () => void {
     ['Metronome', () => import('../features/player/metronome').then((m) => m.followSong())],
     ['Resume long songs', () => import('../features/player/resumeLong').then((m) => m.startResume())],
     ['Book chapters', () => import('../features/player/chaptersLoad').then((m) => m.startChapters())],
+    ['Volume per source', () => import('../features/player/volumePerSource').then((m) => m.startVolumePerSource(() => useSettings.getState().settings.volumePerSource))],
     ['A–B loop', () => import('../features/player/abLoop').then((m) => m.startLoop())],
     ['Alarm', () => import('../features/player/alarm').then((m) => m.startAlarm())],
     ['Listening rooms', () => import('../features/rooms/rooms').then((m) => m.startRooms())],
