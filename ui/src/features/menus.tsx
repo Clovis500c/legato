@@ -112,6 +112,8 @@ import { chaptersMenu } from './player/chapters'
 import { sleepMenu } from './player/sleep'
 import { openBlind } from './blind/blindOpen'
 import { chooseOutput, refreshOutputs, useOutputs } from './player/outputs'
+import { setDeviceEq, useDeviceEq } from './player/deviceEq'
+import { EQ_PRESETS } from './player/effects'
 import { deleteFolder, newFolder, renameFolder, setFolder, togglePinned } from './sidebar/folderActions'
 import { closeKaraoke, nowFix, nudgeLyrics, toggleKaraoke } from './player/karaokeMode'
 import { canVizFull, toggleVizFull, useVizFull } from './player/vizFull'
@@ -812,6 +814,7 @@ export function playerMenu({ controls = true }: { controls?: boolean } = {}): Me
     t && bookmarkItem(t.id),
     loopItem(),
     outputItem(),
+    useSettings.getState().settings.eqPerDevice && deviceEqItem(),
     t && practiceSpeed(),
     { label: tr('Count in, then play'), icon: <Timer size={16} />, onSelect: () => void import('./player/countIn').then((m) => m.countInPlay(t?.bpm)) },
     { label: tr('Metronome'), icon: <Timer size={16} />, checked: useMetronome.getState().bpm !== null, onSelect: () => void toggleMetronome(t?.bpm) },
@@ -1036,6 +1039,13 @@ function practiceSpeed(): MenuEntry {
     if (p) setEffects(p)
   }
   return { label: tr('Practice speed'), icon: <Timer size={16} />, items: PRACTICE.map((x) => ({ label: x === 1 ? tr('Normal speed') : `${Math.round(x * 100)}%`, checked: Math.abs(cur - x) < 0.005, onSelect: () => pick(x) })) }
+}
+
+/** Equalizer for this output: a preset for the picked output device (Flat = none), added to the song's own edit. */
+function deviceEqItem(): MenuEntry {
+  const device = useOutputs.getState().current
+  const at = useDeviceEq.getState().map[device ?? 'default'] ?? 'Flat'
+  return { label: tr('Equalizer for this output'), icon: <SpeakerHigh size={16} />, items: EQ_PRESETS.map((p) => ({ label: tr(p.name), checked: p.name === at, onSelect: () => setDeviceEq(device, p.name) })) }
 }
 
 /** Output device: the system's list (kept from the last time; refreshed now), the picked one checked. Only with a choice to make. */

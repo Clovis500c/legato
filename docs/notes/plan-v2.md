@@ -661,6 +661,11 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       and the fade in of a song that starts on its own use it. Tested as a pure function only. Left: silence and loudness at
       the ends (the player knows them only after a song has played; they need the local analysis to store them per song).
       Decided alone (2026-11-13): tempo first, because it is the one signal the library already holds per song.
+      2026-11-13 (lot 27), the ends: for local songs the earlier measures (`song_ends`, cached silences and loudness only, nothing
+      decoded) join the tempo: a loudness gap over 6 dB stretches the fade up to half again, a song ending in 3 s of silence
+      or more gets a 2 s fade out (`sweet.ts` `sweetFade`, fed by `sweetData.ts` / `sweetLoad.ts`). Tested on made-up numbers;
+      the songs not yet measured (never played) use the tempo only. Decided alone: the silence rule shortens rather than
+      lengthens, because the song already fades itself out there.
       2026-11-13, not started (decided alone): the fade is applied in three places (`songFade`, `playAt`'s `fadeIn`, the
       engine's own crossfade for files), and a per-pair length wants to be heard on real songs, not built blind at night.
       (Left by the autopilot (2026-11-05): a song's end is only known measured (local files, Skip silence on) or
@@ -686,6 +691,11 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       descriptions only (mockito), never on a real video. Left: each part as its own row in Up next, the pinned comment (a
       separate continuation call), Music Detector naming unlabelled parts.
 - [ ] `M` Output devices: switch from the player bar, remember per device (volume, EQ preset).
+      2026-11-13 (lot 27), EQ per device: Settings › Playback › Equalizer per output device (off by default) adds "Equalizer for this
+      output" to the player's menu: one of the built-in presets per output device (this PC's, `deviceEq.ts`), whose bands are
+      added to the song's own Live Editor edit (`withDeviceEq`, tested) on the one path that already pushes effects to the
+      engine and to YouTube's player (`liveSync.ts`). Not heard on a real headset; the device change itself is only seen when
+      picked in the player's menu.
       2026-11-13, the switch: the player's menu has Output device (shown with two devices or more; System default, then the system's list,
       the picked one checked), `Command::SetDevice` moves what plays like the unplug `Reopen` does (same place, paused or not), the pick
       is kept on this PC (`outputDevice`, applied at launch; a device gone falls back to the default). No setting: the entry only

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cleanEffects, NEUTRAL, neutral, PRESETS, rates, songKey } from './effects'
+import { cleanEffects, NEUTRAL, neutral, PRESETS, rates, songKey, withDeviceEq } from './effects'
 
 describe('effects', () => {
   it('rates: speed moves both, tempo only time, pitch only pitch; bypass is 1 : 1', () => {
@@ -43,5 +43,17 @@ describe('effects', () => {
     expect(songKey({ path: 'C:\m\a.flac' })).toBe('f:C:\m\a.flac')
     expect(songKey({})).toBeNull()
     expect(songKey(null)).toBeNull()
+  })
+})
+
+describe('withDeviceEq', () => {
+  it('adds a preset to the edit, clamped, and leaves flat or unknown ones alone', () => {
+    const own = { ...NEUTRAL, eq: [20, 0, 0, 0, 0, 0, 0, 0, 0, 0] }
+    const out = withDeviceEq(own, 'Bass')
+    expect(out.eq.slice(0, 4)).toEqual([24, 5, 4, 2])
+    expect(out.on).toBe(true)
+    expect(withDeviceEq(own, 'Flat')).toBe(own)
+    expect(withDeviceEq(own, undefined)).toBe(own)
+    expect(withDeviceEq(own, 'Nope')).toBe(own)
   })
 })

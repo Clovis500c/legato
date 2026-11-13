@@ -107,3 +107,10 @@ export function songKey(now: { trackId?: number; youtubeId?: string; path?: stri
   if (now.path) return `f:${now.path}`
   return null
 }
+
+/** The edit with an output device's equalizer preset (by its English name) added to its bands; unknown or flat: as it is. Pure. */
+export function withDeviceEq(e: Effects, preset: string | undefined): Effects {
+  const bands = EQ_PRESETS.find((p) => p.name === preset)?.eq
+  if (!bands || bands.every((g) => g === 0)) return e
+  return { ...e, on: true, eq: e.eq.map((g, i) => Math.min(24, Math.max(-24, g + (bands[i] ?? 0)))) }
+}

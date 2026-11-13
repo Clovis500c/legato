@@ -1,8 +1,10 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useSettings } from '../../app/settings'
 import { startEditor, useEditor } from '../editor/editor'
-import { neutral } from './effects'
+import { useDeviceEq } from './deviceEq'
+import { neutral, withDeviceEq } from './effects'
+import { useOutputs } from './outputs'
 import { overlapDue } from './fade'
 import { sendLive, setEnding, startLive } from './live'
 import { useLoudListeners } from './loudFeed'
@@ -26,7 +28,12 @@ export function useLiveSync() {
   const viz = useVizListeners((s) => s.n > 0)
   // The loudness meter reads the levels, not the frames.
   const meter = useLoudListeners((s) => s.n > 0)
-  const effects = useEditor((s) => s.effects)
+  const own = useEditor((s) => s.effects)
+  // Equalizer per output device: the picked output's preset joins the song's own edit.
+  const device = useOutputs((s) => s.current)
+  const preset = useDeviceEq((s) => s.map[device ?? 'default'])
+  const perDevice = useSettings((s) => s.settings.eqPerDevice)
+  const effects = useMemo(() => (perDevice ? withDeviceEq(own, preset) : own), [own, preset, perDevice])
   // This page owns the visualizer stream from the start: a worker left by a page before a reload is stopped.
   useEffect(() => claimViz(), [])
   // Twelfths: the engine's frames in 121 bands; the scopes: with their wave blocks (YouTube's through the wish below).
