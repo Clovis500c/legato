@@ -2576,6 +2576,10 @@ const ru: Record<string, string> = {
   'Use the theme “{name}”?': 'Использовать тему «{name}»?',
   'It joins your themes and is applied now; Settings › Appearance › Theme takes you back.': 'Она добавится к вашим темам и сразу применится; вернуться можно в Настройки › Оформление › Тема.',
   'Use it': 'Использовать',
+  'Send to {name}': 'Отправить на {name}',
+  'Sent to {name}: {songs}': 'Отправлено на {name}: {songs}',
+  'None of this playlist’s songs are on that server': 'Ни одной песни этого плейлиста нет на этом сервере',
+  'Some of this playlist’s songs aren’t on that server: take them out first': 'Некоторых песен этого плейлиста нет на этом сервере: сначала уберите их',
 }
 
 export default ru

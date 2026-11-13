@@ -2576,6 +2576,10 @@ const it: Record<string, string> = {
   'Use the theme “{name}”?': 'Usare il tema «{name}»?',
   'It joins your themes and is applied now; Settings › Appearance › Theme takes you back.': 'Si aggiunge ai tuoi temi e viene applicato ora; Impostazioni › Aspetto › Tema ti riporta indietro.',
   'Use it': 'Usalo',
+  'Send to {name}': 'Invia a {name}',
+  'Sent to {name}: {songs}': 'Inviata a {name}: {songs}',
+  'None of this playlist’s songs are on that server': 'Nessun brano di questa playlist è su quel server',
+  'Some of this playlist’s songs aren’t on that server: take them out first': 'Alcuni brani di questa playlist non sono su quel server: toglili prima',
 }
 
 export default it

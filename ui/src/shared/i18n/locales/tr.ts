@@ -2576,6 +2576,10 @@ const tr: Record<string, string> = {
   'Use the theme “{name}”?': '“{name}” teması kullanılsın mı?',
   'It joins your themes and is applied now; Settings › Appearance › Theme takes you back.': 'Temalarına eklenir ve hemen uygulanır; Ayarlar › Görünüm › Tema ile geri dönebilirsin.',
   'Use it': 'Kullan',
+  'Send to {name}': '{name} sunucusuna gönder',
+  'Sent to {name}: {songs}': '{name} sunucusuna gönderildi: {songs}',
+  'None of this playlist’s songs are on that server': 'Bu çalma listesindeki şarkıların hiçbiri o sunucuda yok',
+  'Some of this playlist’s songs aren’t on that server: take them out first': 'Bu çalma listesindeki bazı şarkılar o sunucuda yok: önce onları çıkar',
 }
 
 export default tr

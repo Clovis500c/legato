@@ -245,6 +245,14 @@ impl Conn {
         }
     }
 
+    /// A playlist made on the server with these songs: its id there. Subsonic only for now.
+    pub async fn playlist_create(&self, name: &str, items: &[String]) -> Result<String> {
+        match self {
+            Self::Subsonic(s) => s.playlist_create(name, items).await,
+            _ => Err(anyhow::anyhow!(READ_ONLY)),
+        }
+    }
+
     /// A song out of one of the server's playlists, every occurrence. Subsonic only for now.
     pub async fn playlist_remove(&self, id: &str, item: &str) -> Result<()> {
         match self {

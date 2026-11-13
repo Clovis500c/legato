@@ -2576,6 +2576,10 @@ const nl: Record<string, string> = {
   'Use the theme “{name}”?': 'Het thema ‘{name}’ gebruiken?',
   'It joins your themes and is applied now; Settings › Appearance › Theme takes you back.': 'Het komt bij je thema’s en wordt nu toegepast; via Instellingen › Weergave › Thema ga je terug.',
   'Use it': 'Gebruiken',
+  'Send to {name}': 'Verstuur naar {name}',
+  'Sent to {name}: {songs}': 'Verstuurd naar {name}: {songs}',
+  'None of this playlist’s songs are on that server': 'Geen enkel nummer van deze afspeellijst staat op die server',
+  'Some of this playlist’s songs aren’t on that server: take them out first': 'Sommige nummers van deze afspeellijst staan niet op die server: haal ze eerst weg',
 }
 
 export default nl

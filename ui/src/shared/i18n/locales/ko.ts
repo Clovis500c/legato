@@ -2576,6 +2576,10 @@ const ko: Record<string, string> = {
   'Use the theme “{name}”?': '“{name}” 테마를 사용할까요?',
   'It joins your themes and is applied now; Settings › Appearance › Theme takes you back.': '테마 목록에 추가되고 바로 적용됩니다. 설정 › 모양 › 테마에서 되돌릴 수 있습니다.',
   'Use it': '사용',
+  'Send to {name}': '{name}(으)로 보내기',
+  'Sent to {name}: {songs}': '{name}(으)로 보냈습니다: {songs}',
+  'None of this playlist’s songs are on that server': '이 재생목록의 곡이 그 서버에 하나도 없습니다',
+  'Some of this playlist’s songs aren’t on that server: take them out first': '이 재생목록의 일부 곡이 그 서버에 없습니다. 먼저 빼 주세요',
 }
 
 export default ko

@@ -2516,6 +2516,10 @@ const he: Record<string, string> = {
   'Use the theme “{name}”?': 'להשתמש בערכת הנושא «{name}»?',
   'It joins your themes and is applied now; Settings › Appearance › Theme takes you back.': 'היא מצטרפת לערכות הנושא שלכם ומוחלת עכשיו; הגדרות ‹ מראה ‹ ערכת נושא מחזירות אתכם.',
   'Use it': 'שימוש בה',
+  'Send to {name}': 'שליחה אל {name}',
+  'Sent to {name}: {songs}': 'נשלח אל {name}: {songs}',
+  'None of this playlist’s songs are on that server': 'אף אחד משירי הרשימה הזו לא נמצא בשרת ההוא',
+  'Some of this playlist’s songs aren’t on that server: take them out first': 'חלק משירי הרשימה הזו לא נמצאים בשרת ההוא: הסירו אותם קודם',
 }
 
 export default he

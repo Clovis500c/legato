@@ -504,6 +504,8 @@ export const api = {
   /** Imported YouTube Music playlist: added on YouTube (Liked Music = like), then locally. */
   addToYoutube: (id: number, trackIds: number[]) => invoke<AddReport>('add_to_youtube', { id, trackIds }),
   serverPlaylistAdd: (id: number, trackIds: number[]) => invoke<AddReport>('server_playlist_add', { id, trackIds }),
+  /** A playlist made here, created on a Subsonic server with its songs and mirrored from then on: how many songs went. */
+  serverPlaylistCreate: (id: number, key: string) => invoke<number>('server_playlist_create', { id, key }),
   serverPlaylistRemove: (id: number, trackId: number) => invoke<void>('server_playlist_remove', { id, trackId }),
   /** Raw JSON; validated by features/player/session. */
   loadSession: () => invoke<unknown>('load_session'),

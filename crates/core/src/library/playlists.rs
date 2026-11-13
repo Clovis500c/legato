@@ -253,6 +253,15 @@ impl Library {
         })
     }
 
+    /// A playlist made here that a service now holds too (`createPlaylist` on a music server): from now on it is that
+    /// service's, mirrored, so the next sync finds it by its id instead of importing a second copy.
+    pub fn adopt_playlist(&self, id: i64, source: Source, source_id: &str) -> Result<()> {
+        let source = serde_json::to_value(source)?;
+        let n = self.db.execute("UPDATE playlists SET source = ?1, source_id = ?2, custom = 0, updated = ?3 WHERE id = ?4 AND custom = 1", params![source.as_str(), source_id, now_ms(), id])?;
+        anyhow::ensure!(n == 1, "Not a playlist made here");
+        Ok(())
+    }
+
     /// Your own "Liked Music": what a like waits in, or all of them with no YouTube Music. Made when first needed.
     pub fn keep_in_own_likes(&self, ids: &[i64]) -> Result<i64> {
         let own = match self.playlists()?.into_iter().find(|p| p.custom && p.name == "Liked Music") {

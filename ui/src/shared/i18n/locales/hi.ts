@@ -2576,6 +2576,10 @@ const hi: Record<string, string> = {
   'Use the theme “{name}”?': 'थीम “{name}” इस्तेमाल करें?',
   'It joins your themes and is applied now; Settings › Appearance › Theme takes you back.': 'यह आपकी थीम में जुड़ जाती है और अभी लागू होती है; सेटिंग्स › रूप › थीम से वापस जा सकते हैं।',
   'Use it': 'इस्तेमाल करें',
+  'Send to {name}': '{name} को भेजें',
+  'Sent to {name}: {songs}': '{name} को भेजा गया: {songs}',
+  'None of this playlist’s songs are on that server': 'इस प्लेलिस्ट का कोई भी गाना उस सर्वर पर नहीं है',
+  'Some of this playlist’s songs aren’t on that server: take them out first': 'इस प्लेलिस्ट के कुछ गाने उस सर्वर पर नहीं हैं: पहले उन्हें हटाएँ',
 }
 
 export default hi

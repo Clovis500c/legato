@@ -1,5 +1,5 @@
 /** Right-click menus, one builder per kind of thing (track, playlist, album, artist, player, app). Built when opened: fresh state. */
-import { UsersThree, ArrowCounterClockwise, ArrowsClockwise, ArrowsOutSimple, ArrowSquareOut, ClipboardText, Copy, CopySimple, Disc, DownloadSimple, ChartBar, Eye, EyeSlash, MusicNotesSimple, FolderOpen, FolderSimple, FolderSimplePlus, FrameCorners, PushPin, PushPinSlash, Info, Power, ImageSquare, Gear, Link, Timer, SpeakerHifi, Users, ListBullets, ListPlus, MagnifyingGlass, MicrophoneStage, MinusCircle, Moon, Palette, Gradient, Gauge, Equalizer, FlipVertical, Pause, PencilSimple, PictureInPicture, Play, Playlist, Plus, PlusCircle, Prohibit, PuzzlePiece, Queue, Books, Microphone, Television, Radio, Repeat, Scales, ShareNetwork, Shuffle, SlidersHorizontal, Sparkle, Star, SortAscending, SkipBack, SkipForward, SpeakerHigh, Swatches, ThumbsDown, Trash, UploadSimple, VinylRecord, BookmarkSimple, Alarm, ArrowsIn, Question } from '@phosphor-icons/react'
+import { UsersThree, Devices, ArrowCounterClockwise, ArrowsClockwise, ArrowsOutSimple, ArrowSquareOut, ClipboardText, Copy, CopySimple, Disc, DownloadSimple, ChartBar, Eye, EyeSlash, MusicNotesSimple, FolderOpen, FolderSimple, FolderSimplePlus, FrameCorners, PushPin, PushPinSlash, Info, Power, ImageSquare, Gear, Link, Timer, SpeakerHifi, Users, ListBullets, ListPlus, MagnifyingGlass, MicrophoneStage, MinusCircle, Moon, Palette, Gradient, Gauge, Equalizer, FlipVertical, Pause, PencilSimple, PictureInPicture, Play, Playlist, Plus, PlusCircle, Prohibit, PuzzlePiece, Queue, Books, Microphone, Television, Radio, Repeat, Scales, ShareNetwork, Shuffle, SlidersHorizontal, Sparkle, Star, SortAscending, SkipBack, SkipForward, SpeakerHigh, Swatches, ThumbsDown, Trash, UploadSimple, VinylRecord, BookmarkSimple, Alarm, ArrowsIn, Question } from '@phosphor-icons/react'
 import { ArrowLeft, ArrowRight } from '../shared/ui/directional'
 import { openUrl, revealItemInDir } from '@tauri-apps/plugin-opener'
 import { useSettings } from '../app/settings'
@@ -14,7 +14,7 @@ import type { MenuEntry } from '../shared/ui/ContextMenu'
 import { SourceIcon } from '../shared/ui/SourceIcon'
 import type { Addon } from './addons/registry'
 import { isOn, setAddon } from './addons/state'
-import { takesEdits } from './sources/servers'
+import { takesEdits, useServers } from './sources/servers'
 import { holds, playingFrom } from './library/holding'
 import { navOf, withHidden } from './sidebar/navHidden'
 import { isStation } from './radio/station'
@@ -553,6 +553,16 @@ export function tracksMenu(tracks: LibraryTrack[], extra: MenuEntry[] = []): Men
   ]
 }
 
+/** A music server by its own name, else its address. */
+const serverName = (s: { name: string | null; address: string }) => s.name || s.address.replace(/^https?:\/\//, '').replace(/\/$/, '')
+
+/** A playlist made here, created on your Subsonic server and mirrored from then on (Rust checks the direction and the songs). */
+async function sendToServer(p: LibraryPlaylist, s: { key: string; name: string | null; address: string }) {
+  const n = await api.serverPlaylistCreate(p.id, s.key)
+  await app().refreshChanged()
+  app().notify(tr('Sent to {name}: {songs}', { name: serverName(s), songs: trn(n, '{n} song', '{n} songs') }), { action: { label: tr('Open'), run: () => app().go({ name: 'playlist', id: p.id }) } })
+}
+
 export function playlistMenu(p: LibraryPlaylist): MenuEntry[] {
   const { go, editPlaylist, notify, status } = app()
   const tracks = () => playlistSongs(p.id)
@@ -590,6 +600,11 @@ export function playlistMenu(p: LibraryPlaylist): MenuEntry[] {
       },
     { label: tr('Copy song list'), icon: <ClipboardText size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then(copyList, fail) },
     { label: tr('Save as file…'), icon: <DownloadSimple size={16} />, disabled: !p.trackCount, onSelect: () => void savePlaylistFile(p).catch(fail) },
+    ...(p.custom && p.trackCount ? useServers.getState().list.filter((s) => s.kind === 'subsonic') : []).map((s) => ({
+      label: tr('Send to {name}', { name: serverName(s) }),
+      icon: <Devices size={16} />,
+      onSelect: () => void sendToServer(p, s).catch(fail),
+    })),
     { label: tr('Copy name'), icon: <Copy size={16} />, onSelect: () => copy(p.name, tr('Name copied')) },
     p.custom && {
       label: tr('Rename…'),

@@ -20,6 +20,8 @@ const KINDS: [RegExp, string][] = [
   [/^The translation service has had enough/, msg('The translation service has had enough for today: try again later')],
   [/^The translation service refused/, msg('The translation service refused this text')],
   [/^The translation came back in a different shape/, msg('The translation came back misshapen: try again')],
+  [/^None of this playlist['’]s songs are on that server/, msg('None of this playlist’s songs are on that server')],
+  [/^\d+ of this playlist['’]s songs aren['’]t on that server/, msg('Some of this playlist’s songs aren’t on that server: take them out first')],
   // Your music server (connectors subsonic.rs, player http.rs, src-tauri servers.rs): before the generic network ones,
   // their own words say which server and what to do.
   [/^Your music server refused the sign-in/, msg('Your music server refused the sign-in: check the user and the password')],

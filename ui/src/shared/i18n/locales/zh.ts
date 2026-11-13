@@ -2576,6 +2576,10 @@ const zh: Record<string, string> = {
   'Use the theme “{name}”?': '使用主题“{name}”？',
   'It joins your themes and is applied now; Settings › Appearance › Theme takes you back.': '它会加入你的主题并立即应用；可在设置 › 外观 › 主题中改回。',
   'Use it': '使用',
+  'Send to {name}': '发送到 {name}',
+  'Sent to {name}: {songs}': '已发送到 {name}：{songs}',
+  'None of this playlist’s songs are on that server': '这个播放列表里的歌曲在该服务器上一首都没有',
+  'Some of this playlist’s songs aren’t on that server: take them out first': '这个播放列表里有些歌曲不在该服务器上：请先把它们移除',
 }
 
 export default zh

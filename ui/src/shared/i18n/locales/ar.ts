@@ -2516,6 +2516,10 @@ const ar: Record<string, string> = {
   'Use the theme “{name}”?': 'هل تريد استخدام السمة «{name}»؟',
   'It joins your themes and is applied now; Settings › Appearance › Theme takes you back.': 'تنضم إلى سماتك وتُطبَّق الآن؛ ويعيدك الإعدادات ‹ المظهر ‹ السمة.',
   'Use it': 'استخدامها',
+  'Send to {name}': 'إرسال إلى {name}',
+  'Sent to {name}: {songs}': 'تم الإرسال إلى {name}: {songs}',
+  'None of this playlist’s songs are on that server': 'لا توجد أي أغنية من هذه القائمة على ذلك الخادم',
+  'Some of this playlist’s songs aren’t on that server: take them out first': 'بعض أغاني هذه القائمة ليست على ذلك الخادم: أزلها أولًا',
 }
 
 export default ar

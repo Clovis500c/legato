@@ -524,8 +524,9 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       - [ ] `S` Playlist edits sent back to the server (`updatePlaylist`, `createPlaylist`) when its direction sends.
         2026-11-11: a Subsonic server's playlists take songs (Add to playlist, a drop on the sidebar) and lose them
         (Remove from) from here, sent with `updatePlaylist` in the background and undone here when refused; a
-        removal reads the server's list first (it removes by position). Left: `createPlaylist` (a playlist made
-        here stays here), renames and order, Jellyfin and Plex (read-only, said in words). Untried on a real
+        removal reads the server's list first (it removes by position). 2026-11-13: `createPlaylist` too (a playlist made
+        here: menu "Send to <server>", every song must be that server's, then it is mirrored from that server and the
+        next sync finds it by its id). Left: renames and order, Jellyfin and Plex (read-only, said in words). Untried on a real
         server: mock tests only.
       - [x] `S` Servers that refuse token auth (Subsonic code 41: LDAP users, some Ampache / Nextcloud Music setups): the
         password sent hex-encoded (`p=enc:`) after a warning, https only. Today the sign-in says "doesn't take this kind
@@ -816,6 +817,9 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       tests only, never on a real book of either kind; a QuickTime track with an unusual layout (chapters in the audio file's own
       sample description, text in UTF-16 without a mark) shows none.
 - [ ] `M` Stream Deck plugin and an Xbox Game Bar widget (play / skip / like / now playing) over the local hotkeys.
+  2026-11-13: Stream Deck done as `integrations/streamdeck` (`docs/streamdeck.md`): play / pause, next, previous, now
+  playing, over the phone remote's local routes; logic tested, never loaded by a real Stream Deck. Left: its like key (the
+  remote has no like route), the Xbox Game Bar widget (a UWP package, nothing here could build or load it).
 - [x] `M` Blind test game: snippets from the library or a playlist, guess title / artist, scores, local multiplayer
       on one screen or over the LAN code.
       2026-11-13 (night, no owner to ask): Settings › Playback › Blind test (off by default) puts "Blind test…" in the app menu. Decided

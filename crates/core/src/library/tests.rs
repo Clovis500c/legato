@@ -88,6 +88,18 @@ fn a_partial_read_of_a_server_drops_nothing() -> Result<()> {
 }
 
 #[test]
+fn a_playlist_made_here_becomes_its_servers_once_created_there() -> Result<()> {
+    let lib = Library::in_memory()?;
+    let id = lib.edit_playlist(PlaylistEdit::Create { name: "Road".into() })?.unwrap();
+    lib.adopt_playlist(id, Source::Server, "s1:pl-9")?;
+    let p = lib.playlists()?.into_iter().find(|p| p.id == id).unwrap();
+    assert_eq!((p.source, p.source_id.as_str(), p.custom), (Source::Server, "s1:pl-9", false));
+    // Already a service's: no second adoption.
+    assert!(lib.adopt_playlist(id, Source::Server, "s1:pl-10").is_err());
+    Ok(())
+}
+
+#[test]
 fn a_server_playlist_gone_from_it_goes_here() -> Result<()> {
     let lib = Library::in_memory()?;
     lib.save_playlist(Source::Server, "s1:a", "A", &served("s1", 2))?;

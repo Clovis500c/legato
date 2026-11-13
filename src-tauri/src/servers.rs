@@ -501,6 +501,36 @@ pub async fn server_playlist_add(state: State<'_, AppState>, id: i64, track_ids:
     Ok(report)
 }
 
+/// Send a playlist made here to your Subsonic server: created there with its songs, then it is that server's playlist
+/// here too (mirrored; the next sync finds it by its id). Only when every song is that server's, since the mirror is
+/// what the server holds: songs it doesn't have would vanish at the next sync. Err in words before anything changes.
+#[tauri::command]
+pub async fn server_playlist_create(state: State<'_, AppState>, id: i64, key: String) -> CmdResult<usize> {
+    let a = account(&key).ok_or("Your music server isn't signed in")?;
+    if a.kind != Kind::Subsonic {
+        return Err(conns::READ_ONLY.into());
+    }
+    if !state.direction(&direction_key(&a.key())).pushes() {
+        return Err(NOT_SENT.into());
+    }
+    let (name, items, missing) = {
+        let lib = state.lib();
+        let p = lib.playlists().map_err(err)?.into_iter().find(|p| p.id == id && p.custom).ok_or("Not a playlist made here")?;
+        let tracks = lib.playlist_tracks(id).map_err(err)?;
+        let items: Vec<String> = tracks.iter().filter_map(|t| on_server(&lib, t.id, &key)).collect();
+        (p.name, items, tracks.len() - tracks.iter().filter(|t| on_server(&lib, t.id, &key).is_some()).count())
+    };
+    if items.is_empty() {
+        return Err("None of this playlist's songs are on that server".into());
+    }
+    if missing > 0 {
+        return Err(format!("{missing} of this playlist's songs aren't on that server: take them out first, or add the server's own songs to a new playlist"));
+    }
+    let remote = Conn::from_account(&a).playlist_create(&name, &items).await.map_err(err)?;
+    state.lib().adopt_playlist(id, Source::Server, &server::item_id(&key, &remote)).map_err(err)?;
+    Ok(items.len())
+}
+
 /// Remove from a playlist of your Subsonic server, every occurrence: here at once, then on the server in the
 /// background, put back here if it refuses.
 #[tauri::command]

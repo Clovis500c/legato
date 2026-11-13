@@ -2576,6 +2576,10 @@ const id: Record<string, string> = {
   'Use the theme “{name}”?': 'Pakai tema “{name}”?',
   'It joins your themes and is applied now; Settings › Appearance › Theme takes you back.': 'Tema ini masuk ke temamu dan langsung dipakai; Pengaturan › Tampilan › Tema untuk kembali.',
   'Use it': 'Pakai',
+  'Send to {name}': 'Kirim ke {name}',
+  'Sent to {name}: {songs}': 'Dikirim ke {name}: {songs}',
+  'None of this playlist’s songs are on that server': 'Tidak ada lagu di playlist ini yang ada di server itu',
+  'Some of this playlist’s songs aren’t on that server: take them out first': 'Sebagian lagu di playlist ini tidak ada di server itu: keluarkan dulu',
 }
 
 export default id

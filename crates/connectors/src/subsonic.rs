@@ -308,6 +308,22 @@ impl Subsonic {
         Ok(())
     }
 
+    /// A playlist made on the server (`createPlaylist`) with these songs (the first hundred; `playlist_add` takes the
+    /// rest): its id there. Servers that answer the new playlist give its id; older ones answer nothing, so the id is
+    /// read from the lists, the newest of that name.
+    pub async fn playlist_create(&self, name: &str, items: &[String]) -> Result<String> {
+        let first = items.len().min(100);
+        let mut params = vec![("name", name)];
+        params.extend(items[..first].iter().map(|i| ("songId", i.as_str())));
+        let r = self.call("createPlaylist", &params, LIST_TIMEOUT).await?;
+        let id = match r.get("playlist").and_then(|p| text(p, "id")) {
+            Some(id) => id,
+            None => self.playlists().await?.into_iter().rev().find(|p| p.name == name).map(|p| p.id).context("The server didn't say which playlist it made")?,
+        };
+        self.playlist_add(&id, &items[first..]).await?;
+        Ok(id)
+    }
+
     /// A song out of a playlist, every occurrence. `updatePlaylist` removes by position: the playlist is read again
     /// first, so a mirror gone stale never takes another song out.
     pub async fn playlist_remove(&self, id: &str, item: &str) -> Result<()> {
@@ -476,6 +492,24 @@ mod tests {
         for id in ["peaks", "odd", "none"] {
             assert_eq!(sub.replay_gain(id).await.unwrap(), None, "{id}");
         }
+    }
+
+    #[tokio::test]
+    async fn a_playlist_made_here_is_created_with_its_first_hundred_and_the_rest_added() {
+        let mut s = Server::new_async().await;
+        let q = |pairs: &[(&str, &str)]| Matcher::AllOf(pairs.iter().map(|(k, v)| Matcher::UrlEncoded((*k).into(), (*v).into())).chain([signed("me")]).collect());
+        let ids: Vec<String> = (0..101).map(|i| format!("tr-{i}")).collect();
+        // A server that answers the new playlist, then one that answers nothing and is asked for its lists.
+        let made = s.mock("GET", "/rest/createPlaylist.view").match_query(Matcher::AllOf(vec![q(&[("name", "Road")]), Matcher::Regex("songId=tr-0&songId=tr-1&".into())])).with_body(ok(r#","playlist":{"id":"pl-9","name":"Road"}"#)).expect(1).create_async().await;
+        let rest = s.mock("GET", "/rest/updatePlaylist.view").match_query(Matcher::AllOf(vec![q(&[("playlistId", "pl-9")]), Matcher::Regex("songIdToAdd=tr-100&".into())])).with_body(ok("")).expect(1).create_async().await;
+        let sub = Subsonic::new(&s.url(), "me", "pw");
+        assert_eq!(sub.playlist_create("Road", &ids).await.unwrap(), "pl-9");
+        made.assert_async().await;
+        rest.assert_async().await;
+        let mut old = Server::new_async().await;
+        old.mock("GET", "/rest/createPlaylist.view").match_query(Matcher::Any).with_body(ok("")).create_async().await;
+        old.mock("GET", "/rest/getPlaylists.view").match_query(Matcher::Any).with_body(ok(r#","playlists":{"playlist":[{"id":"a","name":"Road"},{"id":"b","name":"Road"}]}"#)).create_async().await;
+        assert_eq!(Subsonic::new(&old.url(), "me", "pw").playlist_create("Road", &["tr-1".into()]).await.unwrap(), "b");
     }
 
     #[tokio::test]

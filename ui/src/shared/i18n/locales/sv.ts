@@ -2576,6 +2576,10 @@ const sv: Record<string, string> = {
   'Use the theme “{name}”?': 'Använda temat ”{name}”?',
   'It joins your themes and is applied now; Settings › Appearance › Theme takes you back.': 'Det läggs till bland dina teman och används nu; Inställningar › Utseende › Tema tar dig tillbaka.',
   'Use it': 'Använd',
+  'Send to {name}': 'Skicka till {name}',
+  'Sent to {name}: {songs}': 'Skickad till {name}: {songs}',
+  'None of this playlist’s songs are on that server': 'Ingen av låtarna i den här spellistan finns på den servern',
+  'Some of this playlist’s songs aren’t on that server: take them out first': 'Några av låtarna i den här spellistan finns inte på den servern: ta bort dem först',
 }
 
 export default sv

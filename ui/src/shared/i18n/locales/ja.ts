@@ -2576,6 +2576,10 @@ const ja: Record<string, string> = {
   'Use the theme “{name}”?': 'テーマ「{name}」を使いますか？',
   'It joins your themes and is applied now; Settings › Appearance › Theme takes you back.': 'テーマに追加され、すぐに適用されます。設定 › 外観 › テーマで元に戻せます。',
   'Use it': '使う',
+  'Send to {name}': '{name} に送る',
+  'Sent to {name}: {songs}': '{name} に送りました: {songs}',
+  'None of this playlist’s songs are on that server': 'このプレイリストの曲はどれもそのサーバーにありません',
+  'Some of this playlist’s songs aren’t on that server: take them out first': 'このプレイリストの一部の曲はそのサーバーにありません。先に外してください',
 }
 
 export default ja

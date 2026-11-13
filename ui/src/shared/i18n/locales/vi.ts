@@ -2576,6 +2576,10 @@ const vi: Record<string, string> = {
   'Use the theme “{name}”?': 'Dùng chủ đề “{name}”?',
   'It joins your themes and is applied now; Settings › Appearance › Theme takes you back.': 'Chủ đề được thêm vào danh sách và áp dụng ngay; Cài đặt › Giao diện › Chủ đề để quay lại.',
   'Use it': 'Dùng',
+  'Send to {name}': 'Gửi đến {name}',
+  'Sent to {name}: {songs}': 'Đã gửi đến {name}: {songs}',
+  'None of this playlist’s songs are on that server': 'Không bài nào trong danh sách phát này có trên máy chủ đó',
+  'Some of this playlist’s songs aren’t on that server: take them out first': 'Một số bài trong danh sách phát này không có trên máy chủ đó: hãy bỏ chúng ra trước',
 }
 
 export default vi

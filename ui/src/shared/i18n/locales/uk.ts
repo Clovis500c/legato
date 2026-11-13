@@ -2576,6 +2576,10 @@ const uk: Record<string, string> = {
   'Use the theme “{name}”?': 'Використати тему «{name}»?',
   'It joins your themes and is applied now; Settings › Appearance › Theme takes you back.': 'Вона додасться до ваших тем і одразу застосується; повернутися можна в Налаштування › Вигляд › Тема.',
   'Use it': 'Використати',
+  'Send to {name}': 'Надіслати на {name}',
+  'Sent to {name}: {songs}': 'Надіслано на {name}: {songs}',
+  'None of this playlist’s songs are on that server': 'Жодної пісні цього плейлиста немає на цьому сервері',
+  'Some of this playlist’s songs aren’t on that server: take them out first': 'Деяких пісень цього плейлиста немає на цьому сервері: спершу приберіть їх',
 }
 
 export default uk
