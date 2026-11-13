@@ -11,6 +11,7 @@ pub mod jellyfin;
 pub mod lastfm;
 pub mod linklist;
 pub mod listenbrainz;
+pub mod dlna;
 pub mod lrclib;
 pub mod translate;
 pub mod musicbrainz;
