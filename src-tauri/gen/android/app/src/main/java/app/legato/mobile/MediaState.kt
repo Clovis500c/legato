@@ -20,6 +20,8 @@ object MediaState {
   @Volatile var stamp = 0L
   @Volatile var cover: Bitmap? = null
   @Volatile var queue: List<QueueRow> = emptyList()
+  // PlaybackService is up (the widgets' buttons have someone to answer them). Set by the service, never the page's state.
+  @Volatile var running = false
   @Volatile var onChange: (() -> Unit)? = null
   @Volatile private var page: JavaScriptReplyProxy? = null
 

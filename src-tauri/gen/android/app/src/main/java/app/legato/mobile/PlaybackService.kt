@@ -42,6 +42,7 @@ class PlaybackService : Service() {
   override fun onBind(intent: Intent?): IBinder? = null
 
   override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    MediaState.running = true
     intent?.getStringExtra(ACTION)?.let { MediaState.toPage(it) }
     getSystemService(NotificationManager::class.java)
       .createNotificationChannel(NotificationChannel(CHANNEL, getString(R.string.app_name), NotificationManager.IMPORTANCE_LOW))
@@ -141,8 +142,9 @@ class PlaybackService : Service() {
   override fun onDestroy() {
     tick.removeCallbacks(check)
     hold(false)
-    // Stopped: the widgets say nothing plays (their buttons would start nothing).
-    MediaState.title = null
+    // Stopped: the widgets say nothing plays (their buttons would start nothing). The song stays: nulling it here lost
+    // its cover once the page spoke again (a new title clears the cover, and the page sends it once per song).
+    MediaState.running = false
     Widgets.refresh(this)
     MediaState.onChange = null
     session?.release()

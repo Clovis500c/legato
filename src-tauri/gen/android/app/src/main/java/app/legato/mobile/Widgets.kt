@@ -50,7 +50,7 @@ object Widgets {
   fun rectangle(context: Context): RemoteViews {
     val views = RemoteViews(context.packageName, R.layout.widget_rectangle)
     views.setOnClickPendingIntent(R.id.widget_root, open(context))
-    val title = MediaState.title
+    val title = MediaState.title.takeIf { MediaState.running }
     val buttons = intArrayOf(R.id.widget_previous, R.id.widget_play, R.id.widget_next)
     if (title == null) {
       views.setTextViewText(R.id.widget_title, context.getString(R.string.app_name))
@@ -89,9 +89,9 @@ object Widgets {
   fun disc(context: Context): RemoteViews {
     val views = RemoteViews(context.packageName, R.layout.widget_disc)
     views.setOnClickPendingIntent(R.id.widget_root, open(context))
-    views.setImageViewBitmap(R.id.widget_cover, record(MediaState.cover, 360))
+    views.setImageViewBitmap(R.id.widget_cover, record(MediaState.cover.takeIf { MediaState.running }, 360))
     val buttons = intArrayOf(R.id.widget_play, R.id.widget_next)
-    if (MediaState.title == null) {
+    if (MediaState.title == null || !MediaState.running) {
       for (id in buttons) views.setViewVisibility(id, View.GONE)
       return views
     }
@@ -173,7 +173,7 @@ class QueueRows(private val context: Context) : RemoteViewsService.RemoteViewsFa
   override fun onCreate() {}
 
   override fun onDataSetChanged() {
-    rows = MediaState.queue
+    rows = if (MediaState.running) MediaState.queue else emptyList()
   }
 
   override fun onDestroy() {}
