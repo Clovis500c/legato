@@ -38,6 +38,7 @@ export const USERS: Doc[] = [
     title: 'Sync your PCs',
     parts: [
       'Sync Mode (Settings › Sync Mode) keeps several PCs on one library without any server: a shared folder (OneDrive or any other, one file per PC), or the local network with a six-digit code shown on one PC and typed on the other.',
+      'On a PC, Add a device can read the other device’s QR code with the webcam: turn on Settings › Playback › Scan QR codes with the webcam (off by default; the camera is asked for only when you press Scan, and no picture is recorded or sent).',
       'What travels: playlists, history, ratings, Live Editor versions, and settings except the ones that belong to one PC. What never travels: file paths, the queue, caches, cookies. Sign-ins travel only inside a file sealed with your password; otherwise you sign in again on the other PC.',
     ],
   },
@@ -47,6 +48,15 @@ export const USERS: Doc[] = [
     parts: [
       'Share a playlist as a link, a code or a QR code. The link holds the list itself and is read in the other person’s browser: no server of ours sees it.',
       'To listen together on the same network, a listening room keeps everyone’s playback in step; every message is sealed with a key made from the room’s code.',
+    ],
+  },
+  {
+    id: 'stream-deck',
+    title: 'Stream Deck',
+    parts: [
+      'An Elgato Stream Deck plugin ships in the repository (integrations/streamdeck): Play / pause, Next, Previous and a Now playing key with the title and artist. It talks to Legato’s phone remote on this PC or your own network, and to nothing else.',
+      { list: ['Turn on Settings › Playback › Phone remote and copy the link it shows.', 'Copy the app.legato.deck.sdPlugin folder into %APPDATA%\\Elgato\\StreamDeck\\Plugins and restart the Stream Deck software.', 'Drag a Legato key onto the deck and paste the link in its inspector.'] },
+      'Not tried on a real Stream Deck yet: tell us on GitHub if a key misbehaves.',
     ],
   },
   {
