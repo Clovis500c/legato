@@ -832,7 +832,6 @@ pub fn run() {
             background::spawn_sleeper(app.handle().clone());
             // The alarm rings from the tray too.
             alarm::spawn(app.handle().clone());
-            outputs::apply(&app.state::<AppState>());
             // Volume mixer: YouTube's WebView2 sound listed as Legato.
             #[cfg(windows)]
             mixer::spawn();
@@ -886,6 +885,8 @@ pub fn run() {
             });
 
             app.manage(AppState { app: app.handle().clone(), lib: Mutex::new(lib), store: secrets::store(&app.config().identifier, &dir), open, player: Player::spawn(), shield, art: music_connectors::art::ArtCache::new(dir.join("art"), 500 << 20), cache: Caches::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default(), media, media_last: Mutex::default(), tray, discord: discord::Discord::spawn() });
+            // The output device picked in the player menu.
+            outputs::apply(&app.state::<AppState>());
             // Reads the library's settings: after AppState.
             app.manage(update::Updater::new(app.handle()));
             app.manage(syncmode::SyncMode::default());
@@ -937,6 +938,15 @@ mod tests {
             }
         }
         assert!(sync.is_empty(), "sync commands locking the library: {sync:?}");
+    }
+
+    /// Nov 2026: `app.state::<AppState>()` before `manage` panics at launch (the e2e walk never saw a first screen).
+    #[test]
+    fn setup_reads_app_state_only_after_managing_it() {
+        let src = include_str!("lib.rs");
+        let run = &src[src.find("pub fn run()").unwrap()..];
+        let managed = run.find("app.manage(AppState {").unwrap();
+        assert!(!run[..managed].contains(".state::<AppState>()"), "AppState read in setup before app.manage(AppState)");
     }
 
     #[test]
