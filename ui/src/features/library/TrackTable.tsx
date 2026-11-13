@@ -270,7 +270,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
                   onDoubleClick={(e) => !single && playable && !onControl(e) && !e.ctrlKey && !e.shiftKey && play(tracks, v.index)}
                   onContextMenu={onMenu(() =>
                     isPicked && chosen.length > 1
-                      ? tracksMenu(chosen, editId !== undefined ? ['-', { label: trn(chosen.length, 'Remove {n} song from playlist', 'Remove {n} songs from playlist'), icon: <X size={16} />, danger: true, onSelect: removeChosen }] : [])
+                      ? tracksMenu(chosen, editId !== undefined ? ['-', { id: 'removeFromPlaylist', label: trn(chosen.length, 'Remove {n} song from playlist', 'Remove {n} songs from playlist'), icon: <X size={16} />, danger: true, onSelect: removeChosen }] : [])
                       : trackMenu(t, { list: tracks, index: v.index, playlistId: editId, position: v.index }),
                   )}
                   data-slot={v.index}

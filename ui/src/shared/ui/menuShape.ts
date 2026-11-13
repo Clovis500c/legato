@@ -8,6 +8,8 @@
  * (ContextMenu: `max-h-[80vh]`, the phone's sheet `75vh`); `MAX_INLINE` keeps a long one short anyway.
  */
 
+import { msg } from '../i18n/i18n'
+
 export type MenuKind = 'track' | 'tracks' | 'playlist' | 'folder' | 'album' | 'artist' | 'queue' | 'player' | 'nav' | 'app'
 export type Level = 'essential' | 'standard' | 'detail'
 export type MenuPreset = 'essentials' | 'standard' | 'full'
@@ -48,33 +50,147 @@ export const MENU_ITEMS: Record<MenuKind, ItemDef[]> = {
     def('startRadio', 'Start radio', 'play', 'standard'),
     def('addTo', 'Add to playlist', 'library', 'essential'),
     def('removeFromPlaylist', 'Remove from this playlist', 'library', 'essential'),
-    def('removeFrom', 'Remove from library', 'library', 'essential'),
+    def('removeFrom', msg('Remove from library'), 'library', 'essential'),
     def('goToAlbum', 'Go to album', 'go', 'essential'),
     def('goToArtist', 'Go to artist', 'go', 'essential'),
     def('findFull', 'Find full version', 'go', 'detail'),
     def('rate', 'Rating', 'taste', 'essential'),
     def('mixes', 'Mixes', 'taste', 'detail'),
     def('explicit', 'Not explicit', 'taste', 'detail'),
-    def('music', 'Music or not', 'taste', 'detail'),
+    def('music', 'Not music: hide it', 'taste', 'detail'),
     def('copyLink', 'Copy link', 'share', 'standard'),
     def('copyTitle', 'Copy title and artist', 'share', 'standard'),
     def('saveCover', 'Save cover', 'share', 'detail'),
-    def('openIn', 'Open in a service', 'share', 'standard'),
+    def('openIn', msg('Open in a service'), 'share', 'standard'),
     def('credits', 'Credits', 'info', 'detail'),
     def('editInfo', 'Edit song info', 'info', 'standard'),
     def('showInFolder', 'Show in folder', 'info', 'standard'),
     def('thisList', 'This list', 'list', 'standard'),
   ],
-  // To fill (Sonnet, from menus.tsx): one def per item of each builder, then `shaped(kind, …)` around it.
-  tracks: [],
-  playlist: [],
-  folder: [],
+  // Album and artist pages build no menu of their own: their right-click is the songs' (`tracks`), with Go to artist added.
   album: [],
   artist: [],
-  queue: [],
-  player: [],
-  nav: [],
-  app: [],
+  tracks: [
+    def('play', 'Play', 'play', 'essential'),
+    def('shuffle', 'Shuffle play', 'play', 'standard'),
+    def('playNext', 'Play next', 'play', 'standard'),
+    def('addToQueue', 'Add to queue', 'play', 'essential'),
+    def('startRadio', 'Start radio', 'play', 'standard'),
+    def('autoDj', 'Auto-DJ', 'play', 'detail'),
+    def('addTo', 'Add to playlist', 'library', 'essential'),
+    def('removeFromPlaylist', 'Remove from this playlist', 'library', 'essential'),
+    def('editAll', 'Edit song info', 'info', 'standard'),
+    def('goToAlbum', 'Go to album', 'go', 'essential'),
+    def('goToArtist', 'Go to artist', 'go', 'essential'),
+    def('findDuplicates', 'Find duplicates', 'tools', 'detail'),
+    def('copyList', 'Copy song list', 'tools', 'detail'),
+  ],
+  playlist: [
+    def('play', 'Play', 'play', 'essential'),
+    def('shuffle', 'Shuffle play', 'play', 'standard'),
+    def('playNext', 'Play next', 'play', 'standard'),
+    def('addToQueue', 'Add to queue', 'play', 'essential'),
+    def('startRadio', 'Start radio', 'play', 'standard'),
+    def('autoDj', 'Auto-DJ', 'play', 'detail'),
+    def('open', 'Open', 'go', 'essential'),
+    def('pin', 'Pin to top', 'organise', 'standard'),
+    def('moveToFolder', 'Move to folder', 'organise', 'standard'),
+    def('findDuplicates', 'Find duplicates', 'tools', 'detail'),
+    def('removeRepeated', 'Remove repeated songs', 'tools', 'detail'),
+    def('copyList', 'Copy song list', 'tools', 'detail'),
+    def('saveFile', 'Save as file…', 'share', 'detail'),
+    def('sendTo', msg('Send to a server'), 'share', 'detail'),
+    def('copyName', 'Copy name', 'share', 'detail'),
+    def('rename', 'Rename', 'edit', 'standard'),
+    def('duplicate', 'Duplicate', 'edit', 'standard'),
+    def('cover', 'Cover', 'edit', 'standard'),
+    def('share', 'Share', 'share', 'standard'),
+    def('exportYtm', 'Export to YouTube Music', 'share', 'detail'),
+    def('dateOrder', 'Date added order', 'edit', 'detail'),
+    def('copyLink', 'Copy link', 'share', 'detail'),
+    def('openYtm', 'Open in YouTube Music', 'share', 'detail'),
+    def('hide', 'Hide playlist', 'organise', 'standard'),
+    def('delete', 'Delete', 'edit', 'essential'),
+  ],
+  folder: [
+    def('play', 'Play', 'play', 'essential'),
+    def('shuffle', 'Shuffle play', 'play', 'standard'),
+    def('startRadio', 'Start radio', 'play', 'standard'),
+    def('autoDj', 'Auto-DJ', 'play', 'detail'),
+    def('rename', 'Rename', 'edit', 'standard'),
+    def('delete', 'Delete folder', 'edit', 'essential'),
+  ],
+  queue: [
+    def('saveQueue', 'Save the queue as a playlist', 'queue', 'standard'),
+    def('shuffle', 'Shuffle', 'queue', 'essential'),
+    def('removeRepeats', 'Remove repeated songs', 'queue', 'detail'),
+    def('clearNext', 'Clear what’s next', 'queue', 'essential'),
+    def('copyList', 'Copy song list', 'queue', 'detail'),
+    def('hideUpNext', 'Hide up next', 'queue', 'standard'),
+  ],
+  player: [
+    def('playPause', msg('Play or pause'), 'play', 'essential'),
+    def('previous', 'Previous', 'play', 'essential'),
+    def('next', 'Next', 'play', 'essential'),
+    def('shuffle', 'Shuffle', 'play', 'standard'),
+    def('repeat', 'Repeat', 'play', 'standard'),
+    def('fullScreen', 'Full screen', 'view', 'standard'),
+    def('karaoke', 'Karaoke', 'view', 'detail'),
+    def('coverDisplay', 'Cover display', 'view', 'detail'),
+    def('pip', 'Picture-in-picture', 'view', 'detail'),
+    def('sharePicture', 'Share as a picture', 'share', 'detail'),
+    def('room', 'Listen together', 'share', 'detail'),
+    def('liveEditor', 'Live Editor', 'sound', 'standard'),
+    def('shareMix', 'Share this mix as a file…', 'share', 'detail'),
+    def('copyMixLink', 'Copy this mix’s link', 'share', 'detail'),
+    def('chapters', 'Chapters', 'play', 'standard'),
+    def('cast', 'Cast to speakers', 'sound', 'detail'),
+    def('focus', 'Focus session…', 'tools', 'detail'),
+    def('workout', 'Workout session…', 'tools', 'detail'),
+    def('sleepTimer', 'Sleep timer', 'tools', 'standard'),
+    def('alarm', 'Alarm', 'tools', 'detail'),
+    def('miniPlayer', 'Mini player', 'view', 'standard'),
+    def('playVia', 'Play with', 'play', 'detail'),
+    def('addTo', 'Add to playlist', 'library', 'essential'),
+    def('removeFromPlaylist', msg('Remove from the playing playlist'), 'library', 'essential'),
+    def('rate', 'Rating', 'library', 'essential'),
+    def('bookmarks', 'Bookmarks', 'tools', 'detail'),
+    def('abLoop', 'A–B loop', 'tools', 'detail'),
+    def('output', 'Output device', 'sound', 'standard'),
+    def('deviceEq', 'Equalizer for this output', 'sound', 'detail'),
+    def('practiceSpeed', 'Practice speed', 'tools', 'detail'),
+    def('countIn', 'Count in, then play', 'tools', 'detail'),
+    def('metronome', 'Metronome', 'tools', 'detail'),
+    def('goToAlbum', 'Go to album', 'go', 'essential'),
+    def('goToArtist', 'Go to artist', 'go', 'essential'),
+    def('saveCover', 'Save cover', 'share', 'detail'),
+    def('addToLibrary', 'Add to library', 'library', 'essential'),
+    def('copyVideoUrl', 'Copy video URL', 'share', 'detail'),
+    def('copyVideoUrlAt', 'Copy video URL at current time', 'share', 'detail'),
+    def('openYoutube', 'Open on YouTube', 'share', 'standard'),
+    def('listenApple', 'Listen on Apple Music', 'share', 'standard'),
+    def('showInFolder', 'Show in folder', 'share', 'standard'),
+  ],
+  nav: [
+    def('open', 'Open', 'go', 'essential'),
+    def('goTo', 'Go to', 'go', 'essential'),
+    def('counts', 'Counts in the sidebar', 'view', 'detail'),
+    def('hide', 'Hide from the sidebar', 'view', 'standard'),
+  ],
+  app: [
+    def('back', 'Back', 'go', 'essential'),
+    def('forward', 'Forward', 'go', 'essential'),
+    def('sync', 'Sync library', 'library', 'standard'),
+    def('tvHome', 'TV home', 'go', 'detail'),
+    def('podcasts', 'Podcasts', 'go', 'standard'),
+    def('audiobooks', 'Audiobooks', 'go', 'standard'),
+    def('blindTest', 'Blind test', 'go', 'detail'),
+    def('addMusic', 'Add music', 'library', 'essential'),
+    def('newPlaylist', 'New playlist', 'library', 'essential'),
+    def('nowPlaying', 'Now playing', 'go', 'essential'),
+    def('room', 'Listen together', 'go', 'detail'),
+    def('settings', 'Settings', 'go', 'essential'),
+  ],
 }
 
 const SHOWN: Record<MenuPreset, ReadonlySet<Level>> = {
@@ -143,3 +259,42 @@ export function readLayout(v: unknown): MenuLayout {
   }
   return { preset: MENU_PRESETS.includes(r.preset as MenuPreset) ? (r.preset as MenuPreset) : DEFAULT_MENU_LAYOUT.preset, hidden: lists(r.hidden), order: lists(r.order) }
 }
+
+/** The items of a kind as the customising screen lists them: the user's order first, the others as built. */
+export function orderedDefs(kind: MenuKind, layout: MenuLayout): ItemDef[] {
+  const defs = MENU_ITEMS[kind] ?? []
+  const order = layout.order[kind] ?? []
+  const first = order.flatMap((id) => defs.filter((d) => d.id === id))
+  return [...first, ...defs.filter((d) => !order.includes(d.id))]
+}
+
+const without = <K extends string, V>(m: Partial<Record<K, V>>, k: K): Partial<Record<K, V>> => {
+  const rest = { ...m }
+  delete rest[k]
+  return rest
+}
+
+/** Takes an item out of a kind's menu, or puts it back. */
+export function toggleItem(layout: MenuLayout, kind: MenuKind, id: string): MenuLayout {
+  const now = layout.hidden[kind] ?? []
+  const next = now.includes(id) ? now.filter((i) => i !== id) : [...now, id]
+  return { ...layout, hidden: next.length ? { ...layout.hidden, [kind]: next } : without(layout.hidden, kind) }
+}
+
+/** An item one place up (-1) or down (1) in the user's order; at an end it stays. */
+export function moveItem(layout: MenuLayout, kind: MenuKind, id: string, by: -1 | 1): MenuLayout {
+  const ids = orderedDefs(kind, layout).map((d) => d.id)
+  const at = ids.indexOf(id)
+  const to = at + by
+  if (at < 0 || to < 0 || to >= ids.length) return layout
+  ;[ids[at], ids[to]] = [ids[to], ids[at]]
+  return { ...layout, order: { ...layout.order, [kind]: ids } }
+}
+
+/** One kind back to the preset's own (nothing hidden, the built order); the other kinds are left alone. */
+export function resetKind(layout: MenuLayout, kind: MenuKind): MenuLayout {
+  return { ...layout, hidden: without(layout.hidden, kind), order: without(layout.order, kind) }
+}
+
+/** Does the preset put this item under More… (it is not hidden, only folded)? */
+export const foldedBy = (preset: MenuPreset, d: ItemDef): boolean => !SHOWN[preset].has(d.level)

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_MENU_LAYOUT, MAX_INLINE, MENU_ITEMS, readLayout, shapeMenu, type MenuLayout } from './menuShape'
+import { DEFAULT_MENU_LAYOUT, MAX_INLINE, MENU_ITEMS, foldedBy, moveItem, orderedDefs, readLayout, resetKind, shapeMenu, toggleItem, type MenuLayout } from './menuShape'
 
 interface Item {
   id?: string
@@ -54,5 +54,29 @@ describe('menu shapes', () => {
     expect(readLayout(undefined)).toEqual(DEFAULT_MENU_LAYOUT)
     expect(readLayout({ preset: 'loud', hidden: { track: ['play', 3, ''], nope: ['x'] }, order: 'x' })).toEqual({ preset: 'standard', hidden: { track: ['play'] }, order: {} })
     expect(readLayout({ preset: 'full', hidden: {}, order: { player: ['a'] } }).preset).toBe('full')
+  })
+})
+
+describe('the customising screen', () => {
+  const ids = (l: MenuLayout) => orderedDefs('folder', l).map((d) => d.id)
+  it('lists the items in the user\'s order, a move swaps neighbours and stops at the ends', () => {
+    expect(ids(DEFAULT_MENU_LAYOUT)).toEqual(['play', 'shuffle', 'startRadio', 'autoDj', 'rename', 'delete'])
+    const moved = moveItem(DEFAULT_MENU_LAYOUT, 'folder', 'rename', -1)
+    expect(ids(moved)).toEqual(['play', 'shuffle', 'startRadio', 'rename', 'autoDj', 'delete'])
+    expect(moveItem(moved, 'folder', 'play', -1)).toBe(moved)
+    expect(ids(moveItem(DEFAULT_MENU_LAYOUT, 'folder', 'delete', 1))).toEqual(ids(DEFAULT_MENU_LAYOUT))
+  })
+
+  it('hides and shows an item, and a reset clears one kind only', () => {
+    const hidden = toggleItem(toggleItem(DEFAULT_MENU_LAYOUT, 'folder', 'delete'), 'playlist', 'open')
+    expect(hidden.hidden).toEqual({ folder: ['delete'], playlist: ['open'] })
+    expect(toggleItem(hidden, 'folder', 'delete').hidden).toEqual({ playlist: ['open'] })
+    const both = moveItem(hidden, 'folder', 'rename', -1)
+    expect(resetKind(both, 'folder')).toEqual({ ...both, hidden: { playlist: ['open'] }, order: {} })
+  })
+
+  it('says which items a preset folds', () => {
+    const rename = MENU_ITEMS.folder.find((d) => d.id === 'rename')!
+    expect([foldedBy('essentials', rename), foldedBy('standard', rename)]).toEqual([true, false])
   })
 })

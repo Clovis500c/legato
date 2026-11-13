@@ -225,7 +225,7 @@ export function AlbumView({ album, artist }: { album: string; artist: string }) 
     // From the pane's edges (-mx-6 -mt-5): room for the band (PageHeader).
     <div className="-mx-6 -mt-5 flex min-h-0 flex-1 flex-col overflow-y-auto px-6 pt-5 pb-8 phone:-mx-4 phone:-mt-3 phone:px-4 phone:pt-3">
       <PageHeader
-        onContextMenu={onMenu(() => tracksMenu(shown, ['-', { label: tr('Go to artist'), icon: <MicrophoneStage size={16} />, onSelect: toArtist }]))}
+        onContextMenu={onMenu(() => tracksMenu(shown, ['-', { id: 'goToArtist', label: tr('Go to artist'), icon: <MicrophoneStage size={16} />, onSelect: toArtist }]))}
         art={<Cover title={album} art={firstArt(shown)} size={200} eager className="border-0" />}
         tint={tint}
         kicker={tr('Album')}
@@ -255,7 +255,7 @@ export function AlbumView({ album, artist }: { album: string; artist: string }) 
             <PlayAll tracks={ordered} />
             <ShuffleRound tracks={ordered} />
             <AddToPlaylist trackIds={ordered.map((t) => t.id)} label={tr('Add {n} songs to a playlist', { n: shown.length })} />
-            <RoundButton label={tr('More')} kind="plain" onClick={(e) => openMenu(e, tracksMenu(shown, ['-', { label: tr('Go to artist'), icon: <MicrophoneStage size={16} />, onSelect: toArtist }]))}>
+            <RoundButton label={tr('More')} kind="plain" onClick={(e) => openMenu(e, tracksMenu(shown, ['-', { id: 'goToArtist', label: tr('Go to artist'), icon: <MicrophoneStage size={16} />, onSelect: toArtist }]))}>
               <DotsThree size={20} weight="bold" />
             </RoundButton>
           </>

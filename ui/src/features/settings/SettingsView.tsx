@@ -1,7 +1,7 @@
 import { ShortcutsSection } from './ShortcutsSection'
 import { ArrowCounterClockwise, ArrowSquareOut, ArrowsClockwise, CaretDown, Check, Copy, Database, Devices, Fingerprint, GearSix, SquaresFour, Info, Keyboard, MagnifyingGlass, PaintBrush, Plugs, Plus, ShieldCheck, SpeakerHigh } from '@phosphor-icons/react'
 import { openUrl } from '@tauri-apps/plugin-opener'
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
+import { createContext, lazy, Suspense, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore, type SettingsSection } from '../../app/store'
 import { api, type Contact, type Storage } from '../../shared/api'
@@ -180,7 +180,11 @@ const fonts: { value: Settings['font']; label: string }[] = [
   { value: 'neutral', label: phoneApp ? msg('System') : msg('Windows') },
 ]
 
+// The menus' customising screen: loaded when opened (the table of items stays out of the launch).
+const MenuCustomize = lazy(() => import('./MenuCustomize'))
+
 function Appearance() {
+  const [menus, setMenus] = useState(false)
   const { settings: s, update, current } = useSettings()
   const playing = usePlayer((p) => !!p.now)
   const col = (c: Column) => (s.columns.includes(c) ? s.columns.filter((x) => x !== c) : COLUMNS.filter((x) => x === c || s.columns.includes(x)))
@@ -383,6 +387,14 @@ function Appearance() {
                 { value: 'full', label: tr('Full detail') },
               ]}
             />
+            <Button variant="ghost" onClick={() => setMenus(true)}>
+              {tr('Customize menus…')}
+            </Button>
+            {menus && (
+              <Suspense fallback={null}>
+                <MenuCustomize onClose={() => setMenus(false)} />
+              </Suspense>
+            )}
           </Row>
         </div>
       </Group>

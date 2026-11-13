@@ -202,7 +202,7 @@ function YourWeek() {
       </ul>
       <div className="grid min-w-0 flex-1 basis-72 grid-cols-[repeat(auto-fit,minmax(13rem,1fr))] gap-2">
         {topArtist && (
-          <button onClick={() => go({ name: 'artist', artist: topArtist.name })} onContextMenu={onMenu(() => tracksMenu(tracks.filter((t) => primaryArtist(t.artist) === topArtist.name), [{ label: tr('Go to artist'), onSelect: () => go({ name: 'artist', artist: topArtist.name }) }, '-']))} className={tile}>
+          <button onClick={() => go({ name: 'artist', artist: topArtist.name })} onContextMenu={onMenu(() => tracksMenu(tracks.filter((t) => primaryArtist(t.artist) === topArtist.name), [{ id: 'goToArtist', label: tr('Go to artist'), onSelect: () => go({ name: 'artist', artist: topArtist.name }) }, '-']))} className={tile}>
             <Cover title={topArtist.name} art={trackArt(topArtist.cover)} size={48} className="rounded-full!" />
             <span className="flex min-w-0 flex-col">
               <span className="text-[0.6875rem] text-ink-3">{tr('Top artist')}</span>

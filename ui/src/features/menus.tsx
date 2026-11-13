@@ -131,8 +131,8 @@ const copyList = (tracks: LibraryTrack[]) => copy(tracks.map((t) => `${t.artist}
 function listTools(tracks: LibraryTrack[], scope: { name?: string; playlistId?: number } = {}): MenuEntry[] {
   if (tracks.length < 2) return []
   return [
-    { label: tr('Find duplicates'), icon: <CopySimple size={16} />, onSelect: () => findDuplicates({ ...scope, ids: tracks.map((t) => t.id) }) },
-    { label: tr('Copy song list'), icon: <ClipboardText size={16} />, onSelect: () => copyList(tracks) },
+    { id: 'findDuplicates', label: tr('Find duplicates'), icon: <CopySimple size={16} />, onSelect: () => findDuplicates({ ...scope, ids: tracks.map((t) => t.id) }) },
+    { id: 'copyList', label: tr('Copy song list'), icon: <ClipboardText size={16} />, onSelect: () => copyList(tracks) },
   ]
 }
 
@@ -416,7 +416,7 @@ function rateItem(t: LibraryTrack): MenuEntry {
 const tag = (id: string, e: MenuEntry): MenuEntry => (e && e !== '-' ? { ...e, id } : e)
 
 /** A menu as the user's layout wants it (Settings: right-click menus): the preset, the items hidden, their order, the rest under More…. */
-function shaped(kind: MenuKind, entries: MenuEntry[]): MenuEntry[] {
+export function shaped(kind: MenuKind, entries: MenuEntry[]): MenuEntry[] {
   return shapeMenu(kind, entries, useSettings.getState().settings.menuLayout, (items) => ({ id: 'more', label: tr('More…'), icon: <DotsThree size={16} />, items }))
 }
 
@@ -550,20 +550,20 @@ function editAll(tracks: LibraryTrack[]): MenuEntry {
 
 export function tracksMenu(tracks: LibraryTrack[], extra: MenuEntry[] = []): MenuEntry[] {
   const playable = tracks.some((t) => canPlay(t, sp()))
-  return [
-    { label: tr('Play'), icon: <Play size={16} />, disabled: !playable, onSelect: () => player().playTracks(tracks, 0) },
-    { label: tr('Shuffle play'), icon: <Shuffle size={16} />, disabled: !playable, onSelect: () => shufflePlay(tracks) },
-    { label: tr('Play next'), icon: <Queue size={16} />, disabled: !playable, onSelect: () => player().enqueue(tracks, true) },
-    { label: tr('Add to queue'), icon: <ListPlus size={16} />, disabled: !playable, onSelect: () => player().enqueue(tracks, false) },
-    { label: tr('Start radio'), icon: <Radio size={16} />, disabled: !playable, onSelect: () => void startRadioFrom(tracks) },
-    { label: tr('Auto-DJ'), icon: <VinylRecord size={16} />, disabled: !playable, onSelect: () => startAutoDj(tracks) },
+  return shaped('tracks', [
+    { id: 'play', label: tr('Play'), icon: <Play size={16} />, disabled: !playable, onSelect: () => player().playTracks(tracks, 0) },
+    { id: 'shuffle', label: tr('Shuffle play'), icon: <Shuffle size={16} />, disabled: !playable, onSelect: () => shufflePlay(tracks) },
+    { id: 'playNext', label: tr('Play next'), icon: <Queue size={16} />, disabled: !playable, onSelect: () => player().enqueue(tracks, true) },
+    { id: 'addToQueue', label: tr('Add to queue'), icon: <ListPlus size={16} />, disabled: !playable, onSelect: () => player().enqueue(tracks, false) },
+    { id: 'startRadio', label: tr('Start radio'), icon: <Radio size={16} />, disabled: !playable, onSelect: () => void startRadioFrom(tracks) },
+    { id: 'autoDj', label: tr('Auto-DJ'), icon: <VinylRecord size={16} />, disabled: !playable, onSelect: () => startAutoDj(tracks) },
     '-',
-    addTo(() => tracks),
-    editAll(tracks),
+    tag('addTo', addTo(() => tracks)),
+    tag('editAll', editAll(tracks)),
     ...extra,
     '-',
     ...listTools(tracks),
-  ]
+  ])
 }
 
 /** A music server by its own name, else its address. */
@@ -587,17 +587,18 @@ export function playlistMenu(p: LibraryPlaylist): MenuEntry[] {
   const { pinnedPlaylists, playlistFolders: folders } = useSettings.getState().settings
   const pinned = pinnedPlaylists.includes(key)
   const remote = ytImport && `https://music.youtube.com/playlist?list=${p.sourceId.split('~')[0]}`
-  return [
-    { label: tr('Play'), icon: <Play size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then((t) => player().playTracks(t, 0), fail) },
-    { label: tr('Shuffle play'), icon: <Shuffle size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then(shufflePlay, fail) },
-    { label: tr('Play next'), icon: <Queue size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then((t) => player().enqueue(t, true), fail) },
-    { label: tr('Add to queue'), icon: <ListPlus size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then((t) => player().enqueue(t, false), fail) },
-    { label: tr('Start radio'), icon: <Radio size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then((t) => startRadioFrom(t, p.name), fail) },
-    { label: tr('Auto-DJ'), icon: <VinylRecord size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then((t) => startAutoDj(t, p.name), fail) },
+  return shaped('playlist', [
+    { id: 'play', label: tr('Play'), icon: <Play size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then((t) => player().playTracks(t, 0), fail) },
+    { id: 'shuffle', label: tr('Shuffle play'), icon: <Shuffle size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then(shufflePlay, fail) },
+    { id: 'playNext', label: tr('Play next'), icon: <Queue size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then((t) => player().enqueue(t, true), fail) },
+    { id: 'addToQueue', label: tr('Add to queue'), icon: <ListPlus size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then((t) => player().enqueue(t, false), fail) },
+    { id: 'startRadio', label: tr('Start radio'), icon: <Radio size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then((t) => startRadioFrom(t, p.name), fail) },
+    { id: 'autoDj', label: tr('Auto-DJ'), icon: <VinylRecord size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then((t) => startAutoDj(t, p.name), fail) },
     '-',
-    { label: tr('Open'), icon: <Playlist size={16} />, onSelect: () => go({ name: 'playlist', id: p.id }) },
-    pinned ? { label: tr('Unpin'), icon: <PushPinSlash size={16} />, onSelect: () => togglePinned(key) } : { label: tr('Pin to top'), icon: <PushPin size={16} />, onSelect: () => togglePinned(key) },
+    { id: 'open', label: tr('Open'), icon: <Playlist size={16} />, onSelect: () => go({ name: 'playlist', id: p.id }) },
+    tag('pin', pinned ? { label: tr('Unpin'), icon: <PushPinSlash size={16} />, onSelect: () => togglePinned(key) } : { label: tr('Pin to top'), icon: <PushPin size={16} />, onSelect: () => togglePinned(key) }),
     {
+      id: 'moveToFolder',
       label: tr('Move to folder'),
       icon: <FolderSimple size={16} />,
       items: [
@@ -607,22 +608,25 @@ export function playlistMenu(p: LibraryPlaylist): MenuEntry[] {
         { label: tr('New folder…'), icon: <FolderSimplePlus size={16} />, onSelect: () => void newFolder(key) },
       ],
     },
-    { label: tr('Find duplicates'), icon: <CopySimple size={16} />, disabled: p.trackCount < 2, onSelect: () => tracks().then((t) => findDuplicates({ name: p.name, ids: t.map((x) => x.id), playlistId: p.id }), fail) },
+    { id: 'findDuplicates', label: tr('Find duplicates'), icon: <CopySimple size={16} />, disabled: p.trackCount < 2, onSelect: () => tracks().then((t) => findDuplicates({ name: p.name, ids: t.map((x) => x.id), playlistId: p.id }), fail) },
     p.custom &&
       repeatedRows(app().orders[p.id] ?? []).length > 0 && {
+        id: 'removeRepeated',
         label: tr('Remove repeated songs'),
         icon: <MinusCircle size={16} />,
         onSelect: () => void removePositions(p.id, repeatedRows(app().orders[p.id] ?? [])),
       },
-    { label: tr('Copy song list'), icon: <ClipboardText size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then(copyList, fail) },
-    { label: tr('Save as file…'), icon: <DownloadSimple size={16} />, disabled: !p.trackCount, onSelect: () => void savePlaylistFile(p).catch(fail) },
+    { id: 'copyList', label: tr('Copy song list'), icon: <ClipboardText size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then(copyList, fail) },
+    { id: 'saveFile', label: tr('Save as file…'), icon: <DownloadSimple size={16} />, disabled: !p.trackCount, onSelect: () => void savePlaylistFile(p).catch(fail) },
     ...(p.custom && p.trackCount ? useServers.getState().list.filter((s) => s.kind === 'subsonic') : []).map((s) => ({
+      id: 'sendTo',
       label: tr('Send to {name}', { name: serverName(s) }),
       icon: <Devices size={16} />,
       onSelect: () => void sendToServer(p, s).catch(fail),
     })),
-    { label: tr('Copy name'), icon: <Copy size={16} />, onSelect: () => copy(p.name, tr('Name copied')) },
+    { id: 'copyName', label: tr('Copy name'), icon: <Copy size={16} />, onSelect: () => copy(p.name, tr('Name copied')) },
     p.custom && {
+      id: 'rename',
       label: tr('Rename…'),
       icon: <PencilSimple size={16} />,
       onSelect: async () => {
@@ -631,6 +635,7 @@ export function playlistMenu(p: LibraryPlaylist): MenuEntry[] {
       },
     },
     {
+      id: 'duplicate',
       label: p.custom ? tr('Duplicate') : tr('Duplicate as custom playlist'),
       icon: <Copy size={16} />,
       onSelect: async () => {
@@ -638,9 +643,10 @@ export function playlistMenu(p: LibraryPlaylist): MenuEntry[] {
         if (id !== null) go({ name: 'playlist', id })
       },
     },
-    coverMenu(p),
-    { label: tr('Share…'), icon: <ShareNetwork size={16} />, disabled: !p.trackCount, onSelect: () => (go({ name: 'playlist', id: p.id }), useStore.setState({ sharing: p.id })) },
+    tag('cover', coverMenu(p)),
+    { id: 'share', label: tr('Share…'), icon: <ShareNetwork size={16} />, disabled: !p.trackCount, onSelect: () => (go({ name: 'playlist', id: p.id }), useStore.setState({ sharing: p.id })) },
     !ytImport && {
+      id: 'exportYtm',
       label: tr('Export to YouTube Music'),
       icon: <UploadSimple size={16} />,
       disabled: !status.youtube.connected || !p.trackCount,
@@ -652,6 +658,7 @@ export function playlistMenu(p: LibraryPlaylist): MenuEntry[] {
     },
     // Services give no dates: "date added" sorts follow the end new songs land on.
     !p.custom && {
+      id: 'dateOrder',
       label: tr('Date added order'),
       icon: <SortAscending size={16} />,
       items: [
@@ -660,11 +667,12 @@ export function playlistMenu(p: LibraryPlaylist): MenuEntry[] {
         { label: tr('Newest songs at the bottom'), checked: p.orderManual && !p.newestFirst, onSelect: () => void editPlaylist({ type: 'setOrder', id: p.id, newestFirst: false }) },
       ],
     },
-    remote && { label: tr('Copy link'), icon: <Link size={16} />, onSelect: () => copy(remote, tr('Link copied')) },
-    remote && { label: tr('Open in YouTube Music'), icon: <ArrowSquareOut size={16} />, onSelect: () => openUrl(remote).catch(fail) },
+    remote && { id: 'copyLink', label: tr('Copy link'), icon: <Link size={16} />, onSelect: () => copy(remote, tr('Link copied')) },
+    remote && { id: 'openYtm', label: tr('Open in YouTube Music'), icon: <ArrowSquareOut size={16} />, onSelect: () => openUrl(remote).catch(fail) },
     '-',
-    { label: tr('Hide playlist'), icon: <EyeSlash size={16} />, onSelect: () => (setHidden(playlistKey(p), true), app().notify(tr('{name} hidden · right-click Playlists to show it again', { name: p.name }))) },
+    { id: 'hide', label: tr('Hide playlist'), icon: <EyeSlash size={16} />, onSelect: () => (setHidden(playlistKey(p), true), app().notify(tr('{name} hidden · right-click Playlists to show it again', { name: p.name }))) },
     p.custom && {
+      id: 'delete',
       label: tr('Delete…'),
       icon: <Trash size={16} />,
       danger: true,
@@ -676,7 +684,7 @@ export function playlistMenu(p: LibraryPlaylist): MenuEntry[] {
       },
     },
     ...pluginItems('playlist', { playlistId: p.id, name: p.name }),
-  ]
+  ])
 }
 
 /** A folder of Your library: its playlists' songs together, rename, delete (its playlists stay). */
@@ -684,15 +692,15 @@ export function folderMenu(f: PlaylistFolder, playlists: LibraryPlaylist[]): Men
   const some = playlists.some((p) => p.trackCount > 0)
   // Each song once, in the folder's order.
   const songs = () => Promise.all(playlists.map((p) => playlistSongs(p.id))).then((lists) => [...new Map(lists.flat().map((t) => [t.id, t])).values()])
-  return [
-    { label: tr('Play'), icon: <Play size={16} />, disabled: !some, onSelect: () => songs().then((t) => player().playTracks(t, 0), fail) },
-    { label: tr('Shuffle play'), icon: <Shuffle size={16} />, disabled: !some, onSelect: () => songs().then(shufflePlay, fail) },
-    { label: tr('Start radio'), icon: <Radio size={16} />, disabled: !some, onSelect: () => songs().then((t) => startRadioFrom(t, f.name), fail) },
-    { label: tr('Auto-DJ'), icon: <VinylRecord size={16} />, disabled: !some, onSelect: () => songs().then((t) => startAutoDj(t, f.name), fail) },
+  return shaped('folder', [
+    { id: 'play', label: tr('Play'), icon: <Play size={16} />, disabled: !some, onSelect: () => songs().then((t) => player().playTracks(t, 0), fail) },
+    { id: 'shuffle', label: tr('Shuffle play'), icon: <Shuffle size={16} />, disabled: !some, onSelect: () => songs().then(shufflePlay, fail) },
+    { id: 'startRadio', label: tr('Start radio'), icon: <Radio size={16} />, disabled: !some, onSelect: () => songs().then((t) => startRadioFrom(t, f.name), fail) },
+    { id: 'autoDj', label: tr('Auto-DJ'), icon: <VinylRecord size={16} />, disabled: !some, onSelect: () => songs().then((t) => startAutoDj(t, f.name), fail) },
     '-',
-    { label: tr('Rename…'), icon: <PencilSimple size={16} />, onSelect: () => void renameFolder(f) },
-    { label: tr('Delete folder'), icon: <Trash size={16} />, danger: true, onSelect: () => deleteFolder(f.id) },
-  ]
+    { id: 'rename', label: tr('Rename…'), icon: <PencilSimple size={16} />, onSelect: () => void renameFolder(f) },
+    { id: 'delete', label: tr('Delete folder'), icon: <Trash size={16} />, danger: true, onSelect: () => deleteFolder(f.id) },
+  ])
 }
 
 /** Settings' sections and their names (the search bar's commands name them too). */
@@ -704,17 +712,17 @@ export function navMenu(to: View, tracks?: LibraryTrack[]): MenuEntry[] {
   const { go } = app()
   const { settings, update } = useSettings.getState()
   const nav = navOf(to.name)
-  return [
-    { label: tr('Open'), icon: <ArrowSquareOut size={16} />, onSelect: () => go(to) },
-    to.name === 'settings' && { label: tr('Go to'), icon: <Gear size={16} />, items: SETTINGS_SECTIONS.map(([section, label]) => ({ label: tr(label), onSelect: () => go({ name: 'settings', section }) })) },
+  return shaped('nav', [
+    { id: 'open', label: tr('Open'), icon: <ArrowSquareOut size={16} />, onSelect: () => go(to) },
+    to.name === 'settings' && { id: 'goTo', label: tr('Go to'), icon: <Gear size={16} />, items: SETTINGS_SECTIONS.map(([section, label]) => ({ label: tr(label), onSelect: () => go({ name: 'settings', section }) })) },
     '-',
     ...(tracks?.length ? tracksMenu(tracks) : []),
     '-',
-    { label: tr('Counts in the sidebar'), checked: settings.sidebarCounts, onSelect: () => update({ sidebarCounts: !settings.sidebarCounts }) },
+    { id: 'counts', label: tr('Counts in the sidebar'), checked: settings.sidebarCounts, onSelect: () => update({ sidebarCounts: !settings.sidebarCounts }) },
     // One of the five entries: hidden from here, back in Settings › Appearance › Sidebar entries. The page stays reachable;
     // on it, Home takes over.
-    nav && { label: tr('Hide from the sidebar'), icon: <EyeSlash size={16} />, onSelect: () => (update({ hiddenNav: withHidden(settings.hiddenNav, nav, true) }), navOf(app().view.name) === nav && app().go({ name: 'home' })) },
-  ]
+    nav && { id: 'hide', label: tr('Hide from the sidebar'), icon: <EyeSlash size={16} />, onSelect: () => (update({ hiddenNav: withHidden(settings.hiddenNav, nav, true) }), navOf(app().view.name) === nav && app().go({ name: 'home' })) },
+  ])
 }
 
 /** Player surfaces: bar, mini player, Now Playing (like YouTube's own player menu). */
@@ -729,56 +737,56 @@ export function playerMenu({ controls = true }: { controls?: boolean } = {}): Me
   const video = now.youtubeId
   const mini = useSettings.getState().settings.miniPlayer
   const rep = (r: typeof repeat, label: string) => ({ label, checked: repeat === r, onSelect: () => usePlayer.setState({ repeat: r }) })
-  return [
-    controls && { label: playing ? tr('Pause') : tr('Play'), icon: playing ? <Pause size={16} /> : <Play size={16} />, onSelect: toggle },
-    controls && { label: tr('Previous'), icon: <SkipBack size={16} />, onSelect: () => step(-1) },
-    controls && { label: tr('Next'), icon: <SkipForward size={16} />, onSelect: () => step(1) },
+  return shaped('player', [
+    controls && { id: 'playPause', label: playing ? tr('Pause') : tr('Play'), icon: playing ? <Pause size={16} /> : <Play size={16} />, onSelect: toggle },
+    controls && { id: 'previous', label: tr('Previous'), icon: <SkipBack size={16} />, onSelect: () => step(-1) },
+    controls && { id: 'next', label: tr('Next'), icon: <SkipForward size={16} />, onSelect: () => step(1) },
     '-',
-    controls && { label: tr('Shuffle'), checked: shuffle, disabled: !now.trackId, onSelect: toggleShuffle },
-    controls && { label: tr('Repeat'), icon: <Repeat size={16} />, disabled: !now.trackId, items: [rep('off', tr('Off')), rep('all', tr('Whole queue')), rep('one', tr('This track'))] },
+    controls && { id: 'shuffle', label: tr('Shuffle'), checked: shuffle, disabled: !now.trackId, onSelect: toggleShuffle },
+    controls && { id: 'repeat', label: tr('Repeat'), icon: <Repeat size={16} />, disabled: !now.trackId, items: [rep('off', tr('Off')), rep('all', tr('Whole queue')), rep('one', tr('This track'))] },
     '-',
-    controls && { label: full ? tr('Leave full screen') : tr('Full screen'), icon: <ArrowsOutSimple size={16} />, onSelect: () => setFull(!full) },
-    { label: tr('Karaoke'), icon: <MicrophoneStage size={16} />, onSelect: toggleKaraoke },
-    { label: tr('Cover display'), icon: <FrameCorners size={16} />, onSelect: toggleCoverFull },
-    !phoneApp && { label: tr('Picture-in-picture'), icon: <PictureInPicture size={16} />, onSelect: () => void openPip() },
-    { label: tr('Share as a picture…'), icon: <ImageSquare size={16} />, onSelect: openShare },
-    roomItem(),
-    { label: tr('Live Editor'), icon: <SlidersHorizontal size={16} />, onSelect: () => (useSettings.getState().update({ editor: true }), setFull(true)) },
+    controls && { id: 'fullScreen', label: full ? tr('Leave full screen') : tr('Full screen'), icon: <ArrowsOutSimple size={16} />, onSelect: () => setFull(!full) },
+    { id: 'karaoke', label: tr('Karaoke'), icon: <MicrophoneStage size={16} />, onSelect: toggleKaraoke },
+    { id: 'coverDisplay', label: tr('Cover display'), icon: <FrameCorners size={16} />, onSelect: toggleCoverFull },
+    !phoneApp && { id: 'pip', label: tr('Picture-in-picture'), icon: <PictureInPicture size={16} />, onSelect: () => void openPip() },
+    { id: 'sharePicture', label: tr('Share as a picture…'), icon: <ImageSquare size={16} />, onSelect: openShare },
+    tag('room', roomItem()),
+    { id: 'liveEditor', label: tr('Live Editor'), icon: <SlidersHorizontal size={16} />, onSelect: () => (useSettings.getState().update({ editor: true }), setFull(true)) },
     // The mix now in the editor (a version playing included), shared from the player's own menu too.
-    video && { label: tr('Share this mix as a file…'), icon: <ShareNetwork size={16} />, onSelect: () => void import('./editor/remixFile').then((m) => m.exportRemix()) },
-    video && { label: tr('Copy this mix’s link'), icon: <Link size={16} />, onSelect: () => void import('./editor/remixFile').then((m) => m.copyRemixLink()) },
-    chaptersMenu(),
-    useSettings.getState().settings.castSpeakers && { label: tr('Cast to speakers…'), icon: <SpeakerHifi size={16} />, onSelect: openCast },
-    useSettings.getState().settings.focusSessions && { label: tr('Focus session…'), icon: <Timer size={16} />, onSelect: () => void import('./player/focus').then((m) => m.startSession('focus')) },
-    useSettings.getState().settings.focusSessions && { label: tr('Workout session…'), icon: <Timer size={16} />, onSelect: () => void import('./player/focus').then((m) => m.startSession('workout')) },
-    { label: tr('Sleep timer'), icon: <Moon size={16} />, items: sleepMenu() },
-    !phoneApp && { label: tr('Alarm…'), icon: <Alarm size={16} />, onSelect: () => (setFull(false), app().go({ name: 'settings', section: 'playback', focus: 'Alarm' })) },
-    { label: tr('Mini player'), icon: <PictureInPicture size={16} />, checked: mini || !!video, disabled: !!video, onSelect: () => useSettings.getState().update({ miniPlayer: !mini }) },
+    video && { id: 'shareMix', label: tr('Share this mix as a file…'), icon: <ShareNetwork size={16} />, onSelect: () => void import('./editor/remixFile').then((m) => m.exportRemix()) },
+    video && { id: 'copyMixLink', label: tr('Copy this mix’s link'), icon: <Link size={16} />, onSelect: () => void import('./editor/remixFile').then((m) => m.copyRemixLink()) },
+    tag('chapters', chaptersMenu()),
+    useSettings.getState().settings.castSpeakers && { id: 'cast', label: tr('Cast to speakers…'), icon: <SpeakerHifi size={16} />, onSelect: openCast },
+    useSettings.getState().settings.focusSessions && { id: 'focus', label: tr('Focus session…'), icon: <Timer size={16} />, onSelect: () => void import('./player/focus').then((m) => m.startSession('focus')) },
+    useSettings.getState().settings.focusSessions && { id: 'workout', label: tr('Workout session…'), icon: <Timer size={16} />, onSelect: () => void import('./player/focus').then((m) => m.startSession('workout')) },
+    { id: 'sleepTimer', label: tr('Sleep timer'), icon: <Moon size={16} />, items: sleepMenu() },
+    !phoneApp && { id: 'alarm', label: tr('Alarm…'), icon: <Alarm size={16} />, onSelect: () => (setFull(false), app().go({ name: 'settings', section: 'playback', focus: 'Alarm' })) },
+    { id: 'miniPlayer', label: tr('Mini player'), icon: <PictureInPicture size={16} />, checked: mini || !!video, disabled: !!video, onSelect: () => useSettings.getState().update({ miniPlayer: !mini }) },
     '-',
-    t && playVia(t, list, index),
-    t && addTo(() => [t], t),
-    t && removeFromPlayingList(t),
-    t && rateItem(t),
-    t && bookmarkItem(t.id),
-    loopItem(),
-    outputItem(),
-    useSettings.getState().settings.eqPerDevice && deviceEqItem(),
-    t && practiceSpeed(),
-    { label: tr('Count in, then play'), icon: <Timer size={16} />, onSelect: () => void import('./player/countIn').then((m) => m.countInPlay(t?.bpm)) },
-    { label: tr('Metronome'), icon: <Timer size={16} />, checked: useMetronome.getState().bpm !== null, onSelect: () => void toggleMetronome(t?.bpm) },
-    t?.album && { label: tr('Go to album'), icon: <Disc size={16} />, onSelect: () => (setFull(false), app().go({ name: 'album', album: t.album!, artist: primaryArtist(t.artist) })) },
-    t && { label: tr('Go to artist'), icon: <MicrophoneStage size={16} />, onSelect: () => (setFull(false), app().go({ name: 'artist', artist: primaryArtist(t.artist) })) },
-    lib && saveCoverItem(lib),
-    lib && isRemote(lib) && addToLibraryItem(lib),
-    lib && isRemote(lib) && addRemoteTo(lib),
+    t && tag('playVia', playVia(t, list, index)),
+    t && tag('addTo', addTo(() => [t], t)),
+    t && tag('removeFromPlaylist', removeFromPlayingList(t)),
+    t && tag('rate', rateItem(t)),
+    t && tag('bookmarks', bookmarkItem(t.id)),
+    tag('abLoop', loopItem()),
+    tag('output', outputItem()),
+    useSettings.getState().settings.eqPerDevice && tag('deviceEq', deviceEqItem()),
+    t && tag('practiceSpeed', practiceSpeed()),
+    { id: 'countIn', label: tr('Count in, then play'), icon: <Timer size={16} />, onSelect: () => void import('./player/countIn').then((m) => m.countInPlay(t?.bpm)) },
+    { id: 'metronome', label: tr('Metronome'), icon: <Timer size={16} />, checked: useMetronome.getState().bpm !== null, onSelect: () => void toggleMetronome(t?.bpm) },
+    t?.album && { id: 'goToAlbum', label: tr('Go to album'), icon: <Disc size={16} />, onSelect: () => (setFull(false), app().go({ name: 'album', album: t.album!, artist: primaryArtist(t.artist) })) },
+    t && { id: 'goToArtist', label: tr('Go to artist'), icon: <MicrophoneStage size={16} />, onSelect: () => (setFull(false), app().go({ name: 'artist', artist: primaryArtist(t.artist) })) },
+    lib && tag('saveCover', saveCoverItem(lib)),
+    lib && isRemote(lib) && tag('addToLibrary', addToLibraryItem(lib)),
+    lib && isRemote(lib) && tag('addTo', addRemoteTo(lib)),
     '-',
-    video && { label: tr('Copy video URL'), icon: <Link size={16} />, onSelect: () => copy(`https://youtu.be/${video}`, tr('Video URL copied')) },
-    video && { label: tr('Copy video URL at current time'), icon: <Link size={16} />, onSelect: () => copy(`https://youtu.be/${video}?t=${Math.floor(positionMs / 1000)}`, tr('Video URL copied')) },
-    video && { label: tr('Open on YouTube'), icon: <ArrowSquareOut size={16} />, onSelect: () => openUrl(`https://www.youtube.com/watch?v=${video}&t=${Math.floor(positionMs / 1000)}s`).catch(fail) },
-    now.page && { label: tr('Listen on Apple Music'), icon: <ArrowSquareOut size={16} />, onSelect: () => openUrl(now.page!).catch(fail) },
-    now.path && { label: tr('Show in folder'), icon: <FolderOpen size={16} />, onSelect: () => revealItemInDir(now.path!).catch(fail) },
+    video && { id: 'copyVideoUrl', label: tr('Copy video URL'), icon: <Link size={16} />, onSelect: () => copy(`https://youtu.be/${video}`, tr('Video URL copied')) },
+    video && { id: 'copyVideoUrlAt', label: tr('Copy video URL at current time'), icon: <Link size={16} />, onSelect: () => copy(`https://youtu.be/${video}?t=${Math.floor(positionMs / 1000)}`, tr('Video URL copied')) },
+    video && { id: 'openYoutube', label: tr('Open on YouTube'), icon: <ArrowSquareOut size={16} />, onSelect: () => openUrl(`https://www.youtube.com/watch?v=${video}&t=${Math.floor(positionMs / 1000)}s`).catch(fail) },
+    now.page && { id: 'listenApple', label: tr('Listen on Apple Music'), icon: <ArrowSquareOut size={16} />, onSelect: () => openUrl(now.page!).catch(fail) },
+    now.path && { id: 'showInFolder', label: tr('Show in folder'), icon: <FolderOpen size={16} />, onSelect: () => revealItemInDir(now.path!).catch(fail) },
     ...pluginItems('player', { trackId: t?.id ?? null, title: now.title, artist: now.artist }),
-  ]
+  ])
 }
 
 /** "Remove from {playlist}" for the own playlist the queue plays from (matched by the name the queue keeps). */
@@ -1007,17 +1015,18 @@ function outputItem(): MenuEntry | false {
 
 export function appMenu(): MenuEntry[] {
   const { back, fwd, goBack, goForward, go, sync, editPlaylist, status } = app()
-  return [
-    { label: tr('Back'), icon: <ArrowLeft size={16} />, disabled: !back.length, onSelect: goBack },
-    { label: tr('Forward'), icon: <ArrowRight size={16} />, disabled: !fwd.length, onSelect: goForward },
+  return shaped('app', [
+    { id: 'back', label: tr('Back'), icon: <ArrowLeft size={16} />, disabled: !back.length, onSelect: goBack },
+    { id: 'forward', label: tr('Forward'), icon: <ArrowRight size={16} />, disabled: !fwd.length, onSelect: goForward },
     '-',
-    { label: tr('Sync library'), icon: <ArrowsClockwise size={16} />, disabled: !status.youtube.connected && !status.spotify.connected, onSelect: () => void sync() },
-    useSettings.getState().settings.livingRoom && useSettings.getState().settings.tvHome && { label: tr('TV home'), icon: <Television size={16} />, onSelect: () => go({ name: 'tv' }) },
-    useSettings.getState().settings.podcasts && { label: tr('Podcasts'), icon: <Microphone size={16} />, onSelect: () => go({ name: 'podcasts' }) },
-    useSettings.getState().settings.booksPage && { label: tr('Audiobooks'), icon: <Books size={16} />, onSelect: () => go({ name: 'books' }) },
-    useSettings.getState().settings.blindTest && { label: tr('Blind test…'), icon: <Question size={16} />, onSelect: openBlind },
-    { label: tr('Add music'), icon: <PlusCircle size={16} />, onSelect: () => go({ name: 'add' }) },
+    { id: 'sync', label: tr('Sync library'), icon: <ArrowsClockwise size={16} />, disabled: !status.youtube.connected && !status.spotify.connected, onSelect: () => void sync() },
+    useSettings.getState().settings.livingRoom && useSettings.getState().settings.tvHome && { id: 'tvHome', label: tr('TV home'), icon: <Television size={16} />, onSelect: () => go({ name: 'tv' }) },
+    useSettings.getState().settings.podcasts && { id: 'podcasts', label: tr('Podcasts'), icon: <Microphone size={16} />, onSelect: () => go({ name: 'podcasts' }) },
+    useSettings.getState().settings.booksPage && { id: 'audiobooks', label: tr('Audiobooks'), icon: <Books size={16} />, onSelect: () => go({ name: 'books' }) },
+    useSettings.getState().settings.blindTest && { id: 'blindTest', label: tr('Blind test…'), icon: <Question size={16} />, onSelect: openBlind },
+    { id: 'addMusic', label: tr('Add music'), icon: <PlusCircle size={16} />, onSelect: () => go({ name: 'add' }) },
     {
+      id: 'newPlaylist',
       label: tr('New playlist'),
       icon: <Plus size={16} />,
       onSelect: async () => {
@@ -1026,8 +1035,8 @@ export function appMenu(): MenuEntry[] {
       },
     },
     '-',
-    player().now && { label: tr('Now playing'), icon: <ArrowsOutSimple size={16} />, onSelect: () => player().setFull(true) },
-    roomItem(),
-    { label: tr('Settings'), icon: <Gear size={16} />, onSelect: () => go({ name: 'settings', section: 'general' }) },
-  ]
+    player().now && { id: 'nowPlaying', label: tr('Now playing'), icon: <ArrowsOutSimple size={16} />, onSelect: () => player().setFull(true) },
+    tag('room', roomItem()),
+    { id: 'settings', label: tr('Settings'), icon: <Gear size={16} />, onSelect: () => go({ name: 'settings', section: 'general' }) },
+  ])
 }

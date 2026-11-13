@@ -11,7 +11,7 @@ import { onMenu, openMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
 import { RoundButton, Toggle } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
 import { dragSource, useDrag, useDropTarget } from '../../shared/ui/drag'
-import { trackMenu } from '../menus'
+import { shaped, trackMenu } from '../menus'
 import { stopAutoDj, useDjWhy, whyText } from './autoDj'
 import { fileFormat } from './PlayerBar'
 import { queueItems, queueRows, repeatsAhead, type QueueRow } from './queue'
@@ -69,15 +69,15 @@ function queueMenu(onHide: () => void): MenuEntry[] {
   const queue = order.length > 0
   const ahead = repeatsAhead(order, index, (i) => list[i]?.id)
   const songs = order.flatMap((i) => list[i] ?? [])
-  return [
-    queue && { label: tr('Save the queue as a playlist'), icon: <FloppyDisk size={16} />, onSelect: () => void saveQueue() },
-    queue && { label: tr('Shuffle'), checked: shuffle, onSelect: toggleShuffle },
-    ahead.length > 0 && { label: trn(ahead.length, 'Remove {n} repeat', 'Remove {n} repeats'), icon: <MinusCircle size={16} />, onSelect: () => ahead.forEach(dequeue) },
-    queue && order.indexOf(index) < order.length - 1 && { label: tr('Clear what’s next'), icon: <X size={16} />, onSelect: clearNext },
-    songs.length > 1 && { label: tr('Copy song list'), icon: <ClipboardText size={16} />, onSelect: () => void navigator.clipboard.writeText(songs.map((t) => `${t.artist} – ${t.title}`).join('\n')).then(() => useStore.getState().notify(trn(songs.length, '{n} song copied', '{n} songs copied'))) },
+  return shaped('queue', [
+    queue && { id: 'saveQueue', label: tr('Save the queue as a playlist'), icon: <FloppyDisk size={16} />, onSelect: () => void saveQueue() },
+    queue && { id: 'shuffle', label: tr('Shuffle'), checked: shuffle, onSelect: toggleShuffle },
+    ahead.length > 0 && { id: 'removeRepeats', label: trn(ahead.length, 'Remove {n} repeat', 'Remove {n} repeats'), icon: <MinusCircle size={16} />, onSelect: () => ahead.forEach(dequeue) },
+    queue && order.indexOf(index) < order.length - 1 && { id: 'clearNext', label: tr('Clear what’s next'), icon: <X size={16} />, onSelect: clearNext },
+    songs.length > 1 && { id: 'copyList', label: tr('Copy song list'), icon: <ClipboardText size={16} />, onSelect: () => void navigator.clipboard.writeText(songs.map((t) => `${t.artist} – ${t.title}`).join('\n')).then(() => useStore.getState().notify(trn(songs.length, '{n} song copied', '{n} songs copied'))) },
     '-',
-    { label: tr('Hide up next'), icon: <CaretRight size={16} />, onSelect: onHide },
-  ]
+    { id: 'hideUpNext', label: tr('Hide up next'), icon: <CaretRight size={16} />, onSelect: onHide },
+  ])
 }
 
 /**
