@@ -18,10 +18,29 @@ fn saved(state: &AppState) -> Option<Profile> {
     state.lib().setting(PROFILE).ok().flatten().and_then(|v| serde_json::from_value::<Profile>(v).ok()).filter(Profile::valid)
 }
 
+/// What a saved profile is worth: it counts only while the keychain still holds the sign-in. Without it (the entry was
+/// removed, another Windows account) the profile is forgotten: the second value says so.
+fn standing(saved: Option<Profile>, connected: bool) -> (Option<Profile>, bool) {
+    match (saved, connected) {
+        (Some(p), true) => (Some(p), false),
+        (Some(_), false) => (None, true),
+        (None, _) => (None, false),
+    }
+}
+
+/// The signed-in profile now, for the links this PC makes and for Settings; a stale one is cleared on the way.
+pub fn current(state: &AppState) -> Option<Profile> {
+    let (profile, forget) = standing(saved(state), login(state).is_connected());
+    if forget {
+        let _ = state.lib().set_setting(PROFILE, &serde_json::Value::Null);
+    }
+    profile
+}
+
 /// The signed-in profile (None = not signed in).
 #[tauri::command]
 pub async fn discord_login_status(state: State<'_, AppState>) -> CmdResult<Option<Profile>> {
-    Ok(saved(&state).filter(|_| login(&state).is_connected()))
+    Ok(current(&state))
 }
 
 /// Discord's page opens in the browser; the answer comes back on `REDIRECT` (5 minutes to allow it).
@@ -37,4 +56,18 @@ pub async fn discord_login_connect(state: State<'_, AppState>) -> CmdResult<Prof
 pub async fn discord_login_disconnect(state: State<'_, AppState>) -> CmdResult<()> {
     login(&state).disconnect().map_err(err)?;
     state.lib().set_setting(PROFILE, &serde_json::Value::Null).map_err(err)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_profile_counts_only_while_the_keychain_holds_the_sign_in() {
+        let p = Profile { id: "1".into(), name: "Nelly".into() };
+        assert_eq!(standing(Some(p.clone()), true), (Some(p.clone()), false));
+        assert_eq!(standing(Some(p), false), (None, true));
+        assert_eq!(standing(None, true), (None, false));
+        assert_eq!(standing(None, false), (None, false));
+    }
 }

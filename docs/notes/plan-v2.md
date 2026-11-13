@@ -143,6 +143,7 @@ Where a line says "reading", the owner hasn't confirmed it.
       verified. Decided alone (2026-11-13): unverified, since a signature needs the bot (still the owner's call).
       Untried for real: the Discord page, the redirect once registered in the portal, a busy port 47819.
       Left: the bot's signature, a song card's profile.
+      2026-11-13 (lot 25): the profile counts only while the keychain still holds the sign-in (`discord_login::current`: links and Settings use it, a stale one is forgotten on the way; `standing` tested).
 - [ ] `M` Android home-screen widgets (the owner, 2026-11-13, like YouTube Music's): three, from `MediaState` only (no network, the page's cover, no secret), buttons = the notification's actions through `PlaybackService`; `Widgets.kt`, res `widget_*`.
       - [x] `S` Rectangle: cover left, title and artist, previous / play / next (4x1, resizable wide). Landed 2026-11-13. Resources linked with aapt2 alone; the Kotlin was never compiled here (no Gradle cache on this PC) and never ran on a phone or an emulator.
       - [x] `S` Disc: the cover as a vinyl, play and next (2x2, `Widgets.record` draws the label round on a black record; a JVM test of the crop was written, never run: no Gradle here).
@@ -687,7 +688,7 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       wait, then every half hour, first one 2 minutes after launch), answers kept by file and modified time in the library
       setting `tempoGuesses` (no schema change), filling only EMPTY tempo, never over a tag. Decided alone (2026-11-13): tempo
       only, estimates share the BPM column with tags (no marker), octave errors accepted until an ear checks real songs. Never
-      heard on real songs; energy, key, mood and the similarity feeds are left.
+      heard on real songs; energy, key, mood and the similarity feeds are left. 2026-11-13 (lot 25): the answers are kept in memory and written back every 10 calls and at the end of a run, no longer whole on every call.
 
 **Low**
 - [x] `S` Focus / workout sessions: a timer, no-lyrics or high-BPM mix, a summary after. (Left by the autopilot

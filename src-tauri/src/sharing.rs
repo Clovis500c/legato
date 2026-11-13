@@ -15,15 +15,13 @@ pub struct ShareCode {
     bytes: usize,
 }
 
-/// The Discord sign-in's profile (Settings › Accounts), when there is one: it rides in the links this PC makes.
-fn own_profile(lib: &Library) -> Option<share::Profile> {
-    lib.setting(crate::discord_login::PROFILE).ok().flatten().and_then(|v| serde_json::from_value::<share::Profile>(v).ok()).filter(share::Profile::valid)
-}
-
-pub fn shared_playlist(lib: &Library, id: i64) -> CmdResult<Shared> {
+pub fn shared_playlist(state: &AppState, id: i64) -> CmdResult<Shared> {
+    // The profile first: it looks at the library too, and the lock is not held twice.
+    let by = crate::discord_login::current(state);
+    let lib = state.lib();
     let name = lib.playlists().map_err(err)?.into_iter().find(|p| p.id == id).ok_or("Playlist not found")?.name;
     let items = lib.playlist_tracks(id).map_err(err)?.iter().map(|t| Item::from_track(&t.track)).collect();
-    Ok(Shared { name, items, by: own_profile(lib) })
+    Ok(Shared { name, items, by })
 }
 
 /// The playing song as a share for its card: link and QR modules (see `share_playlist`).
@@ -36,7 +34,7 @@ pub async fn song_code(title: String, artist: String, youtube: Option<String>) -
 
 #[tauri::command]
 pub async fn share_playlist(state: State<'_, AppState>, id: i64) -> CmdResult<ShareCode> {
-    let shared = shared_playlist(&state.lib(), id)?;
+    let shared = shared_playlist(&state, id)?;
     let qr = share::qr_modules(&share::to_qr_text(&shared)).map(|(size, dark)| (size, dark.iter().map(|&d| if d { '1' } else { '0' }).collect()));
     Ok(ShareCode { link: share::to_web_link(&shared), qr, tracks: shared.items.len(), bytes: share::encode(&shared).len() })
 }
@@ -54,7 +52,7 @@ pub enum NearbyState {
 /// Offer a playlist on the local network. Returns the 6-digit code to read out.
 #[tauri::command]
 pub async fn nearby_send(state: State<'_, AppState>, id: i64) -> CmdResult<String> {
-    let payload = share::encode(&shared_playlist(&state.lib(), id)?);
+    let payload = share::encode(&shared_playlist(&state, id)?);
     let code = music_connectors::nearby::new_code();
     nearby_stop(state.clone());
     *state.nearby.lock().unwrap() = NearbyState::Waiting { code: code.clone() };

@@ -6,6 +6,8 @@
 use crate::{AppState, CmdResult, err};
 use std::collections::BTreeMap;
 use std::path::Path;
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::{Mutex, MutexGuard, PoisonError};
 use std::time::UNIX_EPOCH;
 use tauri::State;
 
@@ -44,36 +46,56 @@ fn split(files: Vec<(i64, String)>, kept: &Guesses, modified: impl Fn(&str) -> O
     (fill, todo)
 }
 
+/// The answers, read from the library once and kept here: a call writes them back only now and then (they can run to
+/// a few megabytes, and a call comes every 15 seconds while songs wait).
+static KEPT: Mutex<Option<Guesses>> = Mutex::new(None);
+static CALLS: AtomicUsize = AtomicUsize::new(0);
+/// Calls between two writes (the last call of a run always writes).
+const WRITE_EVERY: usize = 10;
+
+fn kept() -> MutexGuard<'static, Option<Guesses>> {
+    KEPT.lock().unwrap_or_else(PoisonError::into_inner)
+}
+
 /// Fills what is known, then decodes up to `limit` files. Returns how many are still waiting.
 #[tauri::command]
 pub async fn tempo_scan(state: State<'_, AppState>, limit: usize) -> CmdResult<usize> {
-    let (mut kept, files): (Guesses, _) = {
-        let lib = state.lib();
-        (lib.setting(KEY).ok().flatten().and_then(|v| serde_json::from_value(v).ok()).unwrap_or_default(), lib.untimed_local().map_err(err)?)
+    let files = state.lib().untimed_local().map_err(err)?;
+    let (fill, todo) = {
+        let mut k = kept();
+        let all = k.get_or_insert_with(|| state.lib().setting(KEY).ok().flatten().and_then(|v| serde_json::from_value(v).ok()).unwrap_or_default());
+        split(files, all, modified)
     };
-    let (fill, todo) = split(files, &kept, modified);
     {
         let lib = state.lib();
         for (id, bpm) in fill {
             lib.guess_tempo(id, bpm).map_err(err)?;
         }
     }
-    let left = todo.len().saturating_sub(limit.min(5));
-    let batch: Vec<_> = todo.into_iter().take(limit.min(5)).collect();
+    let take = limit.min(5);
+    let left = todo.len().saturating_sub(take);
+    let batch: Vec<_> = todo.into_iter().take(take).collect();
     let found = tauri::async_runtime::spawn_blocking(move || batch.into_iter().map(|(id, path, m)| (id, tempo_of(|| music_player::tempo::detect(Path::new(&path))), path, m)).collect::<Vec<_>>())
         .await
         .map_err(err)?;
-    let lib = state.lib();
-    for (id, bpm, path, m) in found {
-        if bpm > 0 {
-            lib.guess_tempo(id, bpm).map_err(err)?;
+    let changed = !found.is_empty();
+    {
+        let lib = state.lib();
+        let mut k = kept();
+        let all = k.get_or_insert_with(Guesses::new);
+        for (id, bpm, path, m) in found {
+            if bpm > 0 {
+                lib.guess_tempo(id, bpm).map_err(err)?;
+            }
+            all.insert(path, (m, bpm));
         }
-        kept.insert(path, (m, bpm));
+        while all.len() > KEEP {
+            all.pop_first();
+        }
+        if changed && (left == 0 || CALLS.fetch_add(1, Ordering::Relaxed) % WRITE_EVERY == WRITE_EVERY - 1) {
+            lib.set_setting(KEY, &serde_json::to_value(&*all).map_err(err)?).map_err(err)?;
+        }
     }
-    while kept.len() > KEEP {
-        kept.pop_first();
-    }
-    lib.set_setting(KEY, &serde_json::to_value(&kept).map_err(err)?).map_err(err)?;
     Ok(left)
 }
 
