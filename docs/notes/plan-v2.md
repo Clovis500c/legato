@@ -765,6 +765,8 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       out: guessing the artist alone, a timer on the answer, several players (local multiplayer or over the LAN), a game from one
       playlist. Never played by ear or on a screen; the snippet seek waits for the song's length and may land a moment late.
 - [ ] `M` Theme and plugin gallery without a server: an index file in a GitHub repo, browsed from Add-ons, installed after
+      2026-11-13 (wider mandate), still not built: the index has to live in a repository that does not exist yet (and the project never creates
+      one on its own); a gallery that can list nothing would be a fake button. When the owner makes it: one `index.json` (name, kind, url, sha256, size), fetched through `Noted`, a download refused when its hash differs, themes through the existing theme import, plugins through `plugin_inspect` and its permission review.
       the usual permission review; authors submit by pull request.
       Skipped 2026-11-13 (night): installing means downloading code or theme files from a repository into the plugins folder, then the
       permission review: the download, its size and hash checks and the trust in the index are the owner's to set (who may publish, pinned
@@ -788,6 +790,7 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       2026-11-12: the loop has a key (L: start, end, clear, in the shortcuts table) and a band on the progress bar. Decided
       alone (2026-11-12): L, one key cycling the three steps, rather than three keys. Never tried by ear or on a screen.
 - [ ] `M-L` Profiles on one PC (each person's library, likes, history and Last.fm), switched from the top bar.
+      2026-11-13 (wider mandate), still skipped: the first step is not the data model but the launch (which library file, which keychain names, which WebView2 profile are chosen before the window opens), the code the CI just showed a panic in; the owner's choices above come first.
       Skipped 2026-11-13 (night, not for this run): a profile is a second library file plus its own keychain entries and its own
       WebView2 cookies, chosen before the window opens, so a switch restarts the app; it touches `identity`, `rename.rs`'s folders and
       Sync Mode's per-PC files, and a wrong first step could mix two people's data. Needs the owner's choices (what is shared, e.g. local
