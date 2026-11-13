@@ -7,6 +7,7 @@ use tauri::{AppHandle, Manager, Url, WebviewUrl, WebviewWindowBuilder};
 
 pub const SITE: &str = "https://music.youtube.com/";
 const LABEL: &str = "ytm-sign-in";
+#[cfg(desktop)]
 const REFRESH: &str = "ytm-refresh";
 /// Google's own pages: the app never sees the password.
 const SIGN_IN: &str = "https://accounts.google.com/ServiceLogin?service=youtube&continue=https%3A%2F%2Fmusic.youtube.com%2F";
@@ -58,6 +59,7 @@ pub fn open(app: &AppHandle, add_account: bool) -> tauri::Result<()> {
 /// Google renews its session cookies from its own pages, which the app never shows after sign-in: twelve days on they
 /// were still the sign-in's, and Google refused likes as signed out (401, 2026-10-28). Its sign-in page, hidden: a live
 /// session goes straight back to YouTube Music with fresh cookies. False: signed out, or Google wants the user.
+#[cfg(desktop)]
 pub async fn refresh(app: &AppHandle) -> bool {
     if session(app).is_none() || app.get_webview_window(LABEL).is_some() || app.get_webview_window(REFRESH).is_some() {
         return false;
@@ -82,6 +84,12 @@ pub async fn refresh(app: &AppHandle) -> bool {
         crate::diag::warn("ytm", "the Google session didn't come back fresh", "");
     }
     fresh
+}
+
+/// Phones: signed out of Google always (`session`), nothing to refresh; their window builder has no focus options.
+#[cfg(mobile)]
+pub async fn refresh(_: &AppHandle) -> bool {
+    false
 }
 
 /// Forgets every Google session (and other site data) in the app's webview profile.

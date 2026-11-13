@@ -334,7 +334,7 @@ async fn load_settings(state: State<'_, AppState>) -> CmdResult<Option<serde_jso
 }
 
 #[tauri::command]
-async fn save_settings(app: tauri::AppHandle, state: State<'_, AppState>, settings: serde_json::Value) -> CmdResult<()> {
+async fn save_settings(#[cfg_attr(mobile, allow(unused_variables))] app: tauri::AppHandle, state: State<'_, AppState>, settings: serde_json::Value) -> CmdResult<()> {
     // Trust boundary: object only, bounded size (custom themes included).
     if !settings.is_object() || settings.to_string().len() > 256 * 1024 {
         return Err("Invalid settings".into());
