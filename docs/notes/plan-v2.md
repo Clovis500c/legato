@@ -633,6 +633,8 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       "From Wikipedia, under CC BY-SA" linking to the article; the website's "Artist links" row says so. Untried against the real
       Wikipedia (mock tests only). Decided alone (2026-11-12): on a click, never on opening the page.
 - [ ] `M` Sweet fades (Plexamp): crossfade length picked per pair from the songs' ends (loudness, silence, tempo).
+      2026-11-13, not started (decided alone): the fade is applied in three places (`songFade`, `playAt`'s `fadeIn`, the
+      engine's own crossfade for files), and a per-pair length wants to be heard on real songs, not built blind at night.
       (Left by the autopilot (2026-11-05): a song's end is only known measured (local files, Skip silence on) or
       heard once (a video, `ends.ts`), its tempo not at all; the overlap is the player's most fixed code, and a
       length picked per pair needs an ear to tune: with the roadmap's Sonic analysis, or with the owner listening.)
@@ -826,6 +828,8 @@ Most useful first; the tag is the effort.
       interface (event `scan-progress`, at most 5 a second), Songs' subtitle reads "Reading your files… 120 of 4,300" while a
       folder is read (`scanProgress.ts`). FTS5 stays skipped (measured). Never seen on a screen or on a 10 000-song folder.
 - [ ] `S-M` YouTube embeds: one player reused instead of one per song where the crossfade allows; unload the hidden one.
+      2026-11-13, not started (decided alone): it changes the YouTube player's lifecycle, which only the running app with
+      sound can check (the e2e walk leaves the embed out).
       Left by the autopilot (2026-11-05): playback-critical, and the demo has no YouTube player to try it on.
 
 ## Check live in the real app (built and unit-tested, never driven for real)
