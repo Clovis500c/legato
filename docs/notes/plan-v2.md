@@ -168,6 +168,19 @@ Where a line says "reading", the owner hasn't confirmed it.
       (plugins' API, themes, the link and file formats, contributing). The design is a piece Fable may do itself (the
       owner's word).
 
+## The owner's asks of 2026-11-13
+
+- [x] `S` Signed out of Google, searching YouTube (and so listening to what is found) did not work (the owner). 2026-11-13: found by
+      reading, not reproduced against Google: the signed-out path itself is right (visitor requests, tested with a fake server and
+      by the smoke test), but a session whose cookies had gone stale (cookies still in the webview, Google answering 401) was
+      still sent, so the search answered "signed you out" and returned nothing, the public catalog included. The two searches
+      (`YouTubeMusic::search_rows`, `YouTubeWeb::search`) now repeat once as a visitor on a 401 only; a 429 or a "Sorry" page is
+      Google's answer for the address and stays final (no other way, no quicker retry). Every other user of the songs search
+      (imports, Find a version, the play of a hit with no YouTube version) goes through it. Tests: stale session then visitor,
+      and a 429 asked once. Decided alone (2026-11-13): the fix is in the connectors, not the shell, so every caller gets it.
+      Not checked for real: a signed-out search on the owner's PC; if it still fails there, the error under the search ("YouTube: ... 429" or a
+      "Sorry" page) says Google refused: then it is YouTube's limit for a visitor, not a bug of ours.
+
 ## The owner's asks of 2026-11-12
 
 - [x] `S` Lyrics line by line, no more word by word (the owner: more precise, fewer false word timings). 2026-11-12: the line

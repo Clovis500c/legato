@@ -379,11 +379,22 @@ impl YouTubeMusic {
 
     /// Uploads (other channels' copies of a song included).
     pub async fn search_videos(&self, query: &str) -> Result<Vec<Track>> {
-        Ok(rows(&self.call("search", json!({ "query": query, "params": VIDEOS })).await?))
+        self.search_rows(query, VIDEOS).await
     }
 
     pub async fn search_songs(&self, query: &str) -> Result<Vec<Track>> {
-        Ok(rows(&self.call("search", json!({ "query": query, "params": SONGS })).await?))
+        self.search_rows(query, SONGS).await
+    }
+
+    /// A search with this session; refused as signed out (cookies gone stale, 401), the same search as a visitor: the public
+    /// catalog needs no account, and a dead session must not take it away (2026-11-13). Any other refusal (a 429, a "Sorry"
+    /// page) is Google's answer for this address and is not asked again another way.
+    async fn search_rows(&self, query: &str, params: &str) -> Result<Vec<Track>> {
+        let body = json!({ "query": query, "params": params });
+        match self.call("search", body.clone()).await {
+            Err(e) if self.sapisid.is_some() && e.to_string().starts_with(SIGNED_OUT) => Ok(rows(&Self::anonymous_with_api(&self.api).call("search", body).await?)),
+            r => Ok(rows(&r?)),
+        }
     }
 
     /// Playlist page + continuations: the playlist shelf of the first page (no suggestions), then each continuation.
@@ -819,6 +830,25 @@ mod tests {
         let e = yt.playlist_videos("PL1").await.unwrap_err().to_string();
         assert!(e.starts_with(SIGNED_OUT) && e.contains("401"), "{e}");
         assert!(yt.search_songs("a").await.is_err());
+    }
+
+    /// A session gone stale (401) must not take the public catalog away; a refusal that is not "signed out" is not asked again.
+    #[tokio::test]
+    async fn a_dead_session_still_searches_as_a_visitor() {
+        let mut s = Server::new_async().await;
+        let stale = s.mock("POST", "/search").match_query(Matcher::Any).match_header("authorization", Matcher::Any).with_status(401).with_body("{}").expect(1).create_async().await;
+        let visitor = s.mock("POST", "/search").match_query(Matcher::Any).match_header("authorization", Matcher::Missing).match_header("cookie", Matcher::Missing).with_body(include_str!("../../../e2e/fixtures/ytmusic-search.json")).expect(1).create_async().await;
+        let found = YouTubeMusic::with_api(&s.url(), COOKIE).unwrap().search_songs("paper lanterns").await.unwrap();
+        assert_eq!(found[0].title, "Paper Lanterns");
+        stale.assert_async().await;
+        visitor.assert_async().await;
+
+        // Google's refusal (429) is final: one request, the error told.
+        let mut s = Server::new_async().await;
+        let refused = s.mock("POST", "/search").match_query(Matcher::Any).with_status(429).with_body("Sorry").expect(1).create_async().await;
+        let e = YouTubeMusic::with_api(&s.url(), COOKIE).unwrap().search_songs("a").await.unwrap_err().to_string();
+        assert!(e.contains("429"), "{e}");
+        refused.assert_async().await;
     }
 
     #[tokio::test]

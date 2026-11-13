@@ -128,7 +128,12 @@ impl YouTubeWeb {
 
     /// Videos for a query, YouTube's own ranking.
     pub async fn search(&self, query: &str) -> Result<Vec<WebVideo>> {
-        Ok(parse_search(&self.call("search", json!({ "query": query, "params": VIDEOS_ONLY })).await?))
+        let body = json!({ "query": query, "params": VIDEOS_ONLY });
+        match self.call("search", body.clone()).await {
+            // A dead session (401) must not take the public search away: asked once as a visitor. Any other refusal stays.
+            Err(e) if self.sapisid.is_some() && e.to_string().contains("→ 401") => Ok(parse_search(&Self::with_api(&self.api, None).call("search", body).await?)),
+            r => Ok(parse_search(&r?)),
+        }
     }
 }
 
@@ -170,6 +175,23 @@ mod tests {
 
     fn answer(items: Vec<Value>) -> Value {
         json!({ "contents": { "twoColumnSearchResultsRenderer": { "primaryContents": { "sectionListRenderer": { "contents": [{ "itemSectionRenderer": { "contents": items } }] } } } } })
+    }
+
+    #[tokio::test]
+    async fn a_dead_session_still_searches_as_a_visitor_and_a_refusal_is_final() {
+        let mut s = Server::new_async().await;
+        let stale = s.mock("POST", "/search").match_query(Matcher::Any).match_header("authorization", Matcher::Any).with_status(401).with_body("{}").expect(1).create_async().await;
+        let visitor = s.mock("POST", "/search").match_query(Matcher::Any).match_header("authorization", Matcher::Missing).with_body(answer(vec![video("aaaaaaaaaaa", "Song", "Chan", "3:00", false)]).to_string()).expect(1).create_async().await;
+        let found = YouTubeWeb::with_api(&s.url(), Some("SAPISID=abc/def")).search("song").await.unwrap();
+        assert_eq!(found.len(), 1);
+        stale.assert_async().await;
+        visitor.assert_async().await;
+
+        let mut s = Server::new_async().await;
+        let refused = s.mock("POST", "/search").match_query(Matcher::Any).with_status(429).with_body("Sorry").expect(1).create_async().await;
+        let e = YouTubeWeb::with_api(&s.url(), Some("SAPISID=abc/def")).search("song").await.unwrap_err().to_string();
+        assert!(e.contains("429"), "{e}");
+        refused.assert_async().await;
     }
 
     #[test]
