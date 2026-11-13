@@ -43,7 +43,8 @@ pub fn parse_found(reply: &str) -> Option<Found> {
     if !header("st").is_some_and(|st| st.contains("MediaRenderer")) {
         return None;
     }
-    let location = Url::parse(&header("location")?).ok().filter(local)?;
+    // Loopback is this PC: never what a device on the network announces.
+    let location = Url::parse(&header("location")?).ok().filter(|u| local(u) && !u.host_str().is_some_and(|h| h.parse::<IpAddr>().is_ok_and(|ip| ip.is_loopback())))?;
     Some(Found { location, usn: header("usn").unwrap_or_default() })
 }
 
@@ -100,7 +101,8 @@ pub fn parse_description(base: &Url, xml: &str) -> Option<Renderer> {
         let end = block.find("</service>")?;
         let service = &block[..end];
         if inner(service, "serviceType").is_some_and(|t| t.contains("AVTransport")) {
-            let control = base.join(&inner(service, "controlURL")?).ok().filter(local)?;
+            // A renderer is driven on itself: a control URL on another host is refused.
+            let control = base.join(&inner(service, "controlURL")?).ok().filter(|c| local(c) && c.host() == base.host())?;
             return Some(Renderer { name: name.chars().take(80).collect(), control });
         }
         rest = &block[end..];
@@ -130,18 +132,25 @@ pub fn clock(ms: u64) -> String {
     format!("{}:{:02}:{:02}", s / 3600, s / 60 % 60, s % 60)
 }
 
+/// No redirect is followed: one could lead off this network.
+fn client() -> reqwest::Client {
+    static C: std::sync::LazyLock<reqwest::Client> = std::sync::LazyLock::new(|| crate::builder().redirect(reqwest::redirect::Policy::none()).build().unwrap_or_default());
+    C.clone()
+}
+
 impl Renderer {
     /// Reads a description from `location` (a private address only) → the renderer.
     pub async fn open(location: &Url) -> Result<Self> {
         if !local(location) {
             bail!("Not an address on this network");
         }
-        let xml = crate::http().get(location.clone()).timeout(TIMEOUT).send().await?.error_for_status()?.text().await?;
+        let res = client().get(location.clone()).timeout(TIMEOUT).send().await?.error_for_status()?;
+        let xml = crate::linklist::capped_text(res).await?;
         parse_description(location, &xml).ok_or_else(|| anyhow::anyhow!("This device cannot play from the network"))
     }
 
     async fn call(&self, action: &str, args: &[(&str, &str)]) -> Result<()> {
-        let r = crate::http()
+        let r = client()
             .post(self.control.clone())
             .header("content-type", "text/xml; charset=\"utf-8\"")
             .header("soapaction", format!("\"{AV}#{action}\""))
@@ -199,6 +208,7 @@ mod tests {
         assert!(parse_found(&REPLY.replace("192.168.1.20", "router.example")).is_none(), "nor a name");
         assert!(parse_found(&REPLY.replace("MediaRenderer", "MediaServer")).is_none());
         assert!(parse_found(&REPLY.replace("http://", "https://")).is_none());
+        assert!(parse_found(&REPLY.replace("192.168.1.20", "127.0.0.1")).is_none(), "nor this PC");
         assert!(parse_found("garbage").is_none());
         assert!(m_search().contains("ssdp:discover") && m_search().ends_with("\r\n\r\n"));
     }
@@ -212,6 +222,8 @@ mod tests {
         assert!(parse_description(&base, &DESC.replace("AVTransport", "Other")).is_none());
         // A control URL pointing off this network is refused.
         assert!(parse_description(&base, &DESC.replace("/av/ctl", "http://203.0.113.5/ctl")).is_none());
+        // Nor one on another device of this network.
+        assert!(parse_description(&base, &DESC.replace("/av/ctl", "http://192.168.1.99/ctl")).is_none());
         assert_eq!(clock(3_725_000), "1:02:05");
         assert!(didl("A & B", "http://192.168.1.2/a.mp3", "audio/mpeg").contains("A &amp; B"));
     }
@@ -235,6 +247,15 @@ mod tests {
         for m in [desc, set, play, seek, stop] {
             m.assert_async().await;
         }
+    }
+
+    #[tokio::test]
+    async fn a_description_that_redirects_is_not_followed() {
+        let mut s = Server::new_async().await;
+        s.mock("GET", "/desc.xml").with_status(302).with_header("location", "/moved.xml").create_async().await;
+        let moved = s.mock("GET", "/moved.xml").with_body(DESC).expect(0).create_async().await;
+        assert!(Renderer::open(&Url::parse(&format!("{}/desc.xml", s.url())).unwrap()).await.is_err());
+        moved.assert_async().await;
     }
 
     #[tokio::test]
