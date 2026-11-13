@@ -31,7 +31,11 @@ describe('right-to-left layout', () => {
       readFileSync(file, 'utf8')
         .split('\n')
         .forEach((line, i) => {
-          for (const m of line.matchAll(PHYSICAL)) found.push(`${file.slice(ROOT.length + 1)}:${i + 1} ${m[0]}`)
+          for (const m of line.matchAll(PHYSICAL)) {
+            // Centered (left-1/2 pulled back by half its width): no side to mirror; start-1/2 would put it off center.
+            if (m[0].endsWith('left-') && line.slice(m.index).startsWith(`${m[0]}1/2`) && line.includes('-translate-x-1/2')) continue
+            found.push(`${file.slice(ROOT.length + 1)}:${i + 1} ${m[0]}`)
+          }
         })
     }
     expect(found).toEqual([])
