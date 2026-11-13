@@ -14,11 +14,11 @@ import { Led, RoundButton, Segmented, Toggle } from '../../shared/ui/controls'
 const fail = (e: unknown) => useStore.getState().notify(String(e), { kind: 'error' })
 
 /** Mini window drawn in the theme's own colors (and picture). */
-function ThemeThumb({ t }: { t: Palette & Partial<Pick<Theme, 'background' | 'radius'>> }) {
+function ThemeThumb({ t, tall = false }: { t: Palette & Partial<Pick<Theme, 'background' | 'radius'>>; tall?: boolean }) {
   const r = t.radius === 'sharp' ? 1 : t.radius === 'round' ? 5 : 3
   const see = (c: string) => (t.background ? `color-mix(in srgb, ${c} ${t.background.panels}%, transparent)` : c)
   return (
-    <span className="relative block h-23 w-full overflow-hidden" style={{ background: t.bg }}>
+    <span className={`relative block w-full overflow-hidden ${tall ? 'h-44' : 'h-23'}`} style={{ background: t.bg }}>
       {t.background &&
         (isVideo(t.background.image) ? (
           // First frame only: a thumbnail grid of playing videos would cost too much.
@@ -45,9 +45,9 @@ function ThemeThumb({ t }: { t: Palette & Partial<Pick<Theme, 'background' | 'ra
   )
 }
 
-function ThemeCard({ t, on, onClick, badge }: { t: Theme; on: boolean; onClick: () => void; badge?: string }) {
+function ThemeCard({ t, on, onClick, badge, peek }: { t: Theme; on: boolean; onClick: () => void; badge?: string; peek?: (t: Theme | null) => void }) {
   return (
-    <button onClick={onClick} aria-pressed={on} className="flex flex-col gap-2 text-start">
+    <button onClick={onClick} aria-pressed={on} onMouseEnter={() => peek?.(t)} onMouseLeave={() => peek?.(null)} onFocus={() => peek?.(t)} onBlur={() => peek?.(null)} className="flex flex-col gap-2 text-start">
       <span className={`block overflow-hidden rounded-lg border-2 ${on ? 'border-ink' : 'border-transparent outline outline-1 outline-line'}`}>
         <ThemeThumb t={t} />
       </span>
@@ -338,6 +338,11 @@ export function ThemeStudio() {
     }
   }
   const pick = (t: Theme) => update({ theme: t.id, ...t.look })
+  // The tile under the pointer or the keyboard shows large above, before it is applied.
+  const [peek, setPeek] = useState<Theme | null>(null)
+  const shown = peek ?? current()
+  const mode = settings.theme === 'system' ? 'auto' : current().dark ? 'dark' : 'light'
+  const tiles = (list: Theme[]) => list.map((t) => <ThemeCard key={t.id} t={t} on={settings.theme === t.id} onClick={() => pick(t)} peek={setPeek} />)
   return (
     <section data-setting="Theme" className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
@@ -346,17 +351,45 @@ export function ThemeStudio() {
         </h2>
         <span className="kicker">{tr('Applied: {name}', { name: current().name })}</span>
       </div>
+      <div className="grid gap-4 @max-lg:grid-cols-1 lg:grid-cols-[1fr_minmax(0,1.2fr)]">
+        <div className="flex flex-col gap-1.5">
+          <span className="kicker">
+            {tr('Preview')} · {shown.name}
+          </span>
+          <span className="block overflow-hidden rounded-xl border border-line">
+            <ThemeThumb t={shown} tall />
+          </span>
+        </div>
+        <div className="flex flex-col gap-3">
+          <span className="kicker">{tr('Mode')}</span>
+          <Segmented
+            label={tr('Mode')}
+            value={mode}
+            onChange={(m) => (m === 'auto' ? update({ theme: 'system' }) : pick(PRESETS.find((t) => t.id === (m === 'dark' ? 'modern-dark' : 'modern'))!))}
+            options={[
+              { value: 'auto', label: tr('Auto') },
+              { value: 'light', label: tr('Light') },
+              { value: 'dark', label: tr('Dark') },
+            ]}
+          />
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(110px,1fr))] gap-3">
+            <ThemeCard t={system} on={settings.theme === 'system'} onClick={() => update({ theme: 'system' })} badge={tr('AUTO')} peek={setPeek} />
+          </div>
+        </div>
+      </div>
+      <h3 className="kicker">{tr('Light themes')}</h3>
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-4">{tiles(PRESETS.filter((t) => !t.dark))}</div>
+      <h3 className="kicker">{tr('Dark themes')}</h3>
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-4">{tiles(PRESETS.filter((t) => t.dark))}</div>
+      {settings.customThemes.length > 0 && (
       <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-4">
-        <ThemeCard t={system} on={settings.theme === 'system'} onClick={() => update({ theme: 'system' })} badge={tr('AUTO')} />
-        {PRESETS.map((t) => (
-          <ThemeCard key={t.id} t={t} on={settings.theme === t.id} onClick={() => pick(t)} />
-        ))}
         {settings.customThemes.map((t) => (
           <ThemeCard
             key={t.id}
             t={t}
             on={settings.theme === t.id}
             badge={tr('CUSTOM')}
+            peek={setPeek}
             onClick={() => {
               pick(t)
               setEditing(t.id)
@@ -364,6 +397,7 @@ export function ThemeStudio() {
           />
         ))}
       </div>
+      )}
       <div className="flex flex-wrap gap-2">
         <Button
           onClick={() => {

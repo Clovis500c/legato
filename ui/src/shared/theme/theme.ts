@@ -54,7 +54,7 @@ export const MAX_THEME_CSS = 20_000
 export const FONTS = ['modern', 'hifi', 'neutral'] as const
 export type Font = (typeof FONTS)[number]
 
-const preset = (id: string, name: string, dark: boolean, p: Palette, font: Font = 'hifi', glow = true): Theme => ({ id, name, dark, font, glow, radius: 'soft', ...p })
+const preset = (id: string, name: string, dark: boolean, p: Palette, font: Font = 'hifi', glow = true, extra: Partial<Theme> = {}): Theme => ({ id, name, dark, font, glow, radius: 'soft', ...p, ...extra })
 
 // ink3 values tuned for WCAG AA (4.5:1) on bg, panels and cards (raised).
 export const PRESETS: Theme[] = [
@@ -67,6 +67,15 @@ export const PRESETS: Theme[] = [
   preset('aluminum', 'Aluminum', false, { bg: '#ECEEF0', panel: '#E1E4E8', raised: '#F7F8F9', recess: '#D7DBE0', line: '#C9CED5', lineSoft: '#DADEE3', ink: '#14171A', ink2: '#4E5660', ink3: '#5D656F', ink4: '#A4ACB5', accent: '#2F6FEB', onAccent: '#FFFFFF', ledOff: '#BFC5CC' }),
   preset('bakelite', 'Bakelite', true, { bg: '#1C1410', panel: '#241A14', raised: '#2E221A', recess: '#140E0B', line: '#3D2E24', lineSoft: '#2E231B', ink: '#F2E6D3', ink2: '#BFAE95', ink3: '#9E8E77', ink4: '#5E5244', accent: '#F2A900', onAccent: '#1C1410', ledOff: '#4A3B2F' }),
   preset('sage', 'Sage', false, { bg: '#E7ECE6', panel: '#DCE3DA', raised: '#F4F7F3', recess: '#D1D9CF', line: '#C2CCBF', lineSoft: '#D5DDD2', ink: '#152019', ink2: '#4C5B50', ink3: '#58675B', ink4: '#A0ADA2', accent: '#1F7A4D', onAccent: '#FFFFFF', ledOff: '#B8C3B6' }),
+  // Whole styles (2026-11-13, request 5): each one brings its palette, corners, font, glow and the look it was drawn with (cover shape, density).
+  preset('terminal', 'Terminal', true, { bg: '#070D08', panel: '#0B140C', raised: '#122015', recess: '#030603', line: '#1F3A24', lineSoft: '#14261A', ink: '#8DF7A5', ink2: '#5FC27A', ink3: '#4FA866', ink4: '#2C5A3A', accent: '#33FF66', onAccent: '#04110A', ledOff: '#1A3A22' }, 'neutral', false, { radius: 'sharp', look: { covers: 'net', density: 'compact' }, css: 'body, button, input, select, textarea { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; }' }),
+  preset('pastel', 'Pastel', false, { bg: '#FFF8FB', panel: '#FCEFF6', raised: '#F6E6F0', recess: '#F0DCEA', line: '#EBD3E3', lineSoft: '#F3E2EC', ink: '#3A2A3F', ink2: '#6B5570', ink3: '#6F5974', ink4: '#BFA6C4', accent: '#C48BF5', onAccent: '#2A1530', ledOff: '#E0CBDA' }, 'modern', false, { radius: 'round', look: { covers: 'rounded', density: 'airy' } }),
+  preset('high-contrast', 'High contrast', true, { bg: '#000000', panel: '#0A0A0A', raised: '#141414', recess: '#000000', line: '#8A8A8A', lineSoft: '#4A4A4A', ink: '#FFFFFF', ink2: '#E6E6E6', ink3: '#CFCFCF', ink4: '#7A7A7A', accent: '#FFE600', onAccent: '#000000', ledOff: '#5A5A5A' }, 'neutral', false, { radius: 'sharp', look: { covers: 'net', density: 'comfort' } }),
+  preset('high-contrast-light', 'High contrast light', false, { bg: '#FFFFFF', panel: '#F5F5F5', raised: '#EDEDED', recess: '#E0E0E0', line: '#4A4A4A', lineSoft: '#9A9A9A', ink: '#000000', ink2: '#1A1A1A', ink3: '#333333', ink4: '#6A6A6A', accent: '#0033CC', onAccent: '#FFFFFF', ledOff: '#8A8A8A' }, 'neutral', false, { radius: 'sharp', look: { covers: 'net', density: 'comfort' } }),
+  preset('midnight', 'Midnight', true, { bg: '#0A0F1F', panel: '#0E1530', raised: '#16203F', recess: '#050813', line: '#243158', lineSoft: '#172043', ink: '#E8EEFF', ink2: '#A9B6DD', ink3: '#8D9BC8', ink4: '#4A5788', accent: '#6EA8FF', onAccent: '#07122B', ledOff: '#2A3868' }, 'hifi', true, { look: { covers: 'rounded', density: 'comfort' } }),
+  preset('sepia', 'Sepia', false, { bg: '#F5ECD9', panel: '#EDE0C6', raised: '#FBF4E4', recess: '#E4D5B8', line: '#D6C4A0', lineSoft: '#E4D6B8', ink: '#2E2416', ink2: '#5E4E36', ink3: '#6D5C42', ink4: '#B5A27E', accent: '#B5651D', onAccent: '#FFF8EA', ledOff: '#D3C19B' }, 'modern', false, { look: { covers: 'rounded', density: 'comfort' }, css: 'body { font-family: Georgia, "Times New Roman", serif; }' }),
+  preset('glass', 'Glass', true, { bg: '#0C1018', panel: '#121826', raised: '#1B2336', recess: '#070A10', line: '#2A3550', lineSoft: '#1C2438', ink: '#F2F6FF', ink2: '#B4C0DA', ink3: '#96A4C4', ink4: '#53607F', accent: '#7FD6FF', onAccent: '#06141D', ledOff: '#2F3B57' }, 'hifi', true, { radius: 'round', look: { covers: 'rounded', density: 'airy' } }),
+  preset('neon', 'Neon', true, { bg: '#07050F', panel: '#0C0818', raised: '#150F28', recess: '#030208', line: '#2B1E4D', lineSoft: '#1B1233', ink: '#F7F0FF', ink2: '#C9B8EE', ink3: '#A894D6', ink4: '#5B4A8C', accent: '#FF2BD6', onAccent: '#12020F', ledOff: '#33244F' }, 'hifi', true, { look: { covers: 'vinyl', density: 'comfort' } }),
 ]
 
 export const ACCENTS = ['#FF5A1F', '#E5383B', '#F2B705', '#2E8B57', '#2F6FEB', '#171614']
