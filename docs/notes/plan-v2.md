@@ -639,12 +639,18 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       "similar songs", song radio, sweet fades, the path between artists (Plexamp's Sonic Analysis needs a server).
 
 **Low**
-- [ ] `S` Focus / workout sessions: a timer, no-lyrics or high-BPM mix, a summary after. (Left by the autopilot
+- [x] `S` Focus / workout sessions: a timer, no-lyrics or high-BPM mix, a summary after. (Left by the autopilot
       (2026-11-05): no tempo or energy data yet, so no high-BPM mix: the roadmap's "Smarter listening" analysis first;
       the plain timer is the sleep timer.)
       2026-11-12, the tempo half: with the tempo tags of local files, the Mixes page has "Up tempo" (120 BPM and above) and "Slow
       down" (90 and below), 8 songs at least (`mixes.rs`). Left: the session itself (timer, no-lyrics filter, summary), a taste
       call about what a session is. Never seen on a screen.
+      2026-11-13 (night, no owner to ask): Settings › Playback › Focus and workout sessions (off by default) adds "Focus session…" and
+      "Workout session…" to the player's menu. Decided alone (2026-11-13): a session is a length (5 to 240 minutes, asked), a mix and
+      an end: the mix is your most played songs (focus) or your local files tagged 120 BPM and up (workout), never over 10 minutes, none
+      explicit when those are hidden, 8 songs at least; the sleep timer takes the end (the music fades out over the last three
+      minutes, then pauses); a notice then counts the songs. No lyrics filter (no data: the sonic-analysis line) and no summary
+      page. The simplest session, easy to grow. Never tried by ear or on a screen.
 - [x] `S` Hide explicit songs (a filter, YouTube Music's flag when there is one). (Left by the autopilot (2026-11-05):
       no explicit flag is stored. The sources give it (YouTube Music's E badge, Exportify's Explicit column, iTunes'
       `trackExplicitness`): a `Track` field, a schema step and three parsers, an `M`.)

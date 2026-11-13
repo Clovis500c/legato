@@ -790,6 +790,8 @@ export function playerMenu({ controls = true }: { controls?: boolean } = {}): Me
     video && { label: tr('Share this mix as a file…'), icon: <ShareNetwork size={16} />, onSelect: () => void import('./editor/remixFile').then((m) => m.exportRemix()) },
     video && { label: tr('Copy this mix’s link'), icon: <Link size={16} />, onSelect: () => void import('./editor/remixFile').then((m) => m.copyRemixLink()) },
     chaptersMenu(),
+    useSettings.getState().settings.focusSessions && { label: tr('Focus session…'), icon: <Timer size={16} />, onSelect: () => void import('./player/focus').then((m) => m.startSession('focus')) },
+    useSettings.getState().settings.focusSessions && { label: tr('Workout session…'), icon: <Timer size={16} />, onSelect: () => void import('./player/focus').then((m) => m.startSession('workout')) },
     { label: tr('Sleep timer'), icon: <Moon size={16} />, items: sleepMenu() },
     !phoneApp && { label: tr('Alarm…'), icon: <Alarm size={16} />, onSelect: () => (setFull(false), app().go({ name: 'settings', section: 'playback', focus: 'Alarm' })) },
     { label: tr('Mini player'), icon: <PictureInPicture size={16} />, checked: mini || !!video, disabled: !!video, onSelect: () => useSettings.getState().update({ miniPlayer: !mini }) },
