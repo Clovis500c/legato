@@ -151,6 +151,11 @@ code {
 :focus-visible {
   @apply outline-2 outline-offset-2 outline-ink;
 }
+/* Living-room mode: seen from the sofa, the focus is a thick ring. */
+.living-room :focus-visible {
+  outline-width: 4px;
+  outline-offset: 3px;
+}
 
 /* Immersive player: pre-blurred cover drifting slowly (transform only: composited, no re-blur), new cover fades in. */
 @keyframes drift {

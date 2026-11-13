@@ -31,6 +31,7 @@ export function startDeferred(): () => void {
     ['Resume long songs', () => import('../features/player/resumeLong').then((m) => m.startResume())],
     ['Book chapters', () => import('../features/player/chaptersLoad').then((m) => m.startChapters())],
     ['Volume per source', () => import('../features/player/volumePerSource').then((m) => m.startVolumePerSource(() => useSettings.getState().settings.volumePerSource))],
+    ['Living room', () => import('../features/livingRoom/livingRoom').then((m) => m.startLivingRoom(() => useSettings.getState().settings.livingRoom, (f) => useSettings.subscribe(f)))],
     ['A–B loop', () => import('../features/player/abLoop').then((m) => m.startLoop())],
     ['Alarm', () => import('../features/player/alarm').then((m) => m.startAlarm())],
     ['Listening rooms', () => import('../features/rooms/rooms').then((m) => m.startRooms())],

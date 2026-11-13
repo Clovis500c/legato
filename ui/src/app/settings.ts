@@ -129,7 +129,7 @@ function apply(s: Settings) {
   themeVideo(video && coverImage(video.image), video?.fit ?? 'cover', !s.motion)
   themeCss(theme.css ?? '')
   getCurrentWebview()
-    .setZoom(s.zoom / 100)
+    .setZoom((s.livingRoom ? Math.max(s.zoom, 150) : s.zoom) / 100)
     .catch(() => {})
 }
 

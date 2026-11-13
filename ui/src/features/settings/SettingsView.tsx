@@ -777,6 +777,9 @@ function GeneralSection() {
           <Row setting="reopen" label={msg('Reopen where you left off')} sub={tr('Same screen as when the app closed, Now Playing open if it was')}>
             <Toggle label={tr('Reopen where you left off')} checked={s.reopen} onChange={(reopen) => update({ reopen })} />
           </Row>
+          <Row setting="livingRoom" label={msg('Living-room mode')} sub={tr('Larger interface for a PC on a TV: the arrow keys move between controls, Enter presses, Esc goes back')}>
+            <Toggle label={tr('Living-room mode')} checked={s.livingRoom} onChange={(livingRoom) => update({ livingRoom })} />
+          </Row>
           <Row setting="resume" label={msg('Resume playback on launch')} sub={tr('The last song picks up where it stopped, with its queue, when the app opens')}>
             <Toggle label={tr('Resume playback on launch')} checked={s.resume} onChange={(resume) => update({ resume })} />
           </Row>
