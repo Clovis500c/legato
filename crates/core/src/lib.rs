@@ -17,6 +17,7 @@ pub mod musicness;
 pub mod playfile;
 pub mod model;
 pub mod search;
+pub mod session;
 pub mod searchpace;
 pub mod server;
 pub mod share;

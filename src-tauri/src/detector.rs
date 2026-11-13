@@ -1,7 +1,7 @@
 //! Music Detector: 10 s from the microphone or from what the PC plays (`music_player::mic`, memory only), named by
 //! AudD with the user's own token (keychain, never sent back to the interface).
 
-use crate::{AppState, CmdResult, err};
+use crate::{AppState, CmdResult, err, session};
 use music_connectors::audd::{AudD, Offline, Refused};
 use music_core::model::Track;
 use music_player::mic::{self, MicError};
@@ -36,6 +36,15 @@ pub const AUDD_TOKEN: &str = "audd_token";
 const DETECT_SECONDS: f32 = 10.0;
 
 static DETECT_STOP: AtomicBool = AtomicBool::new(false);
+
+/// Which free layers the user turned on (Settings › Add music › Music Detector), asked in this order before AudD.
+#[derive(Debug, Clone, Copy, Default, serde::Deserialize, ts_rs::TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, rename = "DetectLayers")]
+pub struct Layers {
+    /// What the apps playing on this PC say they play (the OS's media session): metadata only, no sound.
+    pub session: bool,
+}
 
 /// What the Music Detector got. `Miss`: why not, worded by the UI.
 #[derive(Debug, Serialize, ts_rs::TS)]
@@ -76,12 +85,19 @@ fn missed(miss: DetectMiss) -> Detection {
 /// Music Detector: listens through the default microphone or to what the PC plays (memory only, never written; the
 /// interface pauses the app's own playback first), AudD names the song. Progress: "detect" events [seconds, level 0..1].
 #[tauri::command]
-pub async fn detect_song(app: tauri::AppHandle, state: State<'_, AppState>, market: String, input: mic::Input) -> CmdResult<Detection> {
+pub async fn detect_song(app: tauri::AppHandle, state: State<'_, AppState>, market: String, input: mic::Input, layers: Layers) -> CmdResult<Detection> {
     // No token: AudD's few free recognitions (user's request 2026-10-22: no account needed to try).
     let token = state.store.load::<String>(AUDD_TOKEN);
     // Trust boundary: a two-letter country.
     let market = if market.len() == 2 && market.chars().all(|c| c.is_ascii_alphabetic()) { market } else { "US".into() };
     DETECT_STOP.store(false, Ordering::Relaxed);
+    // Layer 1: the OS says what plays on this PC, at once, with no listening (only for "This PC": a mic hears a room).
+    if layers.session && input == mic::Input::Pc {
+        let sessions = tauri::async_runtime::spawn_blocking(session::read).await.unwrap_or_default();
+        if let Some(track) = music_core::session::pick(&sessions, "legato") {
+            return Ok(Detection::Found { track });
+        }
+    }
     let clip = tauri::async_runtime::spawn_blocking(move || {
         mic::record(input, DETECT_SECONDS, &DETECT_STOP, |seconds, level| {
             let _ = app.emit_to("main", "detect", (seconds, level));

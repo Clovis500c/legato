@@ -12,7 +12,7 @@ Everything the user made, from one PC to the others:
   library;
 - listening history, mix preferences (Less / Never) and star ratings (the latest one wins, a rating taken off too);
 - Live Editor versions and presets (songs found by their ids on the other side);
-- settings, key by key, except this PC's own: interface size, mini player spot and width, update channel, cover cache size, phone remote, streaming overlay and its visualizer, defaults version, sidebar width, mini player place, close to tray, automatic updates, keyboard shortcuts, the welcome, reopen, microphone choices, Discord, the alarm (both PCs would ring), picture-in-picture's place and opening it on minimize, keep the screen on, the Discord sign-in (its keychain is this PC's), scanning QR codes with the webcam (this PC's camera);
+- settings, key by key, except this PC's own: interface size, mini player spot and width, update channel, cover cache size, phone remote, streaming overlay and its visualizer, defaults version, sidebar width, mini player place, close to tray, automatic updates, keyboard shortcuts, the welcome, reopen, microphone choices, Discord, the alarm (both PCs would ring), picture-in-picture's place and opening it on minimize, keep the screen on, the Discord sign-in (its keychain is this PC's), scanning QR codes with the webcam (this PC's camera), asking this PC's media players first (its media session);
 - the YouTube Music accounts picked for sync;
 - the list of connected services ("Signed in there, not here", with a button to Accounts);
 - the song played last and where it stopped (2026-11-02, `now`: the saved session's current song and position, with its

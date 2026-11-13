@@ -21,6 +21,7 @@ mod background;
 mod backup;
 mod deferred;
 mod detector;
+mod session;
 mod devices;
 mod diag;
 mod lastfm;

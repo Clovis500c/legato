@@ -125,7 +125,7 @@ export function Detector({ onFound }: { onFound: (t: Track) => void }) {
     setPhase({ name: 'listening', seconds: 0, level: 0 })
     const off = await api.onDetect((seconds, level) => setPhase((p) => (p.name === 'listening' ? { name: 'listening', seconds, level } : p)))
     try {
-      const r = await api.detectSong(region(), from)
+      const r = await api.detectSong(region(), from, { session: useSettings.getState().settings.detectorSession })
       if (r.kind === 'found') {
         setPhase({ name: 'idle' })
         onFound(r.track)

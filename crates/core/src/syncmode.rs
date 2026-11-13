@@ -25,10 +25,10 @@ pub const FORMAT: u32 = 1;
 /// Settings that describe this PC, not the user: never synced (the update channel too: one PC can be the Beta one; the
 /// phone remote: a server on this PC's network).
 /// Also the window and tray, global keys, microphone and Discord: one device's own.
-pub const LOCAL_SETTINGS: [&str; 28] = [
+pub const LOCAL_SETTINGS: [&str; 29] = [
     "zoom", "miniSpot", "miniWidth", "defaultsVersion", "updateChannel", "coverCacheMb", "phoneRemote", "streamOverlay", "visualizerOverlay", "miniPlace",
     "sidebarWidth", "closeToTray", "autoUpdate", "shortcuts", "welcomed", "reopen", "detectorInput", "detectorPc", "discord", "alarm", "pipPlace", "pipClassicPlace",
-    "keepScreenOn", "pipOnMinimize", "hiddenNav", "livingRoom", "discordSignIn", "webcamScan",
+    "keepScreenOn", "pipOnMinimize", "hiddenNav", "livingRoom", "discordSignIn", "webcamScan", "detectorSession",
 ];
 /// Library settings row holding when each interface setting last changed (unix ms).
 const TIMES: &str = "sync_times";

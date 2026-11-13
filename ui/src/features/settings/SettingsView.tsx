@@ -851,6 +851,9 @@ function GeneralSection() {
           <Row setting="detector" label={msg('Music Detector')} sub={tr('Identify a song (Add music, or the mic): 10 seconds from the microphone or from what this PC plays, kept in memory, sent once to AudD with your token, nothing saved')}>
             <Toggle label={tr('Music Detector')} checked={s.detector} onChange={(detector) => update({ detector })} />
           </Row>
+          <Row setting="detectorSession" label={msg('Ask this PC’s media players first')} sub={tr('Music Detector on “This PC”: first asks the apps playing here (Spotify, a browser, VLC…) which song they say is playing, through Windows’ media session. Only the title, artist and album are read: no sound is listened to and nothing is sent anywhere.')}>
+            <Toggle label={tr('Ask this PC’s media players first')} checked={s.detectorSession} onChange={(detectorSession) => update({ detectorSession })} />
+          </Row>
         </div>
       </Group>
     </div>
