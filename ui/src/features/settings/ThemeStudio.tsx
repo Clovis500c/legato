@@ -40,7 +40,7 @@ function ThemeThumb({ t }: { t: Palette & Partial<Pick<Theme, 'background' | 'ra
         </span>
       ))}
       <span className="absolute inset-x-0 bottom-0 h-5" style={{ background: see(t.panel), borderTop: `1px solid ${t.line}` }} />
-      <span className="absolute bottom-1 start-1/2 size-3 -translate-x-1/2 rounded-full" style={{ background: t.accent }} />
+      <span className="absolute bottom-1 left-1/2 size-3 -translate-x-1/2 rounded-full" style={{ background: t.accent }} />
     </span>
   )
 }
