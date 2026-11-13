@@ -2,53 +2,68 @@
 
 Where the work stands, for a session with no history here. Read this first, then only the parts of
 [plan-v2.md](plan-v2.md) you need. Rewrite it, short, when a branch, a release or the next step changes; its older
-versions are in git (`git log -p -- docs/notes/handoff.md`). Updated 2026-11-13 (night window closed).
+versions are in git (`git log -p -- docs/notes/handoff.md`). Updated 2026-11-13 (window 6 closed, night).
 
 ## Where things stand
 - **master** = `a5339fed`, pushed. **Beta 1.1.932** came out from it (CI green). **Stable** 1.1.681 (2026-11-05): Windows
   installer, `latest.json`, the Android APK.
 - **platforms** = master + the local commits (`git log origin/master..platforms --oneline | wc -l`, this handoff
-  included). None is pushed. Opus has reread everything; its own commits of the night run after `04f3bc85`.
+  included). The Beta push of these commits comes right after window 6, by the orchestrator: check
+  `git log origin/master..platforms` to see whether it has happened. Opus has reread everything, up to `688a575c`.
 - **The rename is done** (Beta 1.1.932): Music App → Legato in every format (QR prefix `LG1:`, `_legato._tcp`,
   `.legatosync`, `legato://` links). The one catch-up for data on disk is `src-tauri/src/rename.rs` (plus the old Run
   entry in `autostart.rs`, the old-install cleanup in `src-tauri/windows/hooks.nsh`): the plan line « Remove the rename
   catch-up » lists what to delete, once every PC of the owner has the new name.
 - **Cost, accepted**: old share links and QR codes stop working; a PC on an older version is invisible on the local
   network and in the sync folder until it's updated.
-- **Push rule**: before any push, run `pnpm check`, `node scripts/budget.mjs` (JS budget: 306 of 340 kB gzip),
+- **Push rule**: before any push, run `pnpm check`, `node scripts/budget.mjs` (JS budget: 309 of 340 kB gzip),
   `cargo clippy --workspace --all-targets -- -D warnings` (the CI's clippy is newer than the local one), and `pnpm build`
   in `site/`; `git ls-files docs/notes | grep report` must be empty. A push to master is a Beta release.
 - **Stable**: only on the owner's word, never on a Beta's green CI.
 - **winget**: microsoft/winget-pkgs#474341 (Stable 1.1.681): waiting for a moderator. Each new Stable needs a new
   manifest (`packaging/README.md`).
 - **Website** https://clovis500c.github.io/legato/, deployed from master: 18 languages, the Discord invitation included.
-- **Never tried for real**: plan-v2 › Check live in the real app. The owner's finds there come first.
+- **Never tried for real**: plan-v2 › Check live in the real app. The owner's finds there come first. The features of
+  window 6 (below) were never run on a screen, an ear, a real feed or a TV.
 - **Untracked, never committed**: `docs/notes/report-*.md` and `docs/notes/report-inbox.md` (the owner's reports, in
   French) and the old transcript `2026-10-30-001238-…txt` at the root.
 
-## Try first (the owner, Beta 1.1.932)
+## Try first (the owner)
+Everything new is behind a setting that is **off** by default: nothing changes for someone who switches nothing on.
+- **Living-room mode** (Settings › General): larger interface, arrows, gamepad, on-screen keyboard for text. Per PC.
+- **Podcasts** (Settings › Playback): add an open feed's address, play episodes, refresh, « New » and played marks,
+  OPML import and copy. Then **Check podcasts** (Settings › General): a check every 6 h while the app is open.
+- **Audiobooks** (Settings › General): the long local and server files, with progress; speed per book (1 to 2×).
+- **Output device** (player menu, only with 2+ devices) and **practice speed** (player menu, 50 to 100 %).
+- **Diagnostics**: kill the app in Task Manager, start it again, then Settings › About › Copy diagnostics has « the last
+  run ended without closing ».
+- **Covers and theme backgrounds** still show everywhere (the `art` scheme answers our own window only, `9868235b`).
+
+Older tries (Beta 1.1.932), still open:
 - Sync between the two PCs after the rename: a sync folder « Music App Sync » becomes « Legato Sync »; each PC finds the other.
 - A new share link and QR code (`LG1:`), read back on the other PC.
 - Icons in the built app (`d0db29ff`; `pnpm dev` doesn't show the release build's problem).
 - Audiobook chapters (a real `.m4b` from Audible or iTunes; an mp3 book) and sleep at the end of a chapter.
 - YouTube search while signed out: a song is found and plays.
-- Covers and theme backgrounds still show everywhere (`9868235b`: the `art` scheme answers the main window only), and
-  after killing the app in Task Manager, Settings › About › Copy diagnostics has « the last run ended without closing ».
-- Then the settings that are off, to switch on: volume per source (Playback), Focus and workout sessions (player menu),
-  Last.fm suggestions (needs the owner's Last.fm key; asks once a day), the blind test (app menu; a library of 8+ songs).
+- The settings from Beta 1.1.932 that are still off: volume per source (Playback), Focus and workout sessions (player
+  menu), Last.fm suggestions (needs the owner's Last.fm key; asks once a day), the blind test (app menu; a library of 8+ songs).
 
 ## Open
-- **For Opus**: nothing left of the night's list that can be done blind. Done 2026-11-13: the security pass (the `art`
-  scheme serves our own window only), a line for a run that ended without closing, lib.rs and library.rs split. Left,
-  each with its reason in plan-v2: faster CI (wants a branch's CI), sweet fades and reused YouTube embeds (want to be
-  heard in the running app).
+- **For Opus**: the security pass is done (`9f845dcb`), and so are the lib.rs and library.rs splits. Left, each with its
+  reason in plan-v2: faster CI (wants a branch's CI), sweet fades and reused YouTube embeds (want to be heard in the
+  running app). Known leftovers in the reports: a public podcast name that resolves to a private address (DNS rebinding)
+  still passes; with living-room mode on, the gamepad is polled every frame even with no pad plugged in; a book's speed
+  changed while it plays becomes an editor draft.
 - **For the owner**: Discord (the sign-in waits for the application ID); the per-output equalizer and AutoEQ (skipped:
   the engine knows only the default output; AutoEQ needs a data and licence choice); Stream Deck; right-to-left
-  translations; the photos of the big title (which side).
+  translations; the photos of the big title (which side); profiles (what is shared between them); the theme and plugin
+  gallery (trust and hash to set); a TV home screen (design call); tempo-only sonic analysis; sweet fades; reused YouTube
+  embeds.
 
 ## Next
-The first open lines of plan-v2 that need nobody are done or blocked on a choice above. Then Features › Medium, Low,
-Workflow and Optimisation in the plan's order, one line at a time.
+The sweep at the end of Lot 20 in `docs/notes/report-2026-11-12.md` says what is left and what blocks each line. Lines
+that need nobody are few; a later run takes one at a time, from Features › Medium, Low, Workflow and Optimisation in the
+plan's order.
 
 **For Opus**: see Open above.
 **For the owner**: their tries above; Discord's application ID; the equalizer / AutoEQ and Stream Deck decisions;
@@ -102,4 +117,6 @@ The 0.1 releases, 1.0 (the redesign), the rename to Legato (2026-10-29, finished
 the v2 plan (Stable 1.1.479, 2026-10-31); then imports, lyrics, the phone (Android from 2026-11-02, its updates in the
 app), device sync, the visualizer's v2, listening rooms, personal servers, Against Liner, the website in 18 languages;
 Stable 1.1.681 (2026-11-05), Betas up to 1.1.795 (2026-11-07), Beta 1.1.896 (2026-11-12), Beta 1.1.932 (2026-11-13).
+Then, on 2026-11-13 (night, not yet in a Beta at this commit): podcasts by RSS, output device, practice speed, living-room
+mode, an audiobooks page, the podcast check, each behind an off setting.
 The rest: `git log`, the release notes.
