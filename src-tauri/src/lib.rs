@@ -2315,6 +2315,7 @@ fn system_accent() -> Option<SystemAccent> {
 
 #[tauri::command]
 fn restart_app(app: tauri::AppHandle) {
+    crate::diag::closing();
     window_place::save(&app);
     app.restart()
 }

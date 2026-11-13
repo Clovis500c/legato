@@ -419,8 +419,37 @@ pub fn report(now: SystemTime, facts: &[(String, String)], problems: &[Entry], e
     out
 }
 
+/// Left in the app data folder while the app runs, gone at a clean exit: found at the next start, the last run ended
+/// without closing (a native crash, a kill, Windows shutting down), which no panic hook sees.
+pub const RUNNING: &str = "diagnostics.running";
+
+/// This run starts (`version` kept in the marker). The previous run's version when it never closed.
+pub fn mark_running(dir: &Path, version: &str) -> Option<String> {
+    let marker = dir.join(RUNNING);
+    let left = fs::read_to_string(&marker).ok().map(|v| v.trim().chars().take(40).collect());
+    let _ = fs::create_dir_all(dir).and_then(|_| fs::write(&marker, version));
+    left
+}
+
+/// A clean exit (quit, restart, update): the next start finds nothing.
+pub fn mark_closed(dir: &Path) {
+    let _ = fs::remove_file(dir.join(RUNNING));
+}
+
 #[cfg(test)]
 mod tests {
+
+    #[test]
+    fn a_run_that_never_closed_is_found_at_the_next_start() {
+        let dir = std::env::temp_dir().join(format!("legato-running-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        assert_eq!(mark_running(&dir, "1.0.1"), None);
+        // Killed: no mark_closed.
+        assert_eq!(mark_running(&dir, "1.0.2").as_deref(), Some("1.0.1"));
+        mark_closed(&dir);
+        assert_eq!(mark_running(&dir, "1.0.3"), None);
+        let _ = fs::remove_dir_all(&dir);
+    }
     use super::*;
     use std::time::Duration;
 

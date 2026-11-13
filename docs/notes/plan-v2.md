@@ -792,8 +792,11 @@ Most useful first; the tag is the effort.
       passes a key the command doesn't take or leaves out one it requires (a non-`Option` parameter, snake_case read as
       camelCase); a typo made on purpose fails it, and today's wrappers pass. Left: the argument types (the generated ones are
       only checked by `tsc` on the result side).
-- [ ] `M` Diagnostics: a crash that ends the process without a Rust panic (a native fault, a kill) leaves no line; Windows'
-      event log and minidumps are not read.
+- [x] `M` Diagnostics: a crash that ends the process without a Rust panic (a native fault, a kill) leaves no line; Windows'
+      event log and minidumps are not read. 2026-11-13: `diagnostics.running` in the app data folder while the app runs,
+      gone at each clean exit (quit, restart, restore, update); left at the next start = a WARN line with the version that
+      never closed (desktop only). Decided alone: no minidump or event log reading. Can't tell a crash from Windows
+      shutting down or a failed update install (the marker is dropped before the installer runs).
 - [ ] `S` `graphify hook install` (the user's go) so the graph stays fresh without asking; then drop the `.gitattributes`
       line it adds (the graph isn't tracked).
 

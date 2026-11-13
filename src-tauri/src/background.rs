@@ -120,6 +120,7 @@ pub fn quit(app: &AppHandle) {
     QUITTING.store(true, Ordering::Relaxed);
     wake(app);
     let _ = crate::ytwatch::close(app);
+    crate::diag::closing();
     crate::window_place::save(app);
     app.exit(0);
 }

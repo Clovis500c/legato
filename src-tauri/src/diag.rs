@@ -28,9 +28,9 @@ const WRITER: &str = "diag";
 /// Nothing is opened here, the writer thread opens the file at its first line.
 pub fn init(dir: &Path, version: &str) {
     let (tx, rx) = channel::<Job>();
-    let dir = dir.to_path_buf();
+    let folder = dir.to_path_buf();
     let spawned = std::thread::Builder::new().name(WRITER.into()).spawn(move || {
-        let mut file = Log::new(dir);
+        let mut file = Log::new(folder);
         for job in rx {
             match job {
                 Job::Line(line) => {
@@ -50,6 +50,20 @@ pub fn init(dir: &Path, version: &str) {
     }
     keep_panics();
     info("app", &format!("started {version}"), "");
+    // Desktop only: Android ends a backgrounded app itself, every time.
+    #[cfg(desktop)]
+    if let Some(was) = log::mark_running(DIR.get_or_init(|| dir.to_path_buf()), version) {
+        warn("app", "the last run ended without closing (a crash, a kill or Windows shutting down)", &was);
+    }
+}
+
+static DIR: OnceLock<std::path::PathBuf> = OnceLock::new();
+
+/// Every clean exit (quit, restart, update) calls it before the process ends.
+pub fn closing() {
+    if let Some(dir) = DIR.get() {
+        log::mark_closed(dir);
+    }
 }
 
 /// A panic anywhere lands in the log (thread, place, message), then the default hook goes on as before.

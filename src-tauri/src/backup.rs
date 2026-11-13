@@ -15,6 +15,7 @@ pub async fn library_backup(app: AppHandle, path: String) -> CmdResult<()> {
 #[tauri::command]
 pub async fn library_restore(app: AppHandle, state: State<'_, AppState>, path: String) -> CmdResult<()> {
     state.lib().restore(Path::new(&path)).map_err(err)?;
+    crate::diag::closing();
     crate::window_place::save(&app);
     app.restart()
 }
