@@ -15,6 +15,7 @@ export const WHY_LABELS: Record<Why, string> = {
   skipParts: msg('Skip non-music parts'),
   scrobbling: msg('Scrobbling'),
   detector: msg('Music Detector'),
+  discord: 'Discord',
   updates: msg('Updates'),
   adLists: msg('Ad and tracker lists'),
   plugin: msg('Plugins'),

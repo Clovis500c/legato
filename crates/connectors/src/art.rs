@@ -73,6 +73,8 @@ fn service(url: &str) -> bool {
                     || (h == "coverartarchive.org" && u.path().starts_with("/release-group/"))
                     || ((h == "archive.org" || h.ends_with(".us.archive.org")) && u.path().contains("/mbid-"))
                     || (h == "music.youtube.com" && u.path().starts_with("/image/"))
+                    // The signed-in Discord account's picture and banner (Settings › Accounts).
+                    || (h == "cdn.discordapp.com" && (u.path().starts_with("/avatars/") || u.path().starts_with("/banners/")))
             })
     })
 }
@@ -329,10 +331,10 @@ mod tests {
 
     #[test]
     fn allows_service_image_hosts_only() {
-        for ok in ["https://mosaic.scdn.co/60/ab", "https://image-cdn-ak.spotifycdn.com/image/ab", "https://i.ytimg.com/vi/x/hqdefault.jpg", "https://lh3.googleusercontent.com/a=w544-h544", "https://yt3.ggpht.com/p=s88", "https://is1-ssl.mzstatic.com/image/a/600x600bb.jpg", "https://i.scdn.co/image/ab", "https://cdn-images.dzcdn.net/images/cover/a91071665368a95007d4c40288e2074e/500x500-000000-80-0-0.jpg", "https://e-cdns-images.dzcdn.net/images/cover/x/250x250.jpg", "https://i1.sndcdn.com/artworks-000067273316-smsiqx-t500x500.jpg", "https://www.gstatic.com/youtube/media/ytm/images/pbg/liked-songs-delhi-576.png", "https://music.youtube.com/image/mixart?r=EN", "https://coverartarchive.org/release-group/76df3287-6cda-33eb-8e9a-044b5e15ffdd/front-250", "https://archive.org/download/mbid-1/mbid-1-2_thumb250.jpg", "https://ia800000.us.archive.org/3/items/mbid-1/mbid-1-2_thumb250.jpg"] {
+        for ok in ["https://mosaic.scdn.co/60/ab", "https://image-cdn-ak.spotifycdn.com/image/ab", "https://i.ytimg.com/vi/x/hqdefault.jpg", "https://lh3.googleusercontent.com/a=w544-h544", "https://yt3.ggpht.com/p=s88", "https://is1-ssl.mzstatic.com/image/a/600x600bb.jpg", "https://i.scdn.co/image/ab", "https://cdn-images.dzcdn.net/images/cover/a91071665368a95007d4c40288e2074e/500x500-000000-80-0-0.jpg", "https://e-cdns-images.dzcdn.net/images/cover/x/250x250.jpg", "https://i1.sndcdn.com/artworks-000067273316-smsiqx-t500x500.jpg", "https://www.gstatic.com/youtube/media/ytm/images/pbg/liked-songs-delhi-576.png", "https://music.youtube.com/image/mixart?r=EN", "https://coverartarchive.org/release-group/76df3287-6cda-33eb-8e9a-044b5e15ffdd/front-250", "https://archive.org/download/mbid-1/mbid-1-2_thumb250.jpg", "https://ia800000.us.archive.org/3/items/mbid-1/mbid-1-2_thumb250.jpg", "https://cdn.discordapp.com/avatars/80351110224678912/a_8342729096ea3675442027381ff50dfe.png?size=256", "https://cdn.discordapp.com/banners/1/abc.png?size=600"] {
             assert!(allowed(ok), "{ok}");
         }
-        for bad in ["https://spotifycdn.com.evil.example/x", "http://i.ytimg.com/x", "https://evil.example/x.jpg", "https://googleusercontent.com.evil.example/x", "https://dzcdn.net/x.jpg", "https://evil.dzcdn.net/x.jpg", "https://sndcdn.com/x.jpg", "https://evil.sndcdn.com/x.jpg", "https://api.deezer.com/album/1/image", "file:///C:/x.jpg", "https://127.0.0.1/x", "https://www.gstatic.com/other/x.png", "https://music.youtube.com/watch?v=x", "https://coverartarchive.org/other", "https://archive.org/details/anything", "https://evil.archive.org.example/mbid-1/x.jpg", "http://coverartarchive.org/release-group/x"] {
+        for bad in ["https://spotifycdn.com.evil.example/x", "http://i.ytimg.com/x", "https://evil.example/x.jpg", "https://googleusercontent.com.evil.example/x", "https://dzcdn.net/x.jpg", "https://evil.dzcdn.net/x.jpg", "https://sndcdn.com/x.jpg", "https://evil.sndcdn.com/x.jpg", "https://api.deezer.com/album/1/image", "file:///C:/x.jpg", "https://127.0.0.1/x", "https://www.gstatic.com/other/x.png", "https://music.youtube.com/watch?v=x", "https://coverartarchive.org/other", "https://archive.org/details/anything", "https://evil.archive.org.example/mbid-1/x.jpg", "http://coverartarchive.org/release-group/x", "https://cdn.discordapp.com/attachments/1/2/x.png", "https://discordapp.com/avatars/1/x.png"] {
             assert!(!allowed(bad), "{bad}");
         }
     }

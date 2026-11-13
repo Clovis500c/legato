@@ -4,7 +4,7 @@
 use crate::oauth::{OAuthClient, OAuthConfig, Opener};
 use anyhow::{Result, bail};
 use music_core::model::SecretStore;
-use music_core::share::Profile;
+use music_core::share::{DiscordCard, Profile};
 use reqwest::Method;
 use serde::Deserialize;
 use std::sync::Arc;
@@ -26,6 +26,19 @@ struct Me {
     id: String,
     username: String,
     global_name: Option<String>,
+    avatar: Option<String>,
+    banner: Option<String>,
+    accent_color: Option<u32>,
+}
+
+/// Discord's image host: the only one the card's pictures come from (`art.rs` lets the same host through).
+const CDN: &str = "https://cdn.discordapp.com";
+
+/// An image address from an id and a hash: Discord's hashes are letters, digits and `_` (`a_` marks an animated one:
+/// the still PNG is asked for). Anything else is no picture. Trust boundary.
+fn image(kind: &str, id: &str, hash: Option<String>, size: u32) -> Option<String> {
+    let hash = hash.filter(|h| (1..=64).contains(&h.len()) && h.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'_'))?;
+    Some(format!("{CDN}/{kind}/{id}/{hash}.png?size={size}"))
 }
 
 impl DiscordLogin {
@@ -55,20 +68,31 @@ impl DiscordLogin {
     }
 
     /// The browser opens Discord's page; the user allows; the profile comes back (5 minutes to answer).
-    pub async fn connect(&self) -> Result<Profile> {
+    pub async fn connect(&self) -> Result<(Profile, DiscordCard)> {
         self.oauth.connect_on(self.port).await?;
-        self.profile().await
+        self.identity().await
     }
 
     /// Who the signed-in account is. Trust boundary: Discord's answer is checked like any other input.
     pub async fn profile(&self) -> Result<Profile> {
+        Ok(self.identity().await?.0)
+    }
+
+    /// The profile and the card, from one `users/@me`.
+    pub async fn identity(&self) -> Result<(Profile, DiscordCard)> {
         let me: Me = self.oauth.json(Method::GET, &format!("{}/users/@me", self.api), None).await?;
         let name: String = me.global_name.filter(|n| !n.trim().is_empty()).unwrap_or(me.username).trim().chars().take(32).collect();
         let p = Profile { id: me.id, name };
         if !p.valid() {
             bail!("Discord sent a profile Legato cannot read");
         }
-        Ok(p)
+        let card = DiscordCard {
+            name: p.name.clone(),
+            avatar: image("avatars", &p.id, me.avatar, 256),
+            banner: image("banners", &p.id, me.banner, 600),
+            accent: me.accent_color.filter(|c| *c <= 0xFF_FFFF),
+        };
+        Ok((p, card))
     }
 }
 
@@ -123,7 +147,8 @@ mod tests {
         let store: Arc<dyn SecretStore> = Arc::new(MemoryStore::default());
         let seen: Seen = Default::default();
         let login = DiscordLogin::with_urls("CID", store, opener(Some("CODE"), seen.clone()), &server.url(), &server.url(), 0);
-        let p = login.connect().await.unwrap();
+        let (p, card) = login.connect().await.unwrap();
+        assert_eq!(card, DiscordCard { name: "Nelly".into(), avatar: None, banner: None, accent: None });
         assert_eq!(p, Profile { id: "80351110224678912".into(), name: "Nelly".into() });
         token.assert_async().await;
         me.assert_async().await;
@@ -166,5 +191,21 @@ mod tests {
         server.mock("GET", "/users/@me").with_body(r#"{"id":"../x","username":"nelly"}"#).create_async().await;
         let login = DiscordLogin::with_urls("CID", crate::oauth::tests::valid_store("discord-login"), crate::oauth::tests::no_open(), &server.url(), &server.url(), 0);
         assert!(login.profile().await.is_err());
+    }
+
+    #[tokio::test]
+    async fn the_card_carries_the_avatar_banner_and_accent_and_nothing_a_picture_cannot_be() {
+        let mut server = mockito::Server::new_async().await;
+        server
+            .mock("GET", "/users/@me")
+            .with_body(r#"{"id":"80351110224678912","username":"nelly","global_name":"Nelly","avatar":"a_8342729096ea3675442027381ff50dfe","banner":"../x/evil","accent_color":3447003,"email":"never@read.me"}"#)
+            .create_async()
+            .await;
+        let login = DiscordLogin::with_urls("CID", crate::oauth::tests::valid_store("discord-login"), crate::oauth::tests::no_open(), &server.url(), &server.url(), 0);
+        let (_, card) = login.identity().await.unwrap();
+        assert_eq!(card.avatar.as_deref(), Some("https://cdn.discordapp.com/avatars/80351110224678912/a_8342729096ea3675442027381ff50dfe.png?size=256"));
+        assert_eq!(card.banner, None);
+        assert_eq!(card.accent, Some(3_447_003));
+        assert!(!format!("{card:?}").contains("never@read.me"));
     }
 }

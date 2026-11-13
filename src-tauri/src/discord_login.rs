@@ -4,11 +4,13 @@
 
 use crate::{AppState, CmdResult, err};
 use music_connectors::discord_login::DiscordLogin;
-use music_core::share::Profile;
+use music_core::share::{DiscordCard, Profile};
 use tauri::State;
 
 /// Library setting holding the signed-in profile.
 pub const PROFILE: &str = "discordProfile";
+/// Library setting holding the card Settings shows (picture and banner addresses): never put in a link.
+const CARD: &str = "discordCard";
 
 fn login(state: &AppState) -> DiscordLogin {
     DiscordLogin::new(state.store.clone(), state.open.clone())
@@ -40,24 +42,42 @@ pub fn current(state: &AppState) -> Option<Profile> {
     profile
 }
 
-/// The signed-in profile (None = not signed in).
+fn save(state: &AppState, profile: &Profile, card: &DiscordCard) -> CmdResult<()> {
+    state.lib().set_setting(PROFILE, &serde_json::to_value(profile).map_err(err)?).map_err(err)?;
+    state.lib().set_setting(CARD, &serde_json::to_value(card).map_err(err)?).map_err(err)
+}
+
+/// The signed-in account's card (None = not signed in). A sign-in from before the card existed is read once more.
 #[tauri::command]
-pub async fn discord_login_status(state: State<'_, AppState>) -> CmdResult<Option<Profile>> {
-    Ok(current(&state))
+pub async fn discord_login_status(state: State<'_, AppState>) -> CmdResult<Option<DiscordCard>> {
+    let Some(profile) = current(&state) else { return Ok(None) };
+    let card = state.lib().setting(CARD).ok().flatten().and_then(|v| serde_json::from_value::<DiscordCard>(v).ok());
+    if let Some(card) = card {
+        return Ok(Some(card));
+    }
+    Ok(Some(match login(&state).identity().await {
+        Ok((profile, card)) => {
+            save(&state, &profile, &card)?;
+            card
+        }
+        // Offline: the name alone, a card with no pictures; asked again next time.
+        Err(_) => DiscordCard { name: profile.name, avatar: None, banner: None, accent: None },
+    }))
 }
 
 /// Discord's page opens in the browser; the answer comes back on `REDIRECT` (5 minutes to allow it).
 #[tauri::command]
-pub async fn discord_login_connect(state: State<'_, AppState>) -> CmdResult<Profile> {
-    let profile = login(&state).connect().await.map_err(err)?;
-    state.lib().set_setting(PROFILE, &serde_json::to_value(&profile).map_err(err)?).map_err(err)?;
-    Ok(profile)
+pub async fn discord_login_connect(state: State<'_, AppState>) -> CmdResult<DiscordCard> {
+    let (profile, card) = login(&state).connect().await.map_err(err)?;
+    save(&state, &profile, &card)?;
+    Ok(card)
 }
 
-/// Tokens and profile forgotten here (the app stays listed in the user's Discord settings until they remove it there).
+/// Tokens, profile and card forgotten here (the app stays listed in the user's Discord settings until they remove it there).
 #[tauri::command]
 pub async fn discord_login_disconnect(state: State<'_, AppState>) -> CmdResult<()> {
     login(&state).disconnect().map_err(err)?;
+    state.lib().set_setting(CARD, &serde_json::Value::Null).map_err(err)?;
     state.lib().set_setting(PROFILE, &serde_json::Value::Null).map_err(err)
 }
 

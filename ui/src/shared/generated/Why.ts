@@ -3,4 +3,4 @@
 /**
  * Why, by host: the service or job it belongs to (the website's privacy rows).
  */
-export type Why = "youTube" | "googleSignIn" | "spotify" | "connectSpotify" | "appleMusic" | "deezer" | "soundCloud" | "covers" | "lyrics" | "skipParts" | "scrobbling" | "detector" | "updates" | "adLists" | "plugin" | "other";
+export type Why = "youTube" | "googleSignIn" | "spotify" | "connectSpotify" | "appleMusic" | "deezer" | "soundCloud" | "covers" | "lyrics" | "skipParts" | "scrobbling" | "detector" | "discord" | "updates" | "adLists" | "plugin" | "other";

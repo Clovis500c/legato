@@ -31,6 +31,18 @@ pub struct Profile {
     pub name: String,
 }
 
+/// What Settings › Accounts shows of the signed-in Discord account: a profile card. Never carried in a link (only `Profile` is).
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize, ts_rs::TS)]
+#[ts(export)]
+pub struct DiscordCard {
+    pub name: String,
+    /// cdn.discordapp.com addresses (built here from the account's id and image hashes), shown through the `art` scheme.
+    pub avatar: Option<String>,
+    pub banner: Option<String>,
+    /// The banner colour Discord keeps for an account with no banner: 0xRRGGBB.
+    pub accent: Option<u32>,
+}
+
 impl Profile {
     /// Trust boundary: an id of digits, a name without control characters.
     pub fn valid(&self) -> bool {

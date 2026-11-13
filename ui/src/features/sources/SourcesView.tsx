@@ -4,6 +4,7 @@ import { open } from '@tauri-apps/plugin-dialog'
 import { useEffect, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
+import { DiscordAccount } from './DiscordAccount'
 import { AppleImport } from '../add/AppleConnect'
 import { openAppInfo } from '../add/phoneMic'
 import { MUSIC_REFUSED, phoneFolders, withPhone } from '../add/phoneMusic'
@@ -801,6 +802,8 @@ export function SourcesView() {
         <AppleWeb />
         <LastfmRow />
         <ListenbrainzRow />
+        {/* Discord's sign-in is the PC's only (the loopback page of its OAuth). */}
+        {!phoneApp && <DiscordAccount />}
         <ServerRow />
         <LocalFolders />
       </div>
