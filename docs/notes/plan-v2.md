@@ -727,7 +727,9 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       2026-11-13, the books apart from music: Settings › General › Audiobooks (off) adds Audiobooks to the app menu: a page of the library's long
       files (tagged audiobook / spoken word at 10 minutes and more, or two hours and more; this PC's or a server's), longest first, with where each
       was left and the time left (`books/books.ts`, the resume points of `resumeLong.ts`). Decided alone (2026-11-13): the books are still in
-      Songs too (hiding them there would change a list people know). Never seen on a screen. Left: a speed kept per book.
+      Songs too (hiding them there would change a list people know). Never seen on a screen.
+      2026-11-13, a speed per book: 1, 1.25, 1.5, 2 on each book of the page (this PC, `books/speed.ts`); the book starts at it through the
+      Live Editor's tempo (pitch kept) unless the song has an edit or a draft of its own (`editor.ts` `bookEffects`); the one playing moves at once.
       2026-11-13, the other chapter forms: QuickTime chapter tracks (the text track a `tref/chap` points to, read from its sample
       table: Apple's and Audible's books) when a file has no `chpl`, and the `CHAP` frames of an mp3's ID3v2.3 / v2.4 tag (title
       from `TIT2`, any text encoding); `.mp3` now asks too. No new dependency (`core/chapters.rs`). Tested on files built in the

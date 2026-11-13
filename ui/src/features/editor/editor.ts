@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { api, type Edit, type Effects } from '../../shared/api'
 import { cleanEffects, NEUTRAL, songKey } from '../player/effects'
+import { speedFor } from '../books/speed'
 import { usePlayer } from '../player/store'
 
 /**
@@ -48,7 +49,13 @@ export async function loadSong(song: string | null) {
     const from = versions.some((v) => v.id === draft.version) ? draft.version : null
     return useEditor.setState({ versions, presets, versionId: from, effects: cleanEffects(draft.effects), dirty: true })
   }
-  useEditor.setState({ versions, presets, versionId: active?.id ?? null, effects: active ? parse(active) : NEUTRAL, dirty: false })
+  useEditor.setState({ versions, presets, versionId: active?.id ?? null, effects: active ? parse(active) : bookEffects(song), dirty: false })
+}
+
+/** A book with a speed kept on the Audiobooks page starts at it; any other song as is. */
+function bookEffects(song: string | null): Effects {
+  const tempo = speedFor(song)
+  return tempo === 1 ? NEUTRAL : { ...NEUTRAL, tempo }
 }
 
 // Unsaved settings go to the library a moment after the last change (and right away when the song changes or the
