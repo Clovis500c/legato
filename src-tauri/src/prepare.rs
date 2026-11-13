@@ -104,6 +104,42 @@ pub async fn local_prepare(state: State<'_, AppState>, paths: Vec<String>, silen
     Ok(())
 }
 
+/// What a local song's ends hold, as the earlier measures kept them (silence at the start and the end, loudness).
+#[derive(serde::Serialize, ts_rs::TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct SongEnds {
+    pub track_id: i64,
+    /// Silence before the music, ms.
+    pub head_ms: u64,
+    /// Silence after the music, ms.
+    pub tail_ms: u64,
+    /// Integrated loudness, LUFS; none for a file measured silent.
+    pub lufs: Option<f32>,
+}
+
+/// The kept silence `(start, end, total)` and loudness of a file → its ends.
+fn ends_of(track_id: i64, silence: (u64, Option<u64>, u64), lufs: Option<f32>) -> SongEnds {
+    let (start, end, total) = silence;
+    SongEnds { track_id, head_ms: start.min(total), tail_ms: end.map_or(0, |e| total.saturating_sub(e)), lufs }
+}
+
+/// What is already known of these songs' ends (local files that played or were measured; nothing is decoded here), for
+/// Settings › Playback › Sweet fades. Eight songs at most; a song with no measure is left out.
+#[tauri::command]
+pub async fn song_ends(state: State<'_, AppState>, track_ids: Vec<i64>) -> Result<Vec<SongEnds>, String> {
+    let lib = state.lib();
+    let mut out = Vec::new();
+    for id in track_ids.into_iter().take(8) {
+        let Some(path) = lib.local_path(id).map_err(|e| e.to_string())? else { continue };
+        let Some(modified) = modified(Path::new(&path)) else { continue };
+        let Some(silence) = lib.cached_silence(&path, modified).ok().flatten() else { continue };
+        let lufs = lib.cached_loudness(&path, modified).ok().flatten().and_then(|(lufs, _)| lufs);
+        out.push(ends_of(id, silence, lufs));
+    }
+    Ok(out)
+}
+
 fn busy() -> std::sync::MutexGuard<'static, Option<HashSet<PathBuf>>> {
     BUSY.lock().unwrap_or_else(PoisonError::into_inner)
 }
@@ -150,4 +186,20 @@ pub async fn local_waveform(state: State<'_, AppState>, path: String) -> Result<
     let app = state.app.clone();
     let found = tauri::async_runtime::spawn_blocking(move || measure(&app, &path, m)).await.map_err(|e| e.to_string())?;
     Ok(found.map(|(_, _, shape)| shape).filter(|s| !s.is_empty()))
+}
+
+#[cfg(test)]
+mod ends_tests {
+    use super::ends_of;
+
+    #[test]
+    fn silences_become_head_and_tail() {
+        let e = ends_of(7, (1200, Some(178_000), 180_000), Some(-14.5));
+        assert_eq!((e.track_id, e.head_ms, e.tail_ms, e.lufs), (7, 1200, 2000, Some(-14.5)));
+        let none = ends_of(8, (0, None, 90_000), None);
+        assert_eq!((none.head_ms, none.tail_ms), (0, 0));
+        // A forged cache row cannot make a negative tail or a head past the end.
+        let odd = ends_of(9, (500_000, Some(900_000), 100_000), None);
+        assert_eq!((odd.head_ms, odd.tail_ms), (100_000, 0));
+    }
 }

@@ -6,7 +6,8 @@ import type { Box } from '../../shared/artbox'
 import { region } from '../../shared/format'
 import { endListen, progress, startListen } from './listens'
 import { albumGoesOn, demoGain, demoLength, fadeGain, NO_FADE, overlapDue, PICK_IN_S, type Fade } from './fade'
-import { sweetSeconds } from './sweet'
+import { sweetFade } from './sweet'
+import { endsOf } from './sweetData'
 import { insertAt, keepQueued, moveInOrder, moveToSlot, nextIndex, playOrder, queued, tooLong, type Repeat } from './queue'
 import { RECENT_S, smartOrder } from './shuffle'
 import { isNative, nativePath, SERVER_PATH, serverDown, toFind, vias, viaOfPath, type Via } from './sources'
@@ -235,7 +236,7 @@ export function songFade(p: PlayerState): Fade {
   let fade = p.fade
   if (p.sweetFades && p.durationMs && p.positionMs >= p.durationMs - SWEET_WINDOW_MS) {
     const i = next()
-    if (i !== null) fade = { ...fade, out: sweetSeconds(p.list[p.index], p.list[i], fade.out) }
+    if (i !== null) fade = { ...fade, out: sweetFade(endsOf(p.list[p.index]), endsOf(p.list[i]), fade).out }
   }
   if (!p.gaplessAlbums || !overlapDue(p.positionMs, p.durationMs, fade)) return fade
   return albumGoesOnAt(p, next()) ? { ...fade, out: 0 } : fade
@@ -244,7 +245,7 @@ export function songFade(p: PlayerState): Fade {
 const SWEET_WINDOW_MS = 15_000
 
 /** Seconds of fade in for song `t` coming on its own after the one playing now: the set ones, or the pair's under Sweet fades. */
-const fadeInFor = (p: PlayerState, t: LibraryTrack) => (p.sweetFades ? sweetSeconds(p.list[p.index], t, p.fade.in) : p.fade.in)
+const fadeInFor = (p: PlayerState, t: LibraryTrack) => (p.sweetFades ? sweetFade(endsOf(p.list[p.index]), endsOf(t), p.fade).in : p.fade.in)
 
 // Engine status lags commands: until it reports one of these paths, statuses are stale. [] = ignore all.
 let expect: string[] | null = null

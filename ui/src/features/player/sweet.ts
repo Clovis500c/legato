@@ -36,3 +36,31 @@ export function sweetSeconds(a: { bpm?: number } | undefined, b: { bpm?: number 
   // A phrase far longer than what was asked (a very slow song, a short fade): the user's seconds stand.
   return s > MAX_S || s > base * 2 ? base : Math.max(MIN_S, s)
 }
+
+/** What is known of a song's ends: its tempo, the silence after its music (ms) and its loudness (LUFS). */
+export interface Ends {
+  bpm?: number
+  tailMs?: number
+  lufs?: number
+}
+
+/** A song that ends in this much silence already fades itself out: a long crossfade would only overlap the quiet. */
+const TAIL_MS = 3000
+const TAIL_FADE_S = 2
+/** Loudness gap (dB) under which two songs meet softly enough, and the most it stretches a fade (x1.5 at 12 dB more). */
+const LEVEL_DB = 6
+
+/**
+ * The fade out and fade in between `a` and `b` for Settings › Playback › Sweet fades: `sweetSeconds`' tempo reading,
+ * stretched up to half again when the songs' loudness differ by more than 6 dB (a quiet song after a loud one comes in
+ * gently), and the fade out cut to 2 s when `a` ends in 3 s of silence or more (it fades out by itself). What is not
+ * known is left as the user set it. Loudness and silences come from the files' earlier measures (local songs only).
+ */
+export function sweetFade(a: Ends | undefined, b: Ends | undefined, base: { out: number; in: number }): { out: number; in: number } {
+  const gap = a?.lufs !== undefined && b?.lufs !== undefined ? Math.abs(a.lufs - b.lufs) : 0
+  const gentle = gap > LEVEL_DB ? 1 + Math.min(gap - LEVEL_DB, LEVEL_DB) / (2 * LEVEL_DB) : 1
+  const stretch = (s: number) => (s > 0 ? Math.min(s * gentle, MAX_S) : 0)
+  let out = stretch(sweetSeconds(a, b, base.out))
+  if (a?.tailMs !== undefined && a.tailMs >= TAIL_MS && out > 0) out = Math.min(out, TAIL_FADE_S)
+  return { out, in: stretch(sweetSeconds(a, b, base.in)) }
+}
