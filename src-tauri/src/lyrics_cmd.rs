@@ -255,3 +255,10 @@ pub async fn search_lyrics(state: State<'_, AppState>, q: String) -> CmdResult<V
     }
     state.lib().lyrics_search(&phrase, 50).map_err(err)
 }
+
+/// A song's words translated into `to` (the interface's language) by MyMemory, line for line. Only called after the user agreed
+/// in the dialog and only with Settings › Playback › Translate lyrics on (the interface never offers it otherwise).
+#[tauri::command]
+pub async fn translate_lyrics(lines: Vec<String>, to: String) -> CmdResult<Vec<String>> {
+    music_connectors::translate::MyMemory::default().translate(&lines, None, &to).await.map_err(err)
+}

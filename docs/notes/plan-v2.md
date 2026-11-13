@@ -569,6 +569,14 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - [ ] `M` Lyrics translation in the panel (a service sends text: add the website's privacy row first).
       Owner's call (2026-11-01): which service gets the lyrics (the user's own DeepL or Google key, a LibreTranslate
       server); Windows gives apps no offline translator. The panel side is small once that's chosen.
+      2026-11-13: built on MyMemory (`connectors/translate.rs`, no key, 500 bytes a request, ~5 000 characters a day per address
+      without an email), behind Settings › Playback › Translate lyrics (off by default): a "Translate…" button on the lyrics'
+      source line, a box that says what goes where, and the words leave only after "Send and translate"; the result shows
+      each line over its translation in the box, never kept. The site's Lyrics privacy row says it. Decided alone
+      (2026-11-13): MyMemory, because it is the one free service with no key and no account of ours; its daily quota fits a
+      few songs a day, so a user's own DeepL key or a LibreTranslate server stays a possible later swap (one file). Tested with
+      mockito only (chunks, quota, refusal, shape), never against the real service. Left: the translation under the lines
+      inside the panel itself (it shows in the box), a language other than the interface's.
 - [x] `M` MusicBrainz lookup that fills Edit song info (album, year, numbers from a release): a new host, the website's
       privacy row first.
       2026-11-11: Edit song info (one song) › Look up on MusicBrainz: one recording search by title and artist

@@ -401,6 +401,8 @@ export interface Settings {
   crossfade: number
   /** Songs longer than this many minutes skipped as the queue moves on (0 = off). */
   skipLong: number
+  /** Adds Translate… under the lyrics: after the user agrees each time, the song's words go to MyMemory (off: nothing is ever sent). */
+  translateLyrics: boolean
   /** Sets each fade between two songs from their tempos (`sweet.ts`): whole phrases of beats when they match, short when they clash (off: the fade set above, always). */
   sweetFades: boolean
   /** Asks YouTube for the chapters of a long video that plays (its markers, else the times in its description): Chapters in the player's menu (off: nothing asked). */
@@ -621,6 +623,7 @@ export const DEFAULTS: Settings = {
   libraryWide: false,
   crossfade: 2,
   skipLong: 0,
+  translateLyrics: false,
   sweetFades: false,
   youtubeChapters: false,
   volumePerDevice: false,
@@ -885,6 +888,7 @@ export function sanitize(raw: unknown): Settings {
     pipClassic: typeof r.pipClassic === 'boolean' ? r.pipClassic : DEFAULTS.pipClassic,
     crossfade: typeof r.crossfade === 'number' && Number.isFinite(r.crossfade) ? Math.min(12, Math.max(0, Math.round(r.crossfade))) : DEFAULTS.crossfade,
     skipLong: typeof r.skipLong === 'number' && Number.isFinite(r.skipLong) ? Math.min(60, Math.max(0, Math.round(r.skipLong))) : DEFAULTS.skipLong,
+    translateLyrics: r.translateLyrics === true,
     sweetFades: r.sweetFades === true,
     youtubeChapters: r.youtubeChapters === true,
     volumePerDevice: r.volumePerDevice === true,

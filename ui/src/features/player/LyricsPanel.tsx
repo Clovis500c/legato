@@ -15,6 +15,7 @@ import { positionNow, usePosition } from './Progress'
 import { useNowTrack, usePlayer } from './store'
 import { CARD } from './UpNext'
 import { locale, tr } from '../../shared/i18n/i18n'
+import { TranslateLyrics } from './TranslateLyrics'
 
 /** Lines light up this much early: a line shows as it's sung, not after. */
 const LEAD_MS = 200
@@ -264,6 +265,7 @@ export function LyricsPanel({ onHide, onUpNext, className = CARD, heading }: { o
   // Timing fixed by hand for this song (Settings, synced with the other PCs).
   const song = songKey(now)
   const fix = useSettings((s) => (song && s.settings.lyricsSync[song]) || NO_FIX)
+  const translateOn = useSettings((s) => s.settings.translateLyrics)
   const [tuning, setTuning] = useState(false)
   const taps = useRef<{ lyric: number; song: number }[]>([])
   useEffect(() => {
@@ -417,6 +419,7 @@ export function LyricsPanel({ onHide, onUpNext, className = CARD, heading }: { o
           >
             {looking ? tr('Looking for other lyrics…') : l.own ? tr('Lyrics from the song’s own file') : tr('Lyrics: {source}', { source: l.source })}
           </button>
+          {translateOn && <TranslateLyrics lyrics={l} />}
           {!l.lines.length && l.plain && (
             <span title={tr('No timings for this song: the text follows the song roughly.')} className="rounded-full border border-line px-1.5 py-px">
               {tr('Not synced')}
