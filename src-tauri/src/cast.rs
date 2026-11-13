@@ -11,15 +11,21 @@ use serde::Serialize;
 use std::io::{Read, Seek, SeekFrom, Write};
 use std::net::{Ipv4Addr, SocketAddr, TcpListener, TcpStream};
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use tauri::State;
 use url::Url;
 
 /// How long the search listens for answers.
 const SEARCH: Duration = Duration::from_millis(2500);
 const CHUNK: usize = 64 * 1024;
+/// The file server closes when nothing has been connected to it for this long (a renderer holds its connection while it
+/// plays; a paused one that buffered the whole song needs none), so no listener lingers after a song or a forgotten cast.
+const IDLE: Duration = Duration::from_secs(300);
+/// Descriptions opened at once during a search, and the whole search's limit.
+const PARALLEL: usize = 8;
+const SCAN_LIMIT: Duration = Duration::from_secs(8);
 
 #[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
@@ -105,8 +111,25 @@ fn answer(mut stream: TcpStream, path: &Path, mime: &str, token: &str) -> std::i
     Ok(())
 }
 
+/// Connections open now and when the last one closed: what the idle watch looks at.
+struct Busy {
+    open: AtomicUsize,
+    last: Mutex<Instant>,
+}
+
+impl Busy {
+    fn done(&self) {
+        *self.last.lock().unwrap() = Instant::now();
+        self.open.fetch_sub(1, Ordering::Relaxed);
+    }
+
+    fn idle_for(&self) -> Option<Duration> {
+        (self.open.load(Ordering::Relaxed) == 0).then(|| self.last.lock().unwrap().elapsed())
+    }
+}
+
 /// Serves `path` on `listener` until `stop`: private peers only, the token in the path.
-fn serve(listener: TcpListener, path: PathBuf, mime: &'static str, token: String, stop: Arc<AtomicBool>) {
+fn serve(listener: TcpListener, path: PathBuf, mime: &'static str, token: String, stop: Arc<AtomicBool>, busy: Arc<Busy>) {
     for conn in listener.incoming() {
         if stop.load(Ordering::Relaxed) {
             break;
@@ -115,10 +138,18 @@ fn serve(listener: TcpListener, path: PathBuf, mime: &'static str, token: String
         if !stream.peer_addr().is_ok_and(|a| remote::private(a.ip())) {
             continue;
         }
-        let (path, token) = (path.clone(), token.clone());
-        let _ = std::thread::Builder::new().name("cast-file".into()).spawn(move || {
-            let _ = answer(stream, &path, mime, &token);
+        let (path, token, busy) = (path.clone(), token.clone(), busy.clone());
+        busy.open.fetch_add(1, Ordering::Relaxed);
+        let spawned = std::thread::Builder::new().name("cast-file".into()).spawn({
+            let busy = busy.clone();
+            move || {
+                let _ = answer(stream, &path, mime, &token);
+                busy.done();
+            }
         });
+        if spawned.is_err() {
+            busy.done();
+        }
     }
 }
 
@@ -130,7 +161,7 @@ fn stop_serving() {
 }
 
 /// Starts serving `path` on `ip`; its address for the renderer.
-fn serve_file(ip: Ipv4Addr, path: PathBuf, mime: &'static str) -> Result<Url, String> {
+fn serve_file(ip: Ipv4Addr, path: PathBuf, mime: &'static str, idle: Duration) -> Result<Url, String> {
     stop_serving();
     let listener = TcpListener::bind((ip, 0)).map_err(err)?;
     let at = listener.local_addr().map_err(err)?;
@@ -138,8 +169,33 @@ fn serve_file(ip: Ipv4Addr, path: PathBuf, mime: &'static str) -> Result<Url, St
     let token = remote::new_token();
     let stop = Arc::new(AtomicBool::new(false));
     let (stop_in, token_in) = (stop.clone(), token.clone());
-    std::thread::Builder::new().name("cast".into()).spawn(move || serve(listener, path, mime, token_in, stop_in)).map_err(err)?;
-    *SERVING.lock().unwrap() = Some(Serving { at, stop });
+    let busy = Arc::new(Busy { open: AtomicUsize::new(0), last: Mutex::new(Instant::now()) });
+    let busy_in = busy.clone();
+    std::thread::Builder::new().name("cast".into()).spawn(move || serve(listener, path, mime, token_in, stop_in, busy_in)).map_err(err)?;
+    *SERVING.lock().unwrap() = Some(Serving { at, stop: stop.clone() });
+    // The idle watch: closes this server (and only this one) once nothing has been connected to it for `idle`.
+    let tick = (idle / 4).clamp(Duration::from_millis(50), Duration::from_secs(15));
+    std::thread::Builder::new()
+        .name("cast-idle".into())
+        .spawn(move || {
+            loop {
+                std::thread::sleep(tick);
+                if stop.load(Ordering::Relaxed) {
+                    break;
+                }
+                if busy.idle_for().is_some_and(|d| d >= idle) {
+                    let mut serving = SERVING.lock().unwrap();
+                    if serving.as_ref().is_some_and(|s| Arc::ptr_eq(&s.stop, &stop))
+                        && let Some(s) = serving.take()
+                    {
+                        s.stop.store(true, Ordering::Relaxed);
+                        let _ = TcpStream::connect_timeout(&s.at, Duration::from_millis(300));
+                    }
+                    break;
+                }
+            }
+        })
+        .map_err(err)?;
     Url::parse(&format!("http://{ip}:{port}/{token}/file")).map_err(err)
 }
 
@@ -147,12 +203,28 @@ fn serve_file(ip: Ipv4Addr, path: PathBuf, mime: &'static str) -> Result<Url, St
 #[tauri::command]
 pub async fn cast_scan() -> CmdResult<Vec<CastDevice>> {
     let found = dlna::discover(dlna::SSDP, SEARCH).await.map_err(err)?;
-    let mut out = Vec::new();
+    // Their descriptions are opened together (a few at a time) under one limit, not one after the other.
+    let gate = Arc::new(tokio::sync::Semaphore::new(PARALLEL));
+    let mut set = tokio::task::JoinSet::new();
     for f in found {
-        if let Ok(r) = Renderer::open(&f.location).await {
-            out.push(CastDevice { id: f.location.to_string(), name: r.name });
-        }
+        let gate = gate.clone();
+        set.spawn(async move {
+            let _slot = gate.acquire().await.ok()?;
+            let r = Renderer::open(&f.location).await.ok()?;
+            Some(CastDevice { id: f.location.to_string(), name: r.name })
+        });
     }
+    let mut out = Vec::new();
+    let _ = tokio::time::timeout(SCAN_LIMIT, async {
+        while let Some(done) = set.join_next().await {
+            if let Ok(Some(d)) = done {
+                out.push(d);
+            }
+        }
+    })
+    .await;
+    // Past the limit the ones still waiting are dropped with the set.
+    out.sort_by(|a, b| a.name.cmp(&b.name));
     Ok(out)
 }
 
@@ -171,7 +243,7 @@ pub async fn cast_play(state: State<'_, AppState>, device_id: String, track_id: 
         _ => return Err("This PC has no address on a local network".into()),
     };
     let renderer = device(&device_id).await?;
-    let url = serve_file(ip, path, mime)?;
+    let url = serve_file(ip, path, mime, IDLE)?;
     renderer.play_uri(url.as_str(), &title.chars().take(200).collect::<String>(), mime).await.map_err(err)?;
     if position_ms > 0 {
         // Some devices need a moment before they take a seek.
@@ -216,6 +288,8 @@ mod tests {
 
     // Not 127.0.0.1: the server is bound to one address (the LAN's in the app), and its stop must reach that one.
     const AT: Ipv4Addr = Ipv4Addr::new(127, 0, 0, 2);
+    /// One server at a time exists (a new one stops the other): the tests that start one take turns.
+    static TURN: Mutex<()> = Mutex::new(());
 
     fn get(port: u16, request: &str) -> Vec<u8> {
         let mut s = TcpStream::connect((AT, port)).unwrap();
@@ -227,10 +301,11 @@ mod tests {
 
     #[test]
     fn a_file_is_served_whole_or_by_range_and_nothing_else() {
+        let _turn = TURN.lock().unwrap_or_else(|e| e.into_inner());
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("a.mp3");
         std::fs::write(&path, b"0123456789").unwrap();
-        let url = serve_file(AT, path, "audio/mpeg").unwrap();
+        let url = serve_file(AT, path, "audio/mpeg", Duration::from_secs(300)).unwrap();
         let (port, token) = (url.port().unwrap(), url.path().split('/').nth(1).unwrap().to_string());
         let whole = String::from_utf8(get(port, &format!("GET /{token}/file HTTP/1.1\r\n\r\n"))).unwrap();
         assert!(whole.starts_with("HTTP/1.1 200 OK") && whole.contains("Content-Length: 10") && whole.ends_with("0123456789"), "{whole}");
@@ -244,5 +319,22 @@ mod tests {
         stop_serving();
         std::thread::sleep(Duration::from_millis(200));
         assert!(TcpStream::connect_timeout(&SocketAddr::from((AT, port)), Duration::from_millis(500)).is_err(), "stopped");
+    }
+
+    #[test]
+    fn a_server_nobody_uses_closes_itself_and_a_used_one_stays() {
+        let _turn = TURN.lock().unwrap_or_else(|e| e.into_inner());
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("a.mp3");
+        std::fs::write(&path, b"0123456789").unwrap();
+        let url = serve_file(AT, path, "audio/mpeg", Duration::from_millis(400)).unwrap();
+        let (port, token) = (url.port().unwrap(), url.path().split('/').nth(1).unwrap().to_string());
+        std::thread::sleep(Duration::from_millis(250));
+        assert!(get(port, &format!("GET /{token}/file HTTP/1.1\r\n\r\n")).starts_with(b"HTTP/1.1 200"), "a request keeps it open");
+        std::thread::sleep(Duration::from_millis(250));
+        assert!(get(port, &format!("GET /{token}/file HTTP/1.1\r\n\r\n")).starts_with(b"HTTP/1.1 200"), "its idle time counts from the last request");
+        std::thread::sleep(Duration::from_millis(1200));
+        assert!(TcpStream::connect_timeout(&SocketAddr::from((AT, port)), Duration::from_millis(500)).is_err(), "closed when idle");
+        assert!(SERVING.lock().unwrap().is_none());
     }
 }

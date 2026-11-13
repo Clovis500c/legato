@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { api, type Lyrics } from '../../shared/api'
+import { explain } from '../../shared/errors'
 import { lang, tr } from '../../shared/i18n/i18n'
 import { Dialog } from '../../shared/ui/Dialog'
 import { translateTarget, wordsToTranslate } from './translateWords'
@@ -15,7 +16,7 @@ export function TranslateLyrics({ lyrics }: { lyrics: Lyrics }) {
     setState('busy')
     api.translateLyrics(words, code).then(
       (to) => setState({ from: words, to }),
-      (e) => setState({ error: String(e) }),
+      (e) => setState({ error: explain(e).text }),
     )
   }
   if (!words.some(Boolean)) return null

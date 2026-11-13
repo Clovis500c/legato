@@ -9,6 +9,17 @@ export interface Explained {
 // Network failures as Rust (reqwest, Windows sockets) and the webview word them. "Too Many Requests" is HTTP's own
 // casing: the explanation below says it in lowercase, so explaining twice changes nothing.
 const KINDS: [RegExp, string][] = [
+  // Cast to speakers and lyrics translation (connectors dlna.rs, translate.rs, src-tauri cast.rs).
+  [/^Only your own music files can be cast/, msg('Only a song from your own files can be cast.')],
+  [/^This kind of file cannot be cast/, msg('This kind of file cannot be cast to a speaker')],
+  [/^This PC has no address on a local network/, msg('This PC has no address on a local network')],
+  [/^Not an address on this network|^A song is only handed out/, msg('The speaker’s address is not on your local network, so nothing was sent')],
+  [/^This device cannot play from the network/, msg('This device cannot play from the network')],
+  [/ refused (SetAVTransportURI|Play|Pause|Stop|Seek) \(/, msg('The speaker refused the command')],
+  [/^Not a language code|^Too many lines to translate/, msg('This song cannot be translated into this language')],
+  [/^The translation service has had enough/, msg('The translation service has had enough for today: try again later')],
+  [/^The translation service refused/, msg('The translation service refused this text')],
+  [/^The translation came back in a different shape/, msg('The translation came back misshapen: try again')],
   // Your music server (connectors subsonic.rs, player http.rs, src-tauri servers.rs): before the generic network ones,
   // their own words say which server and what to do.
   [/^Your music server refused the sign-in/, msg('Your music server refused the sign-in: check the user and the password')],

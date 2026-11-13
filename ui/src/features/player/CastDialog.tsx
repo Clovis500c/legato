@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api, type CastDevice } from '../../shared/api'
+import { explain } from '../../shared/errors'
 import { tr } from '../../shared/i18n/i18n'
 import { Dialog } from '../../shared/ui/Dialog'
 import { positionNow } from './Progress'
@@ -16,7 +17,7 @@ export function CastDialog({ onClose }: { onClose: () => void }) {
     let live = true
     api.castScan().then(
       (d) => live && setDevices(d),
-      (e) => live && (setDevices([]), setError(String(e))),
+      (e) => live && (setDevices([]), setError(explain(e).text)),
     )
     return () => {
       live = false
@@ -32,14 +33,14 @@ export function CastDialog({ onClose }: { onClose: () => void }) {
         // The song plays over there now: not here too.
         if (usePlayer.getState().playing) usePlayer.getState().pauseNow()
       },
-      (e) => setError(String(e)),
+      (e) => setError(explain(e).text),
     )
   }
   const control = (action: 'pause' | 'play' | 'stop') => {
     if (!on) return
     api.castControl(on.id, action, 0).then(
       () => action === 'stop' && setOn(null),
-      (e) => setError(String(e)),
+      (e) => setError(explain(e).text),
     )
   }
   const button = 'rounded-full border border-line px-3 py-1 text-sm hover:text-ink'

@@ -70,6 +70,44 @@ fn cut(line: &str) -> String {
     out
 }
 
+/// MyMemory answers in HTML text (`&#39;`, `&amp;`, `&quot;`…): decoded once, left to right, so `&amp;lt;` reads `&lt;`.
+fn decode(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    let mut rest = s;
+    while let Some(i) = rest.find('&') {
+        out.push_str(&rest[..i]);
+        rest = &rest[i..];
+        let end = rest.find(';').filter(|&e| e <= 10);
+        let ch = end.and_then(|e| match &rest[1..e] {
+            "amp" => Some('&'),
+            "lt" => Some('<'),
+            "gt" => Some('>'),
+            "quot" => Some('"'),
+            "apos" => Some('\''),
+            "nbsp" => Some(' '),
+            n => n
+                .strip_prefix('#')
+                .and_then(|d| match d.strip_prefix(['x', 'X']) {
+                    Some(h) => u32::from_str_radix(h, 16).ok(),
+                    None => d.parse().ok(),
+                })
+                .and_then(char::from_u32),
+        });
+        match (ch, end) {
+            (Some(c), Some(e)) => {
+                out.push(c);
+                rest = &rest[e + 1..];
+            }
+            _ => {
+                out.push('&');
+                rest = &rest[1..];
+            }
+        }
+    }
+    out.push_str(rest);
+    out
+}
+
 /// A language code the service takes: letters, at most two parts ("fr", "pt-BR").
 fn code(c: &str) -> bool {
     !c.is_empty() && c.len() <= 8 && c.split('-').all(|p| !p.is_empty() && p.chars().all(|ch| ch.is_ascii_alphabetic()))
@@ -109,6 +147,7 @@ impl MyMemory {
                 bail!("The translation service has had enough for today, try again later");
             }
             let Some(text) = a.data.and_then(|d| d.text).filter(|_| status == 200) else { bail!("The translation service refused this text") };
+            let text = decode(&text);
             let back: Vec<&str> = text.split('\n').collect();
             if back.len() != run.len() {
                 bail!("The translation came back in a different shape");
@@ -144,6 +183,12 @@ mod tests {
         let m = s.mock("GET", "/get").match_query(Matcher::UrlEncoded("q".into(), "日".repeat(150))).with_body(r#"{"responseData":{"translatedText":"day"},"responseStatus":200}"#).expect(1).create_async().await;
         assert_eq!(MyMemory::with_urls(&s.url()).translate(&v(&[&"日".repeat(300)]), None, "en").await.unwrap(), ["day"]);
         m.assert_async().await;
+    }
+
+    #[test]
+    fn html_entities_are_decoded_once() {
+        assert_eq!(decode("Don&#39;t &amp; won&apos;t &quot;go&quot; &lt;3 &#x41;&#66;"), "Don't & won't \"go\" <3 AB");
+        assert_eq!(decode("&amp;lt; &unknown; &#99999999; a & b &"), "&lt; &unknown; &#99999999; a & b &");
     }
 
     #[tokio::test]
