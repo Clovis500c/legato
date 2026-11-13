@@ -13,3 +13,6 @@ dist
 /site/public/demo
 /graphify-out
 /.claude/worktrees
+
+# The owner's private session reports (the repo is public).
+docs/notes/report*.md
