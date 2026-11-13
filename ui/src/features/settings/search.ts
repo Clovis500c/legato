@@ -30,6 +30,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'playback', label: msg('Skip long songs'), keywords: msg('skip long songs minutes length duration mix') },
   { section: 'playback', label: msg('Estimate tempo'), keywords: msg('estimate tempo bpm analysis rhythm beat') },
   { section: 'playback', label: msg('Volume per source'), keywords: msg('volume per source remember files youtube spotify different') },
+  { section: 'playback', label: msg('Volume per output device'), keywords: msg('volume per output device speakers headphones remember') },
   { section: 'playback', label: msg('Focus and workout sessions'), keywords: msg('focus workout session timer study run sport') },
   { section: 'playback', label: msg('Last.fm suggestions'), keywords: msg('lastfm discoveries similar artists new music') },
   { section: 'playback', label: msg('Blind test'), keywords: msg('blind test guess game quiz music snippet') },

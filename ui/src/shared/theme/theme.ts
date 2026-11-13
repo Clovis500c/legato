@@ -401,6 +401,8 @@ export interface Settings {
   crossfade: number
   /** Songs longer than this many minutes skipped as the queue moves on (0 = off). */
   skipLong: number
+  /** Volume per output device: the volume set on a device picked in the player menu comes back when it is picked again (off: one volume for all). */
+  volumePerDevice: boolean
   /** Estimate tempo: local songs with no tempo tag get a guess from their first 90 seconds, a few files at a time (off: nothing is decoded for it). */
   tempoScan: boolean
   /** TV home: with living-room mode, a page of big tiles opens when the mode turns on (off: the usual home). */
@@ -615,6 +617,7 @@ export const DEFAULTS: Settings = {
   libraryWide: false,
   crossfade: 2,
   skipLong: 0,
+  volumePerDevice: false,
   tempoScan: false,
   tvHome: false,
   discordSignIn: false,
@@ -876,6 +879,7 @@ export function sanitize(raw: unknown): Settings {
     pipClassic: typeof r.pipClassic === 'boolean' ? r.pipClassic : DEFAULTS.pipClassic,
     crossfade: typeof r.crossfade === 'number' && Number.isFinite(r.crossfade) ? Math.min(12, Math.max(0, Math.round(r.crossfade))) : DEFAULTS.crossfade,
     skipLong: typeof r.skipLong === 'number' && Number.isFinite(r.skipLong) ? Math.min(60, Math.max(0, Math.round(r.skipLong))) : DEFAULTS.skipLong,
+    volumePerDevice: r.volumePerDevice === true,
     tempoScan: r.tempoScan === true,
     tvHome: r.tvHome === true,
     discordSignIn: r.discordSignIn === true,

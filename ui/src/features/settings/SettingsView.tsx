@@ -970,6 +970,9 @@ function PlaybackSection() {
           <Row setting="volumePerSource" label={msg('Volume per source')} sub={tr('Each source remembers the volume you last set on it: files, YouTube and Spotify need no turn of the knob when the queue switches source')}>
             <Toggle label={tr('Volume per source')} checked={s.volumePerSource} onChange={(volumePerSource) => update({ volumePerSource })} />
           </Row>
+          <Row setting="volumePerDevice" label={msg('Volume per output device')} sub={tr('Each output device picked in the player menu remembers the volume you last set on it and gets it back when you switch to it')}>
+            <Toggle label={tr('Volume per output device')} checked={s.volumePerDevice} onChange={(volumePerDevice) => update({ volumePerDevice })} />
+          </Row>
           <Row setting="focusSessions" label={msg('Focus and workout sessions')} sub={tr('Adds Focus session… and Workout session… to the player\'s menu: a timer, a mix of your songs, and the music fades out at the end')}>
             <Toggle label={tr('Focus and workout sessions')} checked={s.focusSessions} onChange={(focusSessions) => update({ focusSessions })} />
           </Row>

@@ -664,8 +664,9 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       2026-11-13, the switch: the player's menu has Output device (shown with two devices or more; System default, then the system's list,
       the picked one checked), `Command::SetDevice` moves what plays like the unplug `Reopen` does (same place, paused or not), the pick
       is kept on this PC (`outputDevice`, applied at launch; a device gone falls back to the default). No setting: the entry only
-      appears when there is a choice. Never tried with real devices. Left: volume and EQ preset per device (the EQ per output is
-      skipped for now), a change event (the list is asked when the menu opens).
+      appears when there is a choice. Never tried with real devices. 2026-11-13, volume per device landed (Settings › Playback › Volume per output device,
+      off by default; `volumePerDevice.ts`, the volume set on a device picked here comes back when it is picked again, this PC's, 50 devices; Windows' own
+      default changing is not seen). Left: EQ preset per device (skipped for now), a change event (the list is asked when the menu opens).
 - [ ] `M` Right-to-left languages (Arabic, Hebrew: mirrored layout) and community translations (Weblate), more languages.
 - [ ] `L` Cast: DLNA / UPnP speakers and Chromecast for local files and personal servers.
 - [ ] `L` Sonic analysis, ours and local: features (tempo, key, energy, brightness, mood) computed from local files, and
