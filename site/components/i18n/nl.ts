@@ -4,7 +4,7 @@ export const nl: Copy = {
   lang: 'nl',
   title: 'Legato',
   skip: 'Naar de inhoud',
-  nav: { fixes: 'Wat het oplost', why: 'Waarom Legato', features: 'Functies', privacy: 'Privacy', next: 'Binnenkort', faq: 'Vragen', download: 'Downloaden', top: 'Legato, bovenaan de pagina', sections: 'Onderdelen', language: 'Taal' },
+  nav: { fixes: 'Wat het oplost', why: 'Waarom Legato', features: 'Functies', privacy: 'Privacy', next: 'Binnenkort', faq: 'Vragen', docs: 'Documentatie', download: 'Downloaden', top: 'Legato, bovenaan de pagina', sections: 'Onderdelen', language: 'Taal' },
   hero: {
     lines: ['Je muziek woont', 'in vier apps.', 'Luister in één.'],
     lead: 'Legato zet YouTube Music, Spotify, Apple Music en de bestanden op je pc in één bibliotheek en één speler, op Windows, zonder account bij ons.',

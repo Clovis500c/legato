@@ -4,7 +4,7 @@ export const zh: Copy = {
   lang: 'zh-Hans',
   title: 'Legato',
   skip: '跳到正文',
-  nav: { fixes: '解决什么', why: '为什么选 Legato', features: '功能', privacy: '隐私', next: '接下来', faq: '常见问题', download: '下载', top: 'Legato，回到页面顶部', sections: '章节', language: '语言' },
+  nav: { fixes: '解决什么', why: '为什么选 Legato', features: '功能', privacy: '隐私', next: '接下来', faq: '常见问题', docs: '文档', download: '下载', top: 'Legato，回到页面顶部', sections: '章节', language: '语言' },
   hero: {
     lines: ['你的音乐', '散落四个应用，', '一个就能播放。'],
     lead: 'Legato 把 YouTube Music、Spotify、Apple Music 和你电脑上的文件，放进 Windows 上的同一个音乐库、同一个播放器。不需要我们的账号。',

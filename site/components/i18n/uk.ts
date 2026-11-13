@@ -4,7 +4,7 @@ export const uk: Copy = {
   lang: 'uk',
   title: 'Legato',
   skip: 'До вмісту',
-  nav: { fixes: 'Що виправляє', why: 'Чому Legato', features: 'Можливості', privacy: 'Конфіденційність', next: 'Плани', faq: 'Питання', download: 'Завантажити', top: 'Legato, початок сторінки', sections: 'Розділи', language: 'Мова' },
+  nav: { fixes: 'Що виправляє', why: 'Чому Legato', features: 'Можливості', privacy: 'Конфіденційність', next: 'Плани', faq: 'Питання', docs: 'Документація', download: 'Завантажити', top: 'Legato, початок сторінки', sections: 'Розділи', language: 'Мова' },
   hero: {
     lines: ['Музика в чотирьох', 'застосунках?', 'Слухайте в одному.'],
     lead: 'Legato збирає YouTube Music, Spotify, Apple Music і файли на вашому ПК в одну медіатеку й один плеєр, у Windows, без жодного облікового запису в нас.',

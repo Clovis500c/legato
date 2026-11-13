@@ -4,7 +4,7 @@ export const ja: Copy = {
   lang: 'ja',
   title: 'Legato',
   skip: 'コンテンツへ移動',
-  nav: { fixes: '解決すること', why: 'Legato を選ぶ理由', features: '機能', privacy: 'プライバシー', next: '今後', faq: 'よくある質問', download: 'ダウンロード', top: 'Legato、ページの先頭', sections: 'セクション', language: '言語' },
+  nav: { fixes: '解決すること', why: 'Legato を選ぶ理由', features: '機能', privacy: 'プライバシー', next: '今後', faq: 'よくある質問', docs: 'ドキュメント', download: 'ダウンロード', top: 'Legato、ページの先頭', sections: 'セクション', language: '言語' },
   hero: {
     lines: ['音楽は', '4つのアプリに。', '聴くのは1つで。'],
     lead: 'Legato は YouTube Music、Spotify、Apple Music、そして PC 内のファイルを、Windows 上のひとつのライブラリとひとつのプレーヤーにまとめます。私たちのアカウントは不要です。',

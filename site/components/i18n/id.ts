@@ -4,7 +4,7 @@ export const id: Copy = {
   lang: 'id',
   title: 'Legato',
   skip: 'Langsung ke konten',
-  nav: { fixes: 'Yang diperbaiki', why: 'Kenapa Legato', features: 'Fitur', privacy: 'Privasi', next: 'Berikutnya', faq: 'Tanya jawab', download: 'Unduh', top: 'Legato, awal halaman', sections: 'Bagian', language: 'Bahasa' },
+  nav: { fixes: 'Yang diperbaiki', why: 'Kenapa Legato', features: 'Fitur', privacy: 'Privasi', next: 'Berikutnya', faq: 'Tanya jawab', docs: 'Dokumentasi', download: 'Unduh', top: 'Legato, awal halaman', sections: 'Bagian', language: 'Bahasa' },
   hero: {
     lines: ['Musikmu ada', 'di empat aplikasi.', 'Putar dari satu.'],
     lead: 'Legato menyatukan YouTube Music, Spotify, Apple Music, dan file di PC-mu dalam satu koleksi dan satu pemutar, di Windows, tanpa akun apa pun di kami.',

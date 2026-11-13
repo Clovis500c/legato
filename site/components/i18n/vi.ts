@@ -4,7 +4,7 @@ export const vi: Copy = {
   lang: 'vi',
   title: 'Legato',
   skip: 'Đến nội dung',
-  nav: { fixes: 'Sửa được gì', why: 'Vì sao Legato', features: 'Tính năng', privacy: 'Quyền riêng tư', next: 'Sắp tới', faq: 'Hỏi đáp', download: 'Tải xuống', top: 'Legato, đầu trang', sections: 'Các phần', language: 'Ngôn ngữ' },
+  nav: { fixes: 'Sửa được gì', why: 'Vì sao Legato', features: 'Tính năng', privacy: 'Quyền riêng tư', next: 'Sắp tới', faq: 'Hỏi đáp', docs: 'Tài liệu', download: 'Tải xuống', top: 'Legato, đầu trang', sections: 'Các phần', language: 'Ngôn ngữ' },
   hero: {
     lines: ['Nhạc của bạn ở', 'bốn ứng dụng.', 'Nghe trong một.'],
     lead: 'Legato gom YouTube Music, Spotify, Apple Music và các tệp trên PC của bạn vào một thư viện và một trình phát, trên Windows, không cần tài khoản nào của chúng tôi.',

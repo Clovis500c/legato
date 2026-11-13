@@ -5,7 +5,7 @@ import { useMotionValueEvent, useScroll } from 'motion/react'
 import { useState } from 'react'
 import { DISCORD, GITHUB } from './content'
 import { useCopy, useLangs } from './copy'
-import { LANGS, pageOf } from './langs'
+import { LANGS, pageOf, rootOf } from './langs'
 import { useLatest } from './latest'
 import { Logo } from './Logo'
 import { SAVED } from './pick'
@@ -23,7 +23,7 @@ const save = (code: string) => {
 }
 
 /** On the page at first; a solid bar once the page scrolls under it. */
-export function Header() {
+export function Header({ base = '' }: { base?: string }) {
   const c = useCopy()
   const { scrollY } = useScroll()
   const [solid, setSolid] = useState(false)
@@ -32,19 +32,20 @@ export function Header() {
   const here = codeOf(c.lang)
   const langs = useLangs()
   const links = [
-    [c.nav.fixes, '#fixes'],
-    [c.nav.why, '#why'],
-    [c.nav.features, '#features'],
-    [c.nav.privacy, '#privacy'],
-    [c.nav.next, '#next'],
-    [c.nav.faq, '#faq'],
+    [c.nav.fixes, `${base}#fixes`],
+    [c.nav.why, `${base}#why`],
+    [c.nav.features, `${base}#features`],
+    [c.nav.privacy, `${base}#privacy`],
+    [c.nav.next, `${base}#next`],
+    [c.nav.faq, `${base}#faq`],
+    [c.nav.docs, base ? './' : `${rootOf(c.lang)}docs/`],
     [c.community.join, DISCORD],
     ['GitHub', GITHUB],
   ]
   return (
     <header id="site-header" className={`sticky top-0 z-20 border-b transition-[background-color,border-color,transform] duration-200 ${solid ? 'border-line-soft bg-bg' : 'border-transparent'}`}>
       <div className="mx-auto flex h-[78px] max-w-[1440px] items-center justify-between gap-6 px-(--pad)">
-        <a href="#top" aria-label={c.nav.top} className="flex items-center gap-2.5 text-[28px] leading-none font-black tracking-[-0.02em]">
+        <a href={`${base}#top`} aria-label={c.nav.top} className="flex items-center gap-2.5 text-[28px] leading-none font-black tracking-[-0.02em]">
           <Logo className="size-8" />
           Legato
         </a>
@@ -64,7 +65,7 @@ export function Header() {
             <ul className="absolute right-0 mt-3 max-h-[70vh] w-56 overflow-y-auto rounded-xl border border-line bg-bg p-1.5 shadow-lg">
               {LANGS.filter((l) => langs.includes(l.code)).map((l) => (
                 <li key={l.code}>
-                  <a href={pageOf(here, l.code)} onClick={() => save(l.code)} hrefLang={l.code} lang={l.code} aria-current={l.code === here ? 'page' : undefined} className="block rounded-lg px-3 py-1.5 text-sm text-ink-2 hover:bg-panel hover:text-ink aria-[current=page]:font-medium aria-[current=page]:text-ink">
+                  <a href={base + pageOf(here, l.code)} onClick={() => save(l.code)} hrefLang={l.code} lang={l.code} aria-current={l.code === here ? 'page' : undefined} className="block rounded-lg px-3 py-1.5 text-sm text-ink-2 hover:bg-panel hover:text-ink aria-[current=page]:font-medium aria-[current=page]:text-ink">
                     {l.name}
                   </a>
                 </li>

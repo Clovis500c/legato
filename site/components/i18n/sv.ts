@@ -4,7 +4,7 @@ export const sv: Copy = {
   lang: 'sv',
   title: 'Legato',
   skip: 'Hoppa till innehållet',
-  nav: { fixes: 'Vad den löser', why: 'Varför Legato', features: 'Funktioner', privacy: 'Integritet', next: 'Kommande', faq: 'Frågor', download: 'Ladda ned', top: 'Legato, sidans början', sections: 'Avsnitt', language: 'Språk' },
+  nav: { fixes: 'Vad den löser', why: 'Varför Legato', features: 'Funktioner', privacy: 'Integritet', next: 'Kommande', faq: 'Frågor', docs: 'Dokumentation', download: 'Ladda ned', top: 'Legato, sidans början', sections: 'Avsnitt', language: 'Språk' },
   hero: {
     lines: ['Din musik bor', 'i fyra appar.', 'Spela den i en.'],
     lead: 'Legato samlar YouTube Music, Spotify, Apple Music och filerna på din dator i ett bibliotek och en spelare, i Windows, utan något konto hos oss.',

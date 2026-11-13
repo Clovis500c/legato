@@ -23,7 +23,7 @@ export type Copy = {
   lang: string
   title: string
   skip: string
-  nav: { fixes: string; why: string; features: string; privacy: string; next: string; faq: string; download: string; top: string; sections: string; language: string }
+  nav: { fixes: string; why: string; features: string; privacy: string; next: string; faq: string; docs: string; download: string; top: string; sections: string; language: string }
   hero: { lines: [string, string, string]; lead: string; download: string; free: string; version: string; android: string; works: string; spotify: string; apple: string; folders: string }
   /** real: under the demo while the visitor drives it; window, phone: under the last chapter. */
   story: { frame: string; back: string; chapters: string; upNext: string; tryIt: string; android: string; iphone: string; real: string; window: string; phone: string }
@@ -132,7 +132,7 @@ export const en: Copy = {
   lang: 'en',
   title: 'Legato',
   skip: 'Skip to content',
-  nav: { fixes: 'What it fixes', why: 'Why Legato', features: 'Features', privacy: 'Privacy', next: 'Next', faq: 'FAQ', download: 'Download', top: 'Legato, top of the page', sections: 'Sections', language: 'Language' },
+  nav: { fixes: 'What it fixes', why: 'Why Legato', features: 'Features', privacy: 'Privacy', next: 'Next', faq: 'FAQ', docs: 'Docs', download: 'Download', top: 'Legato, top of the page', sections: 'Sections', language: 'Language' },
   hero: {
     lines: ['Your music lives', 'in four apps.', 'Play it from one.'],
     lead: 'Legato puts YouTube Music, Spotify, Apple Music and the files on your PC into one library and one player, on Windows, with no account of ours.',

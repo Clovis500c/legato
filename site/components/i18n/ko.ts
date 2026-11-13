@@ -4,7 +4,7 @@ export const ko: Copy = {
   lang: 'ko',
   title: 'Legato',
   skip: '본문으로 건너뛰기',
-  nav: { fixes: '해결하는 문제', why: '왜 Legato인가', features: '기능', privacy: '개인 정보', next: '다음 계획', faq: '자주 묻는 질문', download: '다운로드', top: 'Legato, 페이지 맨 위', sections: '섹션', language: '언어' },
+  nav: { fixes: '해결하는 문제', why: '왜 Legato인가', features: '기능', privacy: '개인 정보', next: '다음 계획', faq: '자주 묻는 질문', docs: '문서', download: '다운로드', top: 'Legato, 페이지 맨 위', sections: '섹션', language: '언어' },
   hero: {
     lines: ['음악은', '앱 네 개에 있고,', '듣는 건 하나로.'],
     lead: 'Legato는 YouTube Music, Spotify, Apple Music, 그리고 PC의 파일을 Windows에서 하나의 보관함과 하나의 플레이어로 모읍니다. 저희 계정은 필요 없습니다.',

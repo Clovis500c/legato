@@ -4,7 +4,7 @@ export const it: Copy = {
   lang: 'it',
   title: 'Legato',
   skip: 'Vai al contenuto',
-  nav: { fixes: 'Cosa risolve', why: 'Perché Legato', features: 'Funzioni', privacy: 'Privacy', next: 'In arrivo', faq: 'Domande', download: 'Scarica', top: 'Legato, inizio pagina', sections: 'Sezioni', language: 'Lingua' },
+  nav: { fixes: 'Cosa risolve', why: 'Perché Legato', features: 'Funzioni', privacy: 'Privacy', next: 'In arrivo', faq: 'Domande', docs: 'Documentazione', download: 'Scarica', top: 'Legato, inizio pagina', sections: 'Sezioni', language: 'Lingua' },
   hero: {
     lines: ['La tua musica vive', 'in quattro app.', 'Ascoltala da una.'],
     lead: 'Legato mette YouTube Music, Spotify, Apple Music e i file del tuo PC in un’unica libreria e un unico lettore, su Windows, senza alcun account nostro.',
