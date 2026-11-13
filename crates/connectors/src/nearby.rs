@@ -13,11 +13,11 @@ use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::time::timeout;
 
-pub const SERVICE: &str = "_musicapp._tcp.local.";
-const ID: &[u8] = b"musicapp-nearby-v1";
+pub const SERVICE: &str = "_legato._tcp.local.";
+const ID: &[u8] = b"legato-nearby-v1";
 /// Sync Mode: its own service and identity (a share receiver never spends a sync offer's tries), bigger payloads.
-pub const SYNC_SERVICE: &str = "_musicappsync._tcp.local.";
-const SYNC_ID: &[u8] = b"musicapp-sync-v1";
+pub const SYNC_SERVICE: &str = "_legatosync._tcp.local.";
+const SYNC_ID: &[u8] = b"legato-sync-v1";
 const SYNC_MAX_FRAME: u32 = 64 << 20;
 const SYNC_STEP: Duration = Duration::from_secs(60);
 /// Online guesses allowed per offer: 5 in 1,000,000.
@@ -118,7 +118,7 @@ pub async fn sync_serve(code: &str, mine: &[u8]) -> Result<Vec<u8>> {
     let listener = TcpListener::bind("0.0.0.0:0").await?;
     let port = listener.local_addr()?.port();
     let mdns = Advert(ServiceDaemon::new()?);
-    let name = format!("music-app-sync-{}", rand::random_range(0..u32::MAX));
+    let name = format!("legato-sync-{}", rand::random_range(0..u32::MAX));
     mdns.0.register(ServiceInfo::new(SYNC_SERVICE, &name, &format!("{name}.local."), "", port, None)?.enable_addr_auto())?;
     sync_serve_on(listener, code, mine, OFFER_TTL).await
 }
@@ -169,7 +169,7 @@ pub async fn serve(code: &str, payload: &[u8]) -> Result<()> {
     let listener = TcpListener::bind("0.0.0.0:0").await?;
     let port = listener.local_addr()?.port();
     let mdns = Advert(ServiceDaemon::new()?);
-    let name = format!("music-app-{}", rand::random_range(0..u32::MAX));
+    let name = format!("legato-{}", rand::random_range(0..u32::MAX));
     mdns.0.register(ServiceInfo::new(SERVICE, &name, &format!("{name}.local."), "", port, None)?.enable_addr_auto())?;
     serve_on(listener, code, payload, OFFER_TTL).await
 }

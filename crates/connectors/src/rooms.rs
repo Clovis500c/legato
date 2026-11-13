@@ -1,7 +1,6 @@
 //! Listening rooms on the local network, the wire (`docs/rooms.md`): a version in clear, the host's word (go, full,
 //! another version), SPAKE2 from the room's 6-digit code (one handshake per listener), then ChaCha20-Poly1305 sealed
-//! frames both ways, each length checked before it is read. Presence over mDNS (`_legatoroom._tcp`; the old
-//! `_musicapp` names stay Nearby share's). Messages and rules: `music_core::rooms`; shell: `src-tauri` `rooms.rs`.
+//! frames both ways, each length checked before it is read. Presence over mDNS (`_legatoroom._tcp`). Messages and rules: `music_core::rooms`; shell: `src-tauri` `rooms.rs`.
 
 use crate::nearby::{read_frame_max, write_frame};
 use anyhow::{Result, anyhow, bail};

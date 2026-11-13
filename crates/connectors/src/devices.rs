@@ -467,7 +467,7 @@ mod tests {
     #[test]
     fn mdns_removals_name_the_device() {
         assert_eq!(event(ServiceEvent::ServiceRemoved(SERVICE.into(), format!("legato-{A}.{SERVICE}"))), Some(Event::Gone(A.into())));
-        assert_eq!(event(ServiceEvent::ServiceRemoved(SERVICE.into(), format!("music-app-1.{SERVICE}"))), None);
+        assert_eq!(event(ServiceEvent::ServiceRemoved(SERVICE.into(), format!("other-1.{SERVICE}"))), None);
         assert_eq!(event(ServiceEvent::ServiceRemoved(SERVICE.into(), format!("legato-nope.{SERVICE}"))), None);
     }
 }

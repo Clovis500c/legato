@@ -173,7 +173,7 @@ Where a line says "reading", the owner hasn't confirmed it.
 - [ ] `M` Erase every trace of "Music App" (the owner's QCM, 2026-11-13: almost nobody used that version, so the formats are renamed too and
       only ONE catch-up for data on disk stays, in `src-tauri/src/rename.rs`, behind `identity::installed()`). Steps, one commit each:
       - [x] share codes: the QR prefix `MA1:` → `LG1:`, `musicapp://` links no longer read (`share.rs`, `shareCode.ts`, fuzz, tests).
-      - [ ] local network: `_musicapp._tcp` / `_musicappsync._tcp` and their handshake words.
+      - [x] local network: `_musicapp._tcp` / `_musicappsync._tcp` and their handshake words.
       - [ ] sync files: `.musicsync` → `.legatosync`, the `Music App Sync` folder, caught up once by `rename.rs`.
       - [ ] the pages' messages (`musicapp-ytwatch:`, `musicApp`, `__musicApp*`), the plugin user agent, the site's package name.
       - [ ] texts and docs: `CLAUDE.md` (no more "Names kept"), architecture, sync-mode, plugins, the 17 + 18 languages.
