@@ -26,12 +26,13 @@ export function parseLink(text) {
   return { base: `${url.protocol}//${url.host}`, token }
 }
 
-/** What a key sends: its action's request, or null for an action the plugin doesn't know. */
+/** What a key sends: its action's request, or null for an action the plugin doesn't know. Never redirected: Legato
+ * doesn't, and a device on the network that did could send the key beyond it. */
 export function requestFor(link, action) {
   const t = encodeURIComponent(link.token)
-  if (action === 'state') return { method: 'GET', url: `${link.base}/state?t=${t}` }
+  if (action === 'state') return { method: 'GET', url: `${link.base}/state?t=${t}`, redirect: 'error' }
   const k = KEYS[action]
-  return k ? { method: 'POST', url: `${link.base}/key?k=${k}&t=${t}` } : null
+  return k ? { method: 'POST', url: `${link.base}/key?k=${k}&t=${t}`, redirect: 'error' } : null
 }
 
 /** A key's face for what plays (`state`: the remote's /state, null when nothing plays): the title and the artist, cut to fit. */

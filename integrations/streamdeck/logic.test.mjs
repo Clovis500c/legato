@@ -17,10 +17,10 @@ test('a phone remote link is read, anything else refused', () => {
 
 test('each key sends its own request', () => {
   const link = parseLink('http://127.0.0.1:47821/?t=a%2Bb')
-  assert.deepEqual(requestFor(link, 'playpause'), { method: 'POST', url: 'http://127.0.0.1:47821/key?k=toggle&t=a%2Bb' })
+  assert.deepEqual(requestFor(link, 'playpause'), { method: 'POST', url: 'http://127.0.0.1:47821/key?k=toggle&t=a%2Bb', redirect: 'error' })
   assert.equal(requestFor(link, 'next').url, 'http://127.0.0.1:47821/key?k=next&t=a%2Bb')
   assert.equal(requestFor(link, 'previous').url, 'http://127.0.0.1:47821/key?k=previous&t=a%2Bb')
-  assert.deepEqual(requestFor(link, 'state'), { method: 'GET', url: 'http://127.0.0.1:47821/state?t=a%2Bb' })
+  assert.deepEqual(requestFor(link, 'state'), { method: 'GET', url: 'http://127.0.0.1:47821/state?t=a%2Bb', redirect: 'error' })
   assert.equal(requestFor(link, 'like'), null)
 })
 

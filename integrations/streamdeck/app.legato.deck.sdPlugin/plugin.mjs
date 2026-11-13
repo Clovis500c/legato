@@ -15,7 +15,7 @@ let link = null
 const ask = async (action) => {
   const r = link && requestFor(link, action)
   if (!r) throw new Error('No link')
-  const res = await fetch(r.url, { method: r.method, signal: AbortSignal.timeout(3000) })
+  const res = await fetch(r.url, { method: r.method, redirect: r.redirect, signal: AbortSignal.timeout(3000) })
   if (!res.ok) throw new Error(String(res.status))
   return action === 'state' ? res.json() : null
 }
