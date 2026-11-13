@@ -170,6 +170,12 @@ Where a line says "reading", the owner hasn't confirmed it.
 
 ## The owner's asks of 2026-11-13
 
+- [x] `S` The site's title was too long (the owner's screenshot, "Legato : un seul lecteur pour You…" cut off). 2026-11-13: found in the
+      WEBSITE's `<title>` (`title` of each language's copy, `site/components/content.tsx` and `i18n/*.ts`, read by `metadataOf` in
+      `Shell.tsx`), not in the app (its window title is "Legato" already). The title is now "Legato" in the 18 languages; the long
+      sentence was the page's description too (`hero.lead`), which stays as the meta and Open Graph description. Decided alone
+      (2026-11-13): the bare name rather than "Legato : tous tes lecteurs" (nothing to cut again, easy to give a tagline back in the
+      18 files). Checked: `pnpm build` of the site, the built pages' `<title>`.
 - [x] `S` The search bar no longer slides when Now Playing opens or closes (the owner): the bar recentres on the window (`useSearchCentered`),
       and swapping Back / Forward for Close player moves its box, which a 300 ms `translate` transition turned into a slide.
       2026-11-13: the transition is off for 400 ms after the player opens or closes (`TopBar`, `snap`), so the bar jumps; focus and window

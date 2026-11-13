@@ -127,7 +127,7 @@ export const PRIVACY: [string, string][] = [
 
 export const en: Copy = {
   lang: 'en',
-  title: 'Legato: one player for YouTube Music, Spotify, Apple Music and your files',
+  title: 'Legato',
   skip: 'Skip to content',
   nav: { fixes: 'What it fixes', why: 'Why Legato', features: 'Features', privacy: 'Privacy', next: 'Next', faq: 'FAQ', download: 'Download', top: 'Legato, top of the page', sections: 'Sections', language: 'Language' },
   hero: {

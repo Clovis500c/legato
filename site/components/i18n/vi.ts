@@ -2,7 +2,7 @@ import { PLUGINS_GUIDE, type Copy } from '../content'
 
 export const vi: Copy = {
   lang: 'vi',
-  title: 'Legato: một trình phát cho YouTube Music, Spotify, Apple Music và tệp của bạn',
+  title: 'Legato',
   skip: 'Đến nội dung',
   nav: { fixes: 'Sửa được gì', why: 'Vì sao Legato', features: 'Tính năng', privacy: 'Quyền riêng tư', next: 'Sắp tới', faq: 'Hỏi đáp', download: 'Tải xuống', top: 'Legato, đầu trang', sections: 'Các phần', language: 'Ngôn ngữ' },
   hero: {

@@ -2,7 +2,7 @@ import { PLUGINS_GUIDE, type Copy } from '../content'
 
 export const hi: Copy = {
   lang: 'hi',
-  title: 'Legato: YouTube Music, Spotify, Apple Music और आपकी फ़ाइलों के लिए एक ही प्लेयर',
+  title: 'Legato',
   skip: 'सामग्री पर जाएँ',
   nav: { fixes: 'क्या सुधारता है', why: 'Legato क्यों', features: 'सुविधाएँ', privacy: 'गोपनीयता', next: 'आगे', faq: 'सवाल', download: 'डाउनलोड', top: 'Legato, पेज की शुरुआत', sections: 'हिस्से', language: 'भाषा' },
   hero: {

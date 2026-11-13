@@ -2,7 +2,7 @@ import { PLUGINS_GUIDE, type Copy } from '../content'
 
 export const id: Copy = {
   lang: 'id',
-  title: 'Legato: satu pemutar untuk YouTube Music, Spotify, Apple Music, dan file-mu',
+  title: 'Legato',
   skip: 'Langsung ke konten',
   nav: { fixes: 'Yang diperbaiki', why: 'Kenapa Legato', features: 'Fitur', privacy: 'Privasi', next: 'Berikutnya', faq: 'Tanya jawab', download: 'Unduh', top: 'Legato, awal halaman', sections: 'Bagian', language: 'Bahasa' },
   hero: {

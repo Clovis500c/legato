@@ -2,7 +2,7 @@ import { PLUGINS_GUIDE, type Copy } from '../content'
 
 export const tr: Copy = {
   lang: 'tr',
-  title: 'Legato: YouTube Music, Spotify, Apple Music ve dosyaların için tek oynatıcı',
+  title: 'Legato',
   skip: 'İçeriğe geç',
   nav: { fixes: 'Neyi çözüyor', why: 'Neden Legato', features: 'Özellikler', privacy: 'Gizlilik', next: 'Sırada', faq: 'SSS', download: 'İndir', top: 'Legato, sayfanın başı', sections: 'Bölümler', language: 'Dil' },
   hero: {

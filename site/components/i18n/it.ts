@@ -2,7 +2,7 @@ import { PLUGINS_GUIDE, type Copy } from '../content'
 
 export const it: Copy = {
   lang: 'it',
-  title: 'Legato: un solo lettore per YouTube Music, Spotify, Apple Music e i tuoi file',
+  title: 'Legato',
   skip: 'Vai al contenuto',
   nav: { fixes: 'Cosa risolve', why: 'Perché Legato', features: 'Funzioni', privacy: 'Privacy', next: 'In arrivo', faq: 'Domande', download: 'Scarica', top: 'Legato, inizio pagina', sections: 'Sezioni', language: 'Lingua' },
   hero: {

@@ -2,7 +2,7 @@ import { PLUGINS_GUIDE, type Copy } from '../content'
 
 export const ru: Copy = {
   lang: 'ru',
-  title: 'Legato: один плеер для YouTube Music, Spotify, Apple Music и ваших файлов',
+  title: 'Legato',
   skip: 'К содержимому',
   nav: { fixes: 'Что исправляет', why: 'Почему Legato', features: 'Возможности', privacy: 'Конфиденциальность', next: 'Планы', faq: 'Вопросы', download: 'Скачать', top: 'Legato, начало страницы', sections: 'Разделы', language: 'Язык' },
   hero: {
