@@ -61,8 +61,19 @@ pub async fn loopback_param(
     open: impl FnOnce(&str) -> Result<()>,
     timeout: Duration,
 ) -> Result<(String, String)> {
+    loopback_on(0, name, build_url, open, timeout).await
+}
+
+/// Same, on a given port (0 = any free one). Discord only takes a redirect address registered whole, port included.
+pub async fn loopback_on(
+    port: u16,
+    name: &str,
+    build_url: impl FnOnce(&str, &str) -> String,
+    open: impl FnOnce(&str) -> Result<()>,
+    timeout: Duration,
+) -> Result<(String, String)> {
     let state = URL_SAFE_NO_PAD.encode(rand::random::<[u8; 16]>());
-    let listener = TcpListener::bind("127.0.0.1:0").await?;
+    let listener = TcpListener::bind(("127.0.0.1", port)).await.with_context(|| format!("Port {port} is busy: close what uses it and try again"))?;
     let redirect = format!("http://127.0.0.1:{}/callback", listener.local_addr()?.port());
     open(&build_url(&redirect, &state))?;
     tokio::time::timeout(timeout, async {
@@ -117,8 +128,15 @@ impl OAuthClient {
     }
 
     pub async fn connect(&self) -> Result<()> {
+        self.connect_on(0).await
+    }
+
+    /// `connect` with the callback on a fixed port (0 = any).
+    pub async fn connect_on(&self, port: u16) -> Result<()> {
         let (verifier, challenge) = pkce();
-        let (code, redirect) = loopback_authorize(
+        let (code, redirect) = loopback_on(
+            port,
+            "code",
             |redirect, state| {
                 let mut u = Url::parse(&self.cfg.auth_url).expect("static auth url");
                 u.query_pairs_mut()

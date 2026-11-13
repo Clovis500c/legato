@@ -28,6 +28,7 @@ import { SyncSection } from '../syncmode/SyncSection'
 import { OverlayPanel, RemotePanel } from '../remote/RemotePanel'
 import { clearRecent } from '../search/recent'
 import { AboutSection } from './AboutSection'
+import { DiscordSignIn } from './DiscordSignIn'
 import { ThemeStudio } from './ThemeStudio'
 import { FadeEditor } from './FadeEditor'
 import { BrowserScene, CountsScene, CoverShapes, DensityScene, FadeScene, ListCoversScene, MiniPlayerScene, MixCoverScene, MotionScene, NowPlayingScene, ProgressScene, SleepButtonScene, SourceIconScene, TunerScene, VolumeScene } from './previews'
@@ -785,6 +786,13 @@ function GeneralSection() {
           </Row>
           <Row setting="podcastCheck" label={msg('Check podcasts')} sub={tr('Reads each kept show’s feed every six hours while the app is open and announces new episodes (only the feed addresses you typed are asked for)')}>
             <Toggle label={tr('Check podcasts')} checked={s.podcastCheck} onChange={(podcastCheck) => update({ podcastCheck })} />
+          </Row>
+          <Row setting="discordSignIn" label={msg('Discord sign-in')} sub={tr('Optional. Sign in with Discord (your name and id only, no e-mail) and the playlists you share say who shared them, unverified; only Discord is asked, with the sign-in kept in the system keychain')}>
+            <div className="flex items-center gap-3">
+              {s.discordSignIn && <DiscordSignIn />}
+              {/* Off: the sign-in is forgotten here (tokens and name), nothing stays in links. */}
+              <Toggle label={tr('Discord sign-in')} checked={s.discordSignIn} onChange={(discordSignIn) => (update({ discordSignIn }), discordSignIn || void api.discordLoginDisconnect().catch(() => {}))} />
+            </div>
           </Row>
           <Row setting="resume" label={msg('Resume playback on launch')} sub={tr('The last song picks up where it stopped, with its queue, when the app opens')}>
             <Toggle label={tr('Resume playback on launch')} checked={s.resume} onChange={(resume) => update({ resume })} />

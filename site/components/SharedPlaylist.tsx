@@ -52,7 +52,8 @@ export function SharedPlaylist() {
       {list && (
         <>
           <header className="flex flex-col gap-3 rounded-2xl p-6 text-white" style={{ background: `linear-gradient(135deg, hsl(${hueOf(list.name)} 55% 40%), hsl(${(hueOf(list.name) + 50) % 360} 60% 20%))` }}>
-            <p className="text-sm opacity-80">A playlist shared with Legato</p>
+            <p className="text-sm opacity-80">A playlist shared with Legato{list.by && ` by ${list.by.name}`}</p>
+            {list.by && <p className="text-xs opacity-70">The name comes with the link and is not verified: anyone can write a link with any name.</p>}
             <h1 className="text-4xl font-black tracking-tight break-words">{list.name || 'Playlist'}</h1>
             <p className="flex flex-wrap gap-x-3 gap-y-1 text-sm opacity-90">
               <span>{list.items.length === 1 ? '1 song' : `${list.items.length.toLocaleString('en')} songs`}</span>

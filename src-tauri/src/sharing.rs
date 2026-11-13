@@ -15,10 +15,15 @@ pub struct ShareCode {
     bytes: usize,
 }
 
+/// The Discord sign-in's profile (Settings › Accounts), when there is one: it rides in the links this PC makes.
+fn own_profile(lib: &Library) -> Option<share::Profile> {
+    lib.setting(crate::discord_login::PROFILE).ok().flatten().and_then(|v| serde_json::from_value::<share::Profile>(v).ok()).filter(share::Profile::valid)
+}
+
 pub fn shared_playlist(lib: &Library, id: i64) -> CmdResult<Shared> {
     let name = lib.playlists().map_err(err)?.into_iter().find(|p| p.id == id).ok_or("Playlist not found")?.name;
     let items = lib.playlist_tracks(id).map_err(err)?.iter().map(|t| Item::from_track(&t.track)).collect();
-    Ok(Shared { name, items })
+    Ok(Shared { name, items, by: own_profile(lib) })
 }
 
 /// The playing song as a share for its card: link and QR modules (see `share_playlist`).
@@ -106,6 +111,8 @@ pub struct SharePreview {
     known: usize,
     /// Of the others, videos named by the sender: they come in as they are, nothing to look up.
     ready: usize,
+    /// The sender's Discord profile when the link carries one. NOT verified: anyone can write a link by hand.
+    by: Option<share::Profile>,
 }
 
 #[tauri::command]
@@ -114,7 +121,7 @@ pub async fn share_preview(state: State<'_, AppState>, code: String) -> CmdResul
     let lib = state.lib();
     let rows = shared.items.iter().map(|i| lib.find(&probe(i))).collect::<anyhow::Result<Vec<_>>>().map_err(err)?;
     let ready = shared.items.iter().zip(&rows).filter(|(i, row)| row.is_none() && i.ready().is_some()).count();
-    Ok(SharePreview { name: shared.name, tracks: shared.items.len(), known: rows.iter().flatten().count(), ready })
+    Ok(SharePreview { name: shared.name, tracks: shared.items.len(), known: rows.iter().flatten().count(), ready, by: shared.by })
 }
 
 /// QR code from a dropped screenshot or photo → share text.

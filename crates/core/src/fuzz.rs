@@ -77,6 +77,7 @@ fn share_codes_and_links_never_panic_and_stay_bounded() {
     let shared = share::Shared {
         name: "Road trip".into(),
         items: vec![share::Item::Youtube { id: "dQw4w9WgXcQ".into(), artist: "A".into(), title: "T".into(), secs: 212 }, share::Item::Apple(1_440_000_000), share::Item::Text { artist: "B".into(), title: "U".into() }],
+        by: Some(share::Profile { id: "80351110224678912".into(), name: "Nelly".into() }),
     };
     let bytes = share::encode(&shared);
     let (link, web, qr) = (share::to_link(&shared), share::to_web_link(&shared), share::to_qr_text(&shared));

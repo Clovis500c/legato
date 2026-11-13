@@ -50,6 +50,7 @@ export function ImportDialog({ code }: { code: string }) {
             <Stat label={tr('In your library')} value={preview.known} />
             <Stat label={tr('To look up')} value={preview.tracks - preview.known - preview.ready} />
           </div>
+          {preview.by && <p className="text-xs text-ink-2">{tr('Shared by {name} (not verified)', { name: preview.by.name })}</p>}
           <p className="text-xs text-ink-2">{tr('Missing tracks are looked up on YouTube and Apple Music. You get a custom playlist you can edit.')}</p>
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={close}>

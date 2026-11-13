@@ -22,14 +22,34 @@ pub enum Item {
     Text { artist: String, title: String },
 }
 
+/// Who shared, as the sender's Discord sign-in said. NOT verified: a link can be made by hand with any profile.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize, ts_rs::TS)]
+#[ts(export)]
+pub struct Profile {
+    /// Discord user id (digits).
+    pub id: String,
+    pub name: String,
+}
+
+impl Profile {
+    /// Trust boundary: an id of digits, a name without control characters.
+    pub fn valid(&self) -> bool {
+        (1..=20).contains(&self.id.len()) && self.id.bytes().all(|b| b.is_ascii_digit()) && (1..=64).contains(&self.name.len()) && !self.name.chars().any(char::is_control)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct Shared {
     pub name: String,
     pub items: Vec<Item>,
+    /// Version 3: the sender's profile, after the entries (the Discord sign-in, off by default).
+    pub by: Option<Profile>,
 }
 
 /// Names on YouTube entries.
 const VERSION: u8 = 2;
+/// Names on YouTube entries, then the sender's profile.
+const WITH_PROFILE: u8 = 3;
 /// Ids only: written when no entry has names (QR codes), read by every version of the app.
 const COMPACT: u8 = 1;
 const MAX_ITEMS: u64 = 10_000;
@@ -78,7 +98,7 @@ impl Shared {
             Item::Youtube { id, .. } => Item::Youtube { id: id.clone(), artist: String::new(), title: String::new(), secs: 0 },
             other => other.clone(),
         };
-        Shared { name: self.name.clone(), items: self.items.iter().map(bare).collect() }
+        Shared { name: self.name.clone(), items: self.items.iter().map(bare).collect(), by: None }
     }
 }
 
@@ -147,7 +167,8 @@ impl Reader<'_> {
 
 pub fn encode(s: &Shared) -> Vec<u8> {
     let named = |i: &Item| matches!(i, Item::Youtube { title, .. } if !title.is_empty());
-    let mut raw = vec![if s.items.iter().any(named) { VERSION } else { COMPACT }];
+    let by = s.by.as_ref().filter(|p| p.valid());
+    let mut raw = vec![if by.is_some() { WITH_PROFILE } else if s.items.iter().any(named) { VERSION } else { COMPACT }];
     put_str(&mut raw, &s.name);
     put_varint(&mut raw, s.items.len() as u64);
     for item in &s.items {
@@ -173,6 +194,10 @@ pub fn encode(s: &Shared) -> Vec<u8> {
             }
         }
     }
+    if let Some(p) = by {
+        put_str(&mut raw, &p.id);
+        put_str(&mut raw, &p.name);
+    }
     let mut z = ZlibEncoder::new(Vec::new(), Compression::best());
     z.write_all(&raw).unwrap();
     z.finish().unwrap()
@@ -184,7 +209,7 @@ pub fn decode(bytes: &[u8]) -> Result<Shared> {
     ZlibDecoder::new(bytes).take(MAX_RAW).read_to_end(&mut raw).context("Share code is damaged")?;
     let mut r = Reader(&raw);
     let version = r.byte()?;
-    ensure!(version == VERSION || version == COMPACT, "Share code made by a newer version of Legato: update the app");
+    ensure!(version == VERSION || version == COMPACT || version == WITH_PROFILE, "Share code made by a newer version of Legato: update the app");
     let name = r.str()?;
     let count = r.varint()?;
     ensure!(count <= MAX_ITEMS, "Too many tracks in share code");
@@ -209,8 +234,15 @@ pub fn decode(bytes: &[u8]) -> Result<Shared> {
             t => bail!("Unknown entry {t} in share code"),
         });
     }
+    let by = if version == WITH_PROFILE {
+        let p = Profile { id: r.str()?, name: r.str()? };
+        ensure!(p.valid(), "Bad profile in share code");
+        Some(p)
+    } else {
+        None
+    };
     ensure!(r.0.is_empty(), "Share code has trailing data");
-    Ok(Shared { name, items })
+    Ok(Shared { name, items, by })
 }
 
 const B45: &[u8] = b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
@@ -278,7 +310,7 @@ pub fn song(title: &str, artist: &str, youtube: Option<&str>) -> Shared {
         Some(id) => Item::Youtube { id: id.into(), artist: String::new(), title: String::new(), secs: 0 },
         None => Item::Text { artist: cut(artist), title: cut(title) },
     };
-    Shared { name: cut(title), items: vec![item] }
+    Shared { name: cut(title), items: vec![item], by: None }
 }
 
 /// What a dropped share picture says: the link hidden in the card (a PNG text chunk), else the QR code in its pixels.
@@ -334,7 +366,30 @@ mod tests {
                 Item::Text { artist: "Stromae".into(), title: "Alors on danse".into() },
                 yt("jNQXAC9IVRw"),
             ],
+            by: None,
         }
+    }
+
+    #[test]
+    fn a_profile_rides_in_the_link_and_a_forged_one_is_refused() {
+        let by = Profile { id: "80351110224678912".into(), name: "Nelly".into() };
+        let with = Shared { by: Some(by.clone()), ..sample() };
+        assert_eq!(parse(&to_web_link(&with)).unwrap(), with);
+        // No profile: the same bytes as before, so older apps still read it.
+        assert_ne!(encode(&sample())[..], encode(&with)[..]);
+        // The QR code never carries it.
+        assert!(with.compact().by.is_none());
+        // A bad profile is dropped on writing and refused on reading.
+        let bad = Shared { by: Some(Profile { id: "x".into(), name: "Nelly".into() }), ..sample() };
+        assert_eq!(decode(&encode(&bad)).unwrap().by, None);
+        let mut raw = vec![WITH_PROFILE];
+        put_str(&mut raw, "n");
+        put_varint(&mut raw, 0);
+        put_str(&mut raw, "abc");
+        put_str(&mut raw, "Nelly");
+        let mut z = ZlibEncoder::new(Vec::new(), Compression::fast());
+        z.write_all(&raw).unwrap();
+        assert!(decode(&z.finish().unwrap()).is_err());
     }
 
     #[test]
@@ -371,7 +426,7 @@ mod tests {
         let mut z = ZlibEncoder::new(Vec::new(), Compression::fast());
         z.write_all(&raw).unwrap();
         let old = decode(&z.finish().unwrap()).unwrap();
-        assert_eq!(old, Shared { name: "Old".into(), items: vec![yt("dQw4w9WgXcQ")] });
+        assert_eq!(old, Shared { name: "Old".into(), items: vec![yt("dQw4w9WgXcQ")], by: None });
         // No names: written as version 1 again, so Legato 1.1 reads it.
         let version = |s: &Shared| {
             let mut first = [0u8];
@@ -412,12 +467,12 @@ mod tests {
     fn hundred_youtube_tracks_fit_budget() {
         // Real ids are random 64-bit numbers: incompressible, worst case for the budget.
         let id = |i: u64| yt_unpack(i.wrapping_mul(0x9E37_79B9_7F4A_7C15));
-        let s = Shared { name: "Hundred".into(), items: (1..=100).map(|i| yt(&id(i))).collect() };
+        let s = Shared { name: "Hundred".into(), items: (1..=100).map(|i| yt(&id(i))).collect(), by: None };
         assert!(encode(&s).len() < 1200, "{} bytes", encode(&s).len());
         assert_eq!(parse(&to_link(&s)).unwrap(), s);
         // Named: a longer link, still one a chat app takes; the QR code stays the ids.
         let items = (1..=100).map(|i| Item::Youtube { id: id(i), artist: format!("Artist {}", i % 17), title: format!("Some song title {i}"), secs: 180 + i as u32 }).collect();
-        let named = Shared { name: "Hundred".into(), items };
+        let named = Shared { name: "Hundred".into(), items, by: None };
         assert!(to_link(&named).len() < 6000, "{} chars", to_link(&named).len());
         assert_eq!(parse(&to_link(&named)).unwrap(), named);
         assert_eq!(to_qr_text(&named), to_qr_text(&s));
@@ -434,7 +489,7 @@ mod tests {
         assert!(parse("LG1:abc").is_err());
         assert!(parse(&format!("{LINK}%%%")).is_err());
         let mut z = ZlibEncoder::new(Vec::new(), Compression::fast());
-        z.write_all(&[VERSION + 1, 0, 0]).unwrap();
+        z.write_all(&[WITH_PROFILE + 1, 0, 0]).unwrap();
         assert!(decode(&z.finish().unwrap()).unwrap_err().to_string().contains("newer"));
     }
 

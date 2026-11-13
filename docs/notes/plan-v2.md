@@ -136,6 +136,13 @@ Where a line says "reading", the owner hasn't confirmed it.
       is a server of ours (CLAUDE.md: serverless). The owner's call between an unverified profile, or their bot
       signing as an exception to that rule. Discord's OAuth for a desktop app without a secret: to check; a new
       host, so a privacy row.
+      2026-11-13, the version without a bot landed (Settings › General › Discord sign-in, off by default): OAuth code +
+      PKCE, no secret, scope `identify`, redirect `http://127.0.0.1:47819/callback` (Discord matches it whole, so a
+      fixed port), tokens in the keychain, the profile (name + id) in the library setting `discordProfile`; the link
+      carries it as version 3 (`share::Profile`), the share page and the import dialog show "shared by …" as NOT
+      verified. Decided alone (2026-11-13): unverified, since a signature needs the bot (still the owner's call).
+      Untried for real: the Discord page, the redirect once registered in the portal, a busy port 47819.
+      Left: the bot's signature, a song card's profile.
 - [x] `M` Drag and drop of every file type that is Legato's own into the app: the remix file, and the others (list
       them first: shared playlists, backups, themes, playlist files; a plugin folder never installs without its
       permission review). Today a drop takes folders, songs and a QR picture.
@@ -309,7 +316,7 @@ Where a line says "reading", the owner hasn't confirmed it.
       (already, Performance), the trademark notice and the icons' credit (the footer); build from source is in CONTRIBUTING.md.
 - [ ] `M` Sign in with Discord, to show who shared (the owner's wish; only a note, nothing to build now): the version WITHOUT a bot first, an OAuth
       sign-in without a secret, the profile carried in the link; later, optionally, the link signed by the owner's bot, an exception to
-      "serverless" that the owner must validate. Waits for their Discord application id.
+      "serverless" that the owner must validate. Application id received 2026-11-13 and the first part done (above); the signature is left.
 
 ## Best in class (user's ask 2026-10-30)
 

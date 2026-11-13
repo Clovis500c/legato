@@ -5,6 +5,8 @@ export type Item = { kind: 'youtube'; id: string; artist: string; title: string;
 export interface Shared {
   name: string
   items: Item[]
+  /** Version 3: who shared, as the sender's Discord sign-in said. NOT verified: a link can be written by hand. */
+  by?: { id: string; name: string }
 }
 
 // Rust's limits: bytes from anyone.
@@ -44,7 +46,7 @@ export function readShare(raw: Uint8Array): Shared {
     return id + B64[Number(n & 15n) << 2]
   }
   const version = byte()
-  if (version !== 1 && version !== 2) throw new Error('This link was made by a newer version of Legato')
+  if (version < 1 || version > 3) throw new Error('This link was made by a newer version of Legato')
   const name = text()
   const count = varint()
   if (count > MAX_ITEMS) throw new Error('This link is damaged')
@@ -57,8 +59,14 @@ export function readShare(raw: Uint8Array): Shared {
     else if (tag === 3) items.push({ kind: 'text', artist: text(), title: text() })
     else throw new Error('This link is damaged')
   }
+  let by: Shared['by']
+  if (version === 3) {
+    by = { id: text(), name: text() }
+    // Rust's `Profile::valid`.
+    if (!/^\d{1,20}$/.test(by.id) || !by.name || by.name.length > 64 || /\p{Cc}/u.test(by.name)) throw new Error('This link is damaged')
+  }
   if (at !== raw.length) throw new Error('This link is damaged')
-  return { name, items }
+  return by ? { name, items, by } : { name, items }
 }
 
 /** zlib's bytes back, stopped past Rust's cap (a small link could unpack to gigabytes). */

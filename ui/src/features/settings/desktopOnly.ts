@@ -14,6 +14,7 @@ export const DESKTOP_ONLY: ReadonlySet<string> = new Set([
   'Picture-in-picture on minimize',
   'Reopen where you left off',
   'Voice search',
+  'Discord sign-in',
   'Music Detector',
   'Pause during calls',
   'Pause when headphones disconnect',
