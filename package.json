@@ -18,10 +18,11 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
+    "streamdeck": "node --test integrations/streamdeck/",
     "test:rust": "cargo test --workspace",
     "check:licenses": "node scripts/licenses.mjs && cargo deny check licenses bans sources",
     "notices": "node scripts/notices.mjs",
-    "check": "pnpm types && pnpm typecheck && pnpm lint && pnpm test && cargo clippy --workspace --all-targets -- -D warnings && cargo test --workspace"
+    "check": "pnpm types && pnpm typecheck && pnpm lint && pnpm test && pnpm streamdeck && cargo clippy --workspace --all-targets -- -D warnings && cargo test --workspace"
   },
   "dependencies": {
     "@fontsource-variable/geist-mono": "5.3.0",
@@ -33,6 +34,7 @@
     "@tauri-apps/plugin-barcode-scanner": "2.5.3",
     "@tauri-apps/plugin-dialog": "2.8.4",
     "@tauri-apps/plugin-opener": "^2.7.2",
+    "jsqr": "1.4.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "simple-icons": "^16.36.0",

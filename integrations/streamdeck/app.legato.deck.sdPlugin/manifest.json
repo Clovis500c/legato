@@ -1,0 +1,22 @@
+{
+  "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
+  "UUID": "app.legato.deck",
+  "Name": "Legato",
+  "Version": "1.0.0.0",
+  "Author": "Legato",
+  "Description": "Play, pause, skip and see what plays in Legato, from a Stream Deck. Talks to Legato's phone remote on this PC or its network, nothing else.",
+  "Category": "Legato",
+  "Icon": "ui/plugin.svg",
+  "CategoryIcon": "ui/plugin.svg",
+  "CodePath": "plugin.mjs",
+  "SDKVersion": 2,
+  "Nodejs": { "Version": "24" },
+  "Software": { "MinimumVersion": "6.9" },
+  "OS": [{ "Platform": "windows", "MinimumVersion": "10" }],
+  "Actions": [
+    { "UUID": "app.legato.deck.playpause", "Name": "Play / pause", "Icon": "ui/playpause.svg", "Tooltip": "Plays or pauses Legato.", "PropertyInspectorPath": "ui/link.html", "States": [{ "Image": "ui/playpause.svg" }] },
+    { "UUID": "app.legato.deck.next", "Name": "Next track", "Icon": "ui/next.svg", "Tooltip": "Skips to the next track.", "PropertyInspectorPath": "ui/link.html", "States": [{ "Image": "ui/next.svg" }] },
+    { "UUID": "app.legato.deck.previous", "Name": "Previous track", "Icon": "ui/previous.svg", "Tooltip": "Back to the previous track.", "PropertyInspectorPath": "ui/link.html", "States": [{ "Image": "ui/previous.svg" }] },
+    { "UUID": "app.legato.deck.nowplaying", "Name": "Now playing", "Icon": "ui/nowplaying.svg", "Tooltip": "Shows the title and artist; pressing it plays or pauses.", "PropertyInspectorPath": "ui/link.html", "States": [{ "Image": "ui/nowplaying.svg", "ShowTitle": true }] }
+  ]
+}

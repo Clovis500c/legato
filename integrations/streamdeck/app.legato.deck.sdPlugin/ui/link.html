@@ -1,0 +1,44 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Legato</title>
+<style>
+  body { font: 13px Segoe UI, sans-serif; color: #ddd; background: #2d2d2d; margin: 12px }
+  label { display: block; margin-bottom: 6px }
+  input { width: 100%; box-sizing: border-box; padding: 6px; background: #1d1d1d; color: #eee; border: 1px solid #555 }
+  p { color: #aaa; margin-top: 8px }
+  #bad { color: #f88 }
+</style>
+<label for="link">Phone remote link</label>
+<input id="link" spellcheck="false" placeholder="http://192.168.1.20:47821/?t=…" />
+<p id="bad" hidden>That is not a phone remote link: it starts with http:// and an address on this PC or its network, and ends with ?t=…</p>
+<p>Turn on Phone remote in Legato › Settings › Playback, then paste the link it shows. It is kept by Stream Deck, on this PC, and used for this PC or your network only.</p>
+<script>
+  const input = document.getElementById('link')
+  const ok = (v) => {
+    try {
+      const u = new URL(v.trim())
+      const h = u.hostname
+      const priv = h === 'localhost' || /^(127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.)/.test(h)
+      return u.protocol === 'http:' && !!u.searchParams.get('t') && priv
+    } catch {
+      return false
+    }
+  }
+  // Called by Stream Deck with the connection's details.
+  window.connectElgatoStreamDeckSocket = (port, uuid, registerEvent) => {
+    const ws = new WebSocket('ws://127.0.0.1:' + port)
+    ws.onopen = () => {
+      ws.send(JSON.stringify({ event: registerEvent, uuid }))
+      ws.send(JSON.stringify({ event: 'getGlobalSettings', context: uuid }))
+    }
+    ws.onmessage = (e) => {
+      const m = JSON.parse(e.data)
+      if (m.event === 'didReceiveGlobalSettings') input.value = (m.payload && m.payload.settings && m.payload.settings.link) || ''
+    }
+    input.oninput = () => {
+      const bad = input.value.trim() !== '' && !ok(input.value)
+      document.getElementById('bad').hidden = !bad
+      if (!bad) ws.send(JSON.stringify({ event: 'setGlobalSettings', context: uuid, payload: { link: input.value.trim() } }))
+    }
+  }
+</script>
