@@ -24,6 +24,9 @@ export const CATALOG = [
   { code: 'ja', name: '日本語', country: 'JP' },
   { code: 'ko', name: '한국어', country: 'KR' },
   { code: 'zh', name: '中文（简体）', country: 'CN' },
+  // Machine translations, to be reviewed by native speakers (Weblate): written right to left.
+  { code: 'ar', name: 'العربية', country: 'SA' },
+  { code: 'he', name: 'עברית', country: 'IL' },
 ] as const
 export type Lang = (typeof CATALOG)[number]['code']
 

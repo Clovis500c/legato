@@ -703,6 +703,16 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       off by default; `volumePerDevice.ts`, the volume set on a device picked here comes back when it is picked again, this PC's, 50 devices; Windows' own
       default changing is not seen). Left: EQ preset per device (skipped for now), a change event (the list is asked when the menu opens).
 - [ ] `M` Right-to-left languages (Arabic, Hebrew: mirrored layout) and community translations (Weblate), more languages.
+      2026-11-13 (lot 27): the layout mirrors with `dir`: the shell and every shared component outside the player use logical
+      sides (ms- me- ps- pe- start- end- text-start rounded-s border-s; `i18n/rtl.test.ts` fails on a physical one), the
+      page's `dir` follows the language (`isRtl`: ar, he), arrows and carets turn (`shared/ui/directional.tsx`, Phosphor's
+      `mirrored`), and the player bar and the player's pages (`features/player`, `features/viz`) keep their sides on purpose
+      (media controls, visualizers, the time axis do not mirror). Arabic and Hebrew are in the picker (`locales/ar.ts`,
+      `he.ts`, all 2 516 texts, plural forms limited to the one / other pair the code asks for): MACHINE TRANSLATIONS, written
+      by the model that built the app, to be reviewed by native speakers, which Weblate would make possible (not set up).
+      Not seen on a screen: the mirrored layout (a physical offset in a style attribute, a canvas, or an absolute position
+      in the player's pages may still sit on the wrong side), nor the Arabic and Hebrew text in the interface. The website
+      stays in its 18 languages.
 - [ ] `L` Cast: DLNA / UPnP speakers and Chromecast for local files and personal servers.
       2026-11-13, DLNA / UPnP for local files: Settings › Playback › Cast to speakers (off by default) adds "Cast to speakers…" to
       the player's menu: a box lists the renderers that answer an SSDP search (`connectors/dlna.rs`), one click plays the song

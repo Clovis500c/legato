@@ -45,6 +45,6 @@ it('asks for English words in every language: only those make rules', () => {
   const locales = import.meta.glob<Record<string, string>>('../../shared/i18n/locales/*.ts', { eager: true, import: 'default' })
   const asks = ['Describe the playlist: a decade, a genre of your library, calm or fast, new…', 'No rule found in these words. Try a decade, a genre or artist of your library, calm or fast, new…']
   for (const [path, words] of Object.entries(locales)) for (const ask of asks) for (const w of ['calm', 'fast', 'new']) expect(words[ask], `${path}: ${w}`).toContain(w)
-  expect(Object.keys(locales).length).toBe(17)
+  expect(Object.keys(locales).length).toBe(19)
   expect(['calm', 'fast', 'new'].map((w) => rules(w)?.rules.length)).toEqual([1, 1, 1])
 })
