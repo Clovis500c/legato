@@ -112,5 +112,7 @@ export function songKey(now: { trackId?: number; youtubeId?: string; path?: stri
 export function withDeviceEq(e: Effects, preset: string | undefined): Effects {
   const bands = EQ_PRESETS.find((p) => p.name === preset)?.eq
   if (!bands || bands.every((g) => g === 0)) return e
-  return { ...e, on: true, eq: e.eq.map((g, i) => Math.min(24, Math.max(-24, g + (bands[i] ?? 0)))) }
+  // A switched-off edit stays off: only the output's equalizer plays, from a neutral chain.
+  const own = e.on ? e : NEUTRAL
+  return { ...own, on: true, eq: own.eq.map((g, i) => Math.min(24, Math.max(-24, g + (bands[i] ?? 0)))) }
 }

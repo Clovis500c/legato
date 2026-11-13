@@ -56,4 +56,13 @@ describe('withDeviceEq', () => {
     expect(withDeviceEq(own, undefined)).toBe(own)
     expect(withDeviceEq(own, 'Nope')).toBe(own)
   })
+
+  it("turns nothing of a switched-off edit back on, only the output's equalizer", () => {
+    const off = { ...NEUTRAL, on: false, drive: 0.6, reverb: { ...NEUTRAL.reverb, mix: 0.5 } }
+    const out = withDeviceEq(off, 'Bass')
+    expect(out.on).toBe(true)
+    expect(out.drive).toBe(0)
+    expect(out.reverb.mix).toBe(0)
+    expect(out.eq[0]).toBeGreaterThan(0)
+  })
 })
