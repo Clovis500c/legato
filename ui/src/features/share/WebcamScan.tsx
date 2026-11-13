@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { tr } from '../../shared/i18n/i18n'
 import { Button } from '../../shared/ui/Button'
 import { Dialog } from '../../shared/ui/Dialog'
-import { readFrame, useWebcam } from './webcam'
+import { useStore } from '../../app/store'
+import { readFrame, untilLeft, useWebcam } from './webcam'
 
 /** Frames read a second, and the widest one read (a code is big in a webcam's picture: smaller is faster). */
 const EVERY_MS = 150
@@ -26,17 +27,30 @@ function Scanner({ done }: { done: (text: string | null) => void }) {
     let stream: MediaStream | undefined
     let timer: number | undefined
     let over = false
+    // A frame still being read: the next tick waits (a slow PC would pile them up).
+    let busy = false
     const canvas = document.createElement('canvas')
+    const left = untilLeft(
+      () => {
+        if (over) return
+        over = true
+        useWebcam.setState({ open: null })
+        done(null)
+      },
+      document,
+      (f) => useStore.subscribe((s, p) => s.view !== p.view && f()),
+    )
     const look = async () => {
       const v = video.current
-      if (over || !v || v.videoWidth === 0) return
+      if (over || busy || !v || v.videoWidth === 0) return
       const w = Math.min(WIDE, v.videoWidth)
       canvas.width = w
       canvas.height = Math.round((v.videoHeight * w) / v.videoWidth)
       const ctx = canvas.getContext('2d', { willReadFrequently: true })
       if (!ctx) return
       ctx.drawImage(v, 0, 0, canvas.width, canvas.height)
-      const text = await readFrame(ctx.getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height)
+      busy = true
+      const text = await readFrame(ctx.getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height).finally(() => (busy = false))
       if (text && !over) {
         over = true
         useWebcam.setState({ open: null })
@@ -54,6 +68,7 @@ function Scanner({ done }: { done: (text: string | null) => void }) {
       .catch(() => setFailed(true))
     return () => {
       over = true
+      left()
       window.clearInterval(timer)
       stream?.getTracks().forEach((t) => t.stop())
     }

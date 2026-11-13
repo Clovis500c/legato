@@ -1,5 +1,5 @@
-import { expect, it } from 'vitest'
-import { readFrame } from './webcam'
+import { expect, it, vi } from 'vitest'
+import { readFrame, untilLeft } from './webcam'
 
 // "LG1:ABC-123" as a 21×21 QR code (qrcode-generator, level M), row-major.
 const N = 21
@@ -27,4 +27,24 @@ it('reads a QR code out of a camera frame', async () => {
 it('finds nothing in a frame with no code', async () => {
   const side = 120
   expect(await readFrame(new Uint8ClampedArray(side * side * 4).fill(200), side, side)).toBeNull()
+})
+
+it('lets the camera go when the window hides or the page changes, and stops listening after', () => {
+  const doc = Object.assign(new EventTarget(), { hidden: false })
+  const leave = vi.fn()
+  let page: (() => void) | undefined
+  const off = untilLeft(leave, doc, (f) => {
+    page = f
+    return () => (page = undefined)
+  })
+  doc.dispatchEvent(new Event('visibilitychange'))
+  expect(leave).not.toHaveBeenCalled()
+  doc.hidden = true
+  doc.dispatchEvent(new Event('visibilitychange'))
+  page?.()
+  expect(leave).toHaveBeenCalledTimes(2)
+  off()
+  doc.dispatchEvent(new Event('visibilitychange'))
+  expect(page).toBeUndefined()
+  expect(leave).toHaveBeenCalledTimes(2)
 })

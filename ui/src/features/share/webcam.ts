@@ -16,3 +16,19 @@ export const scanWebcam = () =>
   new Promise<string | null>((done) => {
     useWebcam.setState({ open: { id: ++ids, done } })
   })
+
+type Shown = Pick<Document, 'hidden' | 'addEventListener' | 'removeEventListener'>
+
+/** Calls `leave` when the window hides (minimized, closed to the tray) or the page changes (`onPage`): the camera is
+ *  never kept for a view nobody sees. Returns the unsubscribe. */
+export function untilLeft(leave: () => void, doc: Shown, onPage: (changed: () => void) => () => void): () => void {
+  const seen = () => {
+    if (doc.hidden) leave()
+  }
+  doc.addEventListener('visibilitychange', seen)
+  const off = onPage(leave)
+  return () => {
+    doc.removeEventListener('visibilitychange', seen)
+    off()
+  }
+}
