@@ -38,6 +38,7 @@ pub fn current(state: &AppState) -> Option<Profile> {
     let (profile, forget) = standing(saved, connected);
     if forget {
         let _ = state.lib().set_setting(PROFILE, &serde_json::Value::Null);
+        let _ = state.lib().set_setting(CARD, &serde_json::Value::Null);
     }
     profile
 }

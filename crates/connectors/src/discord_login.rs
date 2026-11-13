@@ -34,10 +34,11 @@ struct Me {
 /// Discord's image host: the only one the card's pictures come from (`art.rs` lets the same host through).
 const CDN: &str = "https://cdn.discordapp.com";
 
-/// An image address from an id and a hash: Discord's hashes are letters, digits and `_` (`a_` marks an animated one:
-/// the still PNG is asked for). Anything else is no picture. Trust boundary.
+/// An image address from an id and a hash: Discord's hashes are lowercase hex, `a_` before an animated one (the still
+/// PNG is asked for). Anything else is no picture. Trust boundary.
 fn image(kind: &str, id: &str, hash: Option<String>, size: u32) -> Option<String> {
-    let hash = hash.filter(|h| (1..=64).contains(&h.len()) && h.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'_'))?;
+    let hex = |h: &str| (1..=64).contains(&h.len()) && h.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b));
+    let hash = hash.filter(|h| hex(h.strip_prefix("a_").unwrap_or(h)))?;
     Some(format!("{CDN}/{kind}/{id}/{hash}.png?size={size}"))
 }
 
@@ -207,5 +208,9 @@ mod tests {
         assert_eq!(card.banner, None);
         assert_eq!(card.accent, Some(3_447_003));
         assert!(!format!("{card:?}").contains("never@read.me"));
+        for bad in ["../x", "ABC", "a_", "x_1", "1f/2", "a_a_1", "%2e%2e"] {
+            assert_eq!(image("avatars", "1", Some(bad.into()), 64), None, "{bad}");
+        }
+        assert!(image("banners", "1", Some("0abf".into()), 64).is_some());
     }
 }
