@@ -25,9 +25,13 @@ pub enum Output {
 
 impl Output {
     /// The default output device; the silent one in the smoke test's build.
-    pub fn open() -> Result<Self> {
+    pub fn open(name: Option<&str>) -> Result<Self> {
         if cfg!(feature = "null-output") {
             return Ok(Self::Null(Null::open()));
+        }
+        // A named device that is gone (unplugged since): the default one, as before.
+        if let Some(device) = name.and_then(find) {
+            return Ok(Self::Device(DeviceSinkBuilder::from_device(device)?.open_stream()?));
         }
         Ok(Self::Device(DeviceSinkBuilder::open_default_sink()?))
     }
@@ -38,6 +42,26 @@ impl Output {
             Self::Null(null) => &null.mixer,
         }
     }
+}
+
+fn find(name: &str) -> Option<rodio::Device> {
+    use rodio::DeviceTrait;
+    use rodio::cpal::traits::HostTrait;
+    rodio::cpal::default_host().output_devices().ok()?.find(|d| d.description().is_ok_and(|x| x.name() == name))
+}
+
+/// The names of the output devices the system offers (empty in the smoke test's build and when the host can't list).
+pub fn devices() -> Vec<String> {
+    use rodio::DeviceTrait;
+    use rodio::cpal::traits::HostTrait;
+    if cfg!(feature = "null-output") {
+        return Vec::new();
+    }
+    let Ok(all) = rodio::cpal::default_host().output_devices() else { return Vec::new() };
+    let mut names: Vec<String> = all.filter_map(|d| d.description().ok().map(|x| x.name().to_string())).collect();
+    names.sort();
+    names.dedup();
+    names
 }
 
 /// A mixer drained by a thread on the wall clock, 20 ms of samples every 20 ms, what a device's callback does. Dropping

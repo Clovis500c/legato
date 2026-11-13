@@ -12,6 +12,7 @@ pub mod silence;
 
 pub use level::{Gain, Level};
 pub use music_dsp::{Effects, Levels, Live as LiveSettings, tap::Tap, viz};
+pub use output::devices as output_devices;
 pub use queue::Queue;
 pub use silence::Trim;
 
@@ -66,6 +67,8 @@ pub enum Command {
     /// Rust-side only: Windows' default output changed. What plays moves to it, same place, paused or not.
     #[serde(skip)]
     Reopen,
+    /// The output device by name (None: the system's default); what plays moves to it as for `Reopen`.
+    SetDevice { name: Option<String> },
 }
 
 #[derive(Debug, Clone, Default, Serialize, ts_rs::TS)]
@@ -160,6 +163,8 @@ impl Player {
 struct Engine {
     /// Opened on first play: no audio device needed until then.
     device: Option<Output>,
+    /// The output device the user picked (None: the system's default).
+    device_name: Option<String>,
     player: Option<rodio::Player>,
     queue: Queue,
     /// Durations of loaded items, same order as queue's loaded window.
@@ -261,6 +266,10 @@ impl Engine {
                 self.durations.truncate(self.stops.len());
                 self.levels.truncate(self.stops.len());
             }
+            Command::SetDevice { name } => {
+                self.device_name = name;
+                return self.handle(Command::Reopen);
+            }
             Command::Reopen => {
                 let Some(old) = self.device.take() else { return Ok(()) };
                 // Nothing playing (stopped, queue over): the next play opens the new default.
@@ -273,7 +282,7 @@ impl Engine {
                 self.player = None;
                 let null = matches!(old, Output::Null(_));
                 drop(old);
-                self.device = Some(if null { Output::Null(output::Null::open()) } else { Output::open()? });
+                self.device = Some(if null { Output::Null(output::Null::open()) } else { Output::open(self.device_name.as_deref())? });
                 // Same file again: nothing counts as loaded in the new player.
                 self.queue.jump(0);
                 self.restart()?;
@@ -316,7 +325,7 @@ impl Engine {
     /// Fresh rodio player at queue position. Dropping old one stops it.
     fn restart(&mut self) -> Result<()> {
         if self.device.is_none() {
-            self.device = Some(Output::open()?);
+            self.device = Some(Output::open(self.device_name.as_deref())?);
         }
         let p = rodio::Player::connect_new(self.device.as_ref().unwrap().mixer());
         p.set_volume(self.volume);
@@ -550,6 +559,11 @@ mod tests {
         e.handle(Command::Stop).unwrap();
         e.handle(Command::Reopen).unwrap();
         assert!(e.device.is_none() && e.player.is_none());
+        // A device picked while stopped is remembered for the next play; None goes back to the default.
+        e.handle(Command::SetDevice { name: Some("Speakers".into()) }).unwrap();
+        assert_eq!(e.device_name.as_deref(), Some("Speakers"));
+        e.handle(Command::SetDevice { name: None }).unwrap();
+        assert!(e.device_name.is_none());
         let _ = std::fs::remove_file(path);
     }
 

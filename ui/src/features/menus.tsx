@@ -107,6 +107,7 @@ import { startRadio, startRadioFrom } from './player/radio'
 import { chaptersMenu } from './player/chapters'
 import { sleepMenu } from './player/sleep'
 import { openBlind } from './blind/blindOpen'
+import { chooseOutput, refreshOutputs, useOutputs } from './player/outputs'
 import { deleteFolder, newFolder, renameFolder, setFolder, togglePinned } from './sidebar/folderActions'
 import { closeKaraoke, nowFix, nudgeLyrics, toggleKaraoke } from './player/karaokeMode'
 import { canVizFull, toggleVizFull, useVizFull } from './player/vizFull'
@@ -805,6 +806,7 @@ export function playerMenu({ controls = true }: { controls?: boolean } = {}): Me
     t && rateItem(t),
     t && bookmarkItem(t.id),
     loopItem(),
+    outputItem(),
     { label: tr('Count in, then play'), icon: <Timer size={16} />, onSelect: () => void import('./player/countIn').then((m) => m.countInPlay(t?.bpm)) },
     { label: tr('Metronome'), icon: <Timer size={16} />, checked: useMetronome.getState().bpm !== null, onSelect: () => void toggleMetronome(t?.bpm) },
     t?.album && { label: tr('Go to album'), icon: <Disc size={16} />, onSelect: () => (setFull(false), app().go({ name: 'album', album: t.album!, artist: primaryArtist(t.artist) })) },
@@ -1017,6 +1019,15 @@ export function addonMenu(a: Addon, open: () => void): MenuEntry[] {
 /** Listen together on this network: the room's view (start, join, or the room you're in). */
 function roomItem(): MenuEntry {
   return { label: inRoom(useRoom.getState().status) ? tr('Listening room') : tr('Listen together…'), icon: <UsersThree size={16} />, onSelect: openRoom }
+}
+
+/** Output device: the system's list (kept from the last time; refreshed now), the picked one checked. Only with a choice to make. */
+function outputItem(): MenuEntry | false {
+  refreshOutputs()
+  const { names, current } = useOutputs.getState()
+  if (phoneApp || names.length < 2) return false
+  const pick = (label: string, name: string | null) => ({ label, checked: (current ?? null) === name, onSelect: () => chooseOutput(name) })
+  return { label: tr('Output device'), icon: <SpeakerHigh size={16} />, items: [pick(tr('System default'), null), ...names.map((n) => pick(n, n))] }
 }
 
 export function appMenu(): MenuEntry[] {

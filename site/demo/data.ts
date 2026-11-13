@@ -233,6 +233,8 @@ const ANSWERS: Record<string, (args: Record<string, unknown>) => unknown> = {
   podcast_kept: () => [],
   podcast_keep: () => [],
   podcast_import: () => [],
+  output_devices: () => ({ names: [], current: null }),
+  set_output_device: () => null,
   link_pending: () => null,
   bookmarks: ({ trackId }) => marksOf(trackId),
   add_bookmark: addMark,

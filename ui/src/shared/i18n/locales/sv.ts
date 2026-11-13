@@ -2345,6 +2345,8 @@ const sv: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Din server tar bara emot lösenordet skickat som det är (hexkodat, vilket inte är kryptering). Över https kan bara din server läsa det. Skicka det så här?',
   'Send my password as it is': 'Skicka mitt lösenord som det är',
   'Hide explicit songs': 'Dölj explicita låtar',
+  'Output device': 'Utdataenhet',
+  'System default': 'Systemstandard',
   'Refresh': 'Uppdatera',
   'Mark as played': 'Markera som spelad',
   'Mark as unplayed': 'Markera som ospelad',
