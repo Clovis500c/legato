@@ -30,7 +30,10 @@ fn standing(saved: Option<Profile>, connected: bool) -> (Option<Profile>, bool) 
 
 /// The signed-in profile now, for the links this PC makes and for Settings; a stale one is cleared on the way.
 pub fn current(state: &AppState) -> Option<Profile> {
-    let (profile, forget) = standing(saved(state), login(state).is_connected());
+    let saved = saved(state);
+    // The keychain is asked only when there is a profile (a share with no sign-in reads nothing).
+    let connected = saved.is_some() && login(state).is_connected();
+    let (profile, forget) = standing(saved, connected);
     if forget {
         let _ = state.lib().set_setting(PROFILE, &serde_json::Value::Null);
     }
