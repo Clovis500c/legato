@@ -2362,7 +2362,7 @@ const id: Record<string, string> = {
   'Each output device picked in the player menu remembers the volume you last set on it and gets it back when you switch to it': 'Setiap perangkat keluaran yang dipilih di menu pemutar mengingat volume terakhir yang kamu atur dan mengembalikannya saat kamu beralih ke sana',
   'volume per output device speakers headphones remember': 'volume per perangkat keluaran speaker headphone ingat',
   'Estimate tempo': 'Perkirakan tempo',
-  'For local songs with no tempo in their tags: a few files at a time, in the background, from their first 90 seconds; fills the BPM column, never over a tag; nothing leaves the PC': 'Untuk lagu lokal tanpa tempo di tag: beberapa berkas sekali jalan, di latar belakang, dari 90 detik pertama; mengisi kolom BPM, tidak pernah menimpa tag; tidak ada yang keluar dari PC',
+  'For local songs with no tempo or key in their tags: a few files at a time, in the background, from their first seconds; fills the BPM and Key columns, never over a tag; nothing leaves the PC': 'Untuk lagu lokal tanpa tempo atau nada dasar di tag-nya: beberapa file sekaligus, di latar belakang, dari beberapa detik pertamanya; mengisi kolom BPM dan Nada, tidak pernah menimpa tag; tidak ada yang keluar dari PC',
   'estimate tempo bpm analysis rhythm beat': 'perkirakan tempo bpm analisis irama ketukan',
   'TV home': 'Beranda TV',
   'With living-room mode: opens big tiles when it turns on (search, songs, albums, artists, mixes, radio…) for the arrow keys or a gamepad': 'Dengan mode ruang tamu: membuka ubin besar saat dinyalakan (cari, lagu, album, artis, mix, radio…) untuk tombol panah atau gamepad',

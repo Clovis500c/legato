@@ -2362,7 +2362,7 @@ const zh: Record<string, string> = {
   'Each output device picked in the player menu remembers the volume you last set on it and gets it back when you switch to it': '在播放器菜单中选择的每个输出设备都会记住你在其上最后设置的音量，切换回来时恢复',
   'volume per output device speakers headphones remember': '音量 输出设备 扬声器 耳机 记住',
   'Estimate tempo': '估算节拍',
-  'For local songs with no tempo in their tags: a few files at a time, in the background, from their first 90 seconds; fills the BPM column, never over a tag; nothing leaves the PC': '针对标签中没有节拍的本地歌曲：在后台每次处理几个文件，依据前 90 秒的声音；填写 BPM 列，绝不覆盖标签；不会有任何内容离开电脑',
+  'For local songs with no tempo or key in their tags: a few files at a time, in the background, from their first seconds; fills the BPM and Key columns, never over a tag; nothing leaves the PC': '适用于标签中没有速度或调性的本地歌曲：在后台每次处理几个文件，依据开头几秒估算；填写 BPM 和调性列，绝不覆盖标签；不会有任何内容离开电脑',
   'estimate tempo bpm analysis rhythm beat': '估算 节拍 bpm 分析 节奏',
   'TV home': '电视主页',
   'With living-room mode: opens big tiles when it turns on (search, songs, albums, artists, mixes, radio…) for the arrow keys or a gamepad': '配合客厅模式：开启时打开大图块（搜索、歌曲、专辑、艺术家、混音、电台等），适合方向键或手柄',

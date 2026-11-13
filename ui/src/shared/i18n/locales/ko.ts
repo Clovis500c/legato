@@ -2362,7 +2362,7 @@ const ko: Record<string, string> = {
   'Each output device picked in the player menu remembers the volume you last set on it and gets it back when you switch to it': '플레이어 메뉴에서 고른 출력 장치마다 마지막으로 설정한 볼륨을 기억했다가 해당 장치로 바꿀 때 되돌립니다',
   'volume per output device speakers headphones remember': '볼륨 출력 장치 스피커 헤드폰 기억',
   'Estimate tempo': '템포 추정',
-  'For local songs with no tempo in their tags: a few files at a time, in the background, from their first 90 seconds; fills the BPM column, never over a tag; nothing leaves the PC': '태그에 템포가 없는 로컬 곡을 백그라운드에서 몇 개씩, 처음 90초의 소리로 추정합니다. BPM 열을 채우며 태그는 덮어쓰지 않습니다. PC 밖으로 나가는 것은 없습니다',
+  'For local songs with no tempo or key in their tags: a few files at a time, in the background, from their first seconds; fills the BPM and Key columns, never over a tag; nothing leaves the PC': '태그에 템포나 조가 없는 로컬 곡용: 백그라운드에서 한 번에 몇 개 파일씩, 처음 몇 초로 추정하여 BPM과 조 열을 채웁니다. 태그는 덮어쓰지 않으며 PC 밖으로 나가는 것은 없습니다',
   'estimate tempo bpm analysis rhythm beat': '템포 추정 bpm 분석 리듬 박자',
   'TV home': 'TV 홈',
   'With living-room mode: opens big tiles when it turns on (search, songs, albums, artists, mixes, radio…) for the arrow keys or a gamepad': '거실 모드와 함께: 켤 때 큰 타일(검색, 곡, 앨범, 아티스트, 믹스, 라디오 등)을 엽니다. 방향키나 게임패드용',

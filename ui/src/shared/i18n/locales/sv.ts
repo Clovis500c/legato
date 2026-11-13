@@ -2362,7 +2362,7 @@ const sv: Record<string, string> = {
   'Each output device picked in the player menu remembers the volume you last set on it and gets it back when you switch to it': 'Varje utgångsenhet du väljer i spelarens meny minns den volym du senast ställde in på den och får tillbaka den när du byter till den',
   'volume per output device speakers headphones remember': 'volym per utgångsenhet högtalare hörlurar minns',
   'Estimate tempo': 'Uppskatta tempo',
-  'For local songs with no tempo in their tags: a few files at a time, in the background, from their first 90 seconds; fills the BPM column, never over a tag; nothing leaves the PC': 'För lokala låtar utan tempo i taggarna: några filer åt gången, i bakgrunden, från de första 90 sekunderna; fyller BPM-kolumnen, aldrig över en tagg; inget lämnar datorn',
+  'For local songs with no tempo or key in their tags: a few files at a time, in the background, from their first seconds; fills the BPM and Key columns, never over a tag; nothing leaves the PC': 'För lokala låtar utan tempo eller tonart i taggarna: några filer åt gången, i bakgrunden, från de första sekunderna; fyller kolumnerna BPM och Tonart, aldrig över en tagg; inget lämnar datorn',
   'estimate tempo bpm analysis rhythm beat': 'uppskatta tempo bpm analys rytm takt',
   'TV home': 'TV-startsida',
   'With living-room mode: opens big tiles when it turns on (search, songs, albums, artists, mixes, radio…) for the arrow keys or a gamepad': 'Med vardagsrumsläget: öppnar stora rutor när det slås på (sök, låtar, album, artister, mixar, radio …) för piltangenter eller handkontroll',

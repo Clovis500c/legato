@@ -708,6 +708,12 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       setting `tempoGuesses` (no schema change), filling only EMPTY tempo, never over a tag. Decided alone (2026-11-13): tempo
       only, estimates share the BPM column with tags (no marker), octave errors accepted until an ear checks real songs. Never
       heard on real songs; energy, key, mood and the similarity feeds are left. 2026-11-13 (lot 25): the answers are kept in memory and written back every 10 calls and at the end of a run, no longer whole on every call.
+      2026-11-13 (lot 26), the key: `music_player::key` (pitch-class energy by Goertzel from C2 to B6 on 30 s brought down to 11 kHz,
+      Krumhansl-Kessler major and minor profiles in 12 rotations, no answer for noise, silence, a clip under 8 s or a close tie;
+      triad progressions in C and in Am read right, noise and silence read none) fills an EMPTY key (written "C", "Am", "F#m" as
+      tags do) in the same scan, same setting (its text now says "tempo or key"); the kept answers carry the key too (older
+      ones still read, and are decoded once more). Real music is the unknown: the thresholds (0.55 match, 0.03 margin, 0.15
+      spread) were set on made-up chords. Left: energy, brightness, mood, and the similarity feeds.
 
 **Low**
 - [x] `S` Focus / workout sessions: a timer, no-lyrics or high-BPM mix, a summary after. (Left by the autopilot

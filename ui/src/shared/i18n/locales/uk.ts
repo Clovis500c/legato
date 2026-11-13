@@ -2362,7 +2362,7 @@ const uk: Record<string, string> = {
   'Each output device picked in the player menu remembers the volume you last set on it and gets it back when you switch to it': 'Кожен пристрій виводу, обраний у меню програвача, запам’ятовує останню задану на ньому гучність і повертає її після перемикання на нього',
   'volume per output device speakers headphones remember': 'гучність пристрій виводу колонки навушники запам’ятати',
   'Estimate tempo': 'Оцінювати темп',
-  'For local songs with no tempo in their tags: a few files at a time, in the background, from their first 90 seconds; fills the BPM column, never over a tag; nothing leaves the PC': 'Для локальних пісень без темпу в тегах: по кілька файлів за раз, у фоні, за першими 90 секундами; заповнює стовпець BPM, ніколи поверх тегу; нічого не залишає ПК',
+  'For local songs with no tempo or key in their tags: a few files at a time, in the background, from their first seconds; fills the BPM and Key columns, never over a tag; nothing leaves the PC': 'Для локальних пісень без темпу або тональності в тегах: кілька файлів за раз, у фоні, за першими секундами; заповнює стовпці BPM і «Тональність», ніколи не замінюючи тег; нічого не залишає ПК',
   'estimate tempo bpm analysis rhythm beat': 'оцінювати темп bpm аналіз ритм',
   'TV home': 'Головний екран ТБ',
   'With living-room mode: opens big tiles when it turns on (search, songs, albums, artists, mixes, radio…) for the arrow keys or a gamepad': 'З режимом вітальні: після ввімкнення відкриває великі плитки (пошук, пісні, альбоми, виконавці, мікси, радіо…) для стрілок або геймпада',

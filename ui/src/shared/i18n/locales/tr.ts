@@ -2362,7 +2362,7 @@ const tr: Record<string, string> = {
   'Each output device picked in the player menu remembers the volume you last set on it and gets it back when you switch to it': 'Oynatıcı menüsünden seçilen her çıkış aygıtı, üzerinde en son ayarladığın sesi hatırlar ve ona geçince geri getirir',
   'volume per output device speakers headphones remember': 'ses çıkış aygıtı hoparlör kulaklık hatırla',
   'Estimate tempo': 'Temposu tahmin et',
-  'For local songs with no tempo in their tags: a few files at a time, in the background, from their first 90 seconds; fills the BPM column, never over a tag; nothing leaves the PC': 'Etiketlerinde tempo olmayan yerel şarkılar için: arka planda her seferinde birkaç dosya, ilk 90 saniyeden; BPM sütununu doldurur, etiketin üstüne asla yazmaz; hiçbir şey bilgisayardan çıkmaz',
+  'For local songs with no tempo or key in their tags: a few files at a time, in the background, from their first seconds; fills the BPM and Key columns, never over a tag; nothing leaves the PC': 'Etiketinde tempo veya tonu olmayan yerel şarkılar için: arka planda bir seferde birkaç dosya, ilk saniyelerinden; BPM ve Ton sütunlarını doldurur, bir etiketin üzerine asla yazmaz; hiçbir şey bilgisayardan çıkmaz',
   'estimate tempo bpm analysis rhythm beat': 'tempo tahmin bpm analiz ritim',
   'TV home': 'TV ana ekranı',
   'With living-room mode: opens big tiles when it turns on (search, songs, albums, artists, mixes, radio…) for the arrow keys or a gamepad': 'Oturma odası moduyla: açıldığında büyük karolar açar (arama, şarkılar, albümler, sanatçılar, miksler, radyo…), ok tuşları veya oyun kolu için',

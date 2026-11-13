@@ -2362,7 +2362,7 @@ const nl: Record<string, string> = {
   'Each output device picked in the player menu remembers the volume you last set on it and gets it back when you switch to it': 'Elk uitvoerapparaat dat je in het spelermenu kiest onthoudt het laatste volume dat je erop instelde en krijgt het terug als je ernaar overschakelt',
   'volume per output device speakers headphones remember': 'volume per uitvoerapparaat luidsprekers koptelefoon onthouden',
   'Estimate tempo': 'Tempo schatten',
-  'For local songs with no tempo in their tags: a few files at a time, in the background, from their first 90 seconds; fills the BPM column, never over a tag; nothing leaves the PC': 'Voor lokale nummers zonder tempo in de tags: een paar bestanden per keer, op de achtergrond, uit de eerste 90 seconden; vult de BPM-kolom, nooit over een tag heen; niets verlaat de pc',
+  'For local songs with no tempo or key in their tags: a few files at a time, in the background, from their first seconds; fills the BPM and Key columns, never over a tag; nothing leaves the PC': 'Voor lokale nummers zonder tempo of toonsoort in hun tags: een paar bestanden tegelijk, op de achtergrond, uit de eerste seconden; vult de kolommen BPM en Toonsoort, nooit over een tag heen; er verlaat niets de pc',
   'estimate tempo bpm analysis rhythm beat': 'tempo schatten bpm analyse ritme maat',
   'TV home': 'Tv-startscherm',
   'With living-room mode: opens big tiles when it turns on (search, songs, albums, artists, mixes, radio…) for the arrow keys or a gamepad': 'Met de woonkamermodus: opent bij het inschakelen grote tegels (zoeken, nummers, albums, artiesten, mixen, radio…) voor de pijltjestoetsen of een gamepad',

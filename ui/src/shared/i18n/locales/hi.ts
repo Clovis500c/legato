@@ -2362,7 +2362,7 @@ const hi: Record<string, string> = {
   'Each output device picked in the player menu remembers the volume you last set on it and gets it back when you switch to it': 'प्लेयर मेनू में चुना गया हर आउटपुट डिवाइस उस पर आपका आखिरी वॉल्यूम याद रखता है और उस पर लौटने पर वही वापस आता है',
   'volume per output device speakers headphones remember': 'वॉल्यूम आउटपुट डिवाइस स्पीकर हेडफ़ोन याद',
   'Estimate tempo': 'टेम्पो का अनुमान',
-  'For local songs with no tempo in their tags: a few files at a time, in the background, from their first 90 seconds; fills the BPM column, never over a tag; nothing leaves the PC': 'जिन स्थानीय गानों के टैग में टेम्पो नहीं है: एक बार में कुछ फ़ाइलें, पृष्ठभूमि में, पहले 90 सेकंड की ध्वनि से; BPM कॉलम भरता है, टैग पर कभी नहीं; कुछ भी PC से बाहर नहीं जाता',
+  'For local songs with no tempo or key in their tags: a few files at a time, in the background, from their first seconds; fills the BPM and Key columns, never over a tag; nothing leaves the PC': 'उन लोकल गानों के लिए जिनके टैग में टेम्पो या कुंजी नहीं है: एक बार में कुछ फ़ाइलें, पृष्ठभूमि में, उनके पहले कुछ सेकंड से; BPM और कुंजी कॉलम भरता है, टैग के ऊपर कभी नहीं; कुछ भी PC से बाहर नहीं जाता',
   'estimate tempo bpm analysis rhythm beat': 'टेम्पो अनुमान bpm विश्लेषण ताल',
   'TV home': 'टीवी होम',
   'With living-room mode: opens big tiles when it turns on (search, songs, albums, artists, mixes, radio…) for the arrow keys or a gamepad': 'लिविंग-रूम मोड के साथ: चालू होते ही बड़े टाइल खुलते हैं (खोज, गाने, एल्बम, कलाकार, मिक्स, रेडियो…), तीर कुंजियों या गेमपैड के लिए',

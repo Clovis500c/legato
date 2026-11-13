@@ -2362,7 +2362,7 @@ const fr: Record<string, string> = {
   'Each output device picked in the player menu remembers the volume you last set on it and gets it back when you switch to it': 'Chaque sortie audio choisie dans le menu du lecteur retient le dernier volume réglé dessus et le retrouve quand on y revient',
   'volume per output device speakers headphones remember': 'volume par sortie audio haut-parleurs casque mémoriser',
   'Estimate tempo': 'Estimer le tempo',
-  'For local songs with no tempo in their tags: a few files at a time, in the background, from their first 90 seconds; fills the BPM column, never over a tag; nothing leaves the PC': 'Pour les morceaux locaux sans tempo dans leurs tags : quelques fichiers à la fois, en arrière-plan, d’après les 90 premières secondes ; remplit la colonne BPM, jamais par-dessus un tag ; rien ne quitte le PC',
+  'For local songs with no tempo or key in their tags: a few files at a time, in the background, from their first seconds; fills the BPM and Key columns, never over a tag; nothing leaves the PC': 'Pour les morceaux locaux sans tempo ni tonalité dans leurs tags : quelques fichiers à la fois, en arrière-plan, d’après leurs premières secondes ; remplit les colonnes BPM et Tonalité, jamais par-dessus un tag ; rien ne quitte le PC',
   'estimate tempo bpm analysis rhythm beat': 'estimer tempo bpm analyse rythme battement',
   'TV home': 'Accueil TV',
   'With living-room mode: opens big tiles when it turns on (search, songs, albums, artists, mixes, radio…) for the arrow keys or a gamepad': 'Avec le mode salon : ouvre à l’activation de grandes tuiles (recherche, titres, albums, artistes, mixes, radio…) pour les flèches ou une manette',

@@ -973,7 +973,7 @@ function PlaybackSection() {
           <Row setting="youtubeChapters" label={msg('Chapters of long YouTube videos')} sub={tr('Asks YouTube for the chapters of a long video that plays (its own markers, or the times in its description) and adds Chapters to the player\'s menu')}>
             <Toggle label={tr('Chapters of long YouTube videos')} checked={s.youtubeChapters} onChange={(youtubeChapters) => update({ youtubeChapters })} />
           </Row>
-          <Row setting="tempoScan" label={msg('Estimate tempo')} sub={tr('For local songs with no tempo in their tags: a few files at a time, in the background, from their first 90 seconds; fills the BPM column, never over a tag; nothing leaves the PC')}>
+          <Row setting="tempoScan" label={msg('Estimate tempo')} sub={tr('For local songs with no tempo or key in their tags: a few files at a time, in the background, from their first seconds; fills the BPM and Key columns, never over a tag; nothing leaves the PC')}>
             <Toggle label={tr('Estimate tempo')} checked={s.tempoScan} onChange={(tempoScan) => update({ tempoScan })} />
           </Row>
           <Row setting="volumePerSource" label={msg('Volume per source')} sub={tr('Each source remembers the volume you last set on it: files, YouTube and Spotify need no turn of the knob when the queue switches source')}>

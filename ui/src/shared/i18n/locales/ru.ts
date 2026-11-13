@@ -2362,7 +2362,7 @@ const ru: Record<string, string> = {
   'Each output device picked in the player menu remembers the volume you last set on it and gets it back when you switch to it': 'Каждое устройство вывода, выбранное в меню плеера, запоминает последнюю заданную на нём громкость и возвращает её при переключении на него',
   'volume per output device speakers headphones remember': 'громкость устройство вывода колонки наушники запоминать',
   'Estimate tempo': 'Оценивать темп',
-  'For local songs with no tempo in their tags: a few files at a time, in the background, from their first 90 seconds; fills the BPM column, never over a tag; nothing leaves the PC': 'Для локальных песен без темпа в тегах: по несколько файлов за раз, в фоне, по первым 90 секундам; заполняет столбец BPM, никогда поверх тега; ничего не покидает ПК',
+  'For local songs with no tempo or key in their tags: a few files at a time, in the background, from their first seconds; fills the BPM and Key columns, never over a tag; nothing leaves the PC': 'Для локальных песен без темпа или тональности в тегах: несколько файлов за раз, в фоне, по первым секундам; заполняет столбцы BPM и «Тональность», никогда не заменяя тег; ничего не покидает ПК',
   'estimate tempo bpm analysis rhythm beat': 'оценивать темп bpm анализ ритм',
   'TV home': 'Главный экран ТВ',
   'With living-room mode: opens big tiles when it turns on (search, songs, albums, artists, mixes, radio…) for the arrow keys or a gamepad': 'С режимом гостиной: при включении открывает крупные плитки (поиск, песни, альбомы, исполнители, миксы, радио…) для стрелок или геймпада',

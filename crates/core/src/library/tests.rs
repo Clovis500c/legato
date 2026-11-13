@@ -1293,18 +1293,22 @@ fn the_caches_clear_alone_and_say_what_they_held() -> Result<()> {
 #[test]
 fn a_guessed_tempo_fills_a_gap_and_never_replaces_a_tag() -> Result<()> {
     let lib = Library::in_memory()?;
-    let file = |n: u32, bpm: Option<u32>| LocalSong { track: Track { ids: [(Source::Local, format!("C:/Music/{n}.flac"))].into(), ..song(n) }, genre: None, year: None, bpm, key: None };
+    let file = |n: u32, bpm: Option<u32>| LocalSong { track: Track { ids: [(Source::Local, format!("C:/Music/{n}.flac"))].into(), ..song(n) }, genre: None, year: None, bpm, key: bpm.map(|_| "Am".to_string()) };
     lib.replace_local(&[file(1, None), file(2, Some(128))])?;
     let todo = lib.untimed_local()?;
     assert_eq!(todo.len(), 1);
     assert!(todo[0].1.ends_with("1.flac"));
     lib.guess_tempo(todo[0].0, 97)?;
+    assert_eq!(lib.untimed_local()?.len(), 1, "its key is still missing");
+    lib.guess_key(todo[0].0, "F#m")?;
     assert!(lib.untimed_local()?.is_empty());
     let all = lib.tracks()?;
     assert!(all.iter().any(|t| t.bpm == Some(97)) && all.iter().any(|t| t.bpm == Some(128)));
     // A guess over a tag does nothing.
     let tagged = all.iter().find(|t| t.bpm == Some(128)).unwrap().id;
     lib.guess_tempo(tagged, 60)?;
-    assert!(lib.tracks()?.iter().any(|t| t.bpm == Some(128)));
+    lib.guess_key(tagged, "C")?;
+    assert!(lib.tracks()?.iter().any(|t| t.bpm == Some(128) && t.key.as_deref() == Some("Am")));
+    assert!(lib.tracks()?.iter().any(|t| t.key.as_deref() == Some("F#m")));
     Ok(())
 }

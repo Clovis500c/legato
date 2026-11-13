@@ -2362,7 +2362,7 @@ const ja: Record<string, string> = {
   'Each output device picked in the player menu remembers the volume you last set on it and gets it back when you switch to it': 'プレーヤーのメニューで選んだ出力デバイスごとに最後に設定した音量を覚え、切り替えたときに戻します',
   'volume per output device speakers headphones remember': '音量 出力デバイス スピーカー ヘッドホン 記憶',
   'Estimate tempo': 'テンポを推定',
-  'For local songs with no tempo in their tags: a few files at a time, in the background, from their first 90 seconds; fills the BPM column, never over a tag; nothing leaves the PC': 'タグにテンポがないローカル曲を、バックグラウンドで数ファイルずつ、最初の 90 秒の音から推定します。BPM 列を埋めますが、タグは上書きしません。PC の外には何も送られません',
+  'For local songs with no tempo or key in their tags: a few files at a time, in the background, from their first seconds; fills the BPM and Key columns, never over a tag; nothing leaves the PC': 'タグにテンポやキーがないローカル曲向け：バックグラウンドで数ファイルずつ、最初の数秒から推定し、BPM 列とキー列を埋めます。タグは上書きしません。PC の外には何も送りません',
   'estimate tempo bpm analysis rhythm beat': 'テンポ 推定 bpm 解析 リズム',
   'TV home': 'TV ホーム',
   'With living-room mode: opens big tiles when it turns on (search, songs, albums, artists, mixes, radio…) for the arrow keys or a gamepad': 'リビングルームモードと併用：オンにすると大きなタイル（検索、曲、アルバム、アーティスト、ミックス、ラジオなど）を開きます。矢印キーやゲームパッド向け',

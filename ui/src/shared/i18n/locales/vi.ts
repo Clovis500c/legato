@@ -2362,7 +2362,7 @@ const vi: Record<string, string> = {
   'Each output device picked in the player menu remembers the volume you last set on it and gets it back when you switch to it': 'Mỗi thiết bị đầu ra chọn trong menu trình phát nhớ âm lượng bạn đặt gần nhất và khôi phục khi bạn chuyển sang nó',
   'volume per output device speakers headphones remember': 'âm lượng theo thiết bị đầu ra loa tai nghe nhớ',
   'Estimate tempo': 'Ước lượng nhịp độ',
-  'For local songs with no tempo in their tags: a few files at a time, in the background, from their first 90 seconds; fills the BPM column, never over a tag; nothing leaves the PC': 'Với bài hát cục bộ không có nhịp độ trong thẻ: vài tệp mỗi lần, chạy nền, từ 90 giây đầu; điền cột BPM, không bao giờ đè lên thẻ; không có gì rời khỏi máy',
+  'For local songs with no tempo or key in their tags: a few files at a time, in the background, from their first seconds; fills the BPM and Key columns, never over a tag; nothing leaves the PC': 'Cho bài hát cục bộ không có nhịp độ hoặc âm điệu trong thẻ: vài tệp mỗi lần, chạy nền, từ vài giây đầu; điền cột BPM và Âm điệu, không bao giờ ghi đè thẻ; không có gì rời khỏi PC',
   'estimate tempo bpm analysis rhythm beat': 'ước lượng nhịp độ bpm phân tích nhịp',
   'TV home': 'Màn hình chính TV',
   'With living-room mode: opens big tiles when it turns on (search, songs, albums, artists, mixes, radio…) for the arrow keys or a gamepad': 'Với chế độ phòng khách: khi bật sẽ mở các ô lớn (tìm kiếm, bài hát, album, nghệ sĩ, mix, radio…) cho phím mũi tên hoặc tay cầm',

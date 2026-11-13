@@ -2,6 +2,7 @@
 
 pub mod export;
 pub mod http;
+pub mod key;
 pub mod level;
 mod live;
 pub mod mic;
