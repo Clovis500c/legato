@@ -100,6 +100,31 @@ fn text(raw: &str) -> String {
     raw.replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"").replace("&apos;", "'").replace("&amp;", "&").trim().to_string()
 }
 
+/// A host on this network (a private, loopback or `.local` address: `music_core::server::private_host`).
+fn on_this_network(address: &str) -> bool {
+    url::Url::parse(address).ok().and_then(|u| u.host_str().map(|h| music_core::server::private_host(h.trim_matches(['[', ']'])))).unwrap_or(false)
+}
+
+/// The client for `url`: a public address is never redirected onto this network (a feed from the web can't make the app
+/// ask the router or this PC). A feed on this network (the user's own server) goes where it says.
+fn client_for(url: &str) -> reqwest::Client {
+    static PUBLIC: std::sync::LazyLock<reqwest::Client> = std::sync::LazyLock::new(|| {
+        crate::builder()
+            .redirect(reqwest::redirect::Policy::custom(|a| {
+                if a.previous().len() >= 10 {
+                    a.error("too many redirects")
+                } else if on_this_network(a.url().as_str()) {
+                    a.error("a public address sent us onto this network")
+                } else {
+                    a.follow()
+                }
+            }))
+            .build()
+            .unwrap_or_default()
+    });
+    if on_this_network(url) { crate::http() } else { PUBLIC.clone() }
+}
+
 fn http_url(s: &str) -> Option<String> {
     let u = url::Url::parse(s.trim()).ok()?;
     matches!(u.scheme(), "http" | "https").then(|| u.to_string())
@@ -126,10 +151,12 @@ pub fn parse(xml: &str, url: &str) -> Result<Feed> {
     let title = tag(head, "title").filter(|t| !t.is_empty()).ok_or_else(|| anyhow!("That address isn't a podcast feed"))?;
     let author = tag(head, "itunes:author").or_else(|| tag(head, "managingEditor")).unwrap_or_default();
     let image = attr(head, "itunes:image", "href").and_then(|i| http_url(&i)).filter(|i| i.starts_with("https://")).unwrap_or_default();
+    // shortcut: a public name that resolves to a private address isn't caught (DNS rebinding), only addresses written out.
+    let lan_feed = on_this_network(url);
     let mut episodes = Vec::new();
     for item in xml[first..].split("<item").skip(1) {
         let item = item.split("</item>").next().unwrap_or(item);
-        let Some(audio) = attr(item, "enclosure", "url").and_then(|u| http_url(&u)) else { continue };
+        let Some(audio) = attr(item, "enclosure", "url").and_then(|u| http_url(&u)).filter(|a| lan_feed || !on_this_network(a)) else { continue };
         let name = tag(item, "title").filter(|t| !t.is_empty()).unwrap_or_else(|| audio.clone());
         let id = tag(item, "guid").filter(|g| !g.is_empty() && g.len() <= 500).unwrap_or_else(|| audio.clone());
         let length = tag(item, "itunes:duration").and_then(|d| duration(&d));
@@ -158,7 +185,7 @@ pub fn opml(xml: &str) -> Vec<Feed> {
 /// Reads the feed at `address` (http or https, 8 MB at most).
 pub async fn fetch(address: &str) -> Result<Feed> {
     let url = http_url(address).ok_or_else(|| anyhow!("Type a podcast feed's address (http or https)"))?;
-    let mut res = crate::http().get(&url).header(reqwest::header::USER_AGENT, AGENT).timeout(TIMEOUT).send().await.map_err(|_| anyhow!("That podcast feed doesn't answer"))?;
+    let mut res = client_for(&url).get(&url).header(reqwest::header::USER_AGENT, AGENT).timeout(TIMEOUT).send().await.map_err(|_| anyhow!("That podcast feed doesn't answer"))?;
     if !res.status().is_success() {
         bail!("That podcast feed refused the request (HTTP {})", res.status().as_u16());
     }
@@ -176,7 +203,7 @@ pub async fn fetch(address: &str) -> Result<Feed> {
 /// the engine skips ahead). The caller bounds the wait for the answer.
 pub async fn open(address: &str, from: u64) -> Result<crate::servers::Streamed> {
     let url = http_url(address).ok_or_else(|| anyhow!("This episode's address isn't right"))?;
-    let res = crate::http().get(url).header(reqwest::header::USER_AGENT, AGENT).header(reqwest::header::RANGE, format!("bytes={from}-")).send().await.map_err(|_| anyhow!("This episode's server doesn't answer"))?;
+    let res = client_for(&url).get(url).header(reqwest::header::USER_AGENT, AGENT).header(reqwest::header::RANGE, format!("bytes={from}-")).send().await.map_err(|_| anyhow!("This episode's server doesn't answer"))?;
     Ok(crate::servers::Streamed::of(res))
 }
 
@@ -202,6 +229,34 @@ mod tests {
         assert_eq!((f.episodes[0].id.as_str(), f.episodes[0].title.as_str(), f.episodes[0].duration_ms), ("g2", "Ep 2: <b>Two</b>", Some(3_723_000)));
         assert_eq!(f.episodes[1].id, "http://cdn.example/1.mp3");
         assert_eq!(f.episodes[1].duration_ms, Some(2_710_000));
+    }
+
+    #[test]
+    fn a_public_feed_never_points_the_app_onto_this_network() {
+        let lan = r#"<rss><channel><title>S</title>
+          <item><title>a</title><enclosure url="http://192.168.1.1/admin"/></item>
+          <item><title>b</title><enclosure url="http://127.0.0.1:8080/x.mp3"/></item>
+          <item><title>c</title><enclosure url="http://nas.local/x.mp3"/></item>
+          <item><title>d</title><enclosure url="http://[::1]/x.mp3"/></item>
+          <item><title>e</title><enclosure url="http://2130706433/x.mp3"/></item>
+          <item><title>ok</title><enclosure url="https://cdn.example/x.mp3"/></item></channel></rss>"#;
+        assert_eq!(parse(lan, "https://feed.example/rss").unwrap().episodes.iter().map(|e| e.title.as_str()).collect::<Vec<_>>(), ["ok"]);
+        // The user's own server: its episodes stay.
+        assert_eq!(parse(lan, "http://192.168.1.5/rss").unwrap().episodes.len(), 6);
+    }
+
+    #[tokio::test]
+    async fn a_public_address_redirected_onto_this_network_is_refused() {
+        // The mock is on 127.0.0.1: asked through the public client, a redirect to it is refused.
+        let mut s = mockito::Server::new_async().await;
+        let _x = s.mock("GET", "/x").with_status(200).create_async().await;
+        assert!(on_this_network(&s.url()));
+        let hop = s.mock("GET", "/hop").with_status(302).with_header("location", &format!("{}/x", s.url())).create_async().await;
+        let err = client_for("https://feed.example/rss").get(format!("{}/hop", s.url())).send().await.unwrap_err();
+        assert!(err.is_redirect(), "{err}");
+        hop.assert_async().await;
+        // The user's own server follows its redirects.
+        assert_eq!(client_for(&s.url()).get(format!("{}/hop", s.url())).send().await.unwrap().status(), 200);
     }
 
     #[test]
