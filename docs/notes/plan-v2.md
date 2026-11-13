@@ -780,6 +780,7 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       Enter presses a focused non-button, Esc goes back. Decided alone (2026-11-13): arrows and Enter/Esc only. Never seen on a TV. 2026-11-13, second slice: a gamepad (Gamepad API, standard layout, polled while the mode is on): d-pad or left stick moves, A presses, B goes back (`pad.ts`). Never held a pad.
       Left:
       a purpose-built home screen, the player bar enlarged beyond the zoom, on-screen keyboard for search.
+      2026-11-13, third slice: an on-screen keyboard (Enter in a text field in the mode opens a grid of keys at the bottom, walked with the arrows or a pad; letters, digits, a few marks, space, delete, Done, Enter; lazy `livingRoom/OnScreenKeyboard.tsx`). Not done: a purpose-built TV home screen (a design call, left for the owner). Never seen.
 - [ ] `L` Media panel off Windows.
 
 ## Visualizer v2 (user's ask 2026-10-30: more realistic, more detailed)

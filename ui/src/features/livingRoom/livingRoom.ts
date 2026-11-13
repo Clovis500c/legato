@@ -1,9 +1,10 @@
 import { useStore } from '../../app/store'
 import { usePlayer } from '../player/store'
+import { openOsk } from './osk'
 import { padActions, pressed, type PadAction } from './pad'
 import { nextBox, type Dir } from './spatial'
 
-const FOCUSABLE = 'button:not([disabled]), a[href], [role="button"], [role="tab"], [role="menuitem"], input[type="checkbox"], input[type="radio"], [data-list], [tabindex="0"]'
+const FOCUSABLE = 'button:not([disabled]), a[href], [role="button"], [role="tab"], [role="menuitem"], input[type="checkbox"], input[type="radio"], input[type="search"], input[type="text"], input:not([type]), [data-list], [tabindex="0"]'
 const KEYS: Record<string, Dir> = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down' }
 /** Fields and controls that keep their own arrows (typing, sliders, open menus). */
 const OWN = 'input:not([type=checkbox]):not([type=radio]):not([type=button]), textarea, select, [contenteditable], input[type=range], [role="slider"], [role="menu"], [role="listbox"]'
@@ -59,6 +60,12 @@ export function startLivingRoom(on: () => boolean, subscribe: (f: () => void) =>
   const key = (e: KeyboardEvent) => {
     if (!on() || e.ctrlKey || e.altKey || e.metaKey || e.shiftKey || e.defaultPrevented) return
     const t = e.target instanceof Element ? e.target : null
+    // Enter in a text field opens the on-screen keyboard (its own Enter key sends one too: not a real key press).
+    if (e.key === 'Enter' && e.isTrusted && (t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement) && t.matches('input:not([type]), input[type=text], input[type=search], textarea') && !t.readOnly) {
+      openOsk(t)
+      e.preventDefault()
+      return
+    }
     if (t?.closest(OWN)) return
     const dir = KEYS[e.key]
     if (dir) {

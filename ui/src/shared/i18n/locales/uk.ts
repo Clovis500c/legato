@@ -2345,6 +2345,7 @@ const uk: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Ваш сервер приймає лише пароль, надісланий як є (у шістнадцятковому записі, це не шифрування). Через https його прочитає лише ваш сервер. Надіслати так?',
   'Send my password as it is': 'Надіслати пароль як є',
   'Hide explicit songs': 'Приховувати пісні з відвертим змістом',
+  'On-screen keyboard': 'Екранна клавіатура',
   '{n} new podcast episode': '{n} новий випуск подкасту',
   '{n} new podcast episodes': 'Нових випусків подкастів: {n}',
   'Check podcasts': 'Перевіряти подкасти',
