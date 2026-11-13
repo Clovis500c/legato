@@ -481,6 +481,8 @@ export interface Settings {
   playlistCovers: Record<string, PlaylistCover>
   /** Mixes page: 4 song covers, the first one, or the plain numbered tile. */
   mixCovers: 'grid' | 'single' | 'template'
+  /** Playlists as banners (tilted strips of covers under a colour): a carousel on Home, a band on a playlist's page. Off by default: the usual cards. */
+  playlistBanners: boolean
   /** Download updates in the background and install them when nothing plays. */
   autoUpdate: boolean
   /** Which releases this PC follows: Stable (promoted by hand) or Beta (every green push). Not synced between PCs. */
@@ -678,6 +680,7 @@ export const DEFAULTS: Settings = {
   homeFilter: 'all',
   playlistCovers: {},
   mixCovers: 'grid',
+  playlistBanners: false,
   autoUpdate: true,
   updateChannel: 'stable',
   coverCacheMb: 500,
@@ -949,6 +952,7 @@ export function sanitize(raw: unknown): Settings {
     lyricsSync: sanitizeLyricsSync(r.lyricsSync),
     playlistCovers: sanitizeCovers(r.playlistCovers),
     mixCovers: pick(r.mixCovers, ['grid', 'single', 'template'] as const, DEFAULTS.mixCovers),
+    playlistBanners: r.playlistBanners === true,
     autoUpdate: typeof r.autoUpdate === 'boolean' ? r.autoUpdate : DEFAULTS.autoUpdate,
     updateChannel: pick(r.updateChannel, ['stable', 'beta'] as const, DEFAULTS.updateChannel),
     coverCacheMb: pick(r.coverCacheMb, COVER_CACHE_MB, DEFAULTS.coverCacheMb),

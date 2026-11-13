@@ -1,7 +1,7 @@
 import { CaretDown, DotsThree, Info, MagnifyingGlass, MicrophoneStage, Play, Plus, ShareNetwork, Shuffle, SlidersHorizontal, SortAscending, VinylRecord } from '@phosphor-icons/react'
 import { artistName } from '../../shared/artistName'
 import { useShallow } from 'zustand/react/shallow'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { useSettings } from '../../app/settings'
 import { pageQuery, useStore } from '../../app/store'
 import { api, type LibraryTrack } from '../../shared/api'
@@ -33,6 +33,9 @@ import { browse, inPicks } from './browse'
 import { ColumnBrowser, SharePanel } from '../../app/pages'
 import { browserEntry, useBrowse } from './browserPicks'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
+
+// Playlists as banners: loaded only when the setting is on.
+const BannerHeader = lazy(() => import('./PlaylistBanner').then((m) => ({ default: m.BannerHeader })))
 
 /** YouTube-like sort list, in groups. Manual only on playlists. */
 const sortGroups: { id: Sort; label: string }[][] = [
@@ -368,6 +371,7 @@ export function PlaylistView({ id }: { id: number }) {
   const closeShare = useCallback(() => useStore.setState({ sharing: null }), [])
   // Band in the tint of the first song's cover (the playlist's own picture aside).
   const tint = useCoverTint(playlistTracks[0] && trackArt(playlistTracks[0])[0])
+  const banners = useSettings((s) => s.settings.playlistBanners)
   if (!playlist) return null
   // Add songs: to the panel under the list, its field ready.
   const addSongs = () => {
@@ -377,6 +381,11 @@ export function PlaylistView({ id }: { id: number }) {
   }
   return (
     <>
+      {banners && (
+        <Suspense fallback={null}>
+          <BannerHeader p={playlist} />
+        </Suspense>
+      )}
       <PageHeader
         onContextMenu={onMenu(() => playlistMenu(playlist))}
         art={<PlaylistCover p={playlist} size={184} big />}

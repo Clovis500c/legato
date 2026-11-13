@@ -143,6 +143,7 @@ export const SETTINGS: SettingDef[] = [
   { id: msg('Diagnostics log'), in: 'Storage', keywords: msg('log logs diagnostics report clear storage') },
   { id: msg('Animations'), in: 'Lists and navigation', keywords: msg('motion transitions reduce') },
   { id: msg('Right-click menus'), in: 'Lists and navigation', keywords: msg('context menu right click items essentials full detail more customize hide reorder') },
+  { id: msg('Playlists as banners'), in: 'Lists and navigation', keywords: msg('banner banners playlist carousel steam collage covers tiles browse category') },
   { id: msg('List columns'), in: 'List columns', keywords: msg('album sources duration') },
   { id: 'YouTube Music', in: 'sources', keywords: msg('google sign in account import playlists sync liked') },
   { id: msg('Update every 15 minutes'), in: 'sources', keywords: msg('automatic auto sync refresh background youtube music playlists liked minutes') },

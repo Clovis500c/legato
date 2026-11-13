@@ -376,6 +376,9 @@ function Appearance() {
           <Row setting="motion" label={msg('Animations')} sub={tr('Pages, menus, Now Playing and covers move a little. Off: nothing moves')} preview={<MotionScene motion={s.motion} />}>
             <Toggle label={tr('Animations')} checked={s.motion} onChange={(motion) => update({ motion })} />
           </Row>
+          <Row setting="playlistBanners" label={msg('Playlists as banners')} sub={tr('Playlists show as wide banners, tilted strips of their covers under a colour with the name over it: a carousel on Home and a band above a playlist’s page. Off: the usual cards.')}>
+            <Toggle label={tr('Playlists as banners')} checked={s.playlistBanners} onChange={(playlistBanners) => update({ playlistBanners })} />
+          </Row>
           <Row setting="menuLayout" label={msg('Right-click menus')} sub={tr('How much a right-click menu shows. Standard puts the rare items under More…; Full detail shows everything.')}>
             <Segmented
               label={tr('Right-click menus')}
