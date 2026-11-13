@@ -31,7 +31,7 @@ pub struct CastDevice {
 }
 
 struct Serving {
-    port: u16,
+    at: SocketAddr,
     stop: Arc<AtomicBool>,
 }
 
@@ -125,20 +125,21 @@ fn serve(listener: TcpListener, path: PathBuf, mime: &'static str, token: String
 fn stop_serving() {
     let Some(s) = SERVING.lock().unwrap().take() else { return };
     s.stop.store(true, Ordering::Relaxed);
-    // Wakes the waiting accept, which then sees the flag.
-    let _ = TcpStream::connect_timeout(&SocketAddr::from((Ipv4Addr::LOCALHOST, s.port)), Duration::from_millis(300));
+    // Wakes the waiting accept, which then sees the flag (on the address it is bound to: 127.0.0.1 is not it).
+    let _ = TcpStream::connect_timeout(&s.at, Duration::from_millis(300));
 }
 
 /// Starts serving `path` on `ip`; its address for the renderer.
 fn serve_file(ip: Ipv4Addr, path: PathBuf, mime: &'static str) -> Result<Url, String> {
     stop_serving();
     let listener = TcpListener::bind((ip, 0)).map_err(err)?;
-    let port = listener.local_addr().map_err(err)?.port();
+    let at = listener.local_addr().map_err(err)?;
+    let port = at.port();
     let token = remote::new_token();
     let stop = Arc::new(AtomicBool::new(false));
     let (stop_in, token_in) = (stop.clone(), token.clone());
     std::thread::Builder::new().name("cast".into()).spawn(move || serve(listener, path, mime, token_in, stop_in)).map_err(err)?;
-    *SERVING.lock().unwrap() = Some(Serving { port, stop });
+    *SERVING.lock().unwrap() = Some(Serving { at, stop });
     Url::parse(&format!("http://{ip}:{port}/{token}/file")).map_err(err)
 }
 
@@ -213,8 +214,11 @@ mod tests {
         assert_eq!(mime_of(Path::new("a/b.exe")), None);
     }
 
+    // Not 127.0.0.1: the server is bound to one address (the LAN's in the app), and its stop must reach that one.
+    const AT: Ipv4Addr = Ipv4Addr::new(127, 0, 0, 2);
+
     fn get(port: u16, request: &str) -> Vec<u8> {
-        let mut s = TcpStream::connect((Ipv4Addr::LOCALHOST, port)).unwrap();
+        let mut s = TcpStream::connect((AT, port)).unwrap();
         s.write_all(request.as_bytes()).unwrap();
         let mut out = Vec::new();
         s.read_to_end(&mut out).unwrap();
@@ -226,7 +230,7 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("a.mp3");
         std::fs::write(&path, b"0123456789").unwrap();
-        let url = serve_file(Ipv4Addr::LOCALHOST, path, "audio/mpeg").unwrap();
+        let url = serve_file(AT, path, "audio/mpeg").unwrap();
         let (port, token) = (url.port().unwrap(), url.path().split('/').nth(1).unwrap().to_string());
         let whole = String::from_utf8(get(port, &format!("GET /{token}/file HTTP/1.1\r\n\r\n"))).unwrap();
         assert!(whole.starts_with("HTTP/1.1 200 OK") && whole.contains("Content-Length: 10") && whole.ends_with("0123456789"), "{whole}");
@@ -239,6 +243,6 @@ mod tests {
         assert!(String::from_utf8(get(port, "GET /wrong/file HTTP/1.1\r\n\r\n")).unwrap().starts_with("HTTP/1.1 404"));
         stop_serving();
         std::thread::sleep(Duration::from_millis(200));
-        assert!(TcpStream::connect_timeout(&SocketAddr::from((Ipv4Addr::LOCALHOST, port)), Duration::from_millis(500)).is_err(), "stopped");
+        assert!(TcpStream::connect_timeout(&SocketAddr::from((AT, port)), Duration::from_millis(500)).is_err(), "stopped");
     }
 }
