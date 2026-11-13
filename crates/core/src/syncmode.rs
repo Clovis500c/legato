@@ -789,9 +789,12 @@ pub fn onedrive_folders(var: impl Fn(&str) -> Option<String>) -> Vec<PathBuf> {
     out
 }
 
+/// Extension of a PC's file in the sync folder.
+pub const FILE_EXT: &str = "legatosync";
+
 /// A PC's file in the sync folder: its id, filesystem-safe.
 pub fn device_file(device: &str) -> Option<String> {
-    (device.len() == 32 && device.bytes().all(|b| b.is_ascii_hexdigit())).then(|| format!("{device}.musicsync"))
+    (device.len() == 32 && device.bytes().all(|b| b.is_ascii_hexdigit())).then(|| format!("{device}.{FILE_EXT}"))
 }
 
 /// New PC id (32 hex chars).
@@ -1055,7 +1058,7 @@ mod tests {
         };
         assert_eq!(onedrive_folders(env), [PathBuf::from(r"C:\Users\me\OneDrive"), PathBuf::from(r"C:\Users\me\OneDrive - Work")]);
         assert!(onedrive_folders(|_| None).is_empty());
-        assert_eq!(device_file(&"ab".repeat(16)).unwrap(), format!("{}.musicsync", "ab".repeat(16)));
+        assert_eq!(device_file(&"ab".repeat(16)).unwrap(), format!("{}.legatosync", "ab".repeat(16)));
         assert!(device_file("../x").is_none());
         assert_eq!(new_device_id().len(), 32);
     }

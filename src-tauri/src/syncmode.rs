@@ -18,8 +18,6 @@ use tauri::{AppHandle, Emitter, Manager, State};
 
 /// Folder made inside the chosen one.
 const DIR: &str = "Legato Sync";
-/// The same, made by Music App (the app's first name): used while it's there, other PCs may still be on it.
-const OLD_DIR: &str = "Music App Sync";
 const MANIFEST: &str = "sync.json";
 /// This PC's Sync Mode settings (library settings row, never synced).
 const CONFIG: &str = "sync";
@@ -28,10 +26,10 @@ const KEY: &str = "sync_key";
 const FIRST: Duration = Duration::from_secs(15);
 const EVERY: Duration = Duration::from_secs(60);
 
-/// Sync files' folder inside the chosen one: Music App's if it's there, else Legato's.
+/// Sync files' folder inside the chosen one. The first name's folder is carried over first (`rename.rs`, installed app only).
 fn sync_dir(folder: &Path) -> PathBuf {
-    let old = folder.join(OLD_DIR);
-    if old.is_dir() { old } else { folder.join(DIR) }
+    crate::rename::sync_folder(folder);
+    folder.join(DIR)
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
@@ -39,7 +37,7 @@ fn sync_dir(folder: &Path) -> PathBuf {
 pub(crate) struct Config {
     #[serde(default)]
     pub(crate) device: String,
-    /// Folder holding `Legato Sync` (or Music App's). None = off.
+    /// Folder holding `Legato Sync`. None = off.
     #[serde(default)]
     pub(crate) folder: Option<String>,
     /// The OneDrive question was answered (set up, or not now).
@@ -197,7 +195,7 @@ fn others(dir: &Path, me: &str) -> Vec<PathBuf> {
         .map(|it| {
             it.filter_map(Result::ok)
                 .map(|e| e.path())
-                .filter(|p| p.extension().is_some_and(|x| x == "musicsync"))
+                .filter(|p| p.extension().is_some_and(|x| x == sm::FILE_EXT))
                 .filter(|p| p.file_name().and_then(|n| n.to_str()).is_some_and(|n| Some(n) != mine.as_deref()))
                 .collect()
         })
@@ -357,7 +355,7 @@ pub async fn sync_probe(state: State<'_, AppState>, folder: String) -> CmdResult
     })
 }
 
-/// Sync through `folder` (made there: `Music App Sync`). New folder: protected if a password is given. Folder used by
+/// Sync through `folder` (made there: `Legato Sync`). New folder: protected if a password is given. Folder used by
 /// another PC: its choice holds, the password must match.
 #[tauri::command]
 pub async fn sync_setup(app: AppHandle, state: State<'_, AppState>, folder: String, password: Option<String>) -> CmdResult<Merged> {
