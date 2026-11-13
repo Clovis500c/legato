@@ -93,7 +93,14 @@ fn copy_sync_dir(old: &Path, new: &Path) -> io::Result<()> {
         }
         let dest = new.join(name);
         if !dest.exists() {
-            std::fs::copy(&path, &dest)?;
+            // Through `<name>.part`: a copy cut short (disk full, the app killed) is never taken for one done, and the old
+            // folder stays until it is redone.
+            let mut part = dest.clone().into_os_string();
+            part.push(".part");
+            if let Err(e) = std::fs::copy(&path, &part).and_then(|_| std::fs::rename(&part, &dest)) {
+                let _ = std::fs::remove_file(&part);
+                return Err(e);
+            }
         }
     }
     if !left {
@@ -193,6 +200,21 @@ mod tests {
         assert!(new.join("dd.legatosync").exists() && old.join("odd").is_dir());
         // No old folder at all.
         copy_sync_dir(&root.join("nothing"), &new).unwrap();
+        std::fs::remove_dir_all(&root).unwrap();
+    }
+
+    #[test]
+    fn a_copy_cut_short_is_redone_never_taken_for_done() {
+        let root = scratch("cut");
+        let (old, new) = (root.join(OLD_SYNC_DIR), root.join(NEW_SYNC_DIR));
+        std::fs::create_dir_all(&old).unwrap();
+        std::fs::create_dir_all(&new).unwrap();
+        std::fs::write(old.join("ee.musicsync"), "the whole of pc e").unwrap();
+        // What a copy cut short leaves (the disk full, the app killed): never the file's own name, so it is done again.
+        std::fs::write(new.join("ee.legatosync.part"), "the wh").unwrap();
+        copy_sync_dir(&old, &new).unwrap();
+        assert_eq!(std::fs::read_to_string(new.join("ee.legatosync")).unwrap(), "the whole of pc e");
+        assert!(!new.join("ee.legatosync.part").exists() && !old.exists());
         std::fs::remove_dir_all(&root).unwrap();
     }
 
