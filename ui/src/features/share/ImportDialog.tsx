@@ -14,13 +14,25 @@ export function ImportDialog({ code }: { code: string }) {
   const [preview, setPreview] = useState<SharePreview>()
   const close = useCallback(() => useStore.setState({ incoming: undefined }), [])
   useEffect(() => {
+    // A second run (strict mode, a new code) must not play the song twice.
+    let alive = true
     api
       .sharePreview(code)
-      .then(setPreview)
+      .then((p) => {
+        if (!alive) return
+        // One song: it plays, no playlist to import (a few songs: the box below).
+        if (p.tracks !== 1) return setPreview(p)
+        close()
+        void import('./playShared').then((m) => m.playSharedSong(code))
+      })
       .catch((e) => {
+        if (!alive) return
         useStore.setState({ error: String(e) })
         close()
       })
+    return () => {
+      alive = false
+    }
   }, [code, close])
 
   // The import screen takes it from here: covers landing, Cancel, the playlist to open at the end.

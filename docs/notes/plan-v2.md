@@ -170,6 +170,14 @@ Where a line says "reading", the owner hasn't confirmed it.
 
 ## The owner's asks of 2026-11-13
 
+- [x] `S` A shared song plays instead of opening "Import a shared playlist" (the owner): a link, a nearby send or the picture of "Share as
+      a picture" that holds ONE song now plays it (`share_song`, `share/playShared.ts`); several songs open the same box as before.
+      2026-11-13: the library's own row when it has the song, else the song as the sender gave it (YouTube video with its names, an
+      Apple id looked up, a bare video named by oEmbed), a title alone found on YouTube like any search hit (one search). A song
+      not found says so and plays nothing. Decided alone (2026-11-13): it is played, not added to the library (the easiest to
+      undo; Add to library stays in the player's menu), and its sources travel with it so each plays on its platform. Tests: the
+      library's song, a song outside it, a song not found (the choice of one or several is the preview's count). The Rust half
+      (the lookup of an Apple id, a bare video, a title) is compiled and reviewed, not run against a service. Never seen on a screen.
 - [x] `S` Signed out of Google, searching YouTube (and so listening to what is found) did not work (the owner). 2026-11-13: found by
       reading, not reproduced against Google: the signed-out path itself is right (visitor requests, tested with a fake server and
       by the smoke test), but a session whose cookies had gone stale (cookies still in the webview, Google answering 401) was
