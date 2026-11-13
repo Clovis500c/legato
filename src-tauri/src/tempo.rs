@@ -80,8 +80,9 @@ pub async fn tempo_scan(state: State<'_, AppState>, limit: usize) -> CmdResult<u
         .map_err(err)?;
     let changed = !found.is_empty();
     {
-        let lib = state.lib();
+        // The same order as above (answers, then library): two calls at once can't lock each other out.
         let mut k = kept();
+        let lib = state.lib();
         let all = k.get_or_insert_with(Guesses::new);
         for (id, bpm, path, m) in found {
             if bpm > 0 {
