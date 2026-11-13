@@ -1,10 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from '../../app/store'
+import type { LibraryTrack } from '../../shared/api'
 import { Button } from '../../shared/ui/Button'
 import { tr, trn } from '../../shared/i18n/i18n'
 import { usePlayer } from '../player/store'
 import { pickRounds, SNIPPET_MS, snippetStart } from './rounds'
 import { closeBlind } from './blindOpen'
+
+/** A round's song, started at its snippet (asked as the start: a seek sent with the play reaches the song before it). */
+export function startRound(song: LibraryTrack) {
+  const p = usePlayer.getState()
+  p.resume({ list: [song], index: 0, order: [0], shuffle: p.shuffle, repeat: p.repeat, positionMs: snippetStart(song.durationMs ?? 0) })
+}
 
 /**
  * Blind test: ten songs of the library, a snippet of each (20 s from 30 % in), four answers. A full-window cover, so nothing of
@@ -19,15 +26,15 @@ export function BlindTest() {
   const current = game[round]
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
-  // Each round: the song starts, goes to its snippet once its length is known, and stops 20 s later.
+  // Each round: the song starts at its snippet and stops 20 s after it is heard.
   useEffect(() => {
     if (!current || answer !== null) return
-    usePlayer.getState().playTracks([current.song], 0)
+    const { song } = current
+    startRound(song)
     let moved = false
     const off = usePlayer.subscribe((s) => {
-      if (moved || !s.durationMs || !s.playing) return
+      if (moved || !s.playing || s.now?.trackId !== song.id) return
       moved = true
-      s.seek(snippetStart(s.durationMs))
       timer.current = setTimeout(() => usePlayer.getState().pauseNow(), SNIPPET_MS)
     })
     return () => {
