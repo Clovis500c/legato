@@ -89,6 +89,8 @@ impl Gateway {
         let host = url.host_str().map(str::to_lowercase).ok_or_else(|| anyhow!("Bad link"))?;
         if !self.loose {
             ensure!(https_host(&req.url).is_some(), "Only https:// links");
+            // An address written out is never looked up, so `PublicOnly` never sees it: checked here.
+            ensure!(host.trim_matches(['[', ']']).parse::<IpAddr>().ok().is_none_or(public), "Only public addresses");
         }
         let method = reqwest::Method::from_bytes(req.method.as_deref().unwrap_or("GET").to_uppercase().as_bytes()).map_err(|_| anyhow!("Bad method"))?;
         ensure!(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"].contains(&method.as_str()), "Bad method");
@@ -188,5 +190,13 @@ mod tests {
         big.assert_async().await;
         // The real gateway refuses plain http before any request.
         assert!(Gateway::new().fetch(&Request { url: format!("{}/v1", server.url()), ..Request::default() }).await.is_err());
+    }
+
+    #[tokio::test]
+    async fn an_address_written_out_is_held_to_public_ones_too() {
+        for url in ["https://127.0.0.1/", "https://192.168.1.1/admin", "https://[::1]/", "https://2130706433/", "https://[::ffff:10.0.0.1]/"] {
+            let e = Gateway::new().fetch(&Request { url: url.into(), ..Request::default() }).await.unwrap_err().to_string();
+            assert!(e.contains("public"), "{url}: {e}");
+        }
     }
 }
