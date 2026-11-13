@@ -401,6 +401,8 @@ export interface Settings {
   crossfade: number
   /** Songs longer than this many minutes skipped as the queue moves on (0 = off). */
   skipLong: number
+  /** Adds Cast to speakers… to the player's menu: DLNA / UPnP speakers and TVs on the local network play a local file this PC serves them (off: no search, nothing served). */
+  castSpeakers: boolean
   /** Adds Translate… under the lyrics: after the user agrees each time, the song's words go to MyMemory (off: nothing is ever sent). */
   translateLyrics: boolean
   /** Sets each fade between two songs from their tempos (`sweet.ts`): whole phrases of beats when they match, short when they clash (off: the fade set above, always). */
@@ -623,6 +625,7 @@ export const DEFAULTS: Settings = {
   libraryWide: false,
   crossfade: 2,
   skipLong: 0,
+  castSpeakers: false,
   translateLyrics: false,
   sweetFades: false,
   youtubeChapters: false,
@@ -888,6 +891,7 @@ export function sanitize(raw: unknown): Settings {
     pipClassic: typeof r.pipClassic === 'boolean' ? r.pipClassic : DEFAULTS.pipClassic,
     crossfade: typeof r.crossfade === 'number' && Number.isFinite(r.crossfade) ? Math.min(12, Math.max(0, Math.round(r.crossfade))) : DEFAULTS.crossfade,
     skipLong: typeof r.skipLong === 'number' && Number.isFinite(r.skipLong) ? Math.min(60, Math.max(0, Math.round(r.skipLong))) : DEFAULTS.skipLong,
+    castSpeakers: r.castSpeakers === true,
     translateLyrics: r.translateLyrics === true,
     sweetFades: r.sweetFades === true,
     youtubeChapters: r.youtubeChapters === true,

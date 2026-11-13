@@ -38,6 +38,7 @@ const load = {
   duplicates: () => import('../features/library/DuplicatesDialog').then((m) => ({ default: m.DuplicatesDialog })),
   columnBrowser: () => import('../features/library/ColumnBrowser').then((m) => ({ default: m.ColumnBrowser })),
   sharePanel: () => import('../features/share/SharePanel').then((m) => ({ default: m.SharePanel })),
+  cast: () => import('../features/player/CastDialog').then((m) => ({ default: m.CastDialog })),
   credits: () => import('../features/library/CreditsDialog').then((m) => ({ default: m.CreditsDialog })),
   editInfo: () => import('../features/library/EditInfo').then((m) => ({ default: m.EditInfo })),
 }
@@ -99,6 +100,7 @@ export const ConnectWizard = page(load.connectWizard)
 export const DuplicatesDialog = page(load.duplicates)
 export const EditInfo = page(load.editInfo)
 export const CreditsDialog = page(load.credits)
+export const CastDialog = page(load.cast)
 export const ColumnBrowser = page(load.columnBrowser)
 export const SharePanel = page(load.sharePanel)
 

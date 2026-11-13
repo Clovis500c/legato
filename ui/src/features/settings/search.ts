@@ -28,6 +28,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'appearance', label: msg('Volume control'), keywords: msg('knob bar slider sound') },
   { section: 'appearance', label: msg('Sleep timer button'), keywords: msg('moon sleep timer button hide') },
   { section: 'playback', label: msg('Skip long songs'), keywords: msg('skip long songs minutes length duration mix') },
+  { section: 'playback', label: msg('Cast to speakers'), keywords: msg('cast dlna upnp speaker tv network') },
   { section: 'playback', label: msg('Translate lyrics'), keywords: msg('translate translation lyrics language') },
   { section: 'playback', label: msg('Chapters of long YouTube videos'), keywords: msg('chapters timestamps dj set mix long video parts') },
   { section: 'playback', label: msg('Estimate tempo'), keywords: msg('estimate tempo bpm analysis rhythm beat') },

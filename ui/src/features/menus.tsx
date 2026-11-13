@@ -96,7 +96,7 @@ import { clearLoop, markLoop, useLoop } from './player/abLoop'
 import { toggleMetronome, useMetronome } from './player/metronome'
 import { addToPlaylist, markMusic, markNotExplicit, removeFromPlaylist, removePositions, removeTrackFromPlaylist, songs } from './library/edits'
 import { ownLiked, youtubeLiked } from './library/likedMusic'
-import { editInfo, findDuplicates, showCredits } from './library/dialogs'
+import { editInfo, findDuplicates, openCast, showCredits } from './library/dialogs'
 import { repeatedRows } from './library/duplicates'
 import { PlaylistCover as PlaylistIcon } from './library/PlaylistCover'
 import { primaryArtist } from './library/filter'
@@ -797,6 +797,7 @@ export function playerMenu({ controls = true }: { controls?: boolean } = {}): Me
     video && { label: tr('Share this mix as a file…'), icon: <ShareNetwork size={16} />, onSelect: () => void import('./editor/remixFile').then((m) => m.exportRemix()) },
     video && { label: tr('Copy this mix’s link'), icon: <Link size={16} />, onSelect: () => void import('./editor/remixFile').then((m) => m.copyRemixLink()) },
     chaptersMenu(),
+    useSettings.getState().settings.castSpeakers && { label: tr('Cast to speakers…'), icon: <Timer size={16} />, onSelect: openCast },
     useSettings.getState().settings.focusSessions && { label: tr('Focus session…'), icon: <Timer size={16} />, onSelect: () => void import('./player/focus').then((m) => m.startSession('focus')) },
     useSettings.getState().settings.focusSessions && { label: tr('Workout session…'), icon: <Timer size={16} />, onSelect: () => void import('./player/focus').then((m) => m.startSession('workout')) },
     { label: tr('Sleep timer'), icon: <Moon size={16} />, items: sleepMenu() },

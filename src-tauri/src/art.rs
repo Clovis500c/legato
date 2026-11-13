@@ -58,7 +58,7 @@ fn video(app: &tauri::AppHandle, name: &str, range: Option<&str>) -> Option<Resp
 }
 
 /// `Range: bytes=a-b` (or `a-`, `-n`, none) → first and last byte, inclusive. Out of the file: None.
-fn byte_range(range: Option<&str>, len: u64) -> Option<(u64, u64)> {
+pub(crate) fn byte_range(range: Option<&str>, len: u64) -> Option<(u64, u64)> {
     let last = len.checked_sub(1)?;
     let Some(spec) = range.and_then(|r| r.strip_prefix("bytes=")) else { return Some((0, last)) };
     let (a, b) = spec.split(',').next()?.trim().split_once('-')?;

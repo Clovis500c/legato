@@ -1,7 +1,7 @@
 import { Copy } from '@phosphor-icons/react'
 import { useMemo } from 'react'
 import { create } from 'zustand'
-import { CreditsDialog, DuplicatesDialog, EditInfo } from '../../app/pages'
+import { CastDialog, CreditsDialog, DuplicatesDialog, EditInfo } from '../../app/pages'
 import { PageBoundary } from '../../app/PageBoundary'
 import { useStore } from '../../app/store'
 import type { LibraryTrack } from '../../shared/api'
@@ -78,6 +78,22 @@ export function EditInfoHost() {
     tracks && (
       <PageBoundary fallback={null}>
         <EditInfo tracks={tracks} onClose={() => useEditInfo.setState({ tracks: null })} />
+      </PageBoundary>
+    )
+  )
+}
+
+const useCast = create<{ open: boolean }>(() => ({ open: false }))
+/** Opens the cast box (player menu › Cast to speakers…). */
+export const openCast = () => useCast.setState({ open: true })
+
+/** Mounted once in App. */
+export function CastHost() {
+  const open = useCast((s) => s.open)
+  return (
+    open && (
+      <PageBoundary fallback={null}>
+        <CastDialog onClose={() => useCast.setState({ open: false })} />
       </PageBoundary>
     )
   )

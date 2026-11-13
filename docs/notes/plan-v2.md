@@ -694,6 +694,15 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       default changing is not seen). Left: EQ preset per device (skipped for now), a change event (the list is asked when the menu opens).
 - [ ] `M` Right-to-left languages (Arabic, Hebrew: mirrored layout) and community translations (Weblate), more languages.
 - [ ] `L` Cast: DLNA / UPnP speakers and Chromecast for local files and personal servers.
+      2026-11-13, DLNA / UPnP for local files: Settings › Playback › Cast to speakers (off by default) adds "Cast to speakers…" to
+      the player's menu: a box lists the renderers that answer an SSDP search (`connectors/dlna.rs`), one click plays the song
+      on one (SetAVTransportURI, Play, then Pause / Play / Stop and a seek by SOAP) and pauses it here. The renderer pulls the
+      file from a one-file server this PC starts on its private address (`src-tauri/src/cast.rs`: random token in the path,
+      GET and HEAD with ranges, private peers only, one cast at a time, stopped by Stop casting). Every description or control
+      address that is not a private one is refused. Tested on made-up answers, a fake renderer (mockito) and the file server
+      over loopback; never with a real speaker or TV (their quirks are the unknown: protocolInfo, DIDL, seek support).
+      Left: Chromecast (its own protocol), songs of personal servers and the queue (one song at a time), a volume control,
+      the renderer's position (the box does not follow it), the PC's firewall prompt on first use (Windows asks).
 - [ ] `L` Sonic analysis, ours and local: features (tempo, key, energy, brightness, mood) computed from local files, and
       from what plays live for streams (the meter already listens; measured, not extracted), stored per song. Feeds
       "similar songs", song radio, sweet fades, the path between artists (Plexamp's Sonic Analysis needs a server).
