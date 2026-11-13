@@ -34,6 +34,7 @@ export function startDeferred(): () => void {
     ['Volume per source', () => import('../features/player/volumePerSource').then((m) => m.startVolumePerSource(() => useSettings.getState().settings.volumePerSource))],
     ['Living room', () => import('../features/livingRoom/livingRoom').then((m) => m.startLivingRoom(() => useSettings.getState().settings.livingRoom, (f) => useSettings.subscribe(f)))],
     ['TV home', () => import('../features/livingRoom/tvEntry').then((m) => m.startTvHome(() => useSettings.getState().settings.livingRoom && useSettings.getState().settings.tvHome, (f) => useSettings.subscribe(f), () => useStore.getState().go({ name: 'tv' })))],
+    ['Tempo estimate', () => import('../features/library/tempoScan').then((m) => m.startTempoScan(() => useSettings.getState().settings.tempoScan, api.tempoScan))],
     ['Podcast check', () => import('../features/podcasts/check').then((m) => m.startPodcastCheck(() => useSettings.getState().settings.podcasts && useSettings.getState().settings.podcastCheck))],
     ['A–B loop', () => import('../features/player/abLoop').then((m) => m.startLoop())],
     ['Alarm', () => import('../features/player/alarm').then((m) => m.startAlarm())],

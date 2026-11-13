@@ -674,6 +674,14 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       Skipped 2026-11-13 (night), the tempo-only slice: a tempo found by decoding every local file (onset autocorrelation) is minutes of CPU on a
       big library and its right answer (octave errors, half and double time) can only be judged by ear against known songs; the tags'
       BPM already feed Mixes and the metronome. Better with the owner's ear on a test set.
+      2026-11-13, the tempo-only slice landed anyway (the owner's wider mandate), behind Settings › Playback › Estimate tempo (off by
+      default): `music_player::tempo` (onset curve of the first 90 s at 200 a second, autocorrelation 60-180 BPM, a pull toward
+      120 against double and half readings, no answer for silence, noise or a clip under 12 s; click tracks 75-170 BPM read within
+      2), a few files at a time off the UI thread (`src-tauri/src/tempo.rs`, 5 at most per call, one call every 15 s while songs
+      wait, then every half hour, first one 2 minutes after launch), answers kept by file and modified time in the library
+      setting `tempoGuesses` (no schema change), filling only EMPTY tempo, never over a tag. Decided alone (2026-11-13): tempo
+      only, estimates share the BPM column with tags (no marker), octave errors accepted until an ear checks real songs. Never
+      heard on real songs; energy, key, mood and the similarity feeds are left.
 
 **Low**
 - [x] `S` Focus / workout sessions: a timer, no-lyrics or high-BPM mix, a summary after. (Left by the autopilot

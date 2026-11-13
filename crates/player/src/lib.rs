@@ -9,6 +9,7 @@ mod output;
 mod queue;
 pub mod shape;
 pub mod silence;
+pub mod tempo;
 
 pub use level::{Gain, Level};
 pub use music_dsp::{Effects, Levels, Live as LiveSettings, tap::Tap, viz};

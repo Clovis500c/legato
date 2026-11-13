@@ -394,6 +394,18 @@ impl Library {
     }
 
     /// A local file's tags rewritten by the user (Edit song info): its row follows (rescans only fill gaps).
+    /// Local songs whose tags give no tempo: id and file.
+    pub fn untimed_local(&self) -> Result<Vec<(i64, String)>> {
+        let mut stmt = self.db.prepare("SELECT i.track_id, i.source_id FROM track_ids i JOIN tracks t ON t.id = i.track_id WHERE i.source = 'local' AND t.bpm IS NULL ORDER BY i.track_id")?;
+        Ok(stmt.query_map([], |r| Ok((r.get(0)?, r.get(1)?)))?.collect::<rusqlite::Result<_>>()?)
+    }
+
+    /// A guessed tempo (from the sound, Settings › Playback › Estimate tempo): only where no tag gave one, never over it.
+    pub fn guess_tempo(&self, id: i64, bpm: u32) -> Result<()> {
+        self.db.prepare_cached("UPDATE tracks SET bpm = ?1 WHERE id = ?2 AND bpm IS NULL")?.execute(params![bpm, id])?;
+        Ok(())
+    }
+
     /// A local file's tempo and key, as its tags say now (a scan). Unchanged: nothing written.
     pub fn set_tempo_key(&self, id: i64, bpm: Option<u32>, key: Option<&str>) -> Result<()> {
         self.db.prepare_cached("UPDATE tracks SET bpm = ?1, key = ?2 WHERE id = ?3 AND (bpm, key) IS NOT (?1, ?2)")?.execute(params![bpm, key, id])?;
