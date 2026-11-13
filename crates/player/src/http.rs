@@ -15,6 +15,8 @@ use std::time::{Duration, Instant};
 pub const PREFIX: &str = "server:";
 /// A radio station is a server song whose key starts so (`server:radio:<stream address>`): endless, no seek.
 pub const RADIO: &str = "radio:";
+/// A podcast episode is a server song whose key starts so (`server:podcast:<audio address>`): a plain file, ranged.
+pub const PODCAST: &str = "podcast:";
 
 /// Read ahead of the decoder, at most.
 const AHEAD: usize = 4 << 20;

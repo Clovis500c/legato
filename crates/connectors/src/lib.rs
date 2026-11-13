@@ -16,6 +16,7 @@ pub mod nearby;
 pub mod oauth;
 pub mod pin;
 pub mod plex;
+pub mod podcast;
 pub mod radio_browser;
 pub mod rooms;
 pub mod servers;

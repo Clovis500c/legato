@@ -956,6 +956,9 @@ function PlaybackSection() {
           <Row setting="blindTest" label={msg('Blind test')} sub={tr('Adds Blind test… to the app menu: ten snippets of your library, four answers, a score; nothing of the player gives the song away')}>
             <Toggle label={tr('Blind test')} checked={s.blindTest} onChange={(blindTest) => update({ blindTest })} />
           </Row>
+          <Row setting="podcasts" label={msg('Podcasts')} sub={tr('Adds Podcasts to the app menu: open RSS feeds you type, keep your shows, play their episodes (the feed address and the servers it names are reached)')}>
+            <Toggle label={tr('Podcasts')} checked={s.podcasts} onChange={(podcasts) => update({ podcasts })} />
+          </Row>
         </div>
       </Group>
       <Group title={msg('Auto-DJ')}>

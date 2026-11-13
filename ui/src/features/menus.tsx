@@ -50,6 +50,7 @@ import {
   Prohibit,
   PuzzlePiece,
   Queue,
+  Microphone,
   Radio,
   Repeat,
   Scales,
@@ -1025,6 +1026,7 @@ export function appMenu(): MenuEntry[] {
     { label: tr('Forward'), icon: <ArrowRight size={16} />, disabled: !fwd.length, onSelect: goForward },
     '-',
     { label: tr('Sync library'), icon: <ArrowsClockwise size={16} />, disabled: !status.youtube.connected && !status.spotify.connected, onSelect: () => void sync() },
+    useSettings.getState().settings.podcasts && { label: tr('Podcasts'), icon: <Microphone size={16} />, onSelect: () => go({ name: 'podcasts' }) },
     useSettings.getState().settings.blindTest && { label: tr('Blind test…'), icon: <Question size={16} />, onSelect: openBlind },
     { label: tr('Add music'), icon: <PlusCircle size={16} />, onSelect: () => go({ name: 'add' }) },
     {

@@ -754,6 +754,12 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - [ ] `M-L` Profiles on one PC (each person's library, likes, history and Last.fm), switched from the top bar.
 - [ ] `L` Exclusive WASAPI output / bit-perfect for local files (foobar's audiophiles).
 - [ ] `L` Podcasts by RSS (open feeds only: no platform audio taken), resume per episode, speed.
+      2026-11-13, the first slice: Settings › Playback › Podcasts (off) adds Podcasts to the app menu: type an open feed's address, keep
+      the show with its heart, play its episodes (`connectors/podcast.rs`: the feed read by hand, no XML crate, mockito tests;
+      the audio is a ranged GET through the engine like a server song, `server:podcast:<address>`). Episodes of 20 minutes and more
+      resume as any long song does; speed is the Live Editor's. Decided alone (2026-11-13): no directory search, no new-episode
+      check, no downloads (a download is a copy of the audio; streaming only), no sidebar entry. Left: feed refresh, played marks,
+      OPML import. Never tried on a real feed or by ear; the privacy row says the feed host is reached.
 - [ ] `L` Living-room mode: big UI driven by a gamepad or the arrow keys (10-foot layout), for a PC on a TV.
 - [ ] `L` Media panel off Windows.
 

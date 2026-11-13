@@ -566,6 +566,14 @@ impl PlayerFetch for Fetch {
                 .map_err(|e| io::Error::new(io::ErrorKind::NotConnected, format!("{e:#}")))?;
             return Ok(Reply { status: s.status, content_length: s.content_length, content_range: s.content_range, content_type: s.content_type, body: Box::new(Body { body: s.body, left: Vec::new(), at: 0 }) });
         }
+        // A podcast episode (`podcast:<audio address>`): no account, an ordinary ranged file.
+        if let Some(audio) = key.strip_prefix(music_player::http::PODCAST) {
+            let audio = audio.to_string();
+            let s = tauri::async_runtime::block_on(async move { tokio::time::timeout(Duration::from_secs(30), music_connectors::podcast::open(&audio, from)).await })
+                .map_err(|_| io::Error::new(io::ErrorKind::TimedOut, "This episode's server doesn't answer (timed out)"))?
+                .map_err(|e| io::Error::new(io::ErrorKind::NotConnected, format!("{e:#}")))?;
+            return Ok(Reply { status: s.status, content_length: s.content_length, content_range: s.content_range, content_type: s.content_type, body: Box::new(Body { body: s.body, left: Vec::new(), at: 0 }) });
+        }
         let (a, item) = item(key).map_err(|e| io::Error::new(io::ErrorKind::PermissionDenied, e))?;
         let sub = Conn::from_account(&a);
         let s = tauri::async_runtime::block_on(async move { tokio::time::timeout(Duration::from_secs(30), sub.stream(&item, from, transcode)).await })
