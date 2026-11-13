@@ -8,7 +8,7 @@ import { usePlayer } from './store'
 
 const STORE = 'legato.resume'
 /** This PC's places (not synced: a file path means nothing on another PC). */
-function load(): Points {
+export function load(): Points {
   try {
     const raw = JSON.parse(localStorage.getItem(STORE) ?? '{}')
     return raw && typeof raw === 'object' ? raw : {}

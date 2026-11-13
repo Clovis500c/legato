@@ -401,6 +401,8 @@ export interface Settings {
   crossfade: number
   /** Songs longer than this many minutes skipped as the queue moves on (0 = off). */
   skipLong: number
+  /** Audiobooks page: long local files apart from music, with where each was left (off: no menu entry). */
+  booksPage: boolean
   /** Living-room mode: a larger interface and arrow-key navigation, for a PC on a TV (off: nothing changes). This PC only. */
   livingRoom: boolean
   /** Adds Podcasts to the app menu: open RSS feeds the user types, kept shows, episodes played (off: no entry, nothing asked). */
@@ -605,6 +607,7 @@ export const DEFAULTS: Settings = {
   libraryWide: false,
   crossfade: 2,
   skipLong: 0,
+  booksPage: false,
   livingRoom: false,
   podcasts: false,
   blindTest: false,
@@ -861,6 +864,7 @@ export function sanitize(raw: unknown): Settings {
     pipClassic: typeof r.pipClassic === 'boolean' ? r.pipClassic : DEFAULTS.pipClassic,
     crossfade: typeof r.crossfade === 'number' && Number.isFinite(r.crossfade) ? Math.min(12, Math.max(0, Math.round(r.crossfade))) : DEFAULTS.crossfade,
     skipLong: typeof r.skipLong === 'number' && Number.isFinite(r.skipLong) ? Math.min(60, Math.max(0, Math.round(r.skipLong))) : DEFAULTS.skipLong,
+    booksPage: r.booksPage === true,
     livingRoom: r.livingRoom === true,
     podcasts: r.podcasts === true,
     blindTest: r.blindTest === true,

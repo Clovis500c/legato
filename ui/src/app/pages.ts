@@ -10,6 +10,7 @@ const load = {
   mixes: () => import('../features/mixes/MixesView').then((m) => ({ default: m.MixesView })),
   mix: () => import('../features/mixes/MixesView').then((m) => ({ default: m.MixView })),
   podcasts: () => import('../features/podcasts/PodcastsView').then((m) => ({ default: m.PodcastsView })),
+  books: () => import('../features/books/BooksView').then((m) => ({ default: m.BooksView })),
   radio: () => import('../features/radio/RadioView').then((m) => ({ default: m.RadioView })),
   stats: () => import('../features/stats/StatsView').then((m) => ({ default: m.StatsView })),
   smart: () => import('../features/smart/SmartView').then((m) => ({ default: m.SmartView })),
@@ -68,6 +69,7 @@ export const SearchView = page(load.search)
 export const MixesView = page(load.mixes)
 export const RadioView = page(load.radio)
 export const PodcastsView = page(load.podcasts)
+export const BooksView = page(load.books)
 export const MixView = page(load.mix)
 export const StatsView = page(load.stats)
 export const SmartView = page(load.smart)
