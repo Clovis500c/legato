@@ -7,8 +7,8 @@ versions are in git (`git log -p -- docs/notes/handoff.md`). Updated 2026-11-13 
 ## Where things stand
 - **master** = `468c51ab`, pushed. **Beta 1.1.973** came out from it (2026-11-13; `check`, `pages`, `release` green on
   that commit). **Stable** 1.1.681 (2026-11-05): Windows installer, `latest.json`, the Android APK.
-- **platforms** = master + the local commits (`git log origin/master..platforms --oneline | wc -l`, this handoff
-  included). Not pushed at the time of this handoff. Opus has reread everything, up to `48c8a429`.
+- **platforms** = master + the local commits (20 at this commit, `git log origin/master..platforms --oneline | wc -l`,
+  this handoff's commit included). Not pushed at the time of this handoff. Opus has reread everything, up to `48c8a429`.
 - **The rename is done** (Beta 1.1.932): Music App → Legato in every format (QR prefix `LG1:`, `_legato._tcp`,
   `.legatosync`, `legato://` links). The one catch-up for data on disk is `src-tauri/src/rename.rs` (plus the old Run
   entry in `autostart.rs`, the old-install cleanup in `src-tauri/windows/hooks.nsh`): the plan line « Remove the rename
@@ -46,6 +46,9 @@ Everything new is behind a setting that is **off** by default: nothing changes f
 - **Android widgets** (rectangle, disc, queue): never built or run yet. Build the APK on the PC that has Gradle first.
 - **Diagnostics**: kill the app in Task Manager, start it again, then Settings › About › Copy diagnostics has « the last
   run ended without closing ».
+- **Frozen or blurred window** (seen on the owner's other PC, Beta 1.1.973, after about 2 minutes, with the Windhawk mod
+  `translucent-windows` 1.8.2): if it comes back, look for a `webview` line in the diagnostics log (a WebView2 process
+  that died, logged since `5bd682c1`), and test by excluding `legato.exe` in translucent-windows. Cause not proven.
 - **Covers and theme backgrounds** still show everywhere (the `art` scheme answers our own window only, `9868235b`).
 
 Older tries (Beta 1.1.932), still open:
