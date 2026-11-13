@@ -170,6 +170,12 @@ Where a line says "reading", the owner hasn't confirmed it.
 
 ## The owner's asks of 2026-11-13
 
+- [x] `S` The search bar no longer slides when Now Playing opens or closes (the owner): the bar recentres on the window (`useSearchCentered`),
+      and swapping Back / Forward for Close player moves its box, which a 300 ms `translate` transition turned into a slide.
+      2026-11-13: the transition is off for 400 ms after the player opens or closes (`TopBar`, `snap`), so the bar jumps; focus and window
+      resizes still glide. Reduced motion is untouched (the transition was the only motion). Decided alone (2026-11-13): off for a moment
+      rather than for good, so the bar's own growth on focus keeps its easing. Not testable here: it is a CSS transition on a measured
+      layout (Vitest has neither); never seen on a screen.
 - [x] `M` Erase every trace of "Music App" (the owner's QCM, 2026-11-13: almost nobody used that version, so the formats are renamed too and
       only ONE catch-up for data on disk stays, in `src-tauri/src/rename.rs`, behind `identity::installed()`). Steps, one commit each:
       - [x] share codes: the QR prefix `MA1:` → `LG1:`, `musicapp://` links no longer read (`share.rs`, `shareCode.ts`, fuzz, tests).

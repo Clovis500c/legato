@@ -1,6 +1,6 @@
 import { ArrowsIn, ArrowsOut, CaretDown, CaretLeft, CaretRight, CopySimple, Gear, Minus, PuzzlePiece, Square, Warning, WifiSlash, X } from '@phosphor-icons/react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { AddonsView, AddView, ConnectWizard, CoverScreen, HealthView, PipScreen, HomeView, ImportDialog, ImportScreen, Karaoke, MixesView, MixView, NotFoundView, RadioView, NowPlaying, preloadHome, RoomDialog, SearchView, SettingsView, ShareDialog, SmartView, StatsView, VizScreen, Welcome } from './pages'
 // Up next running out: similar songs (registers itself with the player).
@@ -95,6 +95,14 @@ function TopBar() {
   // The phone's bar has no room to move the search: it stays put.
   const phone = usePhone()
   const shift = useSearchCentered(searchBox, !phone)
+  // Now Playing opening or closing swaps what sits left of the search (Back / Forward, Close player): its recentring jumps then, it
+  // does not slide (2026-11-13). Focus and the window's own resizes still glide.
+  const [snap, setSnap] = useState(false)
+  useLayoutEffect(() => {
+    setSnap(true)
+    const t = setTimeout(() => setSnap(false), 400)
+    return () => clearTimeout(t)
+  }, [full])
   const setFull = usePlayer((s) => s.setFull)
   const go = useStore((s) => s.go)
   const page = useStore((s) => s.view.name)
@@ -135,7 +143,7 @@ function TopBar() {
           </button>
         </span>
       )}
-      <div ref={searchBox} data-tauri-drag-region className="flex h-full min-w-0 flex-1 items-center justify-center px-4 phone:px-1 *:translate-x-(--shift) *:transition-[translate] *:duration-300" style={{ ['--shift' as string]: `${shift}px` }}>
+      <div ref={searchBox} data-tauri-drag-region className={`flex h-full min-w-0 flex-1 items-center justify-center px-4 phone:px-1 *:translate-x-(--shift) ${snap ? '' : '*:transition-[translate] *:duration-300'}`} style={{ ['--shift' as string]: `${shift}px` }}>
         <SearchBar>
           <VoiceSearch />
         </SearchBar>
