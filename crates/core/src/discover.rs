@@ -32,8 +32,38 @@ pub fn top_artists<'a>(songs: impl IntoIterator<Item = (&'a str, u32)>, n: usize
     all.into_iter().take(n).map(|(name, _)| name).collect()
 }
 
+/// Last.fm's Discoveries: artists the library does not have, from the lists of artists close to each favourite (`lists`, each
+/// closest first). The ones close to the most favourites first, then the closest; a name counts once, however it is written
+/// (`primary_artist`). `known`: every artist of the library. At most `n`.
+pub fn fresh_artists<'a>(lists: &[Vec<String>], known: impl IntoIterator<Item = &'a str>, n: usize) -> Vec<String> {
+    let known: std::collections::HashSet<String> = known.into_iter().map(crate::matching::primary_artist).collect();
+    let mut seen: HashMap<String, (String, usize, usize)> = HashMap::new();
+    for list in lists {
+        for (rank, name) in list.iter().enumerate() {
+            let key = crate::matching::primary_artist(name);
+            if key.is_empty() || known.contains(&key) {
+                continue;
+            }
+            let e = seen.entry(key).or_insert_with(|| (name.clone(), 0, rank));
+            e.1 += 1;
+            e.2 = e.2.min(rank);
+        }
+    }
+    let mut all: Vec<(String, usize, usize)> = seen.into_values().collect();
+    all.sort_by(|a, b| b.1.cmp(&a.1).then(a.2.cmp(&b.2)).then(a.0.cmp(&b.0)));
+    all.into_iter().take(n).map(|(name, _, _)| name).collect()
+}
+
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn discoveries_skip_what_the_library_has_and_rank_by_how_many_favourites_name_them() {
+        let lists = vec![vec!["Own".to_string(), "Both".into(), "Solo A".into()], vec!["Both".into(), "solo b".into(), "OWN".into()]];
+        let got = super::fresh_artists(&lists, ["Own", "Other"], 2);
+        assert_eq!(got, ["Both", "solo b"]);
+        assert!(super::fresh_artists(&[], ["x"], 5).is_empty());
+    }
+
     use super::*;
 
     #[test]

@@ -565,7 +565,7 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       written to the file's TBPM / tmpo and TKEY / initialkey, the library row following). 2026-11-12, smart playlists: rules on Genre (contains / is /
       doesn't contain), Year and Tempo (BPM) (at least / at most; a song with no tag fails a number test, as unrated songs do for
       ratings): `rules.ts`, the rule editor. Never seen on a screen. Never seen on a screen.
-- [ ] `M` Mixes: genre / year tags (stored for local files only), Last.fm "Discoveries" (user's key); "Never in mixes"
+- [x] `M` Mixes: genre / year tags (stored for local files only), Last.fm "Discoveries" (user's key); "Never in mixes"
       on a discovered song (not in the library: no row to hold the choice).
       2026-11-12, the genre / year half: "Your {genre} songs" (up to 2) and "Your songs of the {decade}" (up to 2) mixes from the
       tags of local files (8 songs at least, left out when they repeat another mix; `mixes.rs`, titles in `words.ts`). Left open:
@@ -573,6 +573,14 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       song that is not in the library has it; its title and artist are remembered (`blockedFinds`, as `match_key`s, 2000 at most) and
       the mixes are made again without it (`mixes::without_blocked`). Left for the owner: Last.fm "Discoveries" (its public API has no
       recommendations call any more: what it should mean is a call).
+      2026-11-13 (night, no owner to ask), Last.fm "Discoveries": Settings › Playback › Last.fm suggestions (off by default; named
+      "suggestions" because "discoveries" contains "cover" in the settings search) puts a "Last.fm suggestions" button on Mixes. Decided
+      alone (2026-11-13): the meaning is the public calls that still exist: the artists Last.fm finds close (`artist.getSimilar`) to
+      the three you play most, minus the ones in the library, ranked by how many of the three name them, two top songs each
+      (`artist.getTopTracks`): 13 requests with the owner's own key (Settings › Accounts), once a day, kept in the library; the
+      favourites' names go to Last.fm (the website's scrobbling row says so). Clicking plays them: they carry no ids, YouTube
+      finds each as it comes up in the queue. Tests: the two calls against a fake server (list, lone entry, error), the
+      ranking. Never run against Last.fm; not in the Mixes list itself (a button, not a mix).
 - [x] `M` Internet radio stations (Radio Browser's open directory).
       Skipped by the autonomous run (2026-11-11): bigger than `M` once looked at. The engine plays HTTP only as a
       server song (`server:` paths through the shell's server fetcher, `crates/player/src/http.rs`), and a live stream

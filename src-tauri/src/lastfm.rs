@@ -138,3 +138,65 @@ pub async fn lastfm_scrobble(state: State<'_, AppState>, pending: State<'_, Pend
         }
     }
 }
+
+const DISCOVERIES: &str = "lastfmDiscoveries";
+const FRESH_S: i64 = 86_400;
+/// Favourites asked about, similar artists asked for each, artists kept, songs taken from each.
+const FAVOURITES: usize = 3;
+const SIMILAR: u32 = 10;
+const NEW_ARTISTS: usize = 10;
+const PER_ARTIST: u32 = 2;
+const GAP: Duration = Duration::from_millis(300);
+
+#[derive(Serialize, Deserialize)]
+struct Found {
+    at: i64,
+    tracks: Vec<music_core::model::Track>,
+}
+
+/// Mixes › Last.fm discoveries (Settings › Playback › Last.fm discoveries, off; needs the user's own Last.fm key): songs by
+/// artists close to the three you play most and not in the library. 13 requests with the key (the favourites' names go to
+/// Last.fm, nothing else), once a day, the answer kept in this PC's library. The songs carry no ids: they are found on
+/// YouTube as they come up in the queue.
+#[tauri::command]
+pub async fn lastfm_discoveries(state: State<'_, AppState>) -> CmdResult<Vec<music_core::model::Track>> {
+    let s = saved(&state);
+    if s.key.is_empty() {
+        return Err("Connect Last.fm in Settings › Accounts first (your own API key)".into());
+    }
+    let now = crate::unix_now();
+    let (favourites, known) = {
+        let lib = state.lib();
+        let kept = lib.setting(DISCOVERIES).ok().flatten().and_then(|v| serde_json::from_value::<Found>(v).ok());
+        if let Some(f) = kept.filter(|f| now - f.at < FRESH_S && !f.tracks.is_empty()) {
+            return Ok(f.tracks);
+        }
+        let stats = lib.play_stats().map_err(err)?;
+        let tracks = lib.tracks().map_err(err)?;
+        let favourites = music_core::discover::top_artists(tracks.iter().map(|t| (t.track.artist.as_str(), stats.get(&t.id).map_or(0, |s| s.0))), FAVOURITES);
+        (favourites, tracks.iter().map(|t| music_core::matching::first_artist(&t.track.artist).to_string()).collect::<Vec<_>>())
+    };
+    if favourites.is_empty() {
+        return Err("Play some songs first: the discoveries start from the artists you play most".into());
+    }
+    let fm = LastFm::new(&s.key, &s.secret);
+    let mut lists = Vec::new();
+    for artist in &favourites {
+        lists.push(fm.similar_artists(artist, SIMILAR).await.map_err(err)?);
+        tokio::time::sleep(GAP).await;
+    }
+    let mut tracks = Vec::new();
+    for artist in music_core::discover::fresh_artists(&lists, known.iter().map(String::as_str), NEW_ARTISTS) {
+        tokio::time::sleep(GAP).await;
+        for title in fm.top_tracks(&artist, PER_ARTIST).await.map_err(err)? {
+            tracks.push(music_core::model::Track { title, artist: artist.clone(), ..Default::default() });
+        }
+    }
+    if tracks.is_empty() {
+        return Err("Last.fm found no new artist close to yours".into());
+    }
+    if let Ok(json) = serde_json::to_value(Found { at: now, tracks: tracks.clone() }) {
+        let _ = state.lib().set_setting(DISCOVERIES, &json);
+    }
+    Ok(tracks)
+}

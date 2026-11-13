@@ -136,6 +136,18 @@ impl LastFm {
         }
     }
 
+    /// Artists Last.fm finds close to `artist`, closest first (`artist.getSimilar`: the name goes there, nothing else).
+    pub async fn similar_artists(&self, artist: &str, limit: u32) -> Result<Vec<String>> {
+        let p = BTreeMap::from([("artist".to_string(), artist.to_string()), ("limit".into(), limit.to_string()), ("autocorrect".into(), "1".into())]);
+        Ok(names(&self.call("artist.getSimilar", p).await?["similarartists"]["artist"]))
+    }
+
+    /// An artist's best-known songs on Last.fm, most played first (`artist.getTopTracks`).
+    pub async fn top_tracks(&self, artist: &str, limit: u32) -> Result<Vec<String>> {
+        let p = BTreeMap::from([("artist".to_string(), artist.to_string()), ("limit".into(), limit.to_string()), ("autocorrect".into(), "1".into())]);
+        Ok(names(&self.call("artist.getTopTracks", p).await?["toptracks"]["track"]))
+    }
+
     /// What plays now, on the profile (not a scrobble; failures aren't retried).
     pub async fn now_playing(&self, sk: &str, s: &Scrobble) -> Result<()> {
         let mut p = BTreeMap::from([("sk".to_string(), sk.to_string())]);
@@ -155,6 +167,15 @@ impl LastFm {
     }
 }
 
+/// The `name` of each entry of a Last.fm list (one entry alone comes as an object, not a list).
+fn names(v: &serde_json::Value) -> Vec<String> {
+    let one = |e: &serde_json::Value| e["name"].as_str().map(str::trim).filter(|n| !n.is_empty()).map(String::from);
+    match v.as_array() {
+        Some(list) => list.iter().filter_map(one).collect(),
+        None => one(v).into_iter().collect(),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -169,6 +190,26 @@ mod tests {
         let want: String = Md5::digest(b"api_keyxxxxxxxxmethodauth.getSessiontokenxxxxxxxmysecret").iter().map(|b| format!("{b:02x}")).collect();
         assert_eq!(sign(&p, "mysecret"), want);
         assert!(LastFm::valid_key(KEY) && !LastFm::valid_key("short") && !LastFm::valid_key(&"g".repeat(32)));
+    }
+
+    #[tokio::test]
+    async fn similar_artists_and_top_tracks_read_lists_and_a_lone_entry() {
+        let mut s = Server::new_async().await;
+        s.mock("POST", "/")
+            .match_body(Matcher::AllOf(vec![Matcher::UrlEncoded("method".into(), "artist.getSimilar".into()), Matcher::UrlEncoded("artist".into(), "Kavinsky".into()), Matcher::UrlEncoded("limit".into(), "3".into())]))
+            .with_body(r#"{"similarartists":{"artist":[{"name":"College","match":"1"},{"name":" "},{"name":"Electric Youth"}]}}"#)
+            .create_async()
+            .await;
+        s.mock("POST", "/")
+            .match_body(Matcher::UrlEncoded("method".into(), "artist.getTopTracks".into()))
+            .with_body(r#"{"toptracks":{"track":{"name":"A Real Hero"}}}"#)
+            .create_async()
+            .await;
+        s.mock("POST", "/").match_body(Matcher::UrlEncoded("artist".into(), "Nobody".into())).with_body(r#"{"error":6,"message":"The artist you supplied could not be found"}"#).create_async().await;
+        let fm = LastFm::with_urls(&s.url(), "https://example.invalid/", KEY, KEY);
+        assert_eq!(fm.similar_artists("Kavinsky", 3).await.unwrap(), ["College", "Electric Youth"]);
+        assert_eq!(fm.top_tracks("College", 2).await.unwrap(), ["A Real Hero"]);
+        assert!(fm.similar_artists("Nobody", 3).await.unwrap_err().to_string().contains("could not be found"));
     }
 
     #[test]

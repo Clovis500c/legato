@@ -1,5 +1,5 @@
 import { ArrowCounterClockwise, ArrowRight, Play, Prohibit, ThumbsDown } from '@phosphor-icons/react'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { api, type LibraryTrack, type Mix } from '../../shared/api'
@@ -124,13 +124,36 @@ function ResetHistory({ onDone }: { onDone: () => void }) {
   )
 }
 
+/** Last.fm suggestions (Settings › Playback, off): asks Last.fm for songs by artists close to the ones you play most, and plays them. */
+function DiscoveriesButton() {
+  const [busy, setBusy] = useState(false)
+  const play = usePlayer((s) => s.playTracks)
+  return (
+    <Button
+      variant="ghost"
+      disabled={busy}
+      onClick={() => {
+        setBusy(true)
+        api
+          .lastfmDiscoveries()
+          .then((songs) => play(songs.map(remoteTrack), 0))
+          .catch((e) => useStore.getState().notify(String(e), { kind: 'error' }))
+          .finally(() => setBusy(false))
+      }}
+    >
+      <Play size={14} /> {tr('Last.fm suggestions')}
+    </Button>
+  )
+}
+
 export function MixesView() {
   const { mixes, reload } = useMixes()
   // The phone: Reset history at the page's foot, by the words on history (a rare action, not under the title).
   const phone = usePhone()
+  const discoveries = useSettings((s) => s.settings.lastfmDiscoveries)
   return (
     <>
-      <PageHeader kicker={phoneApp ? tr('For you · made on this phone from what you play') : tr('For you · made on this PC from what you play')} title={tr('Mixes')} actions={!phone && <ResetHistory onDone={reload} />} />
+      <PageHeader kicker={phoneApp ? tr('For you · made on this phone from what you play') : tr('For you · made on this PC from what you play')} title={tr('Mixes')} actions={<>{discoveries && <DiscoveriesButton />}{!phone && <ResetHistory onDone={reload} />}</>} />
       <div className="-mx-3 min-h-0 flex-1 overflow-y-auto px-3 pb-6">
         {mixes && mixes.length === 0 && (
           <div className="flex flex-col items-center gap-2 py-16 text-center text-ink-2">

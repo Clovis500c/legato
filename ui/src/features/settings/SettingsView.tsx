@@ -950,6 +950,9 @@ function PlaybackSection() {
           <Row setting="focusSessions" label={msg('Focus and workout sessions')} sub={tr('Adds Focus session… and Workout session… to the player\'s menu: a timer, a mix of your songs, and the music fades out at the end')}>
             <Toggle label={tr('Focus and workout sessions')} checked={s.focusSessions} onChange={(focusSessions) => update({ focusSessions })} />
           </Row>
+          <Row setting="lastfmDiscoveries" label={msg('Last.fm suggestions')} sub={tr('Adds a Last.fm suggestions button to Mixes: songs by artists close to the three you play most, from Last.fm with your own key; their names go to Last.fm')}>
+            <Toggle label={tr('Last.fm suggestions')} checked={s.lastfmDiscoveries} onChange={(lastfmDiscoveries) => update({ lastfmDiscoveries })} />
+          </Row>
         </div>
       </Group>
       <Group title={msg('Auto-DJ')}>
