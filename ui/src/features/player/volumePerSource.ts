@@ -39,7 +39,8 @@ export function startVolumePerSource(enabled: () => boolean): () => void {
     if (via !== prev.now?.via) {
       const had = memory[via]
       if (had === undefined) memory = remember(memory, via, s.volume)
-      else if (had !== s.volume) {
+      // Muted (volume 0): it stays muted, the source's volume comes back with the unmute.
+      else if (had !== s.volume && s.volume > 0) {
         applying = true
         s.setVolume(had)
         applying = false

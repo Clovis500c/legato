@@ -47,5 +47,9 @@ it('does nothing while the setting is off, and a mute stays a mute for the sourc
   usePlayer.getState().setVolume(0)
   play('youtube')
   play('local')
+  // Another source's song never undoes the mute (0.6 comes back with the unmute).
+  expect(usePlayer.getState().volume).toBe(0)
+  usePlayer.getState().toggleMute()
   expect(usePlayer.getState().volume).toBe(0.6)
 })
+
