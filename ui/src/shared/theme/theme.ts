@@ -401,6 +401,8 @@ export interface Settings {
   crossfade: number
   /** Songs longer than this many minutes skipped as the queue moves on (0 = off). */
   skipLong: number
+  /** TV home: with living-room mode, a page of big tiles opens when the mode turns on (off: the usual home). */
+  tvHome: boolean
   /** Discord sign-in: a button in Settings, and the playlists shared from this PC carry the Discord name (off: nothing is asked of Discord). */
   discordSignIn: boolean
   /** Check podcasts: while the app is open, every 6 hours each kept show feed is read once and new episodes are announced (off: nothing is asked by itself). */
@@ -611,6 +613,7 @@ export const DEFAULTS: Settings = {
   libraryWide: false,
   crossfade: 2,
   skipLong: 0,
+  tvHome: false,
   discordSignIn: false,
   podcastCheck: false,
   booksPage: false,
@@ -870,6 +873,7 @@ export function sanitize(raw: unknown): Settings {
     pipClassic: typeof r.pipClassic === 'boolean' ? r.pipClassic : DEFAULTS.pipClassic,
     crossfade: typeof r.crossfade === 'number' && Number.isFinite(r.crossfade) ? Math.min(12, Math.max(0, Math.round(r.crossfade))) : DEFAULTS.crossfade,
     skipLong: typeof r.skipLong === 'number' && Number.isFinite(r.skipLong) ? Math.min(60, Math.max(0, Math.round(r.skipLong))) : DEFAULTS.skipLong,
+    tvHome: r.tvHome === true,
     discordSignIn: r.discordSignIn === true,
     podcastCheck: r.podcastCheck === true,
     booksPage: r.booksPage === true,

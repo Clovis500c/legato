@@ -143,6 +143,7 @@ Where a line says "reading", the owner hasn't confirmed it.
       verified. Decided alone (2026-11-13): unverified, since a signature needs the bot (still the owner's call).
       Untried for real: the Discord page, the redirect once registered in the portal, a busy port 47819.
       Left: the bot's signature, a song card's profile.
+- [ ] `M` Discord bot (the owner, 2026-11-13: to make later, for social features; optional, an exception to serverless that the owner validates; the application « Legato Manager » already exists, public client + loopback redirect set)
 - [x] `M` Drag and drop of every file type that is Legato's own into the app: the remix file, and the others (list
       them first: shared playlists, backups, themes, playlist files; a plugin folder never installs without its
       permission review). Today a drop takes folders, songs and a QR picture.
@@ -795,7 +796,7 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       Enter presses a focused non-button, Esc goes back. Decided alone (2026-11-13): arrows and Enter/Esc only. Never seen on a TV. 2026-11-13, second slice: a gamepad (Gamepad API, standard layout, polled while the mode is on): d-pad or left stick moves, A presses, B goes back (`pad.ts`). Never held a pad.
       Left:
       a purpose-built home screen, the player bar enlarged beyond the zoom, on-screen keyboard for search.
-      2026-11-13, third slice: an on-screen keyboard (Enter in a text field in the mode opens a grid of keys at the bottom, walked with the arrows or a pad; letters, digits, a few marks, space, delete, Done, Enter; lazy `livingRoom/OnScreenKeyboard.tsx`). Not done: a purpose-built TV home screen (a design call, left for the owner). Never seen.
+      2026-11-13, third slice: an on-screen keyboard (Enter in a text field in the mode opens a grid of keys at the bottom, walked with the arrows or a pad; letters, digits, a few marks, space, delete, Done, Enter; lazy `livingRoom/OnScreenKeyboard.tsx`). 2026-11-13, fourth slice: a TV home (Settings › General › TV home, off by default; with the mode on, big tiles to Search, Songs, Albums, Artists, Mixes, Radio, Podcasts and Audiobooks when on, Settings; opens when the mode turns on, and in the app menu; lazy `livingRoom/TvHome.tsx`). Decided alone (2026-11-13): plain tiles, no cover rows, easy to replace by the owner's design. Never seen on a TV.
 - [ ] `L` Media panel off Windows.
 
 ## Visualizer v2 (user's ask 2026-10-30: more realistic, more detailed)

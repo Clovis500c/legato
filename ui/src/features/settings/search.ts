@@ -130,6 +130,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'general', label: msg('Reopen where you left off'), keywords: msg('restore state screen last session launch') },
   { section: 'general', label: msg('Living-room mode'), keywords: msg('living room tv television arrows remote gamepad big screen 10 foot') },
   { section: 'general', label: msg('Audiobooks'), keywords: msg('audiobooks book audio reading chapters spoken') },
+  { section: 'general', label: msg('TV home'), keywords: msg('tv home living room tiles gamepad television') },
   { section: 'general', label: msg('Check podcasts'), keywords: msg('podcasts check new episodes feed background') },
   { section: 'general', label: msg('Discord sign-in'), keywords: msg('discord sign in login profile name share shared by account') },
   { section: 'general', label: msg('Resume playback on launch'), keywords: msg('restore continue reopen last track start') },

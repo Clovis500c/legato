@@ -11,6 +11,7 @@ const load = {
   mix: () => import('../features/mixes/MixesView').then((m) => ({ default: m.MixView })),
   podcasts: () => import('../features/podcasts/PodcastsView').then((m) => ({ default: m.PodcastsView })),
   books: () => import('../features/books/BooksView').then((m) => ({ default: m.BooksView })),
+  tv: () => import('../features/livingRoom/TvHome').then((m) => ({ default: m.TvHome })),
   keyboard: () => import('../features/livingRoom/OnScreenKeyboard').then((m) => ({ default: m.OnScreenKeyboard })),
   radio: () => import('../features/radio/RadioView').then((m) => ({ default: m.RadioView })),
   stats: () => import('../features/stats/StatsView').then((m) => ({ default: m.StatsView })),
@@ -71,6 +72,7 @@ export const MixesView = page(load.mixes)
 export const RadioView = page(load.radio)
 export const PodcastsView = page(load.podcasts)
 export const BooksView = page(load.books)
+export const TvHome = page(load.tv)
 export const OnScreenKeyboard = page(load.keyboard)
 export const MixView = page(load.mix)
 export const StatsView = page(load.stats)

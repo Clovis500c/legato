@@ -2,7 +2,7 @@ import { ArrowsIn, ArrowsOut, CaretDown, CaretLeft, CaretRight, CopySimple, Gear
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import { AddonsView, AddView, BlindTest, ConnectWizard, CoverScreen, HealthView, PipScreen, HomeView, ImportDialog, ImportScreen, Karaoke, MixesView, MixView, BooksView, NotFoundView, OnScreenKeyboard, PodcastsView, RadioView, NowPlaying, preloadHome, RoomDialog, SearchView, SettingsView, ShareDialog, SmartView, StatsView, VizScreen, Welcome } from './pages'
+import { AddonsView, AddView, BlindTest, ConnectWizard, CoverScreen, HealthView, PipScreen, HomeView, ImportDialog, ImportScreen, Karaoke, MixesView, MixView, BooksView, NotFoundView, OnScreenKeyboard, PodcastsView, TvHome, RadioView, NowPlaying, preloadHome, RoomDialog, SearchView, SettingsView, ShareDialog, SmartView, StatsView, VizScreen, Welcome } from './pages'
 // Up next running out: similar songs (registers itself with the player).
 import '../features/player/autoplay'
 import { AlbumView, ArtistView } from '../features/library/AlbumArtist'
@@ -357,6 +357,7 @@ export function App() {
               {view.name === 'mixes' && <MixesView />}
               {view.name === 'radio' && <RadioView />}
               {view.name === 'podcasts' && <PodcastsView />}
+              {view.name === 'tv' && <TvHome />}
               {view.name === 'books' && <BooksView />}
               {view.name === 'stats' && <StatsView />}
               {view.name === 'smart' && <SmartView id={view.id} />}

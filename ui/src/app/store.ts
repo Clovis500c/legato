@@ -19,6 +19,7 @@ export type View =
   | { name: 'mixes' }
   | { name: 'radio' }
   | { name: 'podcasts' }
+  | { name: 'tv' }
   | { name: 'books' }
   | { name: 'stats' }
   | { name: 'smart'; id: string }

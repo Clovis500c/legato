@@ -781,6 +781,9 @@ function GeneralSection() {
           <Row setting="livingRoom" label={msg('Living-room mode')} sub={tr('Larger interface for a PC on a TV: the arrow keys move between controls, Enter presses, Esc goes back')}>
             <Toggle label={tr('Living-room mode')} checked={s.livingRoom} onChange={(livingRoom) => update({ livingRoom })} />
           </Row>
+          <Row setting="tvHome" label={msg('TV home')} sub={tr('With living-room mode: opens big tiles when it turns on (search, songs, albums, artists, mixes, radio…) for the arrow keys or a gamepad')}>
+            <Toggle label={tr('TV home')} checked={s.tvHome} onChange={(tvHome) => update({ tvHome })} />
+          </Row>
           <Row setting="booksPage" label={msg('Audiobooks')} sub={tr('Adds Audiobooks to the app menu: the long local files (audiobook genre, or two hours and more) apart from music, with where you stopped')}>
             <Toggle label={tr('Audiobooks')} checked={s.booksPage} onChange={(booksPage) => update({ booksPage })} />
           </Row>
