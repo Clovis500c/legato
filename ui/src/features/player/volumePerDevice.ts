@@ -10,9 +10,10 @@ const KEEP = 50
 
 /** Mute is not a volume to come back to. */
 export const remember = (m: Memory, key: string, volume: number): Memory => {
-  if (volume <= 0.02) return m
+  const v = Math.round(volume * 100) / 100
+  if (volume <= 0.02 || m[key] === v) return m
   // Moved to the end: the least recently used goes first.
-  return Object.fromEntries([...Object.entries(m).filter(([k]) => k !== key), [key, Math.round(volume * 100) / 100]].slice(-KEEP))
+  return Object.fromEntries([...Object.entries(m).filter(([k]) => k !== key), [key, v]].slice(-KEEP))
 }
 
 /**
@@ -21,10 +22,12 @@ export const remember = (m: Memory, key: string, volume: number): Memory => {
  */
 export function step(m: Memory, key: string, prevKey: string, volume: number, prevVolume: number): { memory: Memory; set?: number } {
   if (key !== prevKey) {
-    const had = m[key]
-    if (had === undefined) return { memory: remember(m, key, volume) }
+    // The device left keeps the volume it had (the volume has not moved with the pick yet).
+    const left = remember(m, prevKey, prevVolume)
+    const had = left[key]
+    if (had === undefined) return { memory: remember(left, key, volume) }
     // Muted (volume 0): it stays muted, the device's volume comes back with the unmute.
-    return had !== volume && volume > 0 ? { memory: m, set: had } : { memory: m }
+    return had !== volume && volume > 0 ? { memory: left, set: had } : { memory: left }
   }
   return volume !== prevVolume ? { memory: remember(m, key, volume) } : { memory: m }
 }
