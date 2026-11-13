@@ -120,7 +120,7 @@ Songs started in the last 24 h (play stats) come after all the others, spread th
   child webview of the main window placed exactly over the video slot (`src-tauri/src/ytwatch.rs`, Tauri multi-webview,
   `unstable` feature; the watch page can't be framed). `crates/shield/src/watch.js` hides everything around
   `#movie_player` and every overlay, fills the webview, stays muted until the app sends its volume, applies the app's
-  crop, and reports state / time / duration / clicks as `musicapp-ytwatch:<json>` strings on WebView2's message
+  crop, and reports state / time / duration / clicks as `legato-ytwatch:<json>` strings on WebView2's message
   channel (objects posted from that page never reach the host). Rust checks origin, shape and sizes, then emits
   `ytwatch` to the UI; commands go back as scripts built from fixed names and numbers. The page gets no app command
   (Tauri's IPC refuses it: no capability). Same store path as the embed (`watch.ts`): pause, seek, volume, fades,
@@ -142,7 +142,7 @@ Songs started in the last 24 h (play stats) come after all the others, spread th
 - Google's limit (2026-11-01): while Google limits the PC's address (many requests from it, an import's searches), its
   "Sorry…" page answers some of the embed's player requests (403 after about 7 s, or 429), and the embed then waits for
   good, black and silent, with no event. `crates/shield/src/refused.js`, in every frame, reads the embed's resource
-  timings (YouTube's fetch untouched) and posts `{ musicApp: 'refused' }` to the app: the video is loaded again once, at
+  timings (YouTube's fetch untouched) and posts `{ legato: 'refused' }` to the app: the video is loaded again once, at
   once; refused again, playback stops with one message. Nothing is blocked or searched and no watch page: the video
   isn't to blame, and the watch page is Google's too. The clock waits for a new song's first report (`Progress.tsx`).
 - The stuck check arms when the video is set, not only when the play count moves: `playAt` counts the play before it
@@ -401,7 +401,7 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
   click, nothing captured yet) leaves the element its own sound: it is muted only once captured sound proves the capture works, and gets its sound back after 2 s of lost capture. Levels only (moving
   cover, early endings, no Adaptive Sound or edits): `listen`, analysers alone (Chromium pulls them unconnected), the
   element never muted, its sound untouched. Switching modes attaches again. Messages: embed
-  `postMessage` to the app's origin only; watch page `musicapp-live:` strings checked in Rust (`ytwatch.rs`).
+  `postMessage` to the app's origin only; watch page `legato-live:` strings checked in Rust (`ytwatch.rs`).
 - **Spotify**: plays in Spotify's own app, out of reach. Shown as such under the volume.
 - **Volume mixer** (2026-10-23): YouTube's sound plays in WebView2's own processes, so Windows listed it as "Microsoft
   Edge WebView2". `src-tauri/src/mixer.rs` gives our WebView2 audio sessions (only processes this app started) Music
@@ -459,7 +459,7 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
   - **YouTube**: `live.js` `vizStart` (only while `settings.viz`): a second pair of analysers at fftSize 4096 (8192 in twelfths) behind a
     ChannelSplitter, made then and dropped when it stops, so the chain costs nothing more with no visualizer; the older
     2048 pair keeps feeding the loudness. A 16 ms timer sends the same frame as base64 text
-    (`{viz}` in the report, by the existing postMessage path, or the watch page's `musicapp-live:` string, checked in
+    (`{viz}` in the report, by the existing postMessage path, or the watch page's `legato-live:` string, checked in
     `ytwatch.rs`), the silent frame once after ~100 ms of pause or silence.
   - **Front end**: `features/player/vizFrames.ts`: `viz.subscribe(fn)` gives frames from whichever twin plays, same shape
     (`vizUnpack.ts`, pure), `viz.latest()` the newest as it came; the first subscriber opens the channel and raises the

@@ -8,12 +8,12 @@ const levels = { fast: -12, momentary: -12, short: -14, peak: 0.8, gain: 1.5 }
 
 describe('live processing', () => {
   it('takes only live.js messages from YouTube', () => {
-    expect(parseLive(YT, JSON.stringify({ musicApp: 'live', levels }))?.levels).toEqual(levels)
-    expect(parseLive(YT, JSON.stringify({ musicApp: 'live', attached: false, error: 'blocked' }))).toMatchObject({ attached: false, error: 'blocked' })
-    expect(parseLive('https://evil.example', JSON.stringify({ musicApp: 'live', levels }))).toBeNull()
-    expect(parseLive(YT, JSON.stringify({ event: 'infoDelivery', info: { musicApp: 'live' } }))).toBeNull()
-    expect(parseLive(YT, '{"musicApp":"live"')).toBeNull()
-    expect(parseLive(YT, { musicApp: 'live' })).toBeNull()
+    expect(parseLive(YT, JSON.stringify({ legato: 'live', levels }))?.levels).toEqual(levels)
+    expect(parseLive(YT, JSON.stringify({ legato: 'live', attached: false, error: 'blocked' }))).toMatchObject({ attached: false, error: 'blocked' })
+    expect(parseLive('https://evil.example', JSON.stringify({ legato: 'live', levels }))).toBeNull()
+    expect(parseLive(YT, JSON.stringify({ event: 'infoDelivery', info: { legato: 'live' } }))).toBeNull()
+    expect(parseLive(YT, '{"legato":"live"')).toBeNull()
+    expect(parseLive(YT, { legato: 'live' })).toBeNull()
   })
 
   it('leaves YouTube alone unless a feature needs it and it is allowed', () => {

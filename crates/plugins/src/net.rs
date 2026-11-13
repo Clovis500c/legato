@@ -105,7 +105,7 @@ impl Gateway {
                     a.follow()
                 }
             }))
-            .user_agent("MusicApp-Plugin");
+            .user_agent("Legato-Plugin");
         if !self.loose {
             client = client.https_only(true).dns_resolver(Arc::new(PublicOnly));
         }

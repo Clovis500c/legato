@@ -175,7 +175,7 @@ Where a line says "reading", the owner hasn't confirmed it.
       - [x] share codes: the QR prefix `MA1:` → `LG1:`, `musicapp://` links no longer read (`share.rs`, `shareCode.ts`, fuzz, tests).
       - [x] local network: `_musicapp._tcp` / `_musicappsync._tcp` and their handshake words.
       - [x] sync files: `.musicsync` → `.legatosync`, the `Music App Sync` folder, caught up once by `rename.rs`.
-      - [ ] the pages' messages (`musicapp-ytwatch:`, `musicApp`, `__musicApp*`), the plugin user agent, the site's package name.
+      - [x] the pages' messages (`musicapp-ytwatch:`, `musicApp`, `__musicApp*`), the plugin user agent, the site's package name.
       - [ ] texts and docs: `CLAUDE.md` (no more "Names kept"), architecture, sync-mode, plugins, the 17 + 18 languages.
       - [ ] final `grep`, `cargo fmt`, what stays and why.
 - [ ] `S` Remove the rename catch-up (when every PC of the owner runs the new name): delete `src-tauri/src/rename.rs` and its call in

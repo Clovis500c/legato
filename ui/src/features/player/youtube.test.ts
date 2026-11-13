@@ -25,9 +25,9 @@ describe('parseYt', () => {
   })
 
   it('reads a refusal said by refused.js, from YouTube only', () => {
-    expect(parseYt(YT_ORIGIN, msg({ musicApp: 'refused', status: 403 }))).toEqual({ refused: 403 })
-    expect(parseYt(YT_ORIGIN, msg({ musicApp: 'refused' }))).toBeUndefined()
-    expect(parseYt('https://evil.example', msg({ musicApp: 'refused', status: 403 }))).toBeUndefined()
+    expect(parseYt(YT_ORIGIN, msg({ legato: 'refused', status: 403 }))).toEqual({ refused: 403 })
+    expect(parseYt(YT_ORIGIN, msg({ legato: 'refused' }))).toBeUndefined()
+    expect(parseYt('https://evil.example', msg({ legato: 'refused', status: 403 }))).toBeUndefined()
   })
 })
 

@@ -12,7 +12,7 @@
   const PLAYER = /\/youtubei\/v1\/player(\?|$)/
   new PerformanceObserver((list) => {
     for (const e of list.getEntries()) {
-      if ((e.responseStatus === 403 || e.responseStatus === 429) && PLAYER.test(e.name)) parent.postMessage(stringify({ musicApp: 'refused', status: e.responseStatus }), app)
+      if ((e.responseStatus === 403 || e.responseStatus === 429) && PLAYER.test(e.name)) parent.postMessage(stringify({ legato: 'refused', status: e.responseStatus }), app)
     }
   }).observe({ type: 'resource' })
 })()

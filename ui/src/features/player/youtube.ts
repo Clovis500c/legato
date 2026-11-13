@@ -33,13 +33,13 @@ export interface YtUpdate {
 /** Embed message → update. Undefined if not from YouTube or not relevant. */
 export function parseYt(origin: string, data: unknown): YtUpdate | undefined {
   if (origin !== YT_ORIGIN || typeof data !== 'string') return
-  let msg: { event?: string; info?: unknown; musicApp?: string; status?: unknown }
+  let msg: { event?: string; info?: unknown; legato?: string; status?: unknown }
   try {
     msg = JSON.parse(data)
   } catch {
     return
   }
-  if (msg.musicApp === 'refused') return typeof msg.status === 'number' ? { refused: msg.status } : undefined
+  if (msg.legato === 'refused') return typeof msg.status === 'number' ? { refused: msg.status } : undefined
   const info = msg.info as Record<string, unknown> | number | null
   switch (msg.event) {
     case 'initialDelivery':

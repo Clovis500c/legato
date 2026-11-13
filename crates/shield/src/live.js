@@ -14,8 +14,8 @@
   const app = embed ? new URLSearchParams(location.search).get('origin') : null
   const stringify = JSON.stringify
   const send = (m) => {
-    if (embed && app) parent.postMessage(stringify({ musicApp: 'live', ...m }), app)
-    else if (watch) window.chrome?.webview?.postMessage(`musicapp-live:${stringify(m)}`)
+    if (embed && app) parent.postMessage(stringify({ legato: 'live', ...m }), app)
+    else if (watch) window.chrome?.webview?.postMessage(`legato-live:${stringify(m)}`)
   }
 
   // Adaptive Sound, same as crates/dsp processor.rs.
@@ -871,10 +871,10 @@
       } catch {
         return
       }
-      if (m && m.musicApp === 'live') apply(m.settings, m.effects)
+      if (m && m.legato === 'live') apply(m.settings, m.effects)
     })
   } else {
     // Watch page: Rust calls this (fixed shape, numbers and booleans only).
-    window.__musicAppLive = { set: (s, e) => apply(s, e) }
+    window.__legatoLive = { set: (s, e) => apply(s, e) }
   }
 })()

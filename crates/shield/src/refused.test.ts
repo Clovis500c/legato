@@ -33,8 +33,8 @@ it('tells the app that loaded the embed when Google refuses the player request',
   answer('https://www.youtube.com/youtubei/v1/player?prettyPrint=false', 403)
   answer('https://www.youtube.com/youtubei/v1/player', 429)
   expect(posted).toEqual([
-    [{ musicApp: 'refused', status: 403 }, APP],
-    [{ musicApp: 'refused', status: 429 }, APP],
+    [{ legato: 'refused', status: 403 }, APP],
+    [{ legato: 'refused', status: 429 }, APP],
   ])
 })
 

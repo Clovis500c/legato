@@ -57,10 +57,10 @@ type Report = { attached?: boolean | null; error?: string | null; levels?: LiveL
 
 /** A frame message from live.js, if it is one. */
 export function parseLive(origin: string, data: unknown): Report | null {
-  if (origin !== YT_ORIGIN || typeof data !== 'string' || !data.includes('"musicApp":"live"')) return null
+  if (origin !== YT_ORIGIN || typeof data !== 'string' || !data.includes('"legato":"live"')) return null
   try {
     const m = JSON.parse(data)
-    return m && typeof m === 'object' && m.musicApp === 'live' ? m : null
+    return m && typeof m === 'object' && m.legato === 'live' ? m : null
   } catch {
     return null
   }
@@ -80,7 +80,7 @@ let ending = false
 let level = 0
 
 type FrameSettings = ReturnType<typeof frameSettings> & { ending: boolean; gain: number | null; level: number }
-const post = (settings: FrameSettings, effects: Effects) => frame?.contentWindow?.postMessage(JSON.stringify({ musicApp: 'live', settings, effects }), YT_ORIGIN)
+const post = (settings: FrameSettings, effects: Effects) => frame?.contentWindow?.postMessage(JSON.stringify({ legato: 'live', settings, effects }), YT_ORIGIN)
 
 /**
  * Sends the current wish (or a new one) everywhere: engine always (cheap); YouTube where it plays, off elsewhere.

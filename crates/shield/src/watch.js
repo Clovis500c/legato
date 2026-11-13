@@ -1,12 +1,12 @@
 // Injected by the app into its own YouTube watch-page webview only: videos whose owner turned embedding off (player
 // errors 101 / 150) play from youtube.com/watch, YouTube's own player and page. Everything around the player is hidden,
 // the player fills the webview, YouTube's controls and overlays stay hidden: the app's controls drive it.
-// Talks to the app through WebView2's message channel (checked in Rust); takes commands through window.__musicAppWatch.
+// Talks to the app through WebView2's message channel (checked in Rust); takes commands through window.__legatoWatch.
 ;(() => {
   if (location.hostname !== 'www.youtube.com' || window.top !== window) return
   // Strings only: WebView2 drops objects posted from this page. Native stringify, kept before the page's scripts run.
   const stringify = JSON.stringify
-  const post = (m) => window.chrome?.webview?.postMessage(`musicapp-ytwatch:${stringify(m)}`)
+  const post = (m) => window.chrome?.webview?.postMessage(`legato-ytwatch:${stringify(m)}`)
   // Ancestors must not contain the fixed player (transform / contain make a new containing block).
   const ANCESTORS = 'ytd-app, ytd-page-manager, ytd-watch-flexy, #columns, #primary, #primary-inner, #player, #player-container-outer, #player-container-inner, #player-container, ytd-player, #container, #full-bleed-container'
   const AROUND = '#masthead-container, #guide, tp-yt-app-drawer, ytd-mini-guide-renderer, #secondary, #below, #chat, #panels, #related, ytd-popup-container, tp-yt-iron-overlay-backdrop, ytd-consent-bump-v2-lightbox, ytd-engagement-panel-section-list-renderer, ytd-merch-shelf-renderer'
@@ -81,7 +81,7 @@ ${AROUND}, ${OVERLAYS} { display: none !important; }
     post({ state, time: p.getCurrentTime(), duration: p.getDuration(), videoId: p.getVideoData?.().video_id ?? '', ready: !volumeSet, cropped })
   }, 250)
 
-  window.__musicAppWatch = {
+  window.__legatoWatch = {
     cmd(name, value) {
       const p = player()
       if (!p) return

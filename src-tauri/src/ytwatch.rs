@@ -62,8 +62,8 @@ pub struct Report {
     pub cropped: bool,
 }
 
-/// Prefix of the page's messages ("musicapp-ytwatch:" + JSON). Strings: WebView2 drops objects posted from that page.
-const PREFIX: &str = "musicapp-ytwatch:";
+/// Prefix of the page's messages ("legato-ytwatch:" + JSON). Strings: WebView2 drops objects posted from that page.
+const PREFIX: &str = "legato-ytwatch:";
 
 /// Trust boundary: the watch page runs YouTube's scripts, not ours alone. Origin, shape and sizes checked.
 pub fn parse_report(source: &str, message: &str) -> Option<Report> {
@@ -109,12 +109,12 @@ pub struct LiveLevels {
     pub gain: f64,
 }
 
-/// Trust boundary, like `parse_report`: "musicapp-live:" + JSON, finite numbers in range, short error text.
+/// Trust boundary, like `parse_report`: "legato-live:" + JSON, finite numbers in range, short error text.
 pub fn parse_live(source: &str, message: &str) -> Option<LiveReport> {
     if !source.starts_with("https://www.youtube.com/") || message.len() > 3300 {
         return None;
     }
-    let r: LiveReport = serde_json::from_str(message.strip_prefix("musicapp-live:")?).ok()?;
+    let r: LiveReport = serde_json::from_str(message.strip_prefix("legato-live:")?).ok()?;
     let ok_levels = r.levels.is_none_or(|l| [l.fast, l.momentary, l.short, l.gain].iter().all(|v| v.is_finite() && (-200.0..=60.0).contains(v)) && l.peak.is_finite() && (0.0..=16.0).contains(&l.peak));
     let ok_end = [r.end, r.lead].iter().flatten().all(|e| e.is_finite() && (0.0..=86_400.0).contains(e));
     // A frame is 130 bytes (250 in twelfths, 2 KB more with the wave blocks): 176 characters of base64 (3064 at most).
@@ -175,7 +175,7 @@ pub enum Cmd {
 }
 
 pub fn script(cmd: Cmd) -> String {
-    let call = |name: &str, v: f64| format!("window.__musicAppWatch && window.__musicAppWatch.cmd('{name}', {v})");
+    let call = |name: &str, v: f64| format!("window.__legatoWatch && window.__legatoWatch.cmd('{name}', {v})");
     match cmd {
         Cmd::Play => call("play", 0.0),
         Cmd::Pause => call("pause", 0.0),
@@ -187,11 +187,11 @@ pub fn script(cmd: Cmd) -> String {
             let level = if level.is_finite() { level.clamp(-12.0, 9.0) } else { 0.0 };
             // Clamped, then JSON of numbers and booleans only: nothing to inject.
             let fx = effects.map(|e| serde_json::to_string(&e.clamped()).unwrap_or_else(|_| "undefined".into())).unwrap_or_else(|| "undefined".into());
-            format!("window.__musicAppLive && window.__musicAppLive.set({{ on: {on}, listen: {listen}, adaptive: {adaptive}, targetLufs: {t}, ending: {ending}, viz: {viz}, fine: {fine}, wave: {wave}, gain: {gain}, level: {level} }}, {fx})")
+            format!("window.__legatoLive && window.__legatoLive.set({{ on: {on}, listen: {listen}, adaptive: {adaptive}, targetLufs: {t}, ending: {ending}, viz: {viz}, fine: {fine}, wave: {wave}, gain: {gain}, level: {level} }}, {fx})")
         }
         Cmd::Crop { x, y, w, h } => {
             let f = |v: f64, lo: f64| if v.is_finite() { v.clamp(lo, 1.0) } else { lo };
-            format!("window.__musicAppWatch && window.__musicAppWatch.cmd('crop', [{}, {}, {}, {}])", f(x, 0.0), f(y, 0.0), f(w, 0.05), f(h, 0.05))
+            format!("window.__legatoWatch && window.__legatoWatch.cmd('crop', [{}, {}, {}, {}])", f(x, 0.0), f(y, 0.0), f(w, 0.05), f(h, 0.05))
         }
     }
 }
@@ -328,37 +328,37 @@ mod tests {
 
     #[test]
     fn reports_are_checked() {
-        let ok = parse_report(YT, r#"musicapp-ytwatch:{"state":1,"time":12.5,"duration":200,"videoId":"abcdefghijk"}"#).unwrap();
+        let ok = parse_report(YT, r#"legato-ytwatch:{"state":1,"time":12.5,"duration":200,"videoId":"abcdefghijk"}"#).unwrap();
         assert_eq!((ok.state, ok.time, ok.duration), (Some(1), Some(12.5), Some(200.0)));
-        assert!(parse_report(YT, r#"musicapp-ytwatch:{"click":true}"#).unwrap().click);
-        assert_eq!(parse_report(YT, r#"musicapp-ytwatch:{"error":"UNPLAYABLE","reason":"Not in your country"}"#).unwrap().error.as_deref(), Some("UNPLAYABLE"));
+        assert!(parse_report(YT, r#"legato-ytwatch:{"click":true}"#).unwrap().click);
+        assert_eq!(parse_report(YT, r#"legato-ytwatch:{"error":"UNPLAYABLE","reason":"Not in your country"}"#).unwrap().error.as_deref(), Some("UNPLAYABLE"));
         // Other origins, other senders, odd values, junk.
-        assert!(parse_report("https://evil.example/", r#"musicapp-ytwatch:{"state":1}"#).is_none());
+        assert!(parse_report("https://evil.example/", r#"legato-ytwatch:{"state":1}"#).is_none());
         assert!(parse_report(YT, r#"{"state":1}"#).is_none());
-        assert!(parse_report(YT, r#"musicapp-ytwatch:{"state":99}"#).is_none());
-        assert!(parse_report(YT, r#"musicapp-ytwatch:{"time":-4}"#).is_none());
-        assert!(parse_report(YT, &format!(r#"musicapp-ytwatch:{{"reason":"{}"}}"#, "x".repeat(400))).is_none());
-        assert!(parse_report(YT, "musicapp-ytwatch:not json").is_none());
+        assert!(parse_report(YT, r#"legato-ytwatch:{"state":99}"#).is_none());
+        assert!(parse_report(YT, r#"legato-ytwatch:{"time":-4}"#).is_none());
+        assert!(parse_report(YT, &format!(r#"legato-ytwatch:{{"reason":"{}"}}"#, "x".repeat(400))).is_none());
+        assert!(parse_report(YT, "legato-ytwatch:not json").is_none());
     }
 
     #[test]
     fn live_reports_are_checked() {
-        let ok = parse_live(YT, r#"musicapp-live:{"levels":{"fast":-10,"momentary":-12.5,"short":-14,"peak":0.8,"gain":2}}"#).unwrap();
+        let ok = parse_live(YT, r#"legato-live:{"levels":{"fast":-10,"momentary":-12.5,"short":-14,"peak":0.8,"gain":2}}"#).unwrap();
         assert_eq!(ok.levels.unwrap().short, -14.0);
-        assert_eq!(parse_live(YT, r#"musicapp-live:{"attached":true}"#).unwrap().attached, Some(true));
-        assert!(parse_live(YT, r#"musicapp-live:{"levels":{"fast":0,"momentary":1e9,"short":0,"peak":0,"gain":0}}"#).is_none());
-        assert!(parse_live("https://x.example/", r#"musicapp-live:{"attached":true}"#).is_none());
-        assert!(parse_live(YT, r#"musicapp-ytwatch:{"state":1}"#).is_none());
-        assert_eq!(parse_live(YT, r#"musicapp-live:{"viz":"AQ0AAAA="}"#).unwrap().viz.as_deref(), Some("AQ0AAAA="));
+        assert_eq!(parse_live(YT, r#"legato-live:{"attached":true}"#).unwrap().attached, Some(true));
+        assert!(parse_live(YT, r#"legato-live:{"levels":{"fast":0,"momentary":1e9,"short":0,"peak":0,"gain":0}}"#).is_none());
+        assert!(parse_live("https://x.example/", r#"legato-live:{"attached":true}"#).is_none());
+        assert!(parse_live(YT, r#"legato-ytwatch:{"state":1}"#).is_none());
+        assert_eq!(parse_live(YT, r#"legato-live:{"viz":"AQ0AAAA="}"#).unwrap().viz.as_deref(), Some("AQ0AAAA="));
         // A frame in twelfths with the wave blocks (2298 bytes, 3064 characters) passes; much longer is no frame.
-        let frame = |n: usize| format!(r#"musicapp-live:{{"viz":"{}"}}"#, "A".repeat(n));
+        let frame = |n: usize| format!(r#"legato-live:{{"viz":"{}"}}"#, "A".repeat(n));
         assert!(parse_live(YT, &frame(3064)).is_some() && parse_live(YT, &frame(3101)).is_none());
-        assert!(parse_live(YT, r#"musicapp-live:{"viz":"<script>"}"#).is_none());
-        assert_eq!(parse_live(YT, r#"musicapp-live:{"end":212.4}"#).unwrap().end, Some(212.4));
-        assert!(parse_live(YT, r#"musicapp-live:{"end":-1}"#).is_none());
-        assert_eq!(parse_live(YT, r#"musicapp-live:{"lead":5.2}"#).unwrap().lead, Some(5.2));
-        assert!(parse_live(YT, r#"musicapp-live:{"lead":1e9}"#).is_none());
-        assert_eq!(script(Cmd::Live { on: true, listen: false, adaptive: false, target_lufs: -99.0, ending: false, viz: false, fine: false, wave: false, gain: None, level: 99.0, effects: None }), "window.__musicAppLive && window.__musicAppLive.set({ on: true, listen: false, adaptive: false, targetLufs: -30, ending: false, viz: false, fine: false, wave: false, gain: null, level: 9 }, undefined)");
+        assert!(parse_live(YT, r#"legato-live:{"viz":"<script>"}"#).is_none());
+        assert_eq!(parse_live(YT, r#"legato-live:{"end":212.4}"#).unwrap().end, Some(212.4));
+        assert!(parse_live(YT, r#"legato-live:{"end":-1}"#).is_none());
+        assert_eq!(parse_live(YT, r#"legato-live:{"lead":5.2}"#).unwrap().lead, Some(5.2));
+        assert!(parse_live(YT, r#"legato-live:{"lead":1e9}"#).is_none());
+        assert_eq!(script(Cmd::Live { on: true, listen: false, adaptive: false, target_lufs: -99.0, ending: false, viz: false, fine: false, wave: false, gain: None, level: 99.0, effects: None }), "window.__legatoLive && window.__legatoLive.set({ on: true, listen: false, adaptive: false, targetLufs: -30, ending: false, viz: false, fine: false, wave: false, gain: null, level: 9 }, undefined)");
         assert!(script(Cmd::Live { on: true, listen: false, adaptive: true, target_lufs: -14.0, ending: true, viz: false, fine: false, wave: false, gain: Some(40.0), level: 2.5, effects: None }).contains("ending: true, viz: false, fine: false, wave: false, gain: 9, level: 2.5 }"));
         assert!(script(Cmd::Live { on: true, listen: false, adaptive: true, target_lufs: -14.0, ending: false, viz: false, fine: false, wave: false, gain: Some(f64::NAN), level: f64::NAN, effects: None }).contains("gain: null, level: 0 }"));
         let with = script(Cmd::Live { on: true, listen: true, adaptive: false, target_lufs: -14.0, ending: false, viz: false, fine: false, wave: false, gain: None, level: 0.0, effects: Some(music_player::Effects { speed: 9.0, ..Default::default() }) });
@@ -375,9 +375,9 @@ mod tests {
         assert_eq!(watch_url("abcdefghijk", 42.9).unwrap().as_str(), "https://www.youtube.com/watch?v=abcdefghijk&t=42s");
         assert!(watch_url("abc');alert(1)//", 0.0).is_none());
         assert!(watch_url("abcdefghij", 0.0).is_none());
-        assert_eq!(script(Cmd::Volume { percent: 250.0 }), "window.__musicAppWatch && window.__musicAppWatch.cmd('volume', 100)");
-        assert_eq!(script(Cmd::Seek { seconds: f64::NAN }), "window.__musicAppWatch && window.__musicAppWatch.cmd('seek', 0)");
-        assert_eq!(script(Cmd::Crop { x: 0.25, y: -1.0, w: 0.5, h: f64::INFINITY }), "window.__musicAppWatch && window.__musicAppWatch.cmd('crop', [0.25, 0, 0.5, 0.05])");
+        assert_eq!(script(Cmd::Volume { percent: 250.0 }), "window.__legatoWatch && window.__legatoWatch.cmd('volume', 100)");
+        assert_eq!(script(Cmd::Seek { seconds: f64::NAN }), "window.__legatoWatch && window.__legatoWatch.cmd('seek', 0)");
+        assert_eq!(script(Cmd::Crop { x: 0.25, y: -1.0, w: 0.5, h: f64::INFINITY }), "window.__legatoWatch && window.__legatoWatch.cmd('crop', [0.25, 0, 0.5, 0.05])");
     }
 
     #[test]
