@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_rectangle_label">Legato rektangel</string>
+    <string name="widget_disc_label">Legato skiva</string>
+    <string name="widget_queue_label">Legato kö</string>
+    <string name="widget_rectangle_description">Det som spelas, med föregående, spela och nästa</string>
+    <string name="widget_disc_description">Omslaget som skiva, med spela och nästa</string>
+    <string name="widget_queue_description">Kön: tryck på en låt för att spela den</string>
+    <string name="widget_idle">Inget spelas</string>
+    <string name="widget_previous">Föregående</string>
+    <string name="widget_play_pause">Spela eller pausa</string>
+    <string name="widget_next">Nästa</string>
+</resources>

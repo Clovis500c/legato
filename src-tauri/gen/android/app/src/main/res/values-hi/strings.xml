@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_rectangle_label">Legato आयत</string>
+    <string name="widget_disc_label">Legato डिस्क</string>
+    <string name="widget_queue_label">Legato कतार</string>
+    <string name="widget_rectangle_description">जो बज रहा है, पिछला, चलाएँ और अगला के साथ</string>
+    <string name="widget_disc_description">कवर डिस्क के रूप में, चलाएँ और अगला के साथ</string>
+    <string name="widget_queue_description">कतार: गाना चलाने के लिए उसे छुएँ</string>
+    <string name="widget_idle">कुछ नहीं बज रहा</string>
+    <string name="widget_previous">पिछला</string>
+    <string name="widget_play_pause">चलाएँ या रोकें</string>
+    <string name="widget_next">अगला</string>
+</resources>

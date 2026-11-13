@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_rectangle_label">Legato Rechteck</string>
+    <string name="widget_disc_label">Legato Scheibe</string>
+    <string name="widget_queue_label">Legato Warteschlange</string>
+    <string name="widget_rectangle_description">Was läuft, mit Zurück, Wiedergabe und Weiter</string>
+    <string name="widget_disc_description">Das Cover als Schallplatte, mit Wiedergabe und Weiter</string>
+    <string name="widget_queue_description">Die Warteschlange: Song antippen, um ihn zu spielen</string>
+    <string name="widget_idle">Nichts läuft</string>
+    <string name="widget_previous">Zurück</string>
+    <string name="widget_play_pause">Wiedergabe oder Pause</string>
+    <string name="widget_next">Weiter</string>
+</resources>

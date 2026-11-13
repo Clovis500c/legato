@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_rectangle_label">Legato rechthoek</string>
+    <string name="widget_disc_label">Legato schijf</string>
+    <string name="widget_queue_label">Legato wachtrij</string>
+    <string name="widget_rectangle_description">Wat er speelt, met vorige, afspelen en volgende</string>
+    <string name="widget_disc_description">De hoes als schijf, met afspelen en volgende</string>
+    <string name="widget_queue_description">De wachtrij: tik op een nummer om het te spelen</string>
+    <string name="widget_idle">Er speelt niets</string>
+    <string name="widget_previous">Vorige</string>
+    <string name="widget_play_pause">Afspelen of pauzeren</string>
+    <string name="widget_next">Volgende</string>
+</resources>

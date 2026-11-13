@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_rectangle_label">Legato rettangolo</string>
+    <string name="widget_disc_label">Legato disco</string>
+    <string name="widget_queue_label">Legato coda</string>
+    <string name="widget_rectangle_description">Cosa sta suonando, con precedente, riproduci e successivo</string>
+    <string name="widget_disc_description">La copertina come disco, con riproduci e successivo</string>
+    <string name="widget_queue_description">La coda: tocca un brano per riprodurlo</string>
+    <string name="widget_idle">Niente in riproduzione</string>
+    <string name="widget_previous">Precedente</string>
+    <string name="widget_play_pause">Riproduci o pausa</string>
+    <string name="widget_next">Successivo</string>
+</resources>

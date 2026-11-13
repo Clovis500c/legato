@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_rectangle_label">Legato dikdörtgen</string>
+    <string name="widget_disc_label">Legato disk</string>
+    <string name="widget_queue_label">Legato sıra</string>
+    <string name="widget_rectangle_description">Çalan parça; önceki, oynat ve sonraki ile</string>
+    <string name="widget_disc_description">Kapak disk olarak, oynat ve sonraki ile</string>
+    <string name="widget_queue_description">Sıra: çalmak için bir şarkıya dokun</string>
+    <string name="widget_idle">Çalan bir şey yok</string>
+    <string name="widget_previous">Önceki</string>
+    <string name="widget_play_pause">Oynat veya duraklat</string>
+    <string name="widget_next">Sonraki</string>
+</resources>

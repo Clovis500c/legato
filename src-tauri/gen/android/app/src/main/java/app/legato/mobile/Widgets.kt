@@ -63,7 +63,10 @@ object Widgets {
     views.setTextViewText(R.id.widget_artist, MediaState.artist ?: "")
     val cover = MediaState.cover
     if (cover != null) views.setImageViewBitmap(R.id.widget_cover, small(cover, 192)) else views.setImageViewResource(R.id.widget_cover, R.drawable.widget_cover_empty)
-    for (id in buttons) views.setViewVisibility(id, View.VISIBLE)
+    for (id in buttons) {
+      views.setViewVisibility(id, View.VISIBLE)
+      views.setInt(id, "setColorFilter", context.getColor(R.color.widget_text))
+    }
     views.setImageViewResource(R.id.widget_play, if (MediaState.playing) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play)
     views.setOnClickPendingIntent(R.id.widget_previous, button(context, "previous", 11))
     views.setOnClickPendingIntent(R.id.widget_play, button(context, if (MediaState.playing) "pause" else "play", 12))
@@ -95,7 +98,10 @@ object Widgets {
       for (id in buttons) views.setViewVisibility(id, View.GONE)
       return views
     }
-    for (id in buttons) views.setViewVisibility(id, View.VISIBLE)
+    for (id in buttons) {
+      views.setViewVisibility(id, View.VISIBLE)
+      views.setInt(id, "setColorFilter", context.getColor(R.color.widget_text))
+    }
     views.setImageViewResource(R.id.widget_play, if (MediaState.playing) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play)
     views.setOnClickPendingIntent(R.id.widget_play, button(context, if (MediaState.playing) "pause" else "play", 22))
     views.setOnClickPendingIntent(R.id.widget_next, button(context, "next", 23))
@@ -186,7 +192,7 @@ class QueueRows(private val context: Context) : RemoteViewsService.RemoteViewsFa
     views.setTextViewText(R.id.widget_title, row.title)
     views.setTextViewText(R.id.widget_artist, row.artist)
     // The first row is the song playing: lit, and a tap on it plays or pauses.
-    views.setTextColor(R.id.widget_title, if (position == 0) 0xFF8AB4F8.toInt() else 0xFFFFFFFF.toInt())
+    views.setTextColor(R.id.widget_title, if (position == 0) context.getColor(R.color.widget_accent) else context.getColor(R.color.widget_text))
     val action = if (position == 0) (if (MediaState.playing) "pause" else "play") else "play:" + row.index
     views.setOnClickFillInIntent(R.id.widget_row, Intent().putExtra(PlaybackService.ACTION, action))
     return views

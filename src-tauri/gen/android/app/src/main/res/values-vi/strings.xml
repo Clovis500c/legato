@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_rectangle_label">Legato hình chữ nhật</string>
+    <string name="widget_disc_label">Legato đĩa</string>
+    <string name="widget_queue_label">Legato hàng đợi</string>
+    <string name="widget_rectangle_description">Bài đang phát, với bài trước, phát và bài tiếp</string>
+    <string name="widget_disc_description">Ảnh bìa dạng đĩa, với phát và bài tiếp</string>
+    <string name="widget_queue_description">Hàng đợi: chạm vào bài hát để phát</string>
+    <string name="widget_idle">Không có gì đang phát</string>
+    <string name="widget_previous">Trước</string>
+    <string name="widget_play_pause">Phát hoặc tạm dừng</string>
+    <string name="widget_next">Tiếp</string>
+</resources>

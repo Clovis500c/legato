@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_rectangle_label">Legato 직사각형</string>
+    <string name="widget_disc_label">Legato 디스크</string>
+    <string name="widget_queue_label">Legato 대기열</string>
+    <string name="widget_rectangle_description">재생 중인 곡과 이전, 재생, 다음 버튼</string>
+    <string name="widget_disc_description">디스크 모양 커버와 재생, 다음 버튼</string>
+    <string name="widget_queue_description">대기열: 곡을 눌러 재생</string>
+    <string name="widget_idle">재생 중인 곡 없음</string>
+    <string name="widget_previous">이전</string>
+    <string name="widget_play_pause">재생 또는 일시정지</string>
+    <string name="widget_next">다음</string>
+</resources>

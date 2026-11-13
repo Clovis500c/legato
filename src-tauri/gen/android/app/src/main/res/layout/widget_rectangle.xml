@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="1"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/widget_text"
             android:textSize="14sp"
             android:textStyle="bold" />
 
@@ -40,7 +40,7 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="1"
-            android:textColor="#BDC1C6"
+            android:textColor="@color/widget_text2"
             android:textSize="12sp" />
     </LinearLayout>
 

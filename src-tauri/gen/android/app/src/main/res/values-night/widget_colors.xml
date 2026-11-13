@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Home-screen widgets: dark phone -->
+    <color name="widget_bg">#F2202124</color>
+    <color name="widget_text">#FFFFFF</color>
+    <color name="widget_text2">#BDC1C6</color>
+    <color name="widget_accent">#8AB4F8</color>
+    <color name="widget_cover">#3C4043</color>
+    <color name="widget_pill">#CC202124</color>
+</resources>

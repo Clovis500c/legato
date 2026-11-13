@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_rectangle_label">Legato прямоугольник</string>
+    <string name="widget_disc_label">Legato диск</string>
+    <string name="widget_queue_label">Legato очередь</string>
+    <string name="widget_rectangle_description">Что играет, с кнопками «назад», «играть» и «далее»</string>
+    <string name="widget_disc_description">Обложка в виде диска, с кнопками «играть» и «далее»</string>
+    <string name="widget_queue_description">Очередь: коснитесь песни, чтобы включить её</string>
+    <string name="widget_idle">Ничего не играет</string>
+    <string name="widget_previous">Назад</string>
+    <string name="widget_play_pause">Играть или пауза</string>
+    <string name="widget_next">Далее</string>
+</resources>

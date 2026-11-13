@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_rectangle_label">Legato 矩形</string>
+    <string name="widget_disc_label">Legato 圆盘</string>
+    <string name="widget_queue_label">Legato 队列</string>
+    <string name="widget_rectangle_description">正在播放的歌曲，带上一首、播放、下一首</string>
+    <string name="widget_disc_description">封面做成圆盘，带播放和下一首</string>
+    <string name="widget_queue_description">队列：点按歌曲即可播放</string>
+    <string name="widget_idle">没有正在播放的内容</string>
+    <string name="widget_previous">上一首</string>
+    <string name="widget_play_pause">播放或暂停</string>
+    <string name="widget_next">下一首</string>
+</resources>

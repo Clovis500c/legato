@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_rectangle_label">Legato prostokąt</string>
+    <string name="widget_disc_label">Legato płyta</string>
+    <string name="widget_queue_label">Legato kolejka</string>
+    <string name="widget_rectangle_description">Co gra, z przyciskami poprzedni, odtwarzaj i następny</string>
+    <string name="widget_disc_description">Okładka jako płyta, z odtwarzaniem i następnym</string>
+    <string name="widget_queue_description">Kolejka: dotknij utworu, aby go odtworzyć</string>
+    <string name="widget_idle">Nic nie gra</string>
+    <string name="widget_previous">Poprzedni</string>
+    <string name="widget_play_pause">Odtwarzaj lub wstrzymaj</string>
+    <string name="widget_next">Następny</string>
+</resources>

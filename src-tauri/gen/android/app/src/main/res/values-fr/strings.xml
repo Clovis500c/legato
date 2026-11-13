@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_rectangle_label">Legato rectangle</string>
+    <string name="widget_disc_label">Legato disque</string>
+    <string name="widget_queue_label">Legato file</string>
+    <string name="widget_rectangle_description">Le morceau en cours, avec précédent, lecture et suivant</string>
+    <string name="widget_disc_description">La pochette en disque, avec lecture et suivant</string>
+    <string name="widget_queue_description">La file d’attente : touchez un morceau pour le jouer</string>
+    <string name="widget_idle">Rien ne joue</string>
+    <string name="widget_previous">Précédent</string>
+    <string name="widget_play_pause">Lecture ou pause</string>
+    <string name="widget_next">Suivant</string>
+</resources>

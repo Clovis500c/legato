@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_rectangle_label">Legato retângulo</string>
+    <string name="widget_disc_label">Legato disco</string>
+    <string name="widget_queue_label">Legato fila</string>
+    <string name="widget_rectangle_description">O que está tocando, com anterior, reproduzir e próxima</string>
+    <string name="widget_disc_description">A capa como disco, com reproduzir e próxima</string>
+    <string name="widget_queue_description">A fila: toque numa música para tocá-la</string>
+    <string name="widget_idle">Nada tocando</string>
+    <string name="widget_previous">Anterior</string>
+    <string name="widget_play_pause">Reproduzir ou pausar</string>
+    <string name="widget_next">Próxima</string>
+</resources>

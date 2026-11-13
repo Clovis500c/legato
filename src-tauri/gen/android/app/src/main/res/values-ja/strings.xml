@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_rectangle_label">Legato 長方形</string>
+    <string name="widget_disc_label">Legato ディスク</string>
+    <string name="widget_queue_label">Legato キュー</string>
+    <string name="widget_rectangle_description">再生中の曲と、前へ・再生・次へ</string>
+    <string name="widget_disc_description">ディスク状のカバーと、再生・次へ</string>
+    <string name="widget_queue_description">キュー：曲をタップして再生</string>
+    <string name="widget_idle">再生中の曲はありません</string>
+    <string name="widget_previous">前へ</string>
+    <string name="widget_play_pause">再生または一時停止</string>
+    <string name="widget_next">次へ</string>
+</resources>
