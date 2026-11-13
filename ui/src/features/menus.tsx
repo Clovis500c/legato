@@ -100,6 +100,7 @@ import { PlaylistCover as PlaylistIcon } from './library/PlaylistCover'
 import { primaryArtist } from './library/filter'
 import { isFull, viaLabel, vias } from './player/sources'
 import { bypass, deletePreset, deleteVersion, playVersion, presetEffects, reset, setEffects, useEditor } from './editor/editor'
+import { PRACTICE, practiceNow, practicePatch } from './editor/practice'
 import { loadPlugins, pluginCommands, runCommand } from './plugins/host'
 import { canPlay, isRemote, nowTrack, remoteTrack, usePlayer } from './player/store'
 import { startAutoDj } from './player/autoDj'
@@ -1023,11 +1024,14 @@ function roomItem(): MenuEntry {
 }
 
 /** Practice speed: the Live Editor's tempo (pitch kept), a few steps. The song's edit is left dirty as any Live Editor change is; Reset in the editor undoes it. */
-const PRACTICE = [0.5, 0.75, 0.9, 1] as const
 function practiceSpeed(): MenuEntry {
   const now = useEditor.getState().effects
-  const cur = now.on ? now.tempo : 1
-  return { label: tr('Practice speed'), icon: <Timer size={16} />, items: PRACTICE.map((x) => ({ label: x === 1 ? tr('Normal speed') : `${Math.round(x * 100)}%`, checked: Math.abs(cur - x) < 0.005, onSelect: () => setEffects({ tempo: x, on: true }) })) }
+  const cur = practiceNow(now)
+  const pick = (x: number) => {
+    const p = practicePatch(now, x)
+    if (p) setEffects(p)
+  }
+  return { label: tr('Practice speed'), icon: <Timer size={16} />, items: PRACTICE.map((x) => ({ label: x === 1 ? tr('Normal speed') : `${Math.round(x * 100)}%`, checked: Math.abs(cur - x) < 0.005, onSelect: () => pick(x) })) }
 }
 
 /** Output device: the system's list (kept from the last time; refreshed now), the picked one checked. Only with a choice to make. */
