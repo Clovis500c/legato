@@ -54,7 +54,26 @@ const act = (a: PadAction) => {
  * Returns cleanup.
  */
 export function startLivingRoom(on: () => boolean, subscribe: (f: () => void) => () => void): () => void {
-  const apply = () => document.documentElement.classList.toggle('living-room', on())
+  // A gamepad (Gamepad API, standard layout): the d-pad or left stick moves, A presses, B goes back. Polled only while the
+  // mode is on (off, no frame is ever asked for).
+  let prev: boolean[] = []
+  let frame = 0
+  const poll = () => {
+    if (!on()) {
+      frame = 0
+      prev = []
+      return
+    }
+    const pad = [...(navigator.getGamepads?.() ?? [])].find((g) => g?.connected)
+    const now = pad ? pressed(pad.buttons, pad.axes) : []
+    padActions(prev, now).forEach(act)
+    prev = now
+    frame = requestAnimationFrame(poll)
+  }
+  const apply = () => {
+    document.documentElement.classList.toggle('living-room', on())
+    if (on() && !frame) frame = requestAnimationFrame(poll)
+  }
   apply()
   const off = subscribe(apply)
   const key = (e: KeyboardEvent) => {
@@ -81,19 +100,6 @@ export function startLivingRoom(on: () => boolean, subscribe: (f: () => void) =>
     if (e.key === 'Escape') back()
   }
   addEventListener('keydown', key)
-  // A gamepad (Gamepad API, standard layout): the d-pad or left stick moves, A presses, B goes back. Polled while the mode is on.
-  let prev: boolean[] = []
-  let frame = 0
-  const poll = () => {
-    if (on()) {
-      const pad = [...(navigator.getGamepads?.() ?? [])].find((g) => g?.connected)
-      const now = pad ? pressed(pad.buttons, pad.axes) : []
-      padActions(prev, now).forEach(act)
-      prev = now
-    }
-    frame = requestAnimationFrame(poll)
-  }
-  frame = requestAnimationFrame(poll)
   return () => {
     cancelAnimationFrame(frame)
     off()
