@@ -663,6 +663,9 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - [ ] `L` Sonic analysis, ours and local: features (tempo, key, energy, brightness, mood) computed from local files, and
       from what plays live for streams (the meter already listens; measured, not extracted), stored per song. Feeds
       "similar songs", song radio, sweet fades, the path between artists (Plexamp's Sonic Analysis needs a server).
+      Skipped 2026-11-13 (night), the tempo-only slice: a tempo found by decoding every local file (onset autocorrelation) is minutes of CPU on a
+      big library and its right answer (octave errors, half and double time) can only be judged by ear against known songs; the tags'
+      BPM already feed Mixes and the metronome. Better with the owner's ear on a test set.
 
 **Low**
 - [x] `S` Focus / workout sessions: a timer, no-lyrics or high-BPM mix, a summary after. (Left by the autopilot
@@ -746,6 +749,9 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       playlist. Never played by ear or on a screen; the snippet seek waits for the song's length and may land a moment late.
 - [ ] `M` Theme and plugin gallery without a server: an index file in a GitHub repo, browsed from Add-ons, installed after
       the usual permission review; authors submit by pull request.
+      Skipped 2026-11-13 (night): installing means downloading code or theme files from a repository into the plugins folder, then the
+      permission review: the download, its size and hash checks and the trust in the index are the owner's to set (who may publish, pinned
+      commits); a first slice (read the index, list it) alone would show entries nobody can install.
 - [ ] `M` Sharing: remote wormhole words (needs the user's OK on the public relay), webcam QR scanning, `musicapp://` links
       clicked in a browser (deep-link registration).
 - [ ] `M-L` Practice mode for musicians: A-B loop, slow down without pitch change (Live Editor has it), key and chords shown,
