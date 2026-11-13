@@ -76,6 +76,7 @@ class PlaybackService : Service() {
       getSystemService(NotificationManager::class.java).notify(1, build())
     } catch (e: Exception) {
     }
+    Widgets.refresh(this)
   }
 
   // Screen off: the CPU and the Wi-Fi stay awake while a song plays, so the page loads the next one in time; both go as
@@ -140,14 +141,17 @@ class PlaybackService : Service() {
   override fun onDestroy() {
     tick.removeCallbacks(check)
     hold(false)
+    // Stopped: the widgets say nothing plays (their buttons would start nothing).
+    MediaState.title = null
+    Widgets.refresh(this)
     MediaState.onChange = null
     session?.release()
     session = null
     super.onDestroy()
   }
 
-  private companion object {
-    const val CHANNEL = "playback"
+  companion object {
+    private const val CHANNEL = "playback"
     const val ACTION = "legato.action"
   }
 }

@@ -1,4 +1,15 @@
 <resources>
     <string name="app_name">"Legato"</string>
     <string name="main_activity_title">"Legato"</string>
+    <!-- Home-screen widgets (English only, like the rest of the Android shell: the app's own text is the page's). -->
+    <string name="widget_rectangle_label">Legato rectangle</string>
+    <string name="widget_disc_label">Legato disc</string>
+    <string name="widget_queue_label">Legato queue</string>
+    <string name="widget_rectangle_description">What is playing, with previous, play and next</string>
+    <string name="widget_disc_description">The cover as a disc, with play and next</string>
+    <string name="widget_queue_description">The queue: tap a song to play it</string>
+    <string name="widget_idle">Nothing playing</string>
+    <string name="widget_previous">Previous</string>
+    <string name="widget_play_pause">Play or pause</string>
+    <string name="widget_next">Next</string>
 </resources>
