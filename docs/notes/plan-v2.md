@@ -164,6 +164,15 @@ Where a line says "reading", the owner hasn't confirmed it.
       QR picture had no size or dimension limit (`share::read_qr`: 25 MB, 12 000 px a side, 256 MB), Exportify's file was read
       whole before its size was checked. Not covered: `cargo-fuzz` depth (decoders of lofty / symphonia / image are theirs),
       backups and plugin folders (not dropped), the whole-app pass (still open, for Opus).
+      2026-11-13, the whole-app pass begun: fixed, the plugin gateway took an address written out (`https://192.168.1.1/`,
+      `https://127.0.0.1/`) past its public-only DNS (`plugins/net.rs`, now refused). Read, nothing found: `legato://` links
+      (scheme, length, control characters, then only what a pasted code may be; a remix link's settings clamped), the CSP (no
+      inline or eval script, frames YouTube only), IPC capabilities (window `main`, no remote origin), the phone remote and the
+      overlay (secret on every route, compared in constant time, private addresses only, strict headers). Left open: the `art`
+      scheme answers the third-party pages the app opens too (YouTube's watch page, Exportify, Apple Music, Google's sign-in
+      share the app's schemes) with `Access-Control-Allow-Origin: *`, so their scripts could read a local file's embedded cover
+      (`/local/<id>`, ids in order) or the user's own pictures by name; a fix (refuse those origins) must keep `<img>` and the
+      canvas reads working. Not read yet: each IPC command's arguments one by one.
 - [ ] `L` The website made beautiful (the owner: too basic today) and given documentation sections for developers
       (plugins' API, themes, the link and file formats, contributing). The design is a piece Fable may do itself (the
       owner's word).
