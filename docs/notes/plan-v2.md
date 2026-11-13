@@ -759,6 +759,10 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       2026-11-12: the loop has a key (L: start, end, clear, in the shortcuts table) and a band on the progress bar. Decided
       alone (2026-11-12): L, one key cycling the three steps, rather than three keys. Never tried by ear or on a screen.
 - [ ] `M-L` Profiles on one PC (each person's library, likes, history and Last.fm), switched from the top bar.
+      Skipped 2026-11-13 (night, not for this run): a profile is a second library file plus its own keychain entries and its own
+      WebView2 cookies, chosen before the window opens, so a switch restarts the app; it touches `identity`, `rename.rs`'s folders and
+      Sync Mode's per-PC files, and a wrong first step could mix two people's data. Needs the owner's choices (what is shared, e.g. local
+      folders) before the data model.
 - [ ] `L` Exclusive WASAPI output / bit-perfect for local files (foobar's audiophiles).
 - [ ] `L` Podcasts by RSS (open feeds only: no platform audio taken), resume per episode, speed.
       2026-11-13, the first slice: Settings › Playback › Podcasts (off) adds Podcasts to the app menu: type an open feed's address, keep
