@@ -63,7 +63,9 @@ pub async fn refresh(app: &AppHandle) -> bool {
         return false;
     }
     let url = Url::parse(SIGN_IN).expect("valid url");
-    let Ok(w) = WebviewWindowBuilder::new(app, REFRESH, WebviewUrl::External(url)).additional_browser_args(&crate::background::browser_args()).visible(false).build() else { return false };
+    // Never focused: by default the new webview takes the keyboard focus even hidden (wry's MoveFocus), and the app's
+    // window went inactive under the user 90 s after launch (Nov 2026 report, with a window-styling mod).
+    let Ok(w) = WebviewWindowBuilder::new(app, REFRESH, WebviewUrl::External(url)).additional_browser_args(&crate::background::browser_args()).visible(false).focused(false).focusable(false).skip_taskbar(true).build() else { return false };
     #[cfg(windows)]
     let _ = crate::shield::watch(w.as_ref());
     let mut back = false;
@@ -85,4 +87,25 @@ pub async fn refresh(app: &AppHandle) -> bool {
 /// Forgets every Google session (and other site data) in the app's webview profile.
 pub fn sign_out(app: &AppHandle) -> tauri::Result<()> {
     app.get_webview("main").ok_or(tauri::Error::WebviewNotFound)?.clear_all_browsing_data()
+}
+
+#[cfg(test)]
+mod tests {
+    /// A window made hidden never takes the focus from the app's window (`.visible(false)` alone doesn't stop it).
+    #[test]
+    fn hidden_windows_never_take_the_focus() {
+        let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("src");
+        let mut bad = Vec::new();
+        for entry in std::fs::read_dir(&dir).unwrap().flatten() {
+            let Ok(text) = std::fs::read_to_string(entry.path()) else { continue };
+            // Built from parts: this test's own lines don't count.
+            let (made, hidden) = (["WebviewWindowBuilder", "::new"].concat(), [".visible", "(false)"].concat());
+            for line in text.lines().filter(|l| l.contains(&made) && l.contains(&hidden)) {
+                if !line.contains(".focused(false)") {
+                    bad.push(format!("{}: {}", entry.file_name().to_string_lossy(), line.trim()));
+                }
+            }
+        }
+        assert!(bad.is_empty(), "hidden windows that take the focus: {bad:?}");
+    }
 }
