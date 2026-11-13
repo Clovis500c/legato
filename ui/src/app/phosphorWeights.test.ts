@@ -16,6 +16,10 @@ it('keeps the weights the app draws in every icon and drops the others', () => {
     // Still one expression: the same Map call, the kept paths untouched.
     expect(out).toContain('new Map([')
     expect(out.trimEnd().endsWith('export { l as default };') || out.includes('export')).toBe(true)
+    // It still runs: a dropped entry's comma left behind is a hole, and `new Map` throws on it when the icon loads.
+    const body = out.replace(/^import \* as (\w+) from "react";$/m, 'const $1 = R;').replace(/export \{\s*(\w+) as default\s*\};?\s*$/, 'return $1')
+    const map = new Function('R', body)({ createElement: () => null, Fragment: null }) as Map<string, unknown>
+    expect([...map.keys()].sort(), f).toEqual([...KEEP].sort())
   }
 })
 
