@@ -150,6 +150,11 @@ impl Renderer {
     }
 
     async fn call(&self, action: &str, args: &[(&str, &str)]) -> Result<()> {
+        self.ask(action, args).await.map(drop)
+    }
+
+    /// A SOAP action's answer body (capped).
+    async fn ask(&self, action: &str, args: &[(&str, &str)]) -> Result<String> {
         let r = client()
             .post(self.control.clone())
             .header("content-type", "text/xml; charset=\"utf-8\"")
@@ -161,7 +166,13 @@ impl Renderer {
         if !r.status().is_success() {
             bail!("{} refused {action} ({})", self.name, r.status());
         }
-        Ok(())
+        crate::linklist::capped_text(r).await
+    }
+
+    /// What it is doing: `PLAYING`, `PAUSED_PLAYBACK`, `STOPPED`, `TRANSITIONING`, `NO_MEDIA_PRESENT`.
+    pub async fn transport_state(&self) -> Result<String> {
+        let body = self.ask("GetTransportInfo", &[]).await?;
+        inner(&body, "CurrentTransportState").filter(|s| !s.is_empty()).ok_or_else(|| anyhow::anyhow!("No transport state"))
     }
 
     /// Hands it a song's address (this PC's own file server) and starts it.
@@ -247,6 +258,16 @@ mod tests {
         for m in [desc, set, play, seek, stop] {
             m.assert_async().await;
         }
+    }
+
+    #[tokio::test]
+    async fn the_transport_state_is_read_from_its_answer() {
+        let mut s = Server::new_async().await;
+        s.mock("GET", "/desc.xml").with_body(DESC).create_async().await;
+        let info = s.mock("POST", "/av/ctl").match_header("soapaction", "\"urn:schemas-upnp-org:service:AVTransport:1#GetTransportInfo\"").with_body("<s:Envelope><s:Body><u:GetTransportInfoResponse><CurrentTransportState>PAUSED_PLAYBACK</CurrentTransportState><CurrentTransportStatus>OK</CurrentTransportStatus></u:GetTransportInfoResponse></s:Body></s:Envelope>").create_async().await;
+        let r = Renderer::open(&Url::parse(&format!("{}/desc.xml", s.url())).unwrap()).await.unwrap();
+        assert_eq!(r.transport_state().await.unwrap(), "PAUSED_PLAYBACK");
+        info.assert_async().await;
     }
 
     #[tokio::test]

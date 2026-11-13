@@ -160,8 +160,15 @@ fn stop_serving() {
     let _ = TcpStream::connect_timeout(&s.at, Duration::from_millis(300));
 }
 
-/// Starts serving `path` on `ip`; its address for the renderer.
-fn serve_file(ip: Ipv4Addr, path: PathBuf, mime: &'static str, idle: Duration) -> Result<Url, String> {
+/// Whether a renderer doing `state` may still come for the file: a pause can last, and a seek after it opens a new
+/// connection. Stopped, empty or out of reach (None): it will not.
+fn still_wanted(state: Option<&str>) -> bool {
+    matches!(state, Some("PLAYING" | "PAUSED_PLAYBACK" | "TRANSITIONING"))
+}
+
+/// Starts serving `path` on `ip`; its address for the renderer. Once nothing has been connected for `idle`, the server
+/// closes unless `renderer` (the one it was handed to) still plays or holds it paused.
+fn serve_file(ip: Ipv4Addr, path: PathBuf, mime: &'static str, idle: Duration, renderer: Option<Renderer>) -> Result<Url, String> {
     stop_serving();
     let listener = TcpListener::bind((ip, 0)).map_err(err)?;
     let at = listener.local_addr().map_err(err)?;
@@ -184,6 +191,11 @@ fn serve_file(ip: Ipv4Addr, path: PathBuf, mime: &'static str, idle: Duration) -
                     break;
                 }
                 if busy.idle_for().is_some_and(|d| d >= idle) {
+                    if let Some(r) = &renderer
+                        && still_wanted(tauri::async_runtime::block_on(r.transport_state()).ok().as_deref())
+                    {
+                        continue;
+                    }
                     let mut serving = SERVING.lock().unwrap();
                     if serving.as_ref().is_some_and(|s| Arc::ptr_eq(&s.stop, &stop))
                         && let Some(s) = serving.take()
@@ -243,7 +255,7 @@ pub async fn cast_play(state: State<'_, AppState>, device_id: String, track_id: 
         _ => return Err("This PC has no address on a local network".into()),
     };
     let renderer = device(&device_id).await?;
-    let url = serve_file(ip, path, mime, IDLE)?;
+    let url = serve_file(ip, path, mime, IDLE, Some(renderer.clone()))?;
     renderer.play_uri(url.as_str(), &title.chars().take(200).collect::<String>(), mime).await.map_err(err)?;
     if position_ms > 0 {
         // Some devices need a moment before they take a seek.
@@ -305,7 +317,7 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("a.mp3");
         std::fs::write(&path, b"0123456789").unwrap();
-        let url = serve_file(AT, path, "audio/mpeg", Duration::from_secs(300)).unwrap();
+        let url = serve_file(AT, path, "audio/mpeg", Duration::from_secs(300), None).unwrap();
         let (port, token) = (url.port().unwrap(), url.path().split('/').nth(1).unwrap().to_string());
         let whole = String::from_utf8(get(port, &format!("GET /{token}/file HTTP/1.1\r\n\r\n"))).unwrap();
         assert!(whole.starts_with("HTTP/1.1 200 OK") && whole.contains("Content-Length: 10") && whole.ends_with("0123456789"), "{whole}");
@@ -327,7 +339,7 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("a.mp3");
         std::fs::write(&path, b"0123456789").unwrap();
-        let url = serve_file(AT, path, "audio/mpeg", Duration::from_millis(400)).unwrap();
+        let url = serve_file(AT, path, "audio/mpeg", Duration::from_millis(400), None).unwrap();
         let (port, token) = (url.port().unwrap(), url.path().split('/').nth(1).unwrap().to_string());
         std::thread::sleep(Duration::from_millis(250));
         assert!(get(port, &format!("GET /{token}/file HTTP/1.1\r\n\r\n")).starts_with(b"HTTP/1.1 200"), "a request keeps it open");
@@ -336,5 +348,35 @@ mod tests {
         std::thread::sleep(Duration::from_millis(1200));
         assert!(TcpStream::connect_timeout(&SocketAddr::from((AT, port)), Duration::from_millis(500)).is_err(), "closed when idle");
         assert!(SERVING.lock().unwrap().is_none());
+    }
+
+    #[test]
+    fn a_paused_renderer_keeps_its_server_and_a_stopped_one_lets_it_close() {
+        let _turn = TURN.lock().unwrap_or_else(|e| e.into_inner());
+        let mut s = mockito::Server::new();
+        let answer = |state: &str| format!("<s:Envelope><s:Body><CurrentTransportState>{state}</CurrentTransportState></s:Body></s:Envelope>");
+        let paused = s.mock("POST", "/ctl").with_body(answer("PAUSED_PLAYBACK")).create();
+        let renderer = Renderer { name: "TV".into(), control: Url::parse(&format!("{}/ctl", s.url())).unwrap() };
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("a.mp3");
+        std::fs::write(&path, b"0123456789").unwrap();
+        let url = serve_file(AT, path, "audio/mpeg", Duration::from_millis(200), Some(renderer)).unwrap();
+        let port = url.port().unwrap();
+        std::thread::sleep(Duration::from_millis(900));
+        assert!(TcpStream::connect_timeout(&SocketAddr::from((AT, port)), Duration::from_millis(500)).is_ok(), "a long pause keeps it open");
+        paused.remove();
+        s.mock("POST", "/ctl").with_body(answer("STOPPED")).create();
+        std::thread::sleep(Duration::from_millis(900));
+        assert!(TcpStream::connect_timeout(&SocketAddr::from((AT, port)), Duration::from_millis(500)).is_err(), "closed once it stopped");
+    }
+
+    #[test]
+    fn only_playing_or_paused_wants_the_file() {
+        for s in ["PLAYING", "PAUSED_PLAYBACK", "TRANSITIONING"] {
+            assert!(still_wanted(Some(s)), "{s}");
+        }
+        for s in [Some("STOPPED"), Some("NO_MEDIA_PRESENT"), None] {
+            assert!(!still_wanted(s), "{s:?}");
+        }
     }
 }
