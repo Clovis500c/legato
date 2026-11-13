@@ -97,7 +97,38 @@ fn attr(xml: &str, name: &str, attr: &str) -> Option<String> {
 fn text(raw: &str) -> String {
     let raw = raw.trim();
     let raw = raw.strip_prefix("<![CDATA[").and_then(|r| r.strip_suffix("]]>")).unwrap_or(raw);
-    raw.replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"").replace("&apos;", "'").replace("&amp;", "&").trim().to_string()
+    numeric(&raw.replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"").replace("&apos;", "'")).replace("&amp;", "&").trim().to_string()
+}
+
+/// `&#8217;`, `&#x27;` → the character (feeds write titles so). Anything else stays as written.
+fn numeric(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    let mut rest = s;
+    while let Some(i) = rest.find("&#") {
+        out.push_str(&rest[..i]);
+        let after = &rest[i + 2..];
+        let end = after.find(';').filter(|&e| e <= 8);
+        let c = end.and_then(|e| {
+            let n = &after[..e];
+            let code = match n.strip_prefix(['x', 'X']) {
+                Some(h) => u32::from_str_radix(h, 16).ok(),
+                None => n.parse().ok(),
+            };
+            code.and_then(char::from_u32)
+        });
+        match (c, end) {
+            (Some(c), Some(e)) => {
+                out.push(c);
+                rest = &after[e + 1..];
+            }
+            _ => {
+                out.push_str("&#");
+                rest = after;
+            }
+        }
+    }
+    out.push_str(rest);
+    out
 }
 
 /// A host on this network (a private, loopback or `.local` address: `music_core::server::private_host`).
@@ -138,7 +169,7 @@ fn duration(s: &str) -> Option<u64> {
         secs = secs.checked_mul(60)?.checked_add(part.trim().parse::<u64>().ok()?)?;
         n += 1;
     }
-    (n <= 3 && secs > 0).then_some(secs * 1000)
+    (n <= 3 && secs > 0).then(|| secs.checked_mul(1000)).flatten()
 }
 
 /// A feed's text as a show with its episodes (newest first, as feeds list them), those without audio dropped.
@@ -257,6 +288,12 @@ mod tests {
         hop.assert_async().await;
         // The user's own server follows its redirects.
         assert_eq!(client_for(&s.url()).get(format!("{}/hop", s.url())).send().await.unwrap().status(), 200);
+    }
+
+    #[test]
+    fn numeric_entities_and_huge_durations() {
+        assert_eq!(text("Don&#8217;t &#x27;stop&#39; &amp;#38; &#bad; &#"), "Don’t 'stop' &#38; &#bad; &#");
+        assert_eq!(duration("18446744073709552"), None);
     }
 
     #[test]
