@@ -9,7 +9,7 @@ import { advance, BEAT, newRun, summary, type ImportKind, type ImportRun } from 
 import { patchLibrary } from './libraryPatch'
 import { fold, oneLiked, ownLiked, shownIds, youtubeLiked, type Lists } from '../features/library/likedMusic'
 
-export type SettingsSection = 'general' | 'playback' | 'appearance' | 'sources' | 'sync' | 'shield' | 'privacy' | 'shortcuts' | 'about'
+export type SettingsSection = 'general' | 'playback' | 'appearance' | 'features' | 'devices' | 'library' | 'sources' | 'sync' | 'shield' | 'privacy' | 'shortcuts' | 'about'
 
 export type View =
   | { name: 'home' }

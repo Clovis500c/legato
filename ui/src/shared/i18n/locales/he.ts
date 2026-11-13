@@ -2544,6 +2544,19 @@ const he: Record<string, string> = {
   'Standard': 'רגיל',
   'Full detail': 'כל הפרטים',
   'context menu right click items essentials full detail more': 'תפריט הקשר לחיצה ימנית פריטים עיקר פרטים עוד',
+  'Features': 'תכונות',
+  'Devices': 'מכשירים',
+  'Library and storage': 'ספרייה ואחסון',
+  'Volume and output': 'עוצמה ופלט',
+  'Song details': 'פרטי שירים',
+  'Casting and pairing': 'שידור וצימוד',
+  'Pages and modes': 'דפים ומצבים',
+  'Sharing': 'שיתוף',
+  'volume output device equalizer eq speakers headphones remember': 'עוצמה פלט מכשיר אקולייזר רמקולים אוזניות זכירה',
+  'lyrics translation tempo bpm analysis': 'מילים תרגום קצב ניתוח',
+  'cast dlna speakers webcam qr pair': 'שידור רמקולים מצלמה קוד צימוד',
+  'pages modes podcasts audiobooks blind test focus living room tv': 'דפים מצבים פודקאסטים ספרי שמע מבחן ריכוז סלון טלוויזיה',
+  'discord share profile': 'דיסקורד שיתוף פרופיל',
 }
 
 export default he

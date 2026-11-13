@@ -2604,6 +2604,19 @@ const zh: Record<string, string> = {
   'Standard': '标准',
   'Full detail': '完整细节',
   'context menu right click items essentials full detail more': '上下文菜单 右键 项目 精简 细节 更多',
+  'Features': '功能',
+  'Devices': '设备',
+  'Library and storage': '音乐库与存储',
+  'Volume and output': '音量与输出',
+  'Song details': '歌曲详情',
+  'Casting and pairing': '投放与配对',
+  'Pages and modes': '页面与模式',
+  'Sharing': '分享',
+  'volume output device equalizer eq speakers headphones remember': '音量 输出 设备 均衡器 扬声器 耳机 记住',
+  'lyrics translation tempo bpm analysis': '歌词 翻译 节奏 分析',
+  'cast dlna speakers webcam qr pair': '投放 扬声器 摄像头 二维码 配对',
+  'pages modes podcasts audiobooks blind test focus living room tv': '页面 模式 播客 有声书 猜歌 专注 客厅 电视',
+  'discord share profile': 'discord 分享 资料',
 }
 
 export default zh

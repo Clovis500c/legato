@@ -2604,6 +2604,19 @@ const ja: Record<string, string> = {
   'Standard': '標準',
   'Full detail': 'すべて表示',
   'context menu right click items essentials full detail more': 'コンテキストメニュー 右クリック 項目 基本 詳細 その他',
+  'Features': '機能',
+  'Devices': 'デバイス',
+  'Library and storage': 'ライブラリとストレージ',
+  'Volume and output': '音量と出力',
+  'Song details': '曲の詳細',
+  'Casting and pairing': 'キャストとペアリング',
+  'Pages and modes': 'ページとモード',
+  'Sharing': '共有',
+  'volume output device equalizer eq speakers headphones remember': '音量 出力 デバイス イコライザー スピーカー ヘッドホン 記憶',
+  'lyrics translation tempo bpm analysis': '歌詞 翻訳 テンポ 解析',
+  'cast dlna speakers webcam qr pair': 'キャスト スピーカー ウェブカメラ QR ペアリング',
+  'pages modes podcasts audiobooks blind test focus living room tv': 'ページ モード ポッドキャスト オーディオブック イントロクイズ 集中 リビング テレビ',
+  'discord share profile': 'Discord 共有 プロフィール',
 }
 
 export default ja

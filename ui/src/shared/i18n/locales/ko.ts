@@ -2604,6 +2604,19 @@ const ko: Record<string, string> = {
   'Standard': '표준',
   'Full detail': '전체 보기',
   'context menu right click items essentials full detail more': '컨텍스트 메뉴 오른쪽 클릭 항목 핵심 전체 더보기',
+  'Features': '기능',
+  'Devices': '기기',
+  'Library and storage': '보관함과 저장 공간',
+  'Volume and output': '볼륨과 출력',
+  'Song details': '곡 세부 정보',
+  'Casting and pairing': '캐스트와 페어링',
+  'Pages and modes': '페이지와 모드',
+  'Sharing': '공유',
+  'volume output device equalizer eq speakers headphones remember': '볼륨 출력 기기 이퀄라이저 스피커 헤드폰 기억',
+  'lyrics translation tempo bpm analysis': '가사 번역 템포 분석',
+  'cast dlna speakers webcam qr pair': '캐스트 스피커 웹캠 qr 페어링',
+  'pages modes podcasts audiobooks blind test focus living room tv': '페이지 모드 팟캐스트 오디오북 블라인드 테스트 집중 거실 tv',
+  'discord share profile': '디스코드 공유 프로필',
 }
 
 export default ko

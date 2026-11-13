@@ -2604,6 +2604,19 @@ const tr: Record<string, string> = {
   'Standard': 'Standart',
   'Full detail': 'Tüm ayrıntılar',
   'context menu right click items essentials full detail more': 'bağlam menüsü sağ tık öğeler temel ayrıntılar daha fazla',
+  'Features': 'Özellikler',
+  'Devices': 'Cihazlar',
+  'Library and storage': 'Kitaplık ve depolama',
+  'Volume and output': 'Ses düzeyi ve çıkış',
+  'Song details': 'Şarkı ayrıntıları',
+  'Casting and pairing': 'Yayın ve eşleştirme',
+  'Pages and modes': 'Sayfalar ve modlar',
+  'Sharing': 'Paylaşım',
+  'volume output device equalizer eq speakers headphones remember': 'ses çıkış cihaz ekolayzer hoparlör kulaklık hatırla',
+  'lyrics translation tempo bpm analysis': 'şarkı sözü çeviri tempo analiz',
+  'cast dlna speakers webcam qr pair': 'yayın hoparlör web kamerası qr eşleştir',
+  'pages modes podcasts audiobooks blind test focus living room tv': 'sayfalar modlar podcast sesli kitap bilmece odak oturma odası tv',
+  'discord share profile': 'discord paylaş profil',
 }
 
 export default tr

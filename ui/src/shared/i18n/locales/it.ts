@@ -2604,6 +2604,19 @@ const it: Record<string, string> = {
   'Standard': 'Standard',
   'Full detail': 'Tutti i dettagli',
   'context menu right click items essentials full detail more': 'menu contestuale clic destro voci essenziale dettagli altro',
+  'Features': 'Funzioni',
+  'Devices': 'Dispositivi',
+  'Library and storage': 'Libreria e spazio',
+  'Volume and output': 'Volume e uscita',
+  'Song details': 'Dettagli dei brani',
+  'Casting and pairing': 'Trasmissione e abbinamento',
+  'Pages and modes': 'Pagine e modalità',
+  'Sharing': 'Condivisione',
+  'volume output device equalizer eq speakers headphones remember': 'volume uscita dispositivo equalizzatore altoparlanti cuffie ricorda',
+  'lyrics translation tempo bpm analysis': 'testi traduzione tempo analisi',
+  'cast dlna speakers webcam qr pair': 'trasmetti altoparlanti webcam qr abbina',
+  'pages modes podcasts audiobooks blind test focus living room tv': 'pagine modalità podcast audiolibri quiz concentrazione salotto tv',
+  'discord share profile': 'discord condividi profilo',
 }
 
 export default it

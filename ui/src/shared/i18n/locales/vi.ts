@@ -2604,6 +2604,19 @@ const vi: Record<string, string> = {
   'Standard': 'Tiêu chuẩn',
   'Full detail': 'Đầy đủ chi tiết',
   'context menu right click items essentials full detail more': 'menu ngữ cảnh chuột phải mục cơ bản chi tiết thêm',
+  'Features': 'Tính năng',
+  'Devices': 'Thiết bị',
+  'Library and storage': 'Thư viện và bộ nhớ',
+  'Volume and output': 'Âm lượng và đầu ra',
+  'Song details': 'Chi tiết bài hát',
+  'Casting and pairing': 'Truyền và ghép nối',
+  'Pages and modes': 'Trang và chế độ',
+  'Sharing': 'Chia sẻ',
+  'volume output device equalizer eq speakers headphones remember': 'âm lượng đầu ra thiết bị eq loa tai nghe ghi nhớ',
+  'lyrics translation tempo bpm analysis': 'lời bài hát dịch nhịp phân tích',
+  'cast dlna speakers webcam qr pair': 'truyền loa webcam qr ghép nối',
+  'pages modes podcasts audiobooks blind test focus living room tv': 'trang chế độ podcast sách nói đoán nhạc tập trung phòng khách tv',
+  'discord share profile': 'discord chia sẻ hồ sơ',
 }
 
 export default vi

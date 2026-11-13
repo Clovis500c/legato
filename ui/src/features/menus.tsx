@@ -12,6 +12,7 @@ import { fileName, starsText } from '../shared/format'
 import { COVER_ORDERS, VIZ_BANDINGS, VIZ_COLORMAPS, VIZ_COLORS, VIZ_FACES, VIZ_GRADIENTS, VIZ_PRESET_COLORS, VIZ_WEIGHTINGS, type PlaylistCover, type PlaylistFolder } from '../shared/theme/theme'
 import type { MenuEntry } from '../shared/ui/ContextMenu'
 import { shapeMenu, type MenuKind } from '../shared/ui/menuShape'
+import { CATEGORIES } from './settings/catalog'
 import { SourceIcon } from '../shared/ui/SourceIcon'
 import type { Addon } from './addons/registry'
 import { isOn, setAddon } from './addons/state'
@@ -695,16 +696,8 @@ export function folderMenu(f: PlaylistFolder, playlists: LibraryPlaylist[]): Men
 }
 
 /** Settings' sections and their names (the search bar's commands name them too). */
-export const SETTINGS_SECTIONS: [SettingsSection, string][] = [
-  ['general', msg('General')],
-  ['playback', msg('Playback')],
-  ['appearance', msg('Appearance')],
-  ['sources', msg('Accounts')],
-  ['sync', msg('Sync Mode')],
-  ['shield', msg('Shield')],
-  ['shortcuts', msg('Shortcuts')],
-  ['about', msg('About')],
-]
+// Privacy: reached from its own links, not a sidebar entry's menu.
+export const SETTINGS_SECTIONS: [SettingsSection, string][] = CATEGORIES.filter((c) => c.id !== 'privacy').map((c) => [c.id, c.label])
 
 /** Sidebar entries (Home, Songs, Settings…): open it; its songs when it has some; settings sections; counts on/off. */
 export function navMenu(to: View, tracks?: LibraryTrack[]): MenuEntry[] {

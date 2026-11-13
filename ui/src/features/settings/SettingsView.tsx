@@ -1,7 +1,7 @@
 import { ShortcutsSection } from './ShortcutsSection'
-import { ArrowCounterClockwise, ArrowSquareOut, ArrowsClockwise, CaretDown, Check, Copy, Fingerprint, GearSix, Info, Keyboard, MagnifyingGlass, PaintBrush, Plugs, Plus, ShieldCheck, SpeakerHigh } from '@phosphor-icons/react'
+import { ArrowCounterClockwise, ArrowSquareOut, ArrowsClockwise, CaretDown, Check, Copy, Database, Devices, Fingerprint, GearSix, SquaresFour, Info, Keyboard, MagnifyingGlass, PaintBrush, Plugs, Plus, ShieldCheck, SpeakerHigh } from '@phosphor-icons/react'
 import { openUrl } from '@tauri-apps/plugin-opener'
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore, type SettingsSection } from '../../app/store'
 import { api, type Contact, type Storage } from '../../shared/api'
@@ -32,6 +32,7 @@ import { ThemeStudio } from './ThemeStudio'
 import { FadeEditor } from './FadeEditor'
 import { BrowserScene, CountsScene, CoverShapes, DensityScene, FadeScene, ListCoversScene, MiniPlayerScene, MixCoverScene, MotionScene, NowPlayingScene, ProgressScene, SleepButtonScene, SourceIconScene, TunerScene, VolumeScene } from './previews'
 import { searchSettings, type SettingEntry } from './search'
+import { CATEGORIES, categoryOf, groupDef, type Category } from './catalog'
 import { locale, msg, tr } from '../../shared/i18n/i18n'
 import { nextAlarm } from '../player/alarmTime'
 import { phoneApp } from '../../shared/platform'
@@ -42,42 +43,63 @@ import { usePhone } from '../../shared/phone'
 import { LanguagePicker } from './LanguagePicker'
 import { ask } from '../../shared/ui/Ask'
 
-const sections: { id: SettingsSection; label: string; icon: ReactNode }[] = [
-  { id: 'general', label: msg('General'), icon: <GearSix size={15} /> },
-  { id: 'playback', label: msg('Playback'), icon: <SpeakerHigh size={15} /> },
-  { id: 'appearance', label: msg('Appearance'), icon: <PaintBrush size={15} /> },
-  { id: 'sources', label: msg('Accounts'), icon: <Plugs size={15} /> },
-  { id: 'sync', label: msg('Sync Mode'), icon: <ArrowsClockwise size={15} /> },
-  { id: 'shield', label: msg('Shield'), icon: <ShieldCheck size={15} /> },
-  { id: 'privacy', label: msg('Privacy'), icon: <Fingerprint size={15} /> },
-  { id: 'shortcuts', label: msg('Shortcuts'), icon: <Keyboard size={15} /> },
-  { id: 'about', label: msg('About'), icon: <Info size={15} /> },
-]
+const ICONS: Record<Category, ReactNode> = {
+  general: <GearSix size={15} />,
+  playback: <SpeakerHigh size={15} />,
+  appearance: <PaintBrush size={15} />,
+  features: <SquaresFour size={15} />,
+  devices: <Devices size={15} />,
+  library: <Database size={15} />,
+  sources: <Plugs size={15} />,
+  sync: <ArrowsClockwise size={15} />,
+  shield: <ShieldCheck size={15} />,
+  privacy: <Fingerprint size={15} />,
+  shortcuts: <Keyboard size={15} />,
+  about: <Info size={15} />,
+}
+const sections = CATEGORIES.map((c) => ({ ...c, icon: ICONS[c.id] }))
 
-/** title: English, the setting's id (search, data-setting); shown translated. */
-function Group({ title, count, hint, children }: { title: string; count?: number; hint?: string; children: ReactNode }) {
+/** The page the three grouped sections draw into (catalog.ts): a group shows only on its own page. */
+const PageOf = createContext<Category | null>(null)
+
+/** Pages drawn from groups (the catalog places them); the others are their own component. */
+const GROUPED: ReadonlySet<Category> = new Set(['general', 'playback', 'appearance', 'features', 'devices', 'library'])
+
+/**
+ * title: English, the group's id (catalog.ts, search, data-setting); shown translated. Its page and its rank come from
+ * the catalog, whatever section function holds its JSX. Advanced (or, on the phone, a rare one: phoneFold.ts): folded at
+ * the page's foot under one heading. bare: no heading or box (the theme studio).
+ */
+function Group({ title, count, hint, bare, children }: { title: string; count?: number; hint?: string; bare?: boolean; children: ReactNode }) {
   const phone = usePhone()
+  const page = useContext(PageOf)
+  const def = groupDef(title)
   if (phoneApp && DESKTOP_ONLY.has(title)) return null
-  // The phone: a rare group (phoneFold.ts) goes to the section's foot, folded; the first carries the heading (styles.css).
-  if (phone && PHONE_FOLDED.has(title))
+  // Not in the catalog (the tests forbid it): General, rather than nowhere.
+  if (page && (def?.category ?? 'general') !== page) return null
+  const rank = def?.index ?? 0
+  if (bare)
     return (
-      <div data-fold className="order-2 flex flex-col gap-2">
-        <h2 className="fold-head pt-2 text-base font-semibold">{tr('More settings')}</h2>
-        <details data-setting={title} className="group/fold border-b border-line-soft">
-          <summary className="flex min-h-12 cursor-pointer list-none items-center gap-3 text-[0.9375rem] font-medium [&::-webkit-details-marker]:hidden">
-            <span className="min-w-0 flex-1 truncate">
-              {tr(title)}
-              {count !== undefined && ` · ${count}`}
-            </span>
-            {hint && <span className="kicker shrink-0">{hint}</span>}
-            <CaretDown size={16} className="shrink-0 text-ink-3 transition-transform group-open/fold:rotate-180" />
-          </summary>
-          <div className="pb-4">{children}</div>
-        </details>
+      <div data-setting={title} style={{ order: rank }} className="flex flex-col gap-7">
+        {children}
       </div>
     )
+  if (def?.advanced || (phone && PHONE_FOLDED.has(title)))
+    return (
+      <details data-setting={title} data-fold style={{ order: 1000 + rank }} className="group/fold border-b border-line-soft">
+        <summary className="flex min-h-12 cursor-pointer list-none items-center gap-3 text-[0.9375rem] font-medium [&::-webkit-details-marker]:hidden">
+          <span className="min-w-0 flex-1 truncate">
+            {tr(title)}
+            {count !== undefined && ` · ${count}`}
+          </span>
+          {hint && <span className="kicker shrink-0">{hint}</span>}
+          <CaretDown size={16} className="shrink-0 text-ink-3 transition-transform group-open/fold:rotate-180" />
+        </summary>
+        <div className="pb-4">{children}</div>
+      </details>
+    )
   return (
-    <section data-setting={title} className="flex flex-col gap-2.5 rounded-lg">
+    <section data-setting={title} style={{ order: rank }} className="flex flex-col gap-2.5 rounded-lg">
       <div className="flex items-center justify-between">
         <h2 className="kicker">
           {tr(title)}
@@ -165,13 +187,15 @@ function Appearance() {
   const labels: Record<Column, string> = { album: msg('Album'), year: msg('Year'), genre: msg('Genre'), bpm: msg('BPM'), key: msg('Key'), sources: msg('Sources'), plays: msg('Plays'), rating: msg('Rating'), added: msg('Date added'), duration: msg('Duration') }
   const reset: Partial<Settings> = { accent: DEFAULTS.accent, covers: DEFAULTS.covers, density: DEFAULTS.density, zoom: DEFAULTS.zoom, readout: DEFAULTS.readout, sleepButton: DEFAULTS.sleepButton, glow: DEFAULTS.glow, volume: DEFAULTS.volume, tuner: DEFAULTS.tuner, columns: DEFAULTS.columns, tint: DEFAULTS.tint, immersive: DEFAULTS.immersive, miniPlayer: DEFAULTS.miniPlayer, font: DEFAULTS.font, motion: DEFAULTS.motion, sidebarCounts: DEFAULTS.sidebarCounts, listCovers: DEFAULTS.listCovers, columnBrowser: DEFAULTS.columnBrowser, stage: DEFAULTS.stage, miniSpot: DEFAULTS.miniSpot, miniPlace: DEFAULTS.miniPlace, textSize: DEFAULTS.textSize }
   return (
-    <div className="flex flex-col gap-7">
+    <div className="contents">
+      <Group title={msg('Theme')} bare>
       <div className="flex justify-end">
         <Button variant="ghost" onClick={async () => (await ask({ title: tr('Reset appearance?'), body: tr('Every setting on this page goes back to its default, except the theme and the language.'), ok: tr('Reset') })) && update(reset)}>
           <ArrowCounterClockwise size={14} /> {tr('Reset appearance')}
         </Button>
       </div>
       <ThemeStudio />
+      </Group>
       {/* Only Windows gives an accent to read: no Windows chip on the phone, and one synced from a PC shows the theme's. */}
       <Group title={msg('Accent color')} hint={s.accent === 'system' && !phoneApp ? tr('from Windows') : s.accent === 'cover' ? tr('from the cover') : s.accent && s.accent !== 'system' ? s.accent : tr('from theme')}>
         <div className="flex flex-wrap items-center gap-2">
@@ -770,7 +794,7 @@ function BackupRows() {
 function GeneralSection() {
   const { settings: s, update } = useSettings()
   return (
-    <div className="flex max-w-190 flex-col gap-6">
+    <div className="contents">
       <Group title={msg('Language')}>
         <LanguagePicker value={s.language} onChange={(language) => update({ language })} />
       </Group>
@@ -788,22 +812,6 @@ function GeneralSection() {
           </Row>
           <Row setting="reopen" label={msg('Reopen where you left off')} sub={tr('Same screen as when the app closed, Now Playing open if it was')}>
             <Toggle label={tr('Reopen where you left off')} checked={s.reopen} onChange={(reopen) => update({ reopen })} />
-          </Row>
-          <Row setting="livingRoom" label={msg('Living-room mode')} sub={tr('Larger interface for a PC on a TV: the arrow keys move between controls, Enter presses, Esc goes back')}>
-            <Toggle label={tr('Living-room mode')} checked={s.livingRoom} onChange={(livingRoom) => update({ livingRoom })} />
-          </Row>
-          <Row setting="tvHome" label={msg('TV home')} sub={tr('With living-room mode: opens big tiles when it turns on (search, songs, albums, artists, mixes, radio…) for the arrow keys or a gamepad')}>
-            <Toggle label={tr('TV home')} checked={s.tvHome} onChange={(tvHome) => update({ tvHome })} />
-          </Row>
-          <Row setting="booksPage" label={msg('Audiobooks')} sub={tr('Adds Audiobooks to the app menu: the long local files (audiobook genre, or two hours and more) apart from music, with where you stopped')}>
-            <Toggle label={tr('Audiobooks')} checked={s.booksPage} onChange={(booksPage) => update({ booksPage })} />
-          </Row>
-          <Row setting="podcastCheck" label={msg('Check podcasts')} sub={tr('Reads each kept show’s feed every six hours while the app is open and announces new episodes (only the feed addresses you typed are asked for)')}>
-            <Toggle label={tr('Check podcasts')} checked={s.podcastCheck} onChange={(podcastCheck) => update({ podcastCheck })} />
-          </Row>
-          <Row setting="discordSignIn" label={msg('Discord sign-in')} sub={tr('Optional. Turns on Discord in Accounts: sign in with your name, picture and id only, no e-mail, and the playlists you share say who shared them, unverified; only Discord is asked, with the sign-in kept in the system keychain')}>
-            {/* Off: the sign-in is forgotten here (tokens, name and picture), nothing stays in links. Signing in is Accounts' (Discord). */}
-            <Toggle label={tr('Discord sign-in')} checked={s.discordSignIn} onChange={(discordSignIn) => (update({ discordSignIn }), discordSignIn || void api.discordLoginDisconnect().catch(() => {}))} />
           </Row>
           <Row setting="resume" label={msg('Resume playback on launch')} sub={tr('The last song picks up where it stopped, with its queue, when the app opens')}>
             <Toggle label={tr('Resume playback on launch')} checked={s.resume} onChange={(resume) => update({ resume })} />
@@ -831,6 +839,42 @@ function GeneralSection() {
       </Group>
       <Group title={msg('Library backup')}>
         <BackupRows />
+      </Group>
+      <Group title={msg('Pages and modes')}>
+        <div className="rounded-xl border border-line bg-raised">
+          <Row setting="livingRoom" label={msg('Living-room mode')} sub={tr('Larger interface for a PC on a TV: the arrow keys move between controls, Enter presses, Esc goes back')}>
+            <Toggle label={tr('Living-room mode')} checked={s.livingRoom} onChange={(livingRoom) => update({ livingRoom })} />
+          </Row>
+          <Row setting="tvHome" label={msg('TV home')} sub={tr('With living-room mode: opens big tiles when it turns on (search, songs, albums, artists, mixes, radio…) for the arrow keys or a gamepad')}>
+            <Toggle label={tr('TV home')} checked={s.tvHome} onChange={(tvHome) => update({ tvHome })} />
+          </Row>
+          <Row setting="booksPage" label={msg('Audiobooks')} sub={tr('Adds Audiobooks to the app menu: the long local files (audiobook genre, or two hours and more) apart from music, with where you stopped')}>
+            <Toggle label={tr('Audiobooks')} checked={s.booksPage} onChange={(booksPage) => update({ booksPage })} />
+          </Row>
+          <Row setting="podcastCheck" label={msg('Check podcasts')} sub={tr('Reads each kept show’s feed every six hours while the app is open and announces new episodes (only the feed addresses you typed are asked for)')}>
+            <Toggle label={tr('Check podcasts')} checked={s.podcastCheck} onChange={(podcastCheck) => update({ podcastCheck })} />
+          </Row>
+          <Row setting="focusSessions" label={msg('Focus and workout sessions')} sub={tr('Adds Focus session… and Workout session… to the player\'s menu: a timer, a mix of your songs, and the music fades out at the end')}>
+            <Toggle label={tr('Focus and workout sessions')} checked={s.focusSessions} onChange={(focusSessions) => update({ focusSessions })} />
+          </Row>
+          <Row setting="lastfmDiscoveries" label={msg('Last.fm suggestions')} sub={tr('Adds a Last.fm suggestions button to Mixes: songs by artists close to the three you play most, from Last.fm with your own key; their names go to Last.fm')}>
+            <Toggle label={tr('Last.fm suggestions')} checked={s.lastfmDiscoveries} onChange={(lastfmDiscoveries) => update({ lastfmDiscoveries })} />
+          </Row>
+          <Row setting="blindTest" label={msg('Blind test')} sub={tr('Adds Blind test… to the app menu: ten snippets of your library, four answers, a score; nothing of the player gives the song away')}>
+            <Toggle label={tr('Blind test')} checked={s.blindTest} onChange={(blindTest) => update({ blindTest })} />
+          </Row>
+          <Row setting="podcasts" label={msg('Podcasts')} sub={tr('Adds Podcasts to the app menu: open RSS feeds you type, keep your shows, play their episodes (the feed address and the servers it names are reached)')}>
+            <Toggle label={tr('Podcasts')} checked={s.podcasts} onChange={(podcasts) => update({ podcasts })} />
+          </Row>
+        </div>
+      </Group>
+      <Group title={msg('Sharing')}>
+        <div className="rounded-xl border border-line bg-raised">
+          <Row setting="discordSignIn" label={msg('Discord sign-in')} sub={tr('Optional. Turns on Discord in Accounts: sign in with your name, picture and id only, no e-mail, and the playlists you share say who shared them, unverified; only Discord is asked, with the sign-in kept in the system keychain')}>
+            {/* Off: the sign-in is forgotten here (tokens, name and picture), nothing stays in links. Signing in is Accounts' (Discord). */}
+            <Toggle label={tr('Discord sign-in')} checked={s.discordSignIn} onChange={(discordSignIn) => (update({ discordSignIn }), discordSignIn || void api.discordLoginDisconnect().catch(() => {}))} />
+          </Row>
+        </div>
       </Group>
       <Group title={msg('Notifications')}>
         <div className="rounded-xl border border-line bg-raised">
@@ -937,7 +981,7 @@ function AlarmGroup() {
 function PlaybackSection() {
   const { settings: s, update } = useSettings()
   return (
-    <div className="flex max-w-190 flex-col gap-6">
+    <div className="contents">
       <Group title={msg('Fades')}>
         <div className="rounded-xl border border-line bg-raised">
           <Row label={msg('Fade between songs')} preview={!s.fade.advanced && <FadeScene crossfade={s.crossfade} />} sub={s.fade.advanced ? tr('Advanced: {out} s out ({outCurve}), {in} s in ({inCurve})', { out: s.fade.out, outCurve: tr(curveLabels[s.fade.outCurve]), in: s.fade.in, inCurve: tr(curveLabels[s.fade.inCurve]) }) : s.crossfade ? tr('{n} s fade out, then in, when a song ends on its own', { n: s.crossfade }) : tr('No fade')}>
@@ -968,6 +1012,9 @@ function PlaybackSection() {
           <Row label={msg('Play with')} sub={tr('On a track row')}>
             <Segmented label={tr('Play with')} value={s.clickToPlay} onChange={(clickToPlay) => update({ clickToPlay })} options={[{ value: 'single', label: tr('One click') }, { value: 'double', label: tr('Double-click') }]} />
           </Row>
+          <Row setting="sweetFades" label={msg('Sweet fades')} sub={tr('Sets each fade between two songs from their tempos: whole beats when they match, short when they clash')}>
+            <Toggle label={tr('Sweet fades')} checked={s.sweetFades} onChange={(sweetFades) => update({ sweetFades })} />
+          </Row>
         </div>
       </Group>
       <Group title={msg('Up next')}>
@@ -978,26 +1025,12 @@ function PlaybackSection() {
           <Row setting="skipLong" label={msg('Skip long songs')} sub={s.skipLong ? tr('Songs over {n} min are skipped as the queue moves on', { n: s.skipLong }) : tr('Off')}>
             <input type="range" aria-label={tr('Skip long songs')} min={0} max={60} step={1} value={s.skipLong} onChange={(e) => update({ skipLong: +e.target.value })} className="bar w-40" style={{ backgroundImage: `linear-gradient(to right, var(--ink) ${(s.skipLong / 60) * 100}%, var(--line) 0)` }} />
           </Row>
-          <Row setting="webcamScan" label={msg('Scan QR codes with the webcam')} sub={tr('Adds a Scan with the webcam button to Add a device and Listening rooms. The camera is asked for only when you press it; nothing is recorded and no picture leaves this PC.')}>
-            <Toggle label={tr('Scan QR codes with the webcam')} checked={s.webcamScan} onChange={(webcamScan) => update({ webcamScan })} />
-          </Row>
+        </div>
+      </Group>
+      <Group title={msg('Volume and output')}>
+        <div className="rounded-xl border border-line bg-raised">
           <Row setting="eqPerDevice" label={msg('Equalizer per output device')} sub={tr('Adds Equalizer for this output to the player\'s menu: one preset per output device, applied while it is in use (remembered on this PC)')}>
             <Toggle label={tr('Equalizer per output device')} checked={s.eqPerDevice} onChange={(eqPerDevice) => update({ eqPerDevice })} />
-          </Row>
-          <Row setting="castSpeakers" label={msg('Cast to speakers')} sub={tr('Adds Cast to speakers… to the player\'s menu: speakers and TVs on your local network (DLNA / UPnP) play your own files, which this PC hands them over the network; nothing leaves your network')}>
-            <Toggle label={tr('Cast to speakers')} checked={s.castSpeakers} onChange={(castSpeakers) => update({ castSpeakers })} />
-          </Row>
-          <Row setting="translateLyrics" label={msg('Translate lyrics')} sub={tr('Adds Translate… under the lyrics: after you agree each time, the words are sent to MyMemory, a public translation service')}>
-            <Toggle label={tr('Translate lyrics')} checked={s.translateLyrics} onChange={(translateLyrics) => update({ translateLyrics })} />
-          </Row>
-          <Row setting="sweetFades" label={msg('Sweet fades')} sub={tr('Sets each fade between two songs from their tempos: whole beats when they match, short when they clash')}>
-            <Toggle label={tr('Sweet fades')} checked={s.sweetFades} onChange={(sweetFades) => update({ sweetFades })} />
-          </Row>
-          <Row setting="youtubeChapters" label={msg('Chapters of long YouTube videos')} sub={tr('Asks YouTube for the chapters of a long video that plays (its own markers, or the times in its description) and adds Chapters to the player\'s menu')}>
-            <Toggle label={tr('Chapters of long YouTube videos')} checked={s.youtubeChapters} onChange={(youtubeChapters) => update({ youtubeChapters })} />
-          </Row>
-          <Row setting="tempoScan" label={msg('Estimate tempo')} sub={tr('For local songs with no tempo or key in their tags: a few files at a time, in the background, from their first seconds; fills the BPM and Key columns, never over a tag; nothing leaves the PC')}>
-            <Toggle label={tr('Estimate tempo')} checked={s.tempoScan} onChange={(tempoScan) => update({ tempoScan })} />
           </Row>
           <Row setting="volumePerSource" label={msg('Volume per source')} sub={tr('Each source remembers the volume you last set on it: files, YouTube and Spotify need no turn of the knob when the queue switches source')}>
             <Toggle label={tr('Volume per source')} checked={s.volumePerSource} onChange={(volumePerSource) => update({ volumePerSource })} />
@@ -1005,17 +1038,25 @@ function PlaybackSection() {
           <Row setting="volumePerDevice" label={msg('Volume per output device')} sub={tr('Each output device picked in the player menu remembers the volume you last set on it and gets it back when you switch to it')}>
             <Toggle label={tr('Volume per output device')} checked={s.volumePerDevice} onChange={(volumePerDevice) => update({ volumePerDevice })} />
           </Row>
-          <Row setting="focusSessions" label={msg('Focus and workout sessions')} sub={tr('Adds Focus session… and Workout session… to the player\'s menu: a timer, a mix of your songs, and the music fades out at the end')}>
-            <Toggle label={tr('Focus and workout sessions')} checked={s.focusSessions} onChange={(focusSessions) => update({ focusSessions })} />
+        </div>
+      </Group>
+      <Group title={msg('Song details')}>
+        <div className="rounded-xl border border-line bg-raised">
+          <Row setting="translateLyrics" label={msg('Translate lyrics')} sub={tr('Adds Translate… under the lyrics: after you agree each time, the words are sent to MyMemory, a public translation service')}>
+            <Toggle label={tr('Translate lyrics')} checked={s.translateLyrics} onChange={(translateLyrics) => update({ translateLyrics })} />
           </Row>
-          <Row setting="lastfmDiscoveries" label={msg('Last.fm suggestions')} sub={tr('Adds a Last.fm suggestions button to Mixes: songs by artists close to the three you play most, from Last.fm with your own key; their names go to Last.fm')}>
-            <Toggle label={tr('Last.fm suggestions')} checked={s.lastfmDiscoveries} onChange={(lastfmDiscoveries) => update({ lastfmDiscoveries })} />
+          <Row setting="tempoScan" label={msg('Estimate tempo')} sub={tr('For local songs with no tempo or key in their tags: a few files at a time, in the background, from their first seconds; fills the BPM and Key columns, never over a tag; nothing leaves the PC')}>
+            <Toggle label={tr('Estimate tempo')} checked={s.tempoScan} onChange={(tempoScan) => update({ tempoScan })} />
           </Row>
-          <Row setting="blindTest" label={msg('Blind test')} sub={tr('Adds Blind test… to the app menu: ten snippets of your library, four answers, a score; nothing of the player gives the song away')}>
-            <Toggle label={tr('Blind test')} checked={s.blindTest} onChange={(blindTest) => update({ blindTest })} />
+        </div>
+      </Group>
+      <Group title={msg('Casting and pairing')}>
+        <div className="rounded-xl border border-line bg-raised">
+          <Row setting="castSpeakers" label={msg('Cast to speakers')} sub={tr('Adds Cast to speakers… to the player\'s menu: speakers and TVs on your local network (DLNA / UPnP) play your own files, which this PC hands them over the network; nothing leaves your network')}>
+            <Toggle label={tr('Cast to speakers')} checked={s.castSpeakers} onChange={(castSpeakers) => update({ castSpeakers })} />
           </Row>
-          <Row setting="podcasts" label={msg('Podcasts')} sub={tr('Adds Podcasts to the app menu: open RSS feeds you type, keep your shows, play their episodes (the feed address and the servers it names are reached)')}>
-            <Toggle label={tr('Podcasts')} checked={s.podcasts} onChange={(podcasts) => update({ podcasts })} />
+          <Row setting="webcamScan" label={msg('Scan QR codes with the webcam')} sub={tr('Adds a Scan with the webcam button to Add a device and Listening rooms. The camera is asked for only when you press it; nothing is recorded and no picture leaves this PC.')}>
+            <Toggle label={tr('Scan QR codes with the webcam')} checked={s.webcamScan} onChange={(webcamScan) => update({ webcamScan })} />
           </Row>
         </div>
       </Group>
@@ -1082,6 +1123,9 @@ function PlaybackSection() {
           <Row setting="youtubeControls" label={msg('YouTube controls on the video')} sub={tr("YouTube's own title, buttons and hover menu on the video. From the next track.")}>
             <Toggle label={tr('YouTube controls on the video')} checked={s.youtubeControls} onChange={(youtubeControls) => update({ youtubeControls })} />
           </Row>
+          <Row setting="youtubeChapters" label={msg('Chapters of long YouTube videos')} sub={tr('Asks YouTube for the chapters of a long video that plays (its own markers, or the times in its description) and adds Chapters to the player\'s menu')}>
+            <Toggle label={tr('Chapters of long YouTube videos')} checked={s.youtubeChapters} onChange={(youtubeChapters) => update({ youtubeChapters })} />
+          </Row>
         </div>
       </Group>
     </div>
@@ -1120,6 +1164,8 @@ function SettingsSearch({ onPick }: { onPick: (e: SettingEntry) => void }) {
 export function SettingsView({ section }: { section: SettingsSection }) {
   const go = useStore((s) => s.go)
   const focus = useStore((s) => (s.view.name === 'settings' ? s.view.focus : undefined))
+  // A setting opened by name lands on its page, wherever the caller thought it was (the catalog decides).
+  const page = (focus && categoryOf(focus)) || section
   const content = useRef<HTMLDivElement>(null)
   // Set up once, signed out since (expired session): Accounts says so.
   const signIn = useStore((s) => Object.values(s.status).some((x) => x.configured && !x.connected))
@@ -1134,7 +1180,7 @@ export function SettingsView({ section }: { section: SettingsSection }) {
     el.classList.remove('flash')
     void el.offsetWidth
     el.classList.add('flash')
-  }, [focus, section])
+  }, [focus, page])
   return (
     <>
       <PageHeader kicker={tr('Settings')} title={tr(sections.find((s) => s.id === section)!.label)} />
@@ -1150,7 +1196,7 @@ export function SettingsView({ section }: { section: SettingsSection }) {
               than its scroller (-mx-4) moved the whole page 8 px sideways. no-scrollbar plain: not a utility, no variant. */}
           <div className="no-scrollbar contents phone:-mx-2 phone:flex phone:w-[calc(100%+1rem)] phone:gap-1.5 phone:overflow-x-auto phone:px-2">
             {sections.filter((s) => !phoneApp || !DESKTOP_ONLY_SECTIONS.has(s.id)).map((s) => (
-              <button key={s.id} aria-current={s.id === section ? 'page' : undefined} onClick={() => go({ name: 'settings', section: s.id })} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-start phone:min-h-10 phone:shrink-0 phone:gap-2 phone:rounded-full phone:whitespace-nowrap ${s.id === section ? 'bg-raised font-semibold' : 'text-ink-2 hover:text-ink'}`}>
+              <button key={s.id} aria-current={s.id === page ? 'page' : undefined} onClick={() => go({ name: 'settings', section: s.id })} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-start phone:min-h-10 phone:shrink-0 phone:gap-2 phone:rounded-full phone:whitespace-nowrap ${s.id === section ? 'bg-raised font-semibold' : 'text-ink-2 hover:text-ink'}`}>
                 {s.icon} <span className="flex-1">{tr(s.label)}</span>
                 {s.id === 'sources' && signIn && <span title={tr('A service needs you to sign in again')} className="size-2 rounded-full bg-danger" />}
               </button>
@@ -1159,15 +1205,25 @@ export function SettingsView({ section }: { section: SettingsSection }) {
         </nav>
         {/* Its own width decides the rows' layout (@max-lg): the phone, a small window or the sections' column beside it. */}
         <div ref={content} className="@container -mx-2 min-h-0 flex-1 overflow-y-auto px-2 pb-8 phone:mx-0 phone:flex-none phone:overflow-visible phone:px-0">
-          {section === 'general' && <GeneralSection />}
-          {section === 'playback' && <PlaybackSection />}
-          {section === 'appearance' && <Appearance />}
-          {section === 'sources' && <SourcesView />}
-          {section === 'sync' && <SyncSection />}
-          {section === 'shield' && <ShieldSection />}
-          {section === 'privacy' && <PrivacySection />}
-          {section === 'shortcuts' && <ShortcutsSection />}
-          {section === 'about' && <AboutSection />}
+          {GROUPED.has(page) && (
+            <PageOf.Provider value={page}>
+              <div data-settings-page className={`flex flex-col gap-6 ${page === 'appearance' ? '' : 'max-w-190'}`}>
+                {/* Over the folded groups at the page's foot (styles.css shows it when there is one). */}
+                <h2 data-fold-head className="hidden pt-2 text-base font-semibold" style={{ order: 999 }}>
+                  {tr('More settings')}
+                </h2>
+                <GeneralSection />
+                <PlaybackSection />
+                <Appearance />
+              </div>
+            </PageOf.Provider>
+          )}
+          {page === 'sources' && <SourcesView />}
+          {page === 'sync' && <SyncSection />}
+          {page === 'shield' && <ShieldSection />}
+          {page === 'privacy' && <PrivacySection />}
+          {page === 'shortcuts' && <ShortcutsSection />}
+          {page === 'about' && <AboutSection />}
         </div>
       </div>
       </div>

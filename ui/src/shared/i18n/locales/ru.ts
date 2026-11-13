@@ -2604,6 +2604,19 @@ const ru: Record<string, string> = {
   'Standard': 'Стандарт',
   'Full detail': 'Всё подробно',
   'context menu right click items essentials full detail more': 'контекстное меню правая кнопка пункты главное подробно ещё',
+  'Features': 'Функции',
+  'Devices': 'Устройства',
+  'Library and storage': 'Медиатека и хранилище',
+  'Volume and output': 'Громкость и вывод',
+  'Song details': 'Сведения о песнях',
+  'Casting and pairing': 'Трансляция и сопряжение',
+  'Pages and modes': 'Страницы и режимы',
+  'Sharing': 'Общий доступ',
+  'volume output device equalizer eq speakers headphones remember': 'громкость вывод устройство эквалайзер колонки наушники запомнить',
+  'lyrics translation tempo bpm analysis': 'текст перевод темп анализ',
+  'cast dlna speakers webcam qr pair': 'трансляция колонки веб-камера qr сопряжение',
+  'pages modes podcasts audiobooks blind test focus living room tv': 'страницы режимы подкасты аудиокниги угадайка фокус гостиная тв',
+  'discord share profile': 'discord поделиться профиль',
 }
 
 export default ru

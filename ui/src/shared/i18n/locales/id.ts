@@ -2604,6 +2604,19 @@ const id: Record<string, string> = {
   'Standard': 'Standar',
   'Full detail': 'Detail lengkap',
   'context menu right click items essentials full detail more': 'menu konteks klik kanan item inti detail lainnya',
+  'Features': 'Fitur',
+  'Devices': 'Perangkat',
+  'Library and storage': 'Pustaka dan penyimpanan',
+  'Volume and output': 'Volume dan keluaran',
+  'Song details': 'Detail lagu',
+  'Casting and pairing': 'Cast dan pemasangan',
+  'Pages and modes': 'Halaman dan mode',
+  'Sharing': 'Berbagi',
+  'volume output device equalizer eq speakers headphones remember': 'volume keluaran perangkat equalizer speaker headphone ingat',
+  'lyrics translation tempo bpm analysis': 'lirik terjemahan tempo analisis',
+  'cast dlna speakers webcam qr pair': 'cast speaker webcam qr pasangkan',
+  'pages modes podcasts audiobooks blind test focus living room tv': 'halaman mode podcast buku audio tebak lagu fokus ruang tamu tv',
+  'discord share profile': 'discord bagikan profil',
 }
 
 export default id

@@ -2604,6 +2604,19 @@ const nl: Record<string, string> = {
   'Standard': 'Standaard',
   'Full detail': 'Alle details',
   'context menu right click items essentials full detail more': 'contextmenu rechtsklik items belangrijkste details meer',
+  'Features': 'Functies',
+  'Devices': 'Apparaten',
+  'Library and storage': 'Bibliotheek en opslag',
+  'Volume and output': 'Volume en uitvoer',
+  'Song details': 'Nummerdetails',
+  'Casting and pairing': 'Casten en koppelen',
+  'Pages and modes': 'Pagina’s en modi',
+  'Sharing': 'Delen',
+  'volume output device equalizer eq speakers headphones remember': 'volume uitvoer apparaat equalizer speakers koptelefoon onthouden',
+  'lyrics translation tempo bpm analysis': 'songtekst vertaling tempo analyse',
+  'cast dlna speakers webcam qr pair': 'casten speakers webcam qr koppelen',
+  'pages modes podcasts audiobooks blind test focus living room tv': 'paginas modi podcasts luisterboeken blindtest focus woonkamer tv',
+  'discord share profile': 'discord delen profiel',
 }
 
 export default nl

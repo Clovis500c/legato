@@ -675,9 +675,10 @@ body.dragging * {
   }
 }
 
-/* Settings on the phone: rare groups folded at a section's foot (SettingsView Group); the first carries "More settings". */
-[data-fold] ~ [data-fold] .fold-head {
-  display: none;
+/* Settings: the advanced groups (and the phone's rare ones) folded at a page's foot (SettingsView Group), under one
+   heading shown only when the page has one. */
+[data-settings-page]:has([data-fold]) > [data-fold-head] {
+  display: block;
 }
 
 /* The phone: a scroller of one axis stays on it. The tap ring around icon buttons (controls.tsx TOUCH) reaches 8 px past

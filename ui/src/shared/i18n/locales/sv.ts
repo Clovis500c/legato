@@ -2604,6 +2604,19 @@ const sv: Record<string, string> = {
   'Standard': 'Standard',
   'Full detail': 'Alla detaljer',
   'context menu right click items essentials full detail more': 'snabbmeny högerklick val viktigaste detaljer mer',
+  'Features': 'Funktioner',
+  'Devices': 'Enheter',
+  'Library and storage': 'Bibliotek och lagring',
+  'Volume and output': 'Volym och utgång',
+  'Song details': 'Låtdetaljer',
+  'Casting and pairing': 'Casta och parkoppla',
+  'Pages and modes': 'Sidor och lägen',
+  'Sharing': 'Dela',
+  'volume output device equalizer eq speakers headphones remember': 'volym utgång enhet equalizer högtalare hörlurar minns',
+  'lyrics translation tempo bpm analysis': 'låttext översättning tempo analys',
+  'cast dlna speakers webcam qr pair': 'casta högtalare webbkamera qr parkoppla',
+  'pages modes podcasts audiobooks blind test focus living room tv': 'sidor lägen poddar ljudböcker blindtest fokus vardagsrum tv',
+  'discord share profile': 'discord dela profil',
 }
 
 export default sv

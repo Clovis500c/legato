@@ -5,9 +5,7 @@
  */
 export const PHONE_FOLDED: ReadonlySet<string> = new Set([
   // General
-  'Cover cache',
-  'Storage',
-  'Library backup',
+  // Cover cache, Storage and Library backup: their own page now (Library and storage), Storage folded there for all.
   'Search bar',
   'Voice and recognition',
   // Playback

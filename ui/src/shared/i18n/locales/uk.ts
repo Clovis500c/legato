@@ -2604,6 +2604,19 @@ const uk: Record<string, string> = {
   'Standard': 'Стандарт',
   'Full detail': 'Усе докладно',
   'context menu right click items essentials full detail more': 'контекстне меню права кнопка пункти головне докладно ще',
+  'Features': 'Функції',
+  'Devices': 'Пристрої',
+  'Library and storage': 'Медіатека й сховище',
+  'Volume and output': 'Гучність і вивід',
+  'Song details': 'Відомості про пісні',
+  'Casting and pairing': 'Трансляція й підключення',
+  'Pages and modes': 'Сторінки й режими',
+  'Sharing': 'Поширення',
+  'volume output device equalizer eq speakers headphones remember': 'гучність вивід пристрій еквалайзер колонки навушники запамʼятати',
+  'lyrics translation tempo bpm analysis': 'текст переклад темп аналіз',
+  'cast dlna speakers webcam qr pair': 'трансляція колонки вебкамера qr підключення',
+  'pages modes podcasts audiobooks blind test focus living room tv': 'сторінки режими подкасти аудіокниги вгадайка фокус вітальня тв',
+  'discord share profile': 'discord поширити профіль',
 }
 
 export default uk

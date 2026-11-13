@@ -2604,6 +2604,19 @@ const hi: Record<string, string> = {
   'Standard': 'मानक',
   'Full detail': 'पूरा विवरण',
   'context menu right click items essentials full detail more': 'संदर्भ मेनू राइट क्लिक आइटम ज़रूरी विवरण और',
+  'Features': 'सुविधाएँ',
+  'Devices': 'डिवाइस',
+  'Library and storage': 'लाइब्रेरी और स्टोरेज',
+  'Volume and output': 'वॉल्यूम और आउटपुट',
+  'Song details': 'गाने का विवरण',
+  'Casting and pairing': 'कास्ट और पेयरिंग',
+  'Pages and modes': 'पेज और मोड',
+  'Sharing': 'शेयरिंग',
+  'volume output device equalizer eq speakers headphones remember': 'वॉल्यूम आउटपुट डिवाइस इक्वलाइज़र स्पीकर हेडफ़ोन याद',
+  'lyrics translation tempo bpm analysis': 'बोल अनुवाद टेम्पो विश्लेषण',
+  'cast dlna speakers webcam qr pair': 'कास्ट स्पीकर वेबकैम क्यूआर पेयर',
+  'pages modes podcasts audiobooks blind test focus living room tv': 'पेज मोड पॉडकास्ट ऑडियोबुक ब्लाइंड टेस्ट फ़ोकस लिविंग रूम टीवी',
+  'discord share profile': 'डिस्कॉर्ड शेयर प्रोफ़ाइल',
 }
 
 export default hi

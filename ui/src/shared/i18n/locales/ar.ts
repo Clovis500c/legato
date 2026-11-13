@@ -2544,6 +2544,19 @@ const ar: Record<string, string> = {
   'Standard': 'قياسي',
   'Full detail': 'كل التفاصيل',
   'context menu right click items essentials full detail more': 'قائمة سياق نقر أيمن عناصر أساسيات تفاصيل المزيد',
+  'Features': 'الميزات',
+  'Devices': 'الأجهزة',
+  'Library and storage': 'المكتبة والتخزين',
+  'Volume and output': 'الصوت والإخراج',
+  'Song details': 'تفاصيل الأغاني',
+  'Casting and pairing': 'البث والإقران',
+  'Pages and modes': 'الصفحات والأوضاع',
+  'Sharing': 'المشاركة',
+  'volume output device equalizer eq speakers headphones remember': 'صوت إخراج جهاز معادل سماعات تذكر',
+  'lyrics translation tempo bpm analysis': 'كلمات ترجمة إيقاع تحليل',
+  'cast dlna speakers webcam qr pair': 'بث سماعات كاميرا رمز إقران',
+  'pages modes podcasts audiobooks blind test focus living room tv': 'صفحات أوضاع بودكاست كتب صوتية اختبار تركيز تلفاز',
+  'discord share profile': 'ديسكورد مشاركة ملف شخصي',
 }
 
 export default ar
