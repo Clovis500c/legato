@@ -98,7 +98,8 @@ pub async fn detect_song(app: tauri::AppHandle, state: State<'_, AppState>, mark
     DETECT_STOP.store(false, Ordering::Relaxed);
     // Layer 1: the OS says what plays on this PC, at once, with no listening (only for "This PC": a mic hears a room).
     if layers.session && input == mic::Input::Pc {
-        let sessions = tauri::async_runtime::spawn_blocking(session::read).await.unwrap_or_default();
+        // A player that never answers Windows' question doesn't hold the Detector: 3 s, then the next layer.
+        let sessions = tokio::time::timeout(std::time::Duration::from_secs(3), tauri::async_runtime::spawn_blocking(session::read)).await.ok().and_then(Result::ok).unwrap_or_default();
         if let Some(track) = music_core::session::pick(&sessions, "legato") {
             return Ok(Detection::Found { track });
         }
