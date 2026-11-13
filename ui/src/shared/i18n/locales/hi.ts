@@ -2597,6 +2597,13 @@ const hi: Record<string, string> = {
   'Send': 'भेजें',
   'None of this playlist’s songs are on that server': 'इस प्लेलिस्ट का कोई भी गाना उस सर्वर पर नहीं है',
   'Some of this playlist’s songs aren’t on that server: take them out first': 'इस प्लेलिस्ट के कुछ गाने उस सर्वर पर नहीं हैं: पहले उन्हें हटाएँ',
+  'More…': 'और…',
+  'Right-click menus': 'राइट-क्लिक मेनू',
+  'How much a right-click menu shows. Standard puts the rare items under More…; Full detail shows everything.': 'राइट-क्लिक मेनू कितना दिखाए। मानक कम इस्तेमाल होने वाली चीज़ें और… में रखता है; पूरा विवरण सब कुछ दिखाता है।',
+  'Essentials': 'ज़रूरी',
+  'Standard': 'मानक',
+  'Full detail': 'पूरा विवरण',
+  'context menu right click items essentials full detail more': 'संदर्भ मेनू राइट क्लिक आइटम ज़रूरी विवरण और',
 }
 
 export default hi

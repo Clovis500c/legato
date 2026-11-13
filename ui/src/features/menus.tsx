@@ -1,5 +1,5 @@
 /** Right-click menus, one builder per kind of thing (track, playlist, album, artist, player, app). Built when opened: fresh state. */
-import { UsersThree, Devices, ArrowCounterClockwise, ArrowsClockwise, ArrowsOutSimple, ArrowSquareOut, ClipboardText, Copy, CopySimple, Disc, DownloadSimple, ChartBar, Eye, EyeSlash, MusicNotesSimple, FolderOpen, FolderSimple, FolderSimplePlus, FrameCorners, PushPin, PushPinSlash, Info, Power, ImageSquare, Gear, Link, Timer, SpeakerHifi, Users, ListBullets, ListPlus, MagnifyingGlass, MicrophoneStage, MinusCircle, Moon, Palette, Gradient, Gauge, Equalizer, FlipVertical, Pause, PencilSimple, PictureInPicture, Play, Playlist, Plus, PlusCircle, Prohibit, PuzzlePiece, Queue, Books, Microphone, Television, Radio, Repeat, Scales, ShareNetwork, Shuffle, SlidersHorizontal, Sparkle, Star, SortAscending, SkipBack, SkipForward, SpeakerHigh, Swatches, ThumbsDown, Trash, UploadSimple, VinylRecord, BookmarkSimple, Alarm, ArrowsIn, Question } from '@phosphor-icons/react'
+import { UsersThree, Devices, DotsThree, ArrowCounterClockwise, ArrowsClockwise, ArrowsOutSimple, ArrowSquareOut, ClipboardText, Copy, CopySimple, Disc, DownloadSimple, ChartBar, Eye, EyeSlash, MusicNotesSimple, FolderOpen, FolderSimple, FolderSimplePlus, FrameCorners, PushPin, PushPinSlash, Info, Power, ImageSquare, Gear, Link, Timer, SpeakerHifi, Users, ListBullets, ListPlus, MagnifyingGlass, MicrophoneStage, MinusCircle, Moon, Palette, Gradient, Gauge, Equalizer, FlipVertical, Pause, PencilSimple, PictureInPicture, Play, Playlist, Plus, PlusCircle, Prohibit, PuzzlePiece, Queue, Books, Microphone, Television, Radio, Repeat, Scales, ShareNetwork, Shuffle, SlidersHorizontal, Sparkle, Star, SortAscending, SkipBack, SkipForward, SpeakerHigh, Swatches, ThumbsDown, Trash, UploadSimple, VinylRecord, BookmarkSimple, Alarm, ArrowsIn, Question } from '@phosphor-icons/react'
 import { ArrowLeft, ArrowRight } from '../shared/ui/directional'
 import { openUrl, revealItemInDir } from '@tauri-apps/plugin-opener'
 import { useSettings } from '../app/settings'
@@ -11,6 +11,7 @@ import { loadFit } from '../shared/artfit'
 import { fileName, starsText } from '../shared/format'
 import { COVER_ORDERS, VIZ_BANDINGS, VIZ_COLORMAPS, VIZ_COLORS, VIZ_FACES, VIZ_GRADIENTS, VIZ_PRESET_COLORS, VIZ_WEIGHTINGS, type PlaylistCover, type PlaylistFolder } from '../shared/theme/theme'
 import type { MenuEntry } from '../shared/ui/ContextMenu'
+import { shapeMenu, type MenuKind } from '../shared/ui/menuShape'
 import { SourceIcon } from '../shared/ui/SourceIcon'
 import type { Addon } from './addons/registry'
 import { isOn, setAddon } from './addons/state'
@@ -410,6 +411,14 @@ function rateItem(t: LibraryTrack): MenuEntry {
   }
 }
 
+/** An item (or what a helper made) with its id in `MENU_ITEMS`. */
+const tag = (id: string, e: MenuEntry): MenuEntry => (e && e !== '-' ? { ...e, id } : e)
+
+/** A menu as the user's layout wants it (Settings: right-click menus): the preset, the items hidden, their order, the rest under More…. */
+function shaped(kind: MenuKind, entries: MenuEntry[]): MenuEntry[] {
+  return shapeMenu(kind, entries, useSettings.getState().settings.menuLayout, (items) => ({ id: 'more', label: tr('More…'), icon: <DotsThree size={16} />, items }))
+}
+
 export function trackMenu(t: LibraryTrack, ctx: { list?: LibraryTrack[]; index?: number; playlistId?: number; position?: number; queueIndex?: number } = {}): MenuEntry[] {
   const list = ctx.list ?? [t]
   const index = ctx.index ?? 0
@@ -418,22 +427,23 @@ export function trackMenu(t: LibraryTrack, ctx: { list?: LibraryTrack[]; index?:
   if (isRemote(t)) return remoteMenu(t, list, index)
   const playable = canPlay(t, sp())
   const go = app().go
-  return [
-    { label: tr('Play'), icon: <Play size={16} />, disabled: !playable, onSelect: () => player().playTracks(list, index) },
-    { label: tr('Play next'), icon: <Queue size={16} />, disabled: !playable, onSelect: () => player().enqueue([t], true) },
-    { label: tr('Add to queue'), icon: <ListPlus size={16} />, disabled: !playable, onSelect: () => player().enqueue([t], false) },
-    ctx.queueIndex !== undefined && { label: tr('Remove from queue'), icon: <MinusCircle size={16} />, onSelect: () => player().dequeue(ctx.queueIndex!) },
-    playVia(t, list, index),
-    vias(t, sp()).length > 0 && { label: tr('Start radio'), icon: <Radio size={16} />, onSelect: () => void startRadio(t) },
+  return shaped('track', [
+    { id: 'play', label: tr('Play'), icon: <Play size={16} />, disabled: !playable, onSelect: () => player().playTracks(list, index) },
+    { id: 'playNext', label: tr('Play next'), icon: <Queue size={16} />, disabled: !playable, onSelect: () => player().enqueue([t], true) },
+    { id: 'addToQueue', label: tr('Add to queue'), icon: <ListPlus size={16} />, disabled: !playable, onSelect: () => player().enqueue([t], false) },
+    ctx.queueIndex !== undefined && { id: 'removeFromQueue', label: tr('Remove from queue'), icon: <MinusCircle size={16} />, onSelect: () => player().dequeue(ctx.queueIndex!) },
+    tag('playVia', playVia(t, list, index)),
+    vias(t, sp()).length > 0 && { id: 'startRadio', label: tr('Start radio'), icon: <Radio size={16} />, onSelect: () => void startRadio(t) },
     '-',
-    addTo(() => [t], t),
-    ctx.playlistId !== undefined && { label: tr('Remove from this playlist'), icon: <MinusCircle size={16} />, onSelect: () => void removeFromPlaylist(ctx.playlistId!, ctx.position!) },
-    removeFrom(t),
+    tag('addTo', addTo(() => [t], t)),
+    ctx.playlistId !== undefined && { id: 'removeFromPlaylist', label: tr('Remove from this playlist'), icon: <MinusCircle size={16} />, onSelect: () => void removeFromPlaylist(ctx.playlistId!, ctx.position!) },
+    tag('removeFrom', removeFrom(t)),
     '-',
-    t.album && { label: tr('Go to album'), icon: <Disc size={16} />, onSelect: () => go({ name: 'album', album: t.album!, artist: primaryArtist(t.artist) }) },
-    { label: tr('Go to artist'), icon: <MicrophoneStage size={16} />, onSelect: () => go({ name: 'artist', artist: primaryArtist(t.artist) }) },
+    t.album && { id: 'goToAlbum', label: tr('Go to album'), icon: <Disc size={16} />, onSelect: () => go({ name: 'album', album: t.album!, artist: primaryArtist(t.artist) }) },
+    { id: 'goToArtist', label: tr('Go to artist'), icon: <MicrophoneStage size={16} />, onSelect: () => go({ name: 'artist', artist: primaryArtist(t.artist) }) },
     !isFull(t, sp()) &&
       app().status.youtube.connected && {
+        id: 'findFull',
         label: tr('Find full version'),
         icon: <MagnifyingGlass size={16} />,
         onSelect: () =>
@@ -446,8 +456,9 @@ export function trackMenu(t: LibraryTrack, ctx: { list?: LibraryTrack[]; index?:
             .catch(fail),
       },
     '-',
-    rateItem(t),
+    tag('rate', rateItem(t)),
     {
+      id: 'mixes',
       label: tr('Mixes'),
       icon: <ThumbsDown size={16} />,
       items: [
@@ -457,19 +468,20 @@ export function trackMenu(t: LibraryTrack, ctx: { list?: LibraryTrack[]; index?:
       ],
     },
     // Music or not, the user's word over the app's guess (hidden videos fold).
-    t.explicit && { label: tr('Not explicit'), icon: <ArrowCounterClockwise size={16} />, onSelect: () => void markNotExplicit([t.id], true) },
+    t.explicit && { id: 'explicit', label: tr('Not explicit'), icon: <ArrowCounterClockwise size={16} />, onSelect: () => void markNotExplicit([t.id], true) },
     t.musicness === 'notMusic'
-      ? { label: tr('It’s music'), icon: <MusicNotesSimple size={16} />, onSelect: () => void markMusic([t.id], true) }
-      : { label: tr('Not music: hide it'), icon: <EyeSlash size={16} />, onSelect: () => void markMusic([t.id], false) },
+      ? { id: 'music', label: tr('It’s music'), icon: <MusicNotesSimple size={16} />, onSelect: () => void markMusic([t.id], true) }
+      : { id: 'music', label: tr('Not music: hide it'), icon: <EyeSlash size={16} />, onSelect: () => void markMusic([t.id], false) },
     '-',
-    pages(t).length > 0 && { label: tr('Copy link'), icon: <Link size={16} />, onSelect: () => copy(pages(t)[0].url, tr('Link copied')) },
-    { label: tr('Copy title and artist'), icon: <Copy size={16} />, onSelect: () => copy(`${t.artist} – ${t.title}`, tr('Title and artist copied')) },
-    saveCoverItem(t),
-    ...pages(t).map((p) => ({ label: tr('Open in {service}', { service: p.label }), icon: <ArrowSquareOut size={16} />, onSelect: () => openUrl(p.url).catch(fail) })),
-    { label: tr('Credits…'), icon: <Users size={16} />, onSelect: () => showCredits(t) },
-    t.ids.local && { label: tr('Edit song info…'), icon: <PencilSimple size={16} />, onSelect: () => editInfo([t]) },
-    t.ids.local && { label: tr('Show in folder'), icon: <FolderOpen size={16} />, onSelect: () => revealItemInDir(t.ids.local!).catch(fail) },
+    pages(t).length > 0 && { id: 'copyLink', label: tr('Copy link'), icon: <Link size={16} />, onSelect: () => copy(pages(t)[0].url, tr('Link copied')) },
+    { id: 'copyTitle', label: tr('Copy title and artist'), icon: <Copy size={16} />, onSelect: () => copy(`${t.artist} – ${t.title}`, tr('Title and artist copied')) },
+    tag('saveCover', saveCoverItem(t)),
+    ...pages(t).map((p) => ({ id: 'openIn', label: tr('Open in {service}', { service: p.label }), icon: <ArrowSquareOut size={16} />, onSelect: () => openUrl(p.url).catch(fail) })),
+    { id: 'credits', label: tr('Credits…'), icon: <Users size={16} />, onSelect: () => showCredits(t) },
+    t.ids.local && { id: 'editInfo', label: tr('Edit song info…'), icon: <PencilSimple size={16} />, onSelect: () => editInfo([t]) },
+    t.ids.local && { id: 'showInFolder', label: tr('Show in folder'), icon: <FolderOpen size={16} />, onSelect: () => revealItemInDir(t.ids.local!).catch(fail) },
     list.length > 1 && {
+      id: 'thisList',
       label: tr('This list'),
       icon: <ListBullets size={16} />,
       items: [
@@ -479,7 +491,7 @@ export function trackMenu(t: LibraryTrack, ctx: { list?: LibraryTrack[]; index?:
       ],
     },
     ...pluginItems('track', { trackId: t.id, title: t.title, artist: t.artist }),
-  ]
+  ])
 }
 
 /** Menu items plugins added for this place, after a separator. */

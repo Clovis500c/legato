@@ -71,6 +71,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'general', label: msg('Lyrics and song analyses'), keywords: msg('lyrics sponsorblock waveform loudness silence cache clear storage disk space') },
   { section: 'general', label: msg('Diagnostics log'), keywords: msg('log logs diagnostics report clear storage') },
   { section: 'appearance', label: msg('Animations'), keywords: msg('motion transitions reduce') },
+  { section: 'appearance', label: msg('Right-click menus'), keywords: msg('context menu right click items essentials full detail more') },
   { section: 'appearance', label: msg('List columns'), keywords: msg('album sources duration') },
   { section: 'sources', label: 'YouTube Music', keywords: msg('google sign in account import playlists sync liked') },
   { section: 'sources', label: msg('Update every 15 minutes'), keywords: msg('automatic auto sync refresh background youtube music playlists liked minutes') },

@@ -2597,6 +2597,13 @@ const ru: Record<string, string> = {
   'Send': 'Отправить',
   'None of this playlist’s songs are on that server': 'Ни одной песни этого плейлиста нет на этом сервере',
   'Some of this playlist’s songs aren’t on that server: take them out first': 'Некоторых песен этого плейлиста нет на этом сервере: сначала уберите их',
+  'More…': 'Ещё…',
+  'Right-click menus': 'Меню правой кнопки',
+  'How much a right-click menu shows. Standard puts the rare items under More…; Full detail shows everything.': 'Сколько показывает меню правой кнопки. «Стандарт» убирает редкие пункты в «Ещё…»; «Всё подробно» показывает всё.',
+  'Essentials': 'Главное',
+  'Standard': 'Стандарт',
+  'Full detail': 'Всё подробно',
+  'context menu right click items essentials full detail more': 'контекстное меню правая кнопка пункты главное подробно ещё',
 }
 
 export default ru

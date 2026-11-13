@@ -2597,6 +2597,13 @@ const id: Record<string, string> = {
   'Send': 'Kirim',
   'None of this playlist’s songs are on that server': 'Tidak ada lagu di playlist ini yang ada di server itu',
   'Some of this playlist’s songs aren’t on that server: take them out first': 'Sebagian lagu di playlist ini tidak ada di server itu: keluarkan dulu',
+  'More…': 'Lainnya…',
+  'Right-click menus': 'Menu klik kanan',
+  'How much a right-click menu shows. Standard puts the rare items under More…; Full detail shows everything.': 'Seberapa banyak isi menu klik kanan. Standar menaruh item yang jarang dipakai di Lainnya…; Detail lengkap menampilkan semuanya.',
+  'Essentials': 'Inti saja',
+  'Standard': 'Standar',
+  'Full detail': 'Detail lengkap',
+  'context menu right click items essentials full detail more': 'menu konteks klik kanan item inti detail lainnya',
 }
 
 export default id

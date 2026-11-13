@@ -2537,6 +2537,13 @@ const he: Record<string, string> = {
   'Send': 'שליחה',
   'None of this playlist’s songs are on that server': 'אף אחד משירי הרשימה הזו לא נמצא בשרת ההוא',
   'Some of this playlist’s songs aren’t on that server: take them out first': 'חלק משירי הרשימה הזו לא נמצאים בשרת ההוא: הסירו אותם קודם',
+  'More…': 'עוד…',
+  'Right-click menus': 'תפריטי לחיצה ימנית',
+  'How much a right-click menu shows. Standard puts the rare items under More…; Full detail shows everything.': 'כמה מציג תפריט לחיצה ימנית. „רגיל” שם פריטים נדירים תחת „עוד…”; „כל הפרטים” מציג הכול.',
+  'Essentials': 'העיקר',
+  'Standard': 'רגיל',
+  'Full detail': 'כל הפרטים',
+  'context menu right click items essentials full detail more': 'תפריט הקשר לחיצה ימנית פריטים עיקר פרטים עוד',
 }
 
 export default he

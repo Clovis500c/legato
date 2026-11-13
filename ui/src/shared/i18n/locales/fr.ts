@@ -2597,6 +2597,13 @@ const fr: Record<string, string> = {
   'Send': 'Envoyer',
   'None of this playlist’s songs are on that server': 'Aucun morceau de cette liste n’est sur ce serveur',
   'Some of this playlist’s songs aren’t on that server: take them out first': 'Certains morceaux de cette liste ne sont pas sur ce serveur : retirez-les d’abord',
+  'More…': 'Plus…',
+  'Right-click menus': 'Menus du clic droit',
+  'How much a right-click menu shows. Standard puts the rare items under More…; Full detail shows everything.': 'Ce que montre un menu du clic droit. Standard range les éléments rares sous Plus… ; Tout le détail montre tout.',
+  'Essentials': 'L’essentiel',
+  'Standard': 'Standard',
+  'Full detail': 'Tout le détail',
+  'context menu right click items essentials full detail more': 'menu contextuel clic droit éléments essentiel détail plus',
 }
 
 export default fr

@@ -2597,6 +2597,13 @@ const ja: Record<string, string> = {
   'Send': '送る',
   'None of this playlist’s songs are on that server': 'このプレイリストの曲はどれもそのサーバーにありません',
   'Some of this playlist’s songs aren’t on that server: take them out first': 'このプレイリストの一部の曲はそのサーバーにありません。先に外してください',
+  'More…': 'その他…',
+  'Right-click menus': '右クリックメニュー',
+  'How much a right-click menu shows. Standard puts the rare items under More…; Full detail shows everything.': '右クリックメニューに何を出すか。標準ではあまり使わない項目を「その他…」にまとめ、すべて表示ではすべて出します。',
+  'Essentials': '基本のみ',
+  'Standard': '標準',
+  'Full detail': 'すべて表示',
+  'context menu right click items essentials full detail more': 'コンテキストメニュー 右クリック 項目 基本 詳細 その他',
 }
 
 export default ja

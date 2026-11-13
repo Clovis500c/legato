@@ -2597,6 +2597,13 @@ const zh: Record<string, string> = {
   'Send': '发送',
   'None of this playlist’s songs are on that server': '这个播放列表里的歌曲在该服务器上一首都没有',
   'Some of this playlist’s songs aren’t on that server: take them out first': '这个播放列表里有些歌曲不在该服务器上：请先把它们移除',
+  'More…': '更多…',
+  'Right-click menus': '右键菜单',
+  'How much a right-click menu shows. Standard puts the rare items under More…; Full detail shows everything.': '右键菜单显示多少。标准把不常用的项目放进“更多…”；完整细节显示全部。',
+  'Essentials': '精简',
+  'Standard': '标准',
+  'Full detail': '完整细节',
+  'context menu right click items essentials full detail more': '上下文菜单 右键 项目 精简 细节 更多',
 }
 
 export default zh

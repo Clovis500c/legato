@@ -2597,6 +2597,13 @@ const vi: Record<string, string> = {
   'Send': 'Gửi',
   'None of this playlist’s songs are on that server': 'Không bài nào trong danh sách phát này có trên máy chủ đó',
   'Some of this playlist’s songs aren’t on that server: take them out first': 'Một số bài trong danh sách phát này không có trên máy chủ đó: hãy bỏ chúng ra trước',
+  'More…': 'Thêm…',
+  'Right-click menus': 'Menu chuột phải',
+  'How much a right-click menu shows. Standard puts the rare items under More…; Full detail shows everything.': 'Menu chuột phải hiện bao nhiêu. Tiêu chuẩn đưa mục ít dùng vào Thêm…; Đầy đủ chi tiết hiện tất cả.',
+  'Essentials': 'Cơ bản',
+  'Standard': 'Tiêu chuẩn',
+  'Full detail': 'Đầy đủ chi tiết',
+  'context menu right click items essentials full detail more': 'menu ngữ cảnh chuột phải mục cơ bản chi tiết thêm',
 }
 
 export default vi

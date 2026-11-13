@@ -2597,6 +2597,13 @@ const uk: Record<string, string> = {
   'Send': 'Надіслати',
   'None of this playlist’s songs are on that server': 'Жодної пісні цього плейлиста немає на цьому сервері',
   'Some of this playlist’s songs aren’t on that server: take them out first': 'Деяких пісень цього плейлиста немає на цьому сервері: спершу приберіть їх',
+  'More…': 'Ще…',
+  'Right-click menus': 'Меню правої кнопки',
+  'How much a right-click menu shows. Standard puts the rare items under More…; Full detail shows everything.': 'Скільки показує меню правої кнопки. «Стандарт» ховає рідкісні пункти в «Ще…»; «Усе докладно» показує все.',
+  'Essentials': 'Головне',
+  'Standard': 'Стандарт',
+  'Full detail': 'Усе докладно',
+  'context menu right click items essentials full detail more': 'контекстне меню права кнопка пункти головне докладно ще',
 }
 
 export default uk

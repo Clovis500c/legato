@@ -2597,6 +2597,13 @@ const nl: Record<string, string> = {
   'Send': 'Versturen',
   'None of this playlist’s songs are on that server': 'Geen enkel nummer van deze afspeellijst staat op die server',
   'Some of this playlist’s songs aren’t on that server: take them out first': 'Sommige nummers van deze afspeellijst staan niet op die server: haal ze eerst weg',
+  'More…': 'Meer…',
+  'Right-click menus': 'Rechtermuisknopmenu’s',
+  'How much a right-click menu shows. Standard puts the rare items under More…; Full detail shows everything.': 'Hoeveel een rechtermuisknopmenu toont. Standaard zet zeldzame items onder Meer…; Alle details toont alles.',
+  'Essentials': 'Het belangrijkste',
+  'Standard': 'Standaard',
+  'Full detail': 'Alle details',
+  'context menu right click items essentials full detail more': 'contextmenu rechtsklik items belangrijkste details meer',
 }
 
 export default nl

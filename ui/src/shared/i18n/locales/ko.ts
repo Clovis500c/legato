@@ -2597,6 +2597,13 @@ const ko: Record<string, string> = {
   'Send': '보내기',
   'None of this playlist’s songs are on that server': '이 재생목록의 곡이 그 서버에 하나도 없습니다',
   'Some of this playlist’s songs aren’t on that server: take them out first': '이 재생목록의 일부 곡이 그 서버에 없습니다. 먼저 빼 주세요',
+  'More…': '더 보기…',
+  'Right-click menus': '오른쪽 클릭 메뉴',
+  'How much a right-click menu shows. Standard puts the rare items under More…; Full detail shows everything.': '오른쪽 클릭 메뉴에 얼마나 보여 줄지. 표준은 드문 항목을 더 보기… 아래에 두고, 전체 보기는 모두 보여 줍니다.',
+  'Essentials': '핵심만',
+  'Standard': '표준',
+  'Full detail': '전체 보기',
+  'context menu right click items essentials full detail more': '컨텍스트 메뉴 오른쪽 클릭 항목 핵심 전체 더보기',
 }
 
 export default ko

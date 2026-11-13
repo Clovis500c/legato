@@ -348,6 +348,18 @@ function Appearance() {
           <Row setting="motion" label={msg('Animations')} sub={tr('Pages, menus, Now Playing and covers move a little. Off: nothing moves')} preview={<MotionScene motion={s.motion} />}>
             <Toggle label={tr('Animations')} checked={s.motion} onChange={(motion) => update({ motion })} />
           </Row>
+          <Row setting="menuLayout" label={msg('Right-click menus')} sub={tr('How much a right-click menu shows. Standard puts the rare items under More…; Full detail shows everything.')}>
+            <Segmented
+              label={tr('Right-click menus')}
+              value={s.menuLayout.preset}
+              onChange={(preset) => update({ menuLayout: { ...s.menuLayout, preset } })}
+              options={[
+                { value: 'essentials', label: tr('Essentials') },
+                { value: 'standard', label: tr('Standard') },
+                { value: 'full', label: tr('Full detail') },
+              ]}
+            />
+          </Row>
         </div>
       </Group>
       <Group title={msg('Mixes')}>

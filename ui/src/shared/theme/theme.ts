@@ -2,6 +2,7 @@
 import { LANGUAGES, msg, tr } from '../i18n/i18n'
 import { ACTIONS, validCombo, type Custom } from '../../app/keys'
 import { cleanCss } from '../css'
+import { DEFAULT_MENU_LAYOUT, readLayout, type MenuLayout } from '../ui/menuShape'
 import type { GroupSort, Sort } from '../../features/library/filter'
 import type { Levelling } from '../generated/Levelling'
 import type { SystemAccent } from '../generated/SystemAccent'
@@ -320,6 +321,9 @@ export interface Settings {
   /** Moon (sleep timer) next to the volume; the timer stays in the player's menu. Off since v10 (a calmer bar): a
    * running timer shows its moon anyway. */
   sleepButton: boolean
+  /** Right-click menus: the preset (Standard: the rare items under More…) and, per kind of menu, the items hidden and
+   * their order (`shared/ui/menuShape.ts`). New in 1.1: no migration. */
+  menuLayout: MenuLayout
   /** Soft light around what plays (play button, playing mark, played part, sung line, Now Playing's cover): glowVars.
    * Soft by default (the owner's call 2026-11-05); off = none at all. */
   glow: GlowLevel
@@ -588,6 +592,7 @@ export const DEFAULTS: Settings = {
   zoom: 100,
   readout: true,
   sleepButton: false,
+  menuLayout: DEFAULT_MENU_LAYOUT,
   glow: 'soft',
   alarm: { on: false, time: '07:30', days: [1, 2, 3, 4, 5], playlist: null, fadeMin: 5 },
   volume: 'bar',
@@ -859,6 +864,7 @@ export function sanitize(raw: unknown): Settings {
     zoom: typeof r.zoom === 'number' && Number.isFinite(r.zoom) ? Math.min(125, Math.max(90, Math.round(r.zoom / 5) * 5)) : DEFAULTS.zoom,
     readout: typeof r.readout === 'boolean' ? r.readout : DEFAULTS.readout,
     sleepButton: typeof r.sleepButton === 'boolean' ? r.sleepButton : DEFAULTS.sleepButton,
+    menuLayout: readLayout(r.menuLayout),
     glow: pick(r.glow, GLOW_LEVELS, DEFAULTS.glow),
     alarm: alarmOf(r.alarm),
     volume: pick(r.volume, ['knob', 'bar'] as const, DEFAULTS.volume),

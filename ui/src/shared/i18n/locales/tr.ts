@@ -2597,6 +2597,13 @@ const tr: Record<string, string> = {
   'Send': 'Gönder',
   'None of this playlist’s songs are on that server': 'Bu çalma listesindeki şarkıların hiçbiri o sunucuda yok',
   'Some of this playlist’s songs aren’t on that server: take them out first': 'Bu çalma listesindeki bazı şarkılar o sunucuda yok: önce onları çıkar',
+  'More…': 'Daha fazla…',
+  'Right-click menus': 'Sağ tık menüleri',
+  'How much a right-click menu shows. Standard puts the rare items under More…; Full detail shows everything.': 'Sağ tık menüsünün ne kadar gösterdiği. Standart, nadir öğeleri Daha fazla… altına koyar; Tüm ayrıntılar her şeyi gösterir.',
+  'Essentials': 'Temel',
+  'Standard': 'Standart',
+  'Full detail': 'Tüm ayrıntılar',
+  'context menu right click items essentials full detail more': 'bağlam menüsü sağ tık öğeler temel ayrıntılar daha fazla',
 }
 
 export default tr

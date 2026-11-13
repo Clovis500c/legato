@@ -7,6 +7,8 @@ import { tr } from '../i18n/i18n'
 import { usePhone } from '../phone'
 
 export interface MenuItem {
+  /** Its id in `menuShape.ts` › `MENU_ITEMS`: the user's menu layout can hide, move or fold it. */
+  id?: string
   label: string
   icon?: ReactNode
   onSelect?: () => void

@@ -2597,6 +2597,13 @@ const sv: Record<string, string> = {
   'Send': 'Skicka',
   'None of this playlist’s songs are on that server': 'Ingen av låtarna i den här spellistan finns på den servern',
   'Some of this playlist’s songs aren’t on that server: take them out first': 'Några av låtarna i den här spellistan finns inte på den servern: ta bort dem först',
+  'More…': 'Mer…',
+  'Right-click menus': 'Högerklicksmenyer',
+  'How much a right-click menu shows. Standard puts the rare items under More…; Full detail shows everything.': 'Hur mycket en högerklicksmeny visar. Standard lägger sällsynta val under Mer…; Alla detaljer visar allt.',
+  'Essentials': 'Det viktigaste',
+  'Standard': 'Standard',
+  'Full detail': 'Alla detaljer',
+  'context menu right click items essentials full detail more': 'snabbmeny högerklick val viktigaste detaljer mer',
 }
 
 export default sv

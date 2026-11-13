@@ -2537,6 +2537,13 @@ const ar: Record<string, string> = {
   'Send': 'إرسال',
   'None of this playlist’s songs are on that server': 'لا توجد أي أغنية من هذه القائمة على ذلك الخادم',
   'Some of this playlist’s songs aren’t on that server: take them out first': 'بعض أغاني هذه القائمة ليست على ذلك الخادم: أزلها أولًا',
+  'More…': 'المزيد…',
+  'Right-click menus': 'قوائم النقر بزر الماوس الأيمن',
+  'How much a right-click menu shows. Standard puts the rare items under More…; Full detail shows everything.': 'كم تعرض قائمة النقر بزر الماوس الأيمن. «قياسي» يضع العناصر النادرة تحت «المزيد…»، و«كل التفاصيل» يعرض كل شيء.',
+  'Essentials': 'الأساسيات',
+  'Standard': 'قياسي',
+  'Full detail': 'كل التفاصيل',
+  'context menu right click items essentials full detail more': 'قائمة سياق نقر أيمن عناصر أساسيات تفاصيل المزيد',
 }
 
 export default ar
