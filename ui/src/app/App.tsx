@@ -57,6 +57,7 @@ import { toggleFullscreen } from './fullscreen'
 import { Toasts } from './Toasts'
 import { PhoneTabs } from './PhoneTabs'
 import { Asker } from '../shared/ui/Ask'
+import { WebcamScan } from '../features/share/WebcamScan'
 import { tr, trn, useLang } from '../shared/i18n/i18n'
 
 // Pages load on first visit (pages.ts), Home's download starts now, in parallel with the settings and the library.
@@ -429,6 +430,7 @@ export function App() {
       )}
       <Toasts />
       <Asker />
+      <WebcamScan />
       <EditInfoHost />
       <CastHost />
       <CreditsHost />

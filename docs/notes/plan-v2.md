@@ -836,6 +836,11 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       permission review: the download, its size and hash checks and the trust in the index are the owner's to set (who may publish, pinned
       commits); a first slice (read the index, list it) alone would show entries nobody can install.
 - [ ] `M` Sharing: remote wormhole words (needs the user's OK on the public relay), webcam QR scanning, `musicapp://` links
+  2026-11-13: webcam QR scanning done behind Settings › Playback › Scan QR codes with the webcam (off, this PC's own): a
+  Scan with the webcam button in Add a device and Listening rooms; jsQR (Apache-2.0) loads at the first scan, the camera is
+  asked for at the press and let go of when the window closes, no picture is kept or sent. Decoding is tested on a real QR
+  matrix; not tried: WebView2's camera permission prompt and a real webcam. Left: the share import's QR (it reads an
+  image file today), wormhole words, `musicapp://` (renamed away).
       clicked in a browser (deep-link registration).
 - [ ] `M-L` Practice mode for musicians: A-B loop, slow down without pitch change (Live Editor has it), key and chords shown,
       count-in / metronome on the song's tempo.

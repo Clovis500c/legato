@@ -1,11 +1,13 @@
 import { ArrowClockwise, QrCode, UsersThree } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
+import { useSettings } from '../../app/settings'
 import { api, type RoomHeard, type RoomReaction, type RoomStatus } from '../../shared/api'
 import { tr, trn } from '../../shared/i18n/i18n'
 import { phoneApp } from '../../shared/platform'
 import { Button } from '../../shared/ui/Button'
 import { Dialog } from '../../shared/ui/Dialog'
 import { qrPath } from '../share/qr'
+import { scanWebcam } from '../share/webcam'
 import { closeRoom, REACTIONS, useRoom } from './room'
 import { RoomFloats } from './RoomPill'
 import { catchUp, endRoom, joinRoom, leaveRoom, react, roomError, startRoom } from './rooms'
@@ -150,9 +152,10 @@ function Off() {
       setBusy(false)
     }
   }
+  const webcam = useSettings((s) => s.settings.webcamScan)
   const scan = async () => {
     try {
-      const text = await api.scanQr()
+      const text = await (phoneApp ? api.scanQr() : scanWebcam())
       if (text?.startsWith('legato://room?')) await join(text)
       else if (text) setError(tr('Not a Legato room code'))
     } catch (e) {
@@ -204,7 +207,7 @@ function Off() {
           <Button variant="primary" disabled={busy || code.length !== 6 || !pick} onClick={() => void join()}>
             {tr('Join')}
           </Button>
-          {phoneApp && (
+          {(phoneApp || webcam) && (
             <Button variant="ghost" disabled={busy} onClick={() => void scan()}>
               <QrCode size={16} /> {tr('Scan')}
             </Button>

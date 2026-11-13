@@ -1,5 +1,6 @@
 import { ArrowsClockwise, Devices as DevicesGlyph, Plus, ShieldCheck, Trash } from '@phosphor-icons/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { api, type DeviceOffer, type DevicesStatus, type Merged, type SyncDeviceRow } from '../../shared/api'
 import { timeAgo } from '../../shared/format'
@@ -10,6 +11,7 @@ import { onMenu } from '../../shared/ui/ContextMenu'
 import { Toggle } from '../../shared/ui/controls'
 import { Dialog } from '../../shared/ui/Dialog'
 import { qrPath } from '../share/qr'
+import { scanWebcam } from '../share/webcam'
 import { DeviceIcon } from './DeviceIcon'
 import { kindLabel, left, rowNote, typedCode } from './devicesView'
 import { mergedText } from './merged'
@@ -123,10 +125,11 @@ function AddDevice({ mode: first, name, onClose }: { mode: 'show' | 'enter'; nam
       setBusy(false)
     }
   }
-  // The phone's camera: the other device's QR code carries the whole pairing link.
+  const webcam = useSettings((s) => s.settings.webcamScan)
+  // The phone's camera, or the webcam when that setting is on: the other device's QR code carries the whole pairing link.
   const scan = async () => {
     try {
-      const text = await api.scanQr()
+      const text = await (phoneApp ? api.scanQr() : scanWebcam())
       const to = text ? typedCode(text) : null
       if (to) await pair(to)
       else if (text) setError(tr('Not a Legato pairing code'))
@@ -176,9 +179,9 @@ function AddDevice({ mode: first, name, onClose }: { mode: 'show' | 'enter'; nam
                     {busy ? tr('Syncing…') : tr('Pair')}
                   </Button>
                 </div>
-                {phoneApp && (
+                {(phoneApp || webcam) && (
                   <Button variant="ghost" onClick={() => void scan()} disabled={busy}>
-                    {tr('Scan a QR code')}
+                    {phoneApp ? tr('Scan a QR code') : tr('Scan with the webcam')}
                   </Button>
                 )}
               </form>
