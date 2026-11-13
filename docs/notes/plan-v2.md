@@ -769,8 +769,9 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - [ ] `L` Living-room mode: big UI driven by a gamepad or the arrow keys (10-foot layout), for a PC on a TV.
       2026-11-13, first slice: Settings › General › Living-room mode (off, this PC only): the page zoom is 150 % at least, the focus ring
       thick, the arrows move between the visible controls (`livingRoom/spatial.ts`, nearest in that direction; inside the open dialog),
-      Enter presses a focused non-button, Esc goes back. Decided alone (2026-11-13): arrows and Enter/Esc only. Never seen on a TV. Left:
-      gamepad (Gamepad API), a purpose-built home screen, the player bar enlarged beyond the zoom, on-screen keyboard for search.
+      Enter presses a focused non-button, Esc goes back. Decided alone (2026-11-13): arrows and Enter/Esc only. Never seen on a TV. 2026-11-13, second slice: a gamepad (Gamepad API, standard layout, polled while the mode is on): d-pad or left stick moves, A presses, B goes back (`pad.ts`). Never held a pad.
+      Left:
+      a purpose-built home screen, the player bar enlarged beyond the zoom, on-screen keyboard for search.
 - [ ] `L` Media panel off Windows.
 
 ## Visualizer v2 (user's ask 2026-10-30: more realistic, more detailed)

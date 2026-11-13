@@ -1,5 +1,6 @@
 import { useStore } from '../../app/store'
 import { usePlayer } from '../player/store'
+import { padActions, pressed, type PadAction } from './pad'
 import { nextBox, type Dir } from './spatial'
 
 const FOCUSABLE = 'button:not([disabled]), a[href], [role="button"], [role="tab"], [role="menuitem"], input[type="checkbox"], input[type="radio"], [data-list], [tabindex="0"]'
@@ -31,6 +32,21 @@ export function moveFocus(dir: Dir): boolean {
   return true
 }
 
+/** Esc / the pad's B: closes nothing that is open (dialogs and menus handle it), else goes back. */
+function back() {
+  if (document.querySelector('[role="dialog"], [role="menu"]')) return
+  const p = usePlayer.getState()
+  if (p.full) p.setFull(false)
+  else useStore.getState().goBack()
+}
+
+const act = (a: PadAction) => {
+  const t = document.activeElement
+  if (a === 'back') back()
+  else if (a === 'press') (t instanceof HTMLElement && t !== document.body ? t : null)?.click()
+  else moveFocus(a)
+}
+
 /**
  * Living-room mode (Settings › General): the arrows move between controls, Enter presses the focused one (a button does by
  * itself), Esc goes back. The interface is also drawn larger and the focus ring heavier (`app/settings.ts`, index.css).
@@ -55,14 +71,24 @@ export function startLivingRoom(on: () => boolean, subscribe: (f: () => void) =>
       return
     }
     // Esc closes what is open first (dialogs and menus handle it themselves); on a page it goes back.
-    if (e.key === 'Escape' && !document.querySelector('[role="dialog"], [role="menu"]')) {
-      const p = usePlayer.getState()
-      if (p.full) p.setFull(false)
-      else useStore.getState().goBack()
-    }
+    if (e.key === 'Escape') back()
   }
   addEventListener('keydown', key)
+  // A gamepad (Gamepad API, standard layout): the d-pad or left stick moves, A presses, B goes back. Polled while the mode is on.
+  let prev: boolean[] = []
+  let frame = 0
+  const poll = () => {
+    if (on()) {
+      const pad = [...(navigator.getGamepads?.() ?? [])].find((g) => g?.connected)
+      const now = pad ? pressed(pad.buttons, pad.axes) : []
+      padActions(prev, now).forEach(act)
+      prev = now
+    }
+    frame = requestAnimationFrame(poll)
+  }
+  frame = requestAnimationFrame(poll)
   return () => {
+    cancelAnimationFrame(frame)
     off()
     removeEventListener('keydown', key)
     document.documentElement.classList.remove('living-room')
