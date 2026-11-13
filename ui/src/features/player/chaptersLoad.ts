@@ -10,24 +10,21 @@ const MIN_VIDEO_MS = 15 * 60_000
 /** Follows the player: a song of the library played from a file asks Rust for its chapters (only `.m4b` / `.m4a` / `.mp4` answer). */
 export function startChapters(): () => void {
   let last: string | null | undefined
+  // A video whose length is not known yet (a YouTube Music home item): asked once the player learns it.
+  let waiting: string | undefined
   return usePlayer.subscribe((s) => {
     const key = songKey(s.now)
-    if (key === last) return
-    last = key
-    useChapters.setState({ list: [] })
-    const video = s.now?.via === 'youtube' ? s.now.youtubeId : undefined
-    if (video && s.durationMs && s.durationMs >= MIN_VIDEO_MS && useSettings.getState().settings.youtubeChapters) {
-      api.youtubeChapters(video).then(
-        (list) => songKey(usePlayer.getState().now) === key && useChapters.setState({ list }),
-        () => {},
-      )
-      return
+    const answer = (list: Awaited<ReturnType<typeof api.trackChapters>>) => songKey(usePlayer.getState().now) === key && useChapters.setState({ list })
+    if (key !== last) {
+      last = key
+      useChapters.setState({ list: [] })
+      const video = s.now?.via === 'youtube' ? s.now.youtubeId : undefined
+      waiting = video && useSettings.getState().settings.youtubeChapters ? video : undefined
+      const id = s.now?.trackId
+      if (s.now?.via === 'local' && id !== undefined && id > 0) api.trackChapters(id).then(answer, () => {})
     }
-    const id = s.now?.trackId
-    if (s.now?.via !== 'local' || id === undefined || id <= 0) return
-    api.trackChapters(id).then(
-      (list) => songKey(usePlayer.getState().now) === key && useChapters.setState({ list }),
-      () => {},
-    )
+    if (!waiting || !s.durationMs) return
+    if (s.durationMs >= MIN_VIDEO_MS) api.youtubeChapters(waiting).then(answer, () => {})
+    waiting = undefined
   })
 }
