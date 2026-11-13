@@ -4,7 +4,7 @@ import { useSettings } from '../../app/settings'
 import { startEditor, useEditor } from '../editor/editor'
 import { useDeviceEq } from './deviceEq'
 import { neutral, withDeviceEq } from './effects'
-import { useOutputs } from './outputs'
+import { refreshOutputs, useOutputs } from './outputs'
 import { overlapDue } from './fade'
 import { sendLive, setEnding, startLive } from './live'
 import { useLoudListeners } from './loudFeed'
@@ -34,6 +34,10 @@ export function useLiveSync() {
   const preset = useDeviceEq((s) => s.map[device ?? 'default'])
   const perDevice = useSettings((s) => s.settings.eqPerDevice)
   const effects = useMemo(() => (perDevice ? withDeviceEq(own, preset) : own), [own, preset, perDevice])
+  // The output Rust brought back at start is only known here once asked: else the default's preset would play.
+  useEffect(() => {
+    if (perDevice) refreshOutputs()
+  }, [perDevice])
   // This page owns the visualizer stream from the start: a worker left by a page before a reload is stopped.
   useEffect(() => claimViz(), [])
   // Twelfths: the engine's frames in 121 bands; the scopes: with their wave blocks (YouTube's through the wish below).
