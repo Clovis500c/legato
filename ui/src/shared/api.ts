@@ -485,6 +485,7 @@ export const api = {
   /** Podcasts (podcast.rs): a feed read now, the shows kept, keeping or letting one go. */
   podcastFeed: (url: string) => invoke<PodcastFeed>('podcast_feed', { url }),
   podcastKept: () => invoke<PodcastFeed[]>('podcast_kept'),
+  podcastImport: (opml: string) => invoke<PodcastFeed[]>('podcast_import', { opml }),
   podcastKeep: (show: PodcastFeed, keep: boolean) => invoke<PodcastFeed[]>('podcast_keep', { show, keep }),
   /** Imported YouTube Music playlist: added on YouTube (Liked Music = like), then locally. */
   addToYoutube: (id: number, trackIds: number[]) => invoke<AddReport>('add_to_youtube', { id, trackIds }),

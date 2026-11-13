@@ -54,6 +54,26 @@ pub async fn podcast_keep(state: State<'_, AppState>, show: Feed, keep: bool) ->
     Ok(all)
 }
 
+/// An OPML file's text (pasted by the user): its shows are kept with no request made, up to the limit.
+#[tauri::command]
+pub async fn podcast_import(state: State<'_, AppState>, opml: String) -> CmdResult<Vec<Feed>> {
+    if opml.len() > 2 << 20 {
+        return Err("That file is too big".into());
+    }
+    let found: Vec<Feed> = music_connectors::podcast::opml(&opml).into_iter().filter_map(clean).collect();
+    if found.is_empty() {
+        return Err("No podcast feed found in that text".into());
+    }
+    let mut all = kept(&state);
+    for f in found {
+        if all.len() < MAX_KEPT && !all.iter().any(|s| s.url == f.url) {
+            all.push(f);
+        }
+    }
+    state.lib().set_setting(KEY, &serde_json::to_value(&all).map_err(err)?).map_err(err)?;
+    Ok(all)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

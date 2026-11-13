@@ -10,6 +10,7 @@ import { Cover } from '../../shared/ui/Cover'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { usePlayer } from '../player/store'
 import { episodeQueue } from './episode'
+import { fresh, load, save, seen, toggle, type Marks } from './played'
 
 /**
  * Podcasts: the shows are open RSS feeds whose address you type (only that address is asked for; the episodes' audio comes
@@ -21,6 +22,10 @@ export function PodcastsView() {
   const [show, setShow] = useState<PodcastFeed | null>(null)
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
+  const [marks, setMarks] = useState<Marks>(load)
+  const [news, setNews] = useState<string[]>([])
+  const [paste, setPaste] = useState('')
+  const change = (m: Marks) => (setMarks(m), save(m))
   const fail = (e: unknown) => useStore.getState().notify(String(e), { kind: 'error' })
   useEffect(() => {
     api.podcastKept().then(setKept, fail)
@@ -30,7 +35,12 @@ export function PodcastsView() {
     setBusy(true)
     api
       .podcastFeed(url)
-      .then(setShow, fail)
+      .then((f) => {
+        const m = load()
+        setNews(fresh(m, f.url, f.episodes.map((e) => e.id)))
+        change(seen(m, f.url, f.episodes.map((e) => e.id)))
+        setShow(f)
+      }, fail)
       .finally(() => setBusy(false))
   }
   const mine = show ? kept.some((k) => k.url === show.url) : false
@@ -59,7 +69,11 @@ export function PodcastsView() {
               <button type="button" aria-pressed={mine} aria-label={mine ? tr('Forget this podcast') : tr('Keep this podcast')} onClick={() => void api.podcastKeep(show, !mine).then(setKept, fail)} className="grid size-8 place-items-center rounded-full text-ink-2 hover:text-ink">
                 <Heart weight={mine ? 'fill' : 'regular'} size={18} />
               </button>
+              <Button variant="ghost" disabled={busy} onClick={() => open(show.url)}>
+                {tr('Refresh')}
+              </Button>
               <span className="text-xs text-ink-2">{trn(show.episodes.length, '{n} episode', '{n} episodes')}</span>
+              {news.length > 0 && <span className="text-xs text-accent-ink">{trn(news.length, '{n} new episode', '{n} new episodes')}</span>}
             </div>
             <ul className="flex flex-col">
               {show.episodes.map((e) => (
@@ -69,16 +83,20 @@ export function PodcastsView() {
                     aria-label={tr('Play {title}', { title: e.title })}
                     onClick={() => {
                       const q = episodeQueue(show, e)
+                      if (!marks.played.includes(e.id)) change(toggle(marks, e.id))
                       usePlayer.getState().playTracks(q.tracks, q.index)
                     }}
                     className="grid size-9 shrink-0 place-items-center rounded-full bg-raised text-ink hover:brightness-110"
                   >
                     <Play weight="fill" size={16} />
                   </button>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate font-medium">{e.title}</span>
+                  <span className={`min-w-0 flex-1 ${marks.played.includes(e.id) ? 'opacity-60' : ''}`}>
+                    <span className="block truncate font-medium">{news.includes(e.id) ? `${tr('New')} · ` : ''}{e.title}</span>
                     <span className="block truncate text-xs text-ink-2">{[e.published.slice(0, 16), e.durationMs ? formatDuration(e.durationMs) : ''].filter(Boolean).join(' · ')}</span>
                   </span>
+                  <button type="button" aria-pressed={marks.played.includes(e.id)} onClick={() => change(toggle(marks, e.id))} className="shrink-0 rounded-full px-2 py-1 text-xs text-ink-2 hover:text-ink">
+                    {marks.played.includes(e.id) ? tr('Mark as unplayed') : tr('Mark as played')}
+                  </button>
                 </li>
               ))}
             </ul>
@@ -103,6 +121,14 @@ export function PodcastsView() {
             ) : (
               <p className="text-sm text-ink-2">{tr('Open a feed and keep it with its heart: it waits here.')}</p>
             )}
+            <details className="pt-6">
+              <summary className="cursor-pointer text-sm text-ink-2">{tr('Import from an OPML file')}</summary>
+              <p className="py-2 text-xs text-ink-2">{tr('Paste the text of the OPML file your podcast app exported. The shows are kept; nothing is asked of their servers.')}</p>
+              <textarea value={paste} onChange={(e) => setPaste(e.target.value)} rows={5} aria-label={tr('OPML text')} className="w-full rounded-lg border border-line bg-transparent p-2 font-mono text-xs outline-none" />
+              <Button disabled={!paste.trim()} onClick={() => api.podcastImport(paste).then((k) => (setKept(k), setPaste('')), fail)}>
+                {tr('Import')}
+              </Button>
+            </details>
           </>
         )}
       </div>

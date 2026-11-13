@@ -758,8 +758,7 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       the show with its heart, play its episodes (`connectors/podcast.rs`: the feed read by hand, no XML crate, mockito tests;
       the audio is a ranged GET through the engine like a server song, `server:podcast:<address>`). Episodes of 20 minutes and more
       resume as any long song does; speed is the Live Editor's. Decided alone (2026-11-13): no directory search, no new-episode
-      check, no downloads (a download is a copy of the audio; streaming only), no sidebar entry. Left: feed refresh, played marks,
-      OPML import. Never tried on a real feed or by ear; the privacy row says the feed host is reached.
+      check, no downloads (a download is a copy of the audio; streaming only), no sidebar entry. 2026-11-13, second slice: Refresh on a show (reads the feed again; episodes not there the last time it was opened say New), played marks (a button per episode; starting one marks it; this PC only), OPML import (the exported text pasted; shows kept, no request made). Left: a background new-episode check (nothing runs by itself: on purpose), OPML export. Never tried on a real feed or by ear; the privacy row says the feed host is reached.
 - [ ] `L` Living-room mode: big UI driven by a gamepad or the arrow keys (10-foot layout), for a PC on a TV.
 - [ ] `L` Media panel off Windows.
 

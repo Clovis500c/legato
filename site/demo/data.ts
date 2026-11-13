@@ -232,6 +232,7 @@ const ANSWERS: Record<string, (args: Record<string, unknown>) => unknown> = {
   podcast_feed: () => ({ url: '', title: '', author: '', image: '', episodes: [] }),
   podcast_kept: () => [],
   podcast_keep: () => [],
+  podcast_import: () => [],
   link_pending: () => null,
   bookmarks: ({ trackId }) => marksOf(trackId),
   add_bookmark: addMark,

@@ -141,6 +141,20 @@ pub fn parse(xml: &str, url: &str) -> Result<Feed> {
     Ok(Feed { url: url.to_string(), title: title.chars().take(300).collect(), author: author.chars().take(200).collect(), image, episodes })
 }
 
+/// The shows of an OPML file (what podcast apps export): every `<outline>` with an `xmlUrl`, as feeds with no episodes.
+pub fn opml(xml: &str) -> Vec<Feed> {
+    let mut out: Vec<Feed> = Vec::new();
+    for o in xml.split("<outline").skip(1) {
+        let o = format!("<outline{}>", o.split('>').next().unwrap_or_default());
+        let Some(url) = attr(&o, "outline", "xmlUrl").and_then(|u| http_url(&u)) else { continue };
+        let title = attr(&o, "outline", "title").or_else(|| attr(&o, "outline", "text")).filter(|t| !t.is_empty()).unwrap_or_else(|| url.clone());
+        if !out.iter().any(|f| f.url == url) {
+            out.push(Feed { url, title: title.chars().take(300).collect(), author: String::new(), image: String::new(), episodes: Vec::new() });
+        }
+    }
+    out
+}
+
 /// Reads the feed at `address` (http or https, 8 MB at most).
 pub async fn fetch(address: &str) -> Result<Feed> {
     let url = http_url(address).ok_or_else(|| anyhow!("Type a podcast feed's address (http or https)"))?;
@@ -188,6 +202,15 @@ mod tests {
         assert_eq!((f.episodes[0].id.as_str(), f.episodes[0].title.as_str(), f.episodes[0].duration_ms), ("g2", "Ep 2: <b>Two</b>", Some(3_723_000)));
         assert_eq!(f.episodes[1].id, "http://cdn.example/1.mp3");
         assert_eq!(f.episodes[1].duration_ms, Some(2_710_000));
+    }
+
+    #[test]
+    fn an_opml_file_gives_its_feeds_once_each() {
+        let x = r#"<opml><body><outline text="Shows"><outline type="rss" text="A &amp; B" xmlUrl="https://a.example/rss"/>
+          <outline text="C" title="Cee" xmlUrl="http://c.example/feed"/><outline text="dup" xmlUrl="https://a.example/rss"/>
+          <outline text="bad" xmlUrl="ftp://x/y"/></outline></body></opml>"#;
+        let f = opml(x);
+        assert_eq!(f.iter().map(|f| (f.title.as_str(), f.url.as_str())).collect::<Vec<_>>(), [("A & B", "https://a.example/rss"), ("Cee", "http://c.example/feed")]);
     }
 
     #[test]
