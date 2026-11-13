@@ -338,6 +338,16 @@ export function ThemeStudio() {
     }
   }
   const pick = (t: Theme) => update({ theme: t.id, ...t.look })
+  // A preset can't be edited: one gesture copies it into the custom themes and opens the editor on the copy.
+  const dup = (t: Theme, patch: Partial<Theme> = {}) => {
+    const c = fresh({ ...t, ...patch, name: tr('{name} custom', { name: t.name }) })
+    if (c) add(c)
+  }
+  const custom = settings.customThemes.some((x) => x.id === settings.theme)
+  const corners = (radius: Theme['radius']) => {
+    if (!custom) return dup(current(), { radius })
+    update({ customThemes: settings.customThemes.map((x) => (x.id === settings.theme ? (sanitizeTheme({ ...x, radius }) ?? x) : x)) })
+  }
   // The tile under the pointer or the keyboard shows large above, before it is applied.
   const [peek, setPeek] = useState<Theme | null>(null)
   const shown = peek ?? current()
@@ -372,6 +382,11 @@ export function ThemeStudio() {
               { value: 'dark', label: tr('Dark') },
             ]}
           />
+          <span className="kicker">{tr('Corners')}</span>
+          <Segmented label={tr('Corners')} value={current().radius} onChange={corners} options={RADII.map((r) => ({ value: r, label: tr({ sharp: msg('Sharp'), soft: msg('Soft'), round: msg('Round') }[r]) }))} />
+          <Button variant="ghost" className="w-fit" onClick={() => dup(shown)}>
+            <Copy size={14} /> {tr('Duplicate to edit')}
+          </Button>
           <div className="grid grid-cols-[repeat(auto-fill,minmax(110px,1fr))] gap-3">
             <ThemeCard t={system} on={settings.theme === 'system'} onClick={() => update({ theme: 'system' })} badge={tr('AUTO')} peek={setPeek} />
           </div>
@@ -441,7 +456,12 @@ export function ThemeStudio() {
           </div>
         </div>
       )}
-      {editing && <ThemeEditor key={editing} id={editing} onClose={() => setEditing(undefined)} />}
+      {editing && (
+        <details open className="group/adv">
+          <summary className="kicker mb-2 cursor-pointer">{tr('Advanced')}</summary>
+          <ThemeEditor key={editing} id={editing} onClose={() => setEditing(undefined)} />
+        </details>
+      )}
     </section>
   )
 }

@@ -2284,6 +2284,7 @@ const he: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'השרת שלכם מקבל את הסיסמה רק כפי שהיא (מקודדת ב-hex, וזה לא הצפנה). דרך https רק השרת שלכם יכול לקרוא אותה. לשלוח כך?',
   'Send my password as it is': 'שליחת הסיסמה שלי כפי שהיא',
   'Hide explicit songs': 'הסתרת שירים מפורשים',
+  'Duplicate to edit': 'שכפול לעריכה',
   'Mode': 'מצב',
   'Light themes': 'ערכות נושא בהירות',
   'Dark themes': 'ערכות נושא כהות',

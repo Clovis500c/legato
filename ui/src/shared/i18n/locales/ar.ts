@@ -2284,6 +2284,7 @@ const ar: Record<string, string> = {
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'لا يقبل خادمك كلمة المرور إلا كما هي (مشفّرة بـ hex، وهذا ليس تشفيرًا). عبر https لا يقرؤها إلا خادمك. إرسالها بهذه الطريقة؟',
   'Send my password as it is': 'أرسل كلمة مروري كما هي',
   'Hide explicit songs': 'إخفاء الأغاني الصريحة',
+  'Duplicate to edit': 'تكرار للتعديل',
   'Mode': 'الوضع',
   'Light themes': 'سمات فاتحة',
   'Dark themes': 'سمات داكنة',
