@@ -2584,6 +2584,9 @@ const ko: Record<string, string> = {
   'The camera could not be opened: check that one is connected and that Windows lets apps use it.': '카메라를 열 수 없습니다. 카메라가 연결되어 있고 Windows가 앱의 사용을 허용하는지 확인하세요.',
   'Send to {name}': '{name}(으)로 보내기',
   'Sent to {name}: {songs}': '{name}(으)로 보냈습니다: {songs}',
+  'Send “{name}” to {server}?': '“{name}”을(를) {server}(으)로 보낼까요?',
+  'A new playlist is made there with its songs; nothing already on the server is changed. From then on it follows the server, like its other playlists.': '그곳에 곡이 담긴 새 플레이리스트가 만들어지며, 서버에 이미 있는 것은 바뀌지 않습니다. 이후에는 다른 플레이리스트처럼 서버를 따릅니다.',
+  'Send': '보내기',
   'None of this playlist’s songs are on that server': '이 재생목록의 곡이 그 서버에 하나도 없습니다',
   'Some of this playlist’s songs aren’t on that server: take them out first': '이 재생목록의 일부 곡이 그 서버에 없습니다. 먼저 빼 주세요',
 }

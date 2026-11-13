@@ -2524,6 +2524,9 @@ const ar: Record<string, string> = {
   'The camera could not be opened: check that one is connected and that Windows lets apps use it.': 'تعذّر فتح الكاميرا: تحقق من توصيل كاميرا ومن أن Windows يسمح للتطبيقات باستخدامها.',
   'Send to {name}': 'إرسال إلى {name}',
   'Sent to {name}: {songs}': 'تم الإرسال إلى {name}: {songs}',
+  'Send “{name}” to {server}?': 'إرسال «{name}» إلى {server}؟',
+  'A new playlist is made there with its songs; nothing already on the server is changed. From then on it follows the server, like its other playlists.': 'تُنشأ هناك قائمة تشغيل جديدة بأغانيها، ولا يتغير شيء مما على الخادم. ومن ثم تتبع الخادم مثل قوائمه الأخرى.',
+  'Send': 'إرسال',
   'None of this playlist’s songs are on that server': 'لا توجد أي أغنية من هذه القائمة على ذلك الخادم',
   'Some of this playlist’s songs aren’t on that server: take them out first': 'بعض أغاني هذه القائمة ليست على ذلك الخادم: أزلها أولًا',
 }

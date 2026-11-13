@@ -558,6 +558,9 @@ const serverName = (s: { name: string | null; address: string }) => s.name || s.
 
 /** A playlist made here, created on your Subsonic server and mirrored from then on (Rust checks the direction and the songs). */
 async function sendToServer(p: LibraryPlaylist, s: { key: string; name: string | null; address: string }) {
+  // It writes on the user's own server: asked first.
+  const body = tr('A new playlist is made there with its songs; nothing already on the server is changed. From then on it follows the server, like its other playlists.')
+  if (!(await ask({ title: tr('Send “{name}” to {server}?', { name: p.name, server: serverName(s) }), body, ok: tr('Send') }))) return
   const n = await api.serverPlaylistCreate(p.id, s.key)
   await app().refreshChanged()
   app().notify(tr('Sent to {name}: {songs}', { name: serverName(s), songs: trn(n, '{n} song', '{n} songs') }), { action: { label: tr('Open'), run: () => app().go({ name: 'playlist', id: p.id }) } })

@@ -2584,6 +2584,9 @@ const tr: Record<string, string> = {
   'The camera could not be opened: check that one is connected and that Windows lets apps use it.': 'Kamera açılamadı: bir kamera bağlı olduğunu ve Windows’un uygulamaların kullanmasına izin verdiğini kontrol et.',
   'Send to {name}': '{name} sunucusuna gönder',
   'Sent to {name}: {songs}': '{name} sunucusuna gönderildi: {songs}',
+  'Send “{name}” to {server}?': '“{name}”, {server} sunucusuna gönderilsin mi?',
+  'A new playlist is made there with its songs; nothing already on the server is changed. From then on it follows the server, like its other playlists.': 'Orada şarkılarıyla yeni bir çalma listesi oluşturulur; sunucuda zaten olan hiçbir şey değişmez. Sonra diğer listeleri gibi sunucuyu izler.',
+  'Send': 'Gönder',
   'None of this playlist’s songs are on that server': 'Bu çalma listesindeki şarkıların hiçbiri o sunucuda yok',
   'Some of this playlist’s songs aren’t on that server: take them out first': 'Bu çalma listesindeki bazı şarkılar o sunucuda yok: önce onları çıkar',
 }

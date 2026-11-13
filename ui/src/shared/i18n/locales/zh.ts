@@ -2584,6 +2584,9 @@ const zh: Record<string, string> = {
   'The camera could not be opened: check that one is connected and that Windows lets apps use it.': '无法打开摄像头：请检查是否已连接，以及 Windows 是否允许应用使用。',
   'Send to {name}': '发送到 {name}',
   'Sent to {name}: {songs}': '已发送到 {name}：{songs}',
+  'Send “{name}” to {server}?': '将“{name}”发送到 {server}？',
+  'A new playlist is made there with its songs; nothing already on the server is changed. From then on it follows the server, like its other playlists.': '会在那里新建一个包含这些歌曲的播放列表，服务器上已有的内容都不会改变。此后它像服务器上的其他播放列表一样跟随服务器。',
+  'Send': '发送',
   'None of this playlist’s songs are on that server': '这个播放列表里的歌曲在该服务器上一首都没有',
   'Some of this playlist’s songs aren’t on that server: take them out first': '这个播放列表里有些歌曲不在该服务器上：请先把它们移除',
 }

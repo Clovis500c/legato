@@ -2584,6 +2584,9 @@ const nl: Record<string, string> = {
   'The camera could not be opened: check that one is connected and that Windows lets apps use it.': 'De camera kon niet worden geopend: controleer of er een is aangesloten en of Windows apps toestaat hem te gebruiken.',
   'Send to {name}': 'Verstuur naar {name}',
   'Sent to {name}: {songs}': 'Verstuurd naar {name}: {songs}',
+  'Send “{name}” to {server}?': '“{name}” naar {server} sturen?',
+  'A new playlist is made there with its songs; nothing already on the server is changed. From then on it follows the server, like its other playlists.': 'Daar wordt een nieuwe playlist met de nummers gemaakt; niets wat al op de server staat verandert. Daarna volgt hij de server, zoals de andere playlists.',
+  'Send': 'Versturen',
   'None of this playlist’s songs are on that server': 'Geen enkel nummer van deze afspeellijst staat op die server',
   'Some of this playlist’s songs aren’t on that server: take them out first': 'Sommige nummers van deze afspeellijst staan niet op die server: haal ze eerst weg',
 }

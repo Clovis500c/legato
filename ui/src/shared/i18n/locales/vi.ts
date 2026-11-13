@@ -2584,6 +2584,9 @@ const vi: Record<string, string> = {
   'The camera could not be opened: check that one is connected and that Windows lets apps use it.': 'Không mở được máy ảnh: hãy kiểm tra đã có máy ảnh được kết nối và Windows cho phép ứng dụng dùng nó.',
   'Send to {name}': 'Gửi đến {name}',
   'Sent to {name}: {songs}': 'Đã gửi đến {name}: {songs}',
+  'Send “{name}” to {server}?': 'Gửi “{name}” đến {server}?',
+  'A new playlist is made there with its songs; nothing already on the server is changed. From then on it follows the server, like its other playlists.': 'Một danh sách phát mới được tạo ở đó với các bài hát; không gì có sẵn trên máy chủ bị thay đổi. Từ đó nó theo máy chủ, như các danh sách khác.',
+  'Send': 'Gửi',
   'None of this playlist’s songs are on that server': 'Không bài nào trong danh sách phát này có trên máy chủ đó',
   'Some of this playlist’s songs aren’t on that server: take them out first': 'Một số bài trong danh sách phát này không có trên máy chủ đó: hãy bỏ chúng ra trước',
 }

@@ -2524,6 +2524,9 @@ const he: Record<string, string> = {
   'The camera could not be opened: check that one is connected and that Windows lets apps use it.': 'לא ניתן היה לפתוח את המצלמה: ודאו שמחוברת מצלמה וש-Windows מאפשר ליישומים להשתמש בה.',
   'Send to {name}': 'שליחה אל {name}',
   'Sent to {name}: {songs}': 'נשלח אל {name}: {songs}',
+  'Send “{name}” to {server}?': 'לשלוח את „{name}” אל {server}?',
+  'A new playlist is made there with its songs; nothing already on the server is changed. From then on it follows the server, like its other playlists.': 'נוצר שם פלייליסט חדש עם השירים שלו; שום דבר שכבר נמצא בשרת לא משתנה. מאז הוא עוקב אחרי השרת, כמו הפלייליסטים האחרים שלו.',
+  'Send': 'שליחה',
   'None of this playlist’s songs are on that server': 'אף אחד משירי הרשימה הזו לא נמצא בשרת ההוא',
   'Some of this playlist’s songs aren’t on that server: take them out first': 'חלק משירי הרשימה הזו לא נמצאים בשרת ההוא: הסירו אותם קודם',
 }

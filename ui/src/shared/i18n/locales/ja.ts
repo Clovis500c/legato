@@ -2584,6 +2584,9 @@ const ja: Record<string, string> = {
   'The camera could not be opened: check that one is connected and that Windows lets apps use it.': 'カメラを開けませんでした。カメラが接続されていること、Windows がアプリによる使用を許可していることを確認してください。',
   'Send to {name}': '{name} に送る',
   'Sent to {name}: {songs}': '{name} に送りました: {songs}',
+  'Send “{name}” to {server}?': '「{name}」を {server} に送りますか？',
+  'A new playlist is made there with its songs; nothing already on the server is changed. From then on it follows the server, like its other playlists.': 'そこに曲入りの新しいプレイリストが作られます。サーバーにすでにあるものは何も変わりません。以後は他のプレイリストと同じくサーバーに従います。',
+  'Send': '送る',
   'None of this playlist’s songs are on that server': 'このプレイリストの曲はどれもそのサーバーにありません',
   'Some of this playlist’s songs aren’t on that server: take them out first': 'このプレイリストの一部の曲はそのサーバーにありません。先に外してください',
 }

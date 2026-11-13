@@ -2584,6 +2584,9 @@ const pt: Record<string, string> = {
   'The camera could not be opened: check that one is connected and that Windows lets apps use it.': 'Não foi possível abrir a câmera: confira se há uma conectada e se o Windows permite que apps a usem.',
   'Send to {name}': 'Enviar para {name}',
   'Sent to {name}: {songs}': 'Enviada para {name}: {songs}',
+  'Send “{name}” to {server}?': 'Enviar “{name}” para {server}?',
+  'A new playlist is made there with its songs; nothing already on the server is changed. From then on it follows the server, like its other playlists.': 'Uma nova playlist é criada lá com as suas músicas; nada do que já está no servidor muda. A partir daí segue o servidor, como as outras playlists dele.',
+  'Send': 'Enviar',
   'None of this playlist’s songs are on that server': 'Nenhuma música desta playlist está nesse servidor',
   'Some of this playlist’s songs aren’t on that server: take them out first': 'Algumas músicas desta playlist não estão nesse servidor: tire-as primeiro',
 }

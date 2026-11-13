@@ -2584,6 +2584,9 @@ const id: Record<string, string> = {
   'The camera could not be opened: check that one is connected and that Windows lets apps use it.': 'Kamera tidak bisa dibuka: periksa apakah ada yang terpasang dan apakah Windows mengizinkan aplikasi memakainya.',
   'Send to {name}': 'Kirim ke {name}',
   'Sent to {name}: {songs}': 'Dikirim ke {name}: {songs}',
+  'Send “{name}” to {server}?': 'Kirim “{name}” ke {server}?',
+  'A new playlist is made there with its songs; nothing already on the server is changed. From then on it follows the server, like its other playlists.': 'Playlist baru dibuat di sana dengan lagu-lagunya; tidak ada yang sudah ada di server yang diubah. Setelah itu ia mengikuti server, seperti playlist lainnya.',
+  'Send': 'Kirim',
   'None of this playlist’s songs are on that server': 'Tidak ada lagu di playlist ini yang ada di server itu',
   'Some of this playlist’s songs aren’t on that server: take them out first': 'Sebagian lagu di playlist ini tidak ada di server itu: keluarkan dulu',
 }

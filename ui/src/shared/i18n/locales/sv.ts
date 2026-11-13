@@ -2584,6 +2584,9 @@ const sv: Record<string, string> = {
   'The camera could not be opened: check that one is connected and that Windows lets apps use it.': 'Kameran kunde inte öppnas: kontrollera att en är ansluten och att Windows låter appar använda den.',
   'Send to {name}': 'Skicka till {name}',
   'Sent to {name}: {songs}': 'Skickad till {name}: {songs}',
+  'Send “{name}” to {server}?': 'Skicka ”{name}” till {server}?',
+  'A new playlist is made there with its songs; nothing already on the server is changed. From then on it follows the server, like its other playlists.': 'En ny spellista med dess låtar skapas där; inget som redan finns på servern ändras. Sedan följer den servern, som dess andra spellistor.',
+  'Send': 'Skicka',
   'None of this playlist’s songs are on that server': 'Ingen av låtarna i den här spellistan finns på den servern',
   'Some of this playlist’s songs aren’t on that server: take them out first': 'Några av låtarna i den här spellistan finns inte på den servern: ta bort dem först',
 }

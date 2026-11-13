@@ -2584,6 +2584,9 @@ const uk: Record<string, string> = {
   'The camera could not be opened: check that one is connected and that Windows lets apps use it.': 'Не вдалося відкрити камеру: перевірте, що вона підключена і що Windows дозволяє застосункам її використовувати.',
   'Send to {name}': 'Надіслати на {name}',
   'Sent to {name}: {songs}': 'Надіслано на {name}: {songs}',
+  'Send “{name}” to {server}?': 'Надіслати «{name}» на {server}?',
+  'A new playlist is made there with its songs; nothing already on the server is changed. From then on it follows the server, like its other playlists.': 'Там створюється новий плейлист з її піснями; нічого, що вже є на сервері, не змінюється. Далі він слідує за сервером, як інші його плейлисти.',
+  'Send': 'Надіслати',
   'None of this playlist’s songs are on that server': 'Жодної пісні цього плейлиста немає на цьому сервері',
   'Some of this playlist’s songs aren’t on that server: take them out first': 'Деяких пісень цього плейлиста немає на цьому сервері: спершу приберіть їх',
 }

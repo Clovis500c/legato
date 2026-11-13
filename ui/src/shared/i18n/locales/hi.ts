@@ -2584,6 +2584,9 @@ const hi: Record<string, string> = {
   'The camera could not be opened: check that one is connected and that Windows lets apps use it.': 'कैमरा खोला नहीं जा सका: जाँचें कि कोई जुड़ा है और Windows ऐप्स को उसे इस्तेमाल करने देता है।',
   'Send to {name}': '{name} को भेजें',
   'Sent to {name}: {songs}': '{name} को भेजा गया: {songs}',
+  'Send “{name}” to {server}?': '“{name}” को {server} पर भेजें?',
+  'A new playlist is made there with its songs; nothing already on the server is changed. From then on it follows the server, like its other playlists.': 'वहाँ इसके गानों के साथ एक नई प्लेलिस्ट बनती है; सर्वर पर पहले से मौजूद कुछ नहीं बदलता। उसके बाद यह सर्वर की दूसरी प्लेलिस्ट की तरह उसी के साथ चलती है।',
+  'Send': 'भेजें',
   'None of this playlist’s songs are on that server': 'इस प्लेलिस्ट का कोई भी गाना उस सर्वर पर नहीं है',
   'Some of this playlist’s songs aren’t on that server: take them out first': 'इस प्लेलिस्ट के कुछ गाने उस सर्वर पर नहीं हैं: पहले उन्हें हटाएँ',
 }
