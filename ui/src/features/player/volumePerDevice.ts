@@ -66,8 +66,8 @@ export function startVolumePerDevice(enabled: () => boolean): () => void {
     const nextVolume = usePlayer.getState().volume
     if (enabled() && !applying) {
       const r = step(memory, nextKey, key, nextVolume, volume)
-      memory = r.memory
-      save(memory)
+      // The player store changes on every position tick: written only when a volume moved.
+      if (r.memory !== memory) save((memory = r.memory))
       if (r.set !== undefined) {
         applying = true
         usePlayer.getState().setVolume(r.set)
