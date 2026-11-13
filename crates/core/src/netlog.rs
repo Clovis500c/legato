@@ -85,6 +85,7 @@ const WHY: &[(&str, Why)] = &[
     ("deezer.com", Why::Deezer),
     ("soundcloud.com", Why::SoundCloud),
     ("lrclib.net", Why::Lyrics),
+    ("mymemory.translated.net", Why::Lyrics),
     ("sponsor.ajay.app", Why::SkipParts),
     ("audioscrobbler.com", Why::Scrobbling),
     ("last.fm", Why::Scrobbling),
@@ -210,6 +211,7 @@ mod tests {
         assert_eq!(why("rr3---sn-4g5e.googlevideo.com", Via::Window), Why::YouTube);
         assert_eq!(why("api.deezer.com", Via::App), Why::Deezer);
         assert_eq!(why("lrclib.net", Via::App), Why::Lyrics);
+        assert_eq!(why("api.mymemory.translated.net", Via::App), Why::Lyrics, "translated lyrics");
         assert_eq!(why("ws.audioscrobbler.com", Via::App), Why::Scrobbling);
         assert_eq!(why("lrclib.net", Via::Plugin), Why::Plugin);
         // A suffix is a whole label: notyoutube.com isn't YouTube's.
