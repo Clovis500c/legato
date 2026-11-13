@@ -1,4 +1,5 @@
 mod spotify_cmd;
+mod webview_watch;
 mod listening;
 mod versions;
 mod catalog_search;
@@ -841,6 +842,9 @@ pub fn run() {
             unplug::spawn(app.handle().clone());
             #[cfg(windows)]
             shield::install(window.as_ref(), shield.clone())?;
+            // A WebView2 process that dies: logged, and a dead renderer's page loaded again.
+            #[cfg(windows)]
+            let _ = webview_watch::install(window.as_ref());
             #[cfg(windows)]
             shield::browser_keys_off(window.as_ref())?;
             let media = media::Media::install(&window).ok();
