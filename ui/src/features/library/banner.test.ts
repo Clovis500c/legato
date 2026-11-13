@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { LibraryTrack } from '../../shared/api'
-import { bannerCovers, deepOf, hueOf, initialOf, pageOf, washOf } from './banner'
+import { bannerCovers, byIdOf, deepOf, hueOf, initialOf, LOOK_AT, pageOf, washOf } from './banner'
 
 vi.mock('@tauri-apps/api/core', () => ({ convertFileSrc: (p: string, s: string) => `http://${s}.localhost/${encodeURIComponent(p)}`, invoke: vi.fn() }))
 
@@ -42,5 +42,18 @@ describe('playlist banners', () => {
     expect(pageOf(5000, 600, 1800).page).toBe(2)
     expect(pageOf(0, 600, 500)).toEqual({ page: 0, pages: 1 })
     expect(pageOf(0, 0, 500)).toEqual({ page: 0, pages: 1 })
+  })
+})
+
+describe('banner sources', () => {
+  it('one map of the library for every tile, and a long playlist with no covers stops early', () => {
+    const tracks = Array.from({ length: 3 }, (_, i) => ({ id: i + 1 }) as LibraryTrack)
+    expect(byIdOf(tracks)).toBe(byIdOf(tracks))
+    const none = Array.from({ length: 5000 }, (_, i) => i + 10)
+    const seen: number[] = []
+    const spy = new Map<number, LibraryTrack>()
+    spy.get = (id: number) => (seen.push(id), undefined)
+    expect(bannerCovers(none, spy)).toEqual([])
+    expect(seen.length).toBe(LOOK_AT)
   })
 })

@@ -6,11 +6,23 @@ import { trackArt } from '../../shared/art'
 /** Covers in a tile: enough strips to read as a collage, few enough to stay recognisable. */
 export const STRIPS = 5
 
+/** Songs looked at for covers: a playlist of thousands with none stops early. */
+export const LOOK_AT = 200
+
+const maps = new WeakMap<LibraryTrack[], Map<number, LibraryTrack>>()
+
+/** The library by id, made once per library list and shared by every tile (not one map of every song per tile). */
+export function byIdOf(tracks: LibraryTrack[]): Map<number, LibraryTrack> {
+  let m = maps.get(tracks)
+  if (!m) maps.set(tracks, (m = new Map(tracks.map((t) => [t.id, t]))))
+  return m
+}
+
 /** The songs whose covers make the collage: in the playlist's order, one per distinct picture, up to `n`. */
 export function bannerCovers(ids: number[] | undefined, byId: Map<number, LibraryTrack>, n = STRIPS): LibraryTrack[] {
   const out: LibraryTrack[] = []
   const seen = new Set<string>()
-  for (const id of ids ?? []) {
+  for (const id of (ids ?? []).slice(0, LOOK_AT)) {
     const t = byId.get(id)
     const art = t && trackArt(t)[0]
     if (!t || !art || seen.has(art)) continue

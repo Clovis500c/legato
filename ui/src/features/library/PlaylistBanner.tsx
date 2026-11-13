@@ -9,7 +9,7 @@ import { onMenu } from '../../shared/ui/ContextMenu'
 import { RoundButton } from '../../shared/ui/controls'
 import { playlistMenu } from '../menus'
 import { averageColor } from '../player/ambient'
-import { bannerCovers, initialOf, pageOf, washOf } from './banner'
+import { bannerCovers, byIdOf, initialOf, pageOf, washOf } from './banner'
 
 /** Playlists as banners (Settings › Appearance › Lists and navigation › Playlists as banners; loaded when used, not at launch): a tile of tilted strips of the playlist's covers under a colour taken from them, its name over it. Covers come through the `art` scheme, nothing from the network. */
 
@@ -21,8 +21,7 @@ function useBanner(p: LibraryPlaylist) {
   useSettings((s) => s.systemDark)
   const dark = useSettings.getState().current().dark
   const arts = useMemo(() => {
-    const byId = new Map(tracks.map((t) => [t.id, t]))
-    return bannerCovers(ids, byId).map((t) => trackArt(t)[0])
+    return bannerCovers(ids, byIdOf(tracks)).map((t) => trackArt(t)[0])
   }, [ids, tracks])
   const first = arts[0]
   const [rgb, setRgb] = useState<[number, number, number] | null>(null)
@@ -44,7 +43,7 @@ function Collage({ arts, size }: { arts: string[]; size: number }) {
       <span className="absolute -inset-x-[18%] -inset-y-[45%] flex [transform:rotateX(10deg)_rotate(-16deg)] rtl:[transform:rotateX(10deg)_rotate(16deg)] motion-safe:transition-transform motion-safe:duration-500 motion-safe:group-hover:scale-105">
         {arts.map((a) => (
           <span key={a} className="mx-px flex-1 skew-x-[-16deg] overflow-hidden">
-            <img src={sizedArt(a, size / 2, window.devicePixelRatio || 1)} alt="" draggable={false} className="size-full skew-x-[16deg] scale-150 object-cover" onError={(e) => (e.currentTarget.style.visibility = 'hidden')} />
+            <img src={sizedArt(a, size / 2, window.devicePixelRatio || 1)} alt="" draggable={false} loading="lazy" decoding="async" className="size-full skew-x-[16deg] scale-150 object-cover" onError={(e) => (e.currentTarget.style.visibility = 'hidden')} />
           </span>
         ))}
       </span>
