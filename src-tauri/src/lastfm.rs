@@ -154,6 +154,12 @@ struct Found {
     tracks: Vec<music_core::model::Track>,
 }
 
+/// Today's answer (or today's ask that found nothing): Last.fm is asked once a day, 13 requests at most.
+fn asked_today(kept: Option<Found>, now: i64) -> Option<CmdResult<Vec<music_core::model::Track>>> {
+    let f = kept.filter(|f| (0..FRESH_S).contains(&(now - f.at)))?;
+    Some(if f.tracks.is_empty() { Err("Last.fm was already asked today: new suggestions tomorrow".into()) } else { Ok(f.tracks) })
+}
+
 /// Mixes › Last.fm discoveries (Settings › Playback › Last.fm discoveries, off; needs the user's own Last.fm key): songs by
 /// artists close to the three you play most and not in the library. 13 requests with the key (the favourites' names go to
 /// Last.fm, nothing else), once a day, the answer kept in this PC's library. The songs carry no ids: they are found on
@@ -168,8 +174,8 @@ pub async fn lastfm_discoveries(state: State<'_, AppState>) -> CmdResult<Vec<mus
     let (favourites, known) = {
         let lib = state.lib();
         let kept = lib.setting(DISCOVERIES).ok().flatten().and_then(|v| serde_json::from_value::<Found>(v).ok());
-        if let Some(f) = kept.filter(|f| now - f.at < FRESH_S && !f.tracks.is_empty()) {
-            return Ok(f.tracks);
+        if let Some(r) = asked_today(kept, now) {
+            return r;
         }
         let stats = lib.play_stats().map_err(err)?;
         let tracks = lib.tracks().map_err(err)?;
@@ -178,6 +184,10 @@ pub async fn lastfm_discoveries(state: State<'_, AppState>) -> CmdResult<Vec<mus
     };
     if favourites.is_empty() {
         return Err("Play some songs first: the discoveries start from the artists you play most".into());
+    }
+    // The day's ask noted before it is made: an error or an empty answer is not asked again before tomorrow either.
+    if let Ok(json) = serde_json::to_value(Found { at: now, tracks: Vec::new() }) {
+        state.lib().set_setting(DISCOVERIES, &json).map_err(err)?;
     }
     let fm = LastFm::new(&s.key, &s.secret);
     let mut lists = Vec::new();
@@ -199,4 +209,21 @@ pub async fn lastfm_discoveries(state: State<'_, AppState>) -> CmdResult<Vec<mus
         let _ = state.lib().set_setting(DISCOVERIES, &json);
     }
     Ok(tracks)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn last_fm_is_asked_once_a_day_even_when_the_ask_failed() {
+        let song = music_core::model::Track { title: "t".into(), artist: "a".into(), ..Default::default() };
+        let found = |at, tracks: Vec<music_core::model::Track>| Some(Found { at, tracks });
+        assert_eq!(asked_today(found(1_000, vec![song.clone()]), 2_000).unwrap().unwrap()[0].title, "t");
+        // Asked today, nothing came (an error, no new artist): not asked again.
+        assert!(asked_today(found(1_000, Vec::new()), 2_000).unwrap().is_err());
+        // A day later, or never asked: ask.
+        assert!(asked_today(found(1_000, vec![song]), 1_000 + FRESH_S).is_none());
+        assert!(asked_today(None, 2_000).is_none());
+    }
 }
