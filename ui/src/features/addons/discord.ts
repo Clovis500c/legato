@@ -1,6 +1,7 @@
 import { useSettings } from '../../app/settings'
 import { api, type Presence } from '../../shared/api'
 import { phoneApp } from '../../shared/platform'
+import { useBlind } from '../blind/blindOpen'
 import { primaryArtist } from '../library/filter'
 import { nowTrack, usePlayer } from '../player/store'
 import { asksPicture, presenceFor, samePresence } from './presence'
@@ -21,7 +22,8 @@ export function startDiscord(): () => void {
   let asked = -1
   const push = () => {
     const { addons, discord } = useSettings.getState().settings
-    if (!addons[DISCORD] || !discord.appId) {
+    // A blind test: the presence would give the song away.
+    if (!addons[DISCORD] || !discord.appId || useBlind.getState().open) {
       if (last) void api.discordOff()
       last = undefined
       return
@@ -49,9 +51,11 @@ export function startDiscord(): () => void {
   }
   const offPlayer = usePlayer.subscribe(push)
   const offSettings = useSettings.subscribe(push)
+  const offBlind = useBlind.subscribe(push)
   push()
   return () => {
     offPlayer()
     offSettings()
+    offBlind()
   }
 }

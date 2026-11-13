@@ -1,6 +1,7 @@
 import { listen } from '@tauri-apps/api/event'
 import { api, type LibraryTrack, type MediaNow } from '../../shared/api'
 import { sizedArt, trackArt } from '../../shared/art'
+import { useBlind } from '../blind/blindOpen'
 import { nowTrack, type NowPlaying, usePlayer } from './store'
 
 /** Windows media panel / tray payload. Library row gives album and cover. */
@@ -100,8 +101,10 @@ export function startMedia(): () => void {
   let last: Pushed | null = null
   let lastTrack: number | undefined
   const push = () => {
-    const { now, playing, positionMs, durationMs } = usePlayer.getState()
-    const track = nowTrack()
+    const { playing, positionMs, durationMs } = usePlayer.getState()
+    // A blind test: Windows' media panel and the phone's notification would give the song away.
+    const now = useBlind.getState().open ? undefined : usePlayer.getState().now
+    const track = now && nowTrack()
     const info = mediaNow(now, playing, track, positionMs, durationMs)
     const at = Date.now()
     const fresh = now?.trackId !== lastTrack
@@ -125,6 +128,7 @@ export function startMedia(): () => void {
   const unsub = usePlayer.subscribe((s, prev) => {
     if (s.now !== prev.now || s.playing !== prev.playing || s.positionMs !== prev.positionMs || s.durationMs !== prev.durationMs) push()
   })
+  const offBlind = useBlind.subscribe(push)
   const offKey = listen<MediaKey>('media-key', ({ payload }) => {
     const p = usePlayer.getState()
     const action = keyAction(payload, p.playing)
@@ -152,6 +156,7 @@ export function startMedia(): () => void {
   return () => {
     if (phone) phone.onmessage = null
     unsub()
+    offBlind()
     void offKey.then((f) => f())
     void offSeek.then((f) => f())
   }
