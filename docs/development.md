@@ -34,9 +34,9 @@ and Google session, never the installed app's.
 Only the installed app, identifier exactly `app.legato.desktop`, may touch the PC outside its own folders
 (`src-tauri/src/identity.rs`, `identity::installed()`): install an update over itself (`update.rs`), own the HKCU Run
 entry that Open at startup writes (`autostart.rs`: a dev build asking would start at sign-in without its dev server),
-and move the folders and keychain entries of the old identifier `dev.musicapp.desktop` at first launch (`rename.rs`).
+and carry the first name's folders, keychain entries and sync folder over at first launch (`rename.rs`, the one catch-up).
 A dev build, the bench build (`app.legato.desktop.bench`), the smoke test build (`app.legato.desktop.e2e`) or any other identifier is a guest: it never installs, never
-edits the Run entry and never migrates (a dev folder still named `dev.musicapp.desktop.devbuild` is renamed by hand). A
+edits the Run entry and never migrates (a dev folder of the first name is renamed by hand). A
 dev build only checks for updates when asked (Settings › About), and cannot install what it finds: it can download, and
 its install ends in an error (the status leaves Ready, or the interface would ask again every 5 s). Any new side effect a
 release build has on the PC goes behind the same guard.

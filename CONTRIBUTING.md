@@ -101,12 +101,12 @@ Updates (the `updateChannel` setting, kept per PC, not synced):
   changes nothing (needs the `gh` CLI signed in).
 
 The workflow needs the repository secret `TAURI_SIGNING_PRIVATE_KEY`, the private key made with
-`pnpm tauri signer generate` (`~/.tauri/music-app.key`), plus `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` if that key has a
+`pnpm tauri signer generate` (kept in a key file outside the repository), plus `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` if that key has a
 password. Without it the release stops at its first step. The public key is in `tauri.conf.json`. The updater downloads
 anonymously, so releases must be public.
 
 ```bash
-gh secret set TAURI_SIGNING_PRIVATE_KEY < ~/.tauri/music-app.key
+gh secret set TAURI_SIGNING_PRIVATE_KEY < path/to/the-key-file
 ```
 
 The APK builds in its own job (`android`), beside the Windows installer, and a last small job (`apk`) attaches it to

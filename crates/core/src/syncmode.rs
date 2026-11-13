@@ -749,6 +749,8 @@ pub struct Manifest {
     pub check: Option<String>,
 }
 
+/// What a protected folder's `check` seals to prove the password. A label inside folders already written (it cannot be
+/// resealed without the password), not shown anywhere: its old wording stays on purpose (2026-11-13).
 const CHECK: &[u8] = b"music-app-sync";
 
 impl Manifest {

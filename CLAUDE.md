@@ -1,7 +1,7 @@
 # Legato
 
 Desktop music player (Tauri 2 + Rust + React/TS, an Android build too) that unifies Spotify, YouTube, Apple Music,
-personal servers and local files. Formerly Music App (renamed 2026-10-29).
+personal servers and local files.
 
 Read first: `docs/notes/handoff.md` (where the work stands), then only the sections of `docs/notes/plan-v2.md` you need
 (open work; history in git). Overview `docs/architecture.md`, design `docs/design.md` (Figma file "Untitled", to be
@@ -17,12 +17,15 @@ for a broad architecture review. After changing code: `graphify update .`. Comma
 No graph (new clone): `graphify extract . --code-only --cargo`, an empty `graphify-out/.graphify_labels.json` (`{}`),
 then `graphify cluster-only .`. `docs/` isn't in it: read those directly.
 
-## Names kept for compatibility
-Identifier `app.legato.desktop` (was `dev.musicapp.desktop`: `src-tauri/src/rename.rs` moves its folders and keychain
-entries at first launch), exe `legato.exe`, Run entry and new sync folders "Legato". Never rename `_musicapp._tcp`,
-`MA1`, `.musicsync` files, an existing `Music App Sync` folder, the reading of `musicapp://` links. The repo is
-`Clovis500c/legato` (website https://clovis500c.github.io/legato/): GitHub redirects the old `music-app` URLs and
-installed versions look for updates there, so never create a repo named `music-app`.
+## Names
+Identifier `app.legato.desktop`, exe `legato.exe`. The app was called Music App until 2026-10-29; on 2026-11-13 every
+format that carried the old name was renamed too (share QR prefix `LG1:`, `_legato._tcp` on the local network,
+`.legatosync` files, `legato://` links, no more `musicapp://`) and nothing reads the old ones. The only thing left is ONE
+catch-up for data on disk, `src-tauri/src/rename.rs` (old identifier folders and keychain entries, the `Music App Sync`
+folder), with the old Run entry in `autostart.rs` and the old-install cleanup in `src-tauri/windows/hooks.nsh`: plan-v2
+"Remove the rename catch-up" lists what to delete. The repo is `Clovis500c/legato` (website
+https://clovis500c.github.io/legato/): GitHub redirects the old `music-app` URL and installed versions look for updates
+there, so never create a repo named `music-app`.
 
 ## Non-negotiable rules
 - Serverless: no backend of ours. Secrets in the OS keychain (`keyring`), local SQLite library. Sync between the user's

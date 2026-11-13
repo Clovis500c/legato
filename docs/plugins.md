@@ -178,7 +178,7 @@ When your plugin is off or stopped, the visualizer shows its bars in your look's
 
 ## Versions of this API
 
-- **1** (Music App, now Legato, 2026-10): everything above; `visualizer` (permission, calls, event, shapes) added
+- **1** (2026-10): everything above; `visualizer` (permission, calls, event, shapes) added
   within API 1 in 2026-11.
 
 New features come as new methods, events or parts within API 1 when nothing existing changes meaning; anything that
