@@ -135,6 +135,7 @@ export const api = {
   /** Each local song's tags, for Edit song info to start from. */
   /** A book's chapters (an m4b of the library); empty for any other song. */
   trackChapters: (trackId: number) => invoke<Chapter[]>('track_chapters', { trackId }),
+  youtubeChapters: (videoId: string) => invoke<Chapter[]>('youtube_chapters', { videoId }),
   /** Songs by artists close to the three you play most, from Last.fm (your own key; once a day); not in the library, no ids. */
   lastfmDiscoveries: () => invoke<Track[]>('lastfm_discoveries'),
   readTags: (trackIds: number[]) => invoke<FileTags[]>('read_tags', { trackIds }),

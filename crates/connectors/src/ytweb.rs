@@ -6,6 +6,7 @@
 use crate::youtube::parse_video;
 use crate::ytmusic::{all, cookie_value, parse_duration, sapisid_hash_for, site_version, text};
 use anyhow::{Context, Result, bail};
+use music_core::chapters::Chapter;
 use music_core::model::{Source, Track};
 use music_core::musicness::{Clues, Musicness, classify};
 use serde_json::{Value, json};
@@ -79,6 +80,23 @@ pub fn parse_search(v: &Value) -> Vec<WebVideo> {
     out
 }
 
+/// The parts of a long video: YouTube's own chapter markers when it has them, else the timestamps its description lists
+/// (`music_core::chapters::from_text`). `next` answer in, parts out; none when it lists fewer than three.
+pub fn parse_chapters(v: &Value) -> Vec<Chapter> {
+    let own: Vec<Chapter> = all(v, "macroMarkersListItemRenderer")
+        .into_iter()
+        .filter_map(|m| {
+            let seconds = m.pointer("/onTap/watchEndpoint/startTimeSeconds").and_then(Value::as_u64)?;
+            Some(Chapter { start_ms: seconds * 1000, title: m.get("title").and_then(text).unwrap_or_default().trim().to_string() })
+        })
+        .collect();
+    if own.len() >= 3 && own.windows(2).all(|w| w[0].start_ms < w[1].start_ms) {
+        return own;
+    }
+    let described = all(v, "attributedDescription").into_iter().find_map(|d| d.get("content").and_then(Value::as_str).map(String::from)).or_else(|| all(v, "videoSecondaryInfoRenderer").into_iter().find_map(|i| i.get("description").and_then(text)));
+    described.map(|d| music_core::chapters::from_text(&d)).unwrap_or_default()
+}
+
 pub struct YouTubeWeb {
     api: String,
     cookie: Option<String>,
@@ -124,6 +142,11 @@ impl YouTubeWeb {
             bail!("YouTube {endpoint} → {status} {}", res.text().await.unwrap_or_default().chars().take(300).collect::<String>());
         }
         Ok(res.json().await?)
+    }
+
+    /// The chapters of a video (see `parse_chapters`), from the watch page's own `next` call.
+    pub async fn chapters(&self, video_id: &str) -> Result<Vec<Chapter>> {
+        Ok(parse_chapters(&self.call("next", json!({ "videoId": video_id })).await?))
     }
 
     /// Videos for a query, YouTube's own ranking.
@@ -277,5 +300,30 @@ mod tests {
         for v in [json!(null), json!([]), json!({ "videoRenderer": 3 }), json!({ "videoRenderer": { "videoId": 5, "title": "x" } }), json!({ "videoRenderer": { "videoId": "short", "title": { "simpleText": "t" } } })] {
             assert!(parse_search(&v).is_empty(), "{v}");
         }
+    }
+    #[tokio::test]
+    async fn the_chapters_of_a_video_come_from_its_markers_or_its_description() {
+        let marker = |t: &str, s: u64| json!({ "macroMarkersListItemRenderer": { "title": { "simpleText": t }, "onTap": { "watchEndpoint": { "startTimeSeconds": s } } } });
+        let own = json!({ "engagementPanels": [{ "macroMarkersListRenderer": { "contents": [marker("One", 0), marker("Two", 200), marker("Three", 400)] } }] });
+        assert_eq!(parse_chapters(&own).iter().map(|c| (c.start_ms, c.title.as_str())).collect::<Vec<_>>(), [(0, "One"), (200_000, "Two"), (400_000, "Three")]);
+        let described = json!({ "contents": { "videoSecondaryInfoRenderer": { "attributedDescription": { "content": "Mix
+0:00 A
+4:00 B
+9:30 C" } } } });
+        assert_eq!(parse_chapters(&described).len(), 3);
+        let old = json!({ "contents": { "videoSecondaryInfoRenderer": { "description": { "runs": [{ "text": "0:00 A
+4:00 B
+" }, { "text": "9:30 C" }] } } } });
+        assert_eq!(parse_chapters(&old).len(), 3);
+        assert!(parse_chapters(&json!({ "contents": {} })).is_empty());
+        // Markers out of order are not trusted: the description is read instead.
+        let bad = json!({ "a": [marker("x", 50), marker("y", 10), marker("z", 90)], "videoSecondaryInfoRenderer": { "attributedDescription": { "content": "0:00 A
+1:00 B
+2:00 C" } } });
+        assert_eq!(parse_chapters(&bad)[0].title, "A");
+        let mut s = Server::new_async().await;
+        let m = s.mock("POST", "/next").match_query(Matcher::Any).match_body(Matcher::Regex("abcdefghijk".into())).with_body(own.to_string()).expect(1).create_async().await;
+        assert_eq!(YouTubeWeb::with_api(&s.url(), None).chapters("abcdefghijk").await.unwrap().len(), 3);
+        m.assert_async().await;
     }
 }

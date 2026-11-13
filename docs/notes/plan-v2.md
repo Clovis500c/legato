@@ -666,6 +666,11 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       visual preview, with other translations). Not seen on a screen.
 - [ ] `M` Long YouTube mixes and DJ sets split by their chapters (or timestamps in the description / pinned comment):
       each part a song in Up next, skip within the video; Music Detector names unlabelled parts on request.
+      2026-11-13, the chapters: Settings › Playback › Chapters of long YouTube videos (off by default; a video of 15 minutes or
+      more that plays asks YouTube's own `next` call, `ytweb::chapters`: its chapter markers, else the timestamps of its
+      description, `core/chapters::from_text`) fills the same Chapters menu the audiobooks use. Tested on made-up answers and
+      descriptions only (mockito), never on a real video. Left: each part as its own row in Up next, the pinned comment (a
+      separate continuation call), Music Detector naming unlabelled parts.
 - [ ] `M` Output devices: switch from the player bar, remember per device (volume, EQ preset).
       2026-11-13, the switch: the player's menu has Output device (shown with two devices or more; System default, then the system's list,
       the picked one checked), `Command::SetDevice` moves what plays like the unplug `Reopen` does (same place, paused or not), the pick

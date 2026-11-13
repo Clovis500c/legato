@@ -401,6 +401,8 @@ export interface Settings {
   crossfade: number
   /** Songs longer than this many minutes skipped as the queue moves on (0 = off). */
   skipLong: number
+  /** Asks YouTube for the chapters of a long video that plays (its markers, else the times in its description): Chapters in the player's menu (off: nothing asked). */
+  youtubeChapters: boolean
   /** Volume per output device: the volume set on a device picked in the player menu comes back when it is picked again (off: one volume for all). */
   volumePerDevice: boolean
   /** Estimate tempo: local songs with no tempo tag get a guess from their first 90 seconds, a few files at a time (off: nothing is decoded for it). */
@@ -617,6 +619,7 @@ export const DEFAULTS: Settings = {
   libraryWide: false,
   crossfade: 2,
   skipLong: 0,
+  youtubeChapters: false,
   volumePerDevice: false,
   tempoScan: false,
   tvHome: false,
@@ -879,6 +882,7 @@ export function sanitize(raw: unknown): Settings {
     pipClassic: typeof r.pipClassic === 'boolean' ? r.pipClassic : DEFAULTS.pipClassic,
     crossfade: typeof r.crossfade === 'number' && Number.isFinite(r.crossfade) ? Math.min(12, Math.max(0, Math.round(r.crossfade))) : DEFAULTS.crossfade,
     skipLong: typeof r.skipLong === 'number' && Number.isFinite(r.skipLong) ? Math.min(60, Math.max(0, Math.round(r.skipLong))) : DEFAULTS.skipLong,
+    youtubeChapters: r.youtubeChapters === true,
     volumePerDevice: r.volumePerDevice === true,
     tempoScan: r.tempoScan === true,
     tvHome: r.tvHome === true,

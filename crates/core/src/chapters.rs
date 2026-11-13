@@ -2,8 +2,10 @@
 //! from the `moov` box only, QuickTime chapter tracks (Apple's and Audible's books) when there is no such list, and the
 //! `CHAP` frames of an mp3's ID3v2 tag.
 
+use regex::Regex;
 use serde::Serialize;
 use std::io::{Read, Seek, SeekFrom};
+use std::sync::LazyLock;
 
 /// A `moov` box bigger than this is not read (a real one is some hundred kB; the sample tables of a long book, a few MB).
 const MOOV_MAX: u64 = 32 * 1024 * 1024;
@@ -268,6 +270,46 @@ fn parse_chpl(b: &[u8]) -> Vec<Chapter> {
     out
 }
 
+/// Chapters a YouTube description lists as timestamps ("0:00 Intro", "[12:30] - Next", "3. 1:02:03 | Title", "Title 4:10"):
+/// a line whose time opens it (after a bullet, number or bracket) or closes it. Times that do not climb are dropped (a
+/// line quoting another moment), and fewer than three left means no list (a sentence with a time in it is not one).
+pub fn from_text(text: &str) -> Vec<Chapter> {
+    static LEAD: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^[\s\W\d]{0,6}?[\[(]?\s*((?:\d{1,2}:)?\d{1,2}:\d{2})\s*[\])]?[\s\-–—:|.)>~]*(.*)$").unwrap());
+    static TAIL: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^(.*?)[\s\-–—:|(\[>~]+((?:\d{1,2}:)?\d{1,2}:\d{2})\s*[\])]?\s*$").unwrap());
+    let mut out: Vec<Chapter> = Vec::new();
+    for line in text.lines().take(500) {
+        let line = line.trim();
+        let (stamp, title) = if let Some(c) = LEAD.captures(line) {
+            (c[1].to_string(), c[2].to_string())
+        } else if let Some(c) = TAIL.captures(line) {
+            (c[2].to_string(), c[1].to_string())
+        } else {
+            continue;
+        };
+        let Some(start_ms) = stamp_ms(&stamp) else { continue };
+        if out.last().is_some_and(|l| l.start_ms >= start_ms) {
+            continue;
+        }
+        out.push(Chapter { start_ms, title: title.trim_matches(|c: char| c.is_whitespace() || "-–—:|[]()".contains(c)).chars().take(200).collect() });
+    }
+    if out.len() < 3 {
+        return Vec::new();
+    }
+    out.truncate(MAX_CHAPTERS);
+    out
+}
+
+/// "1:02:03" or "12:30" → ms; minutes and seconds under 60 when hours are written.
+fn stamp_ms(s: &str) -> Option<u64> {
+    let parts: Vec<u64> = s.split(':').map(|p| p.parse().ok()).collect::<Option<_>>()?;
+    let (h, m, sec) = match parts[..] {
+        [m, s] => (0, m, s),
+        [h, m, s] => (h, m, s),
+        _ => return None,
+    };
+    (sec < 60 && (m < 60 || parts.len() == 2)).then_some(((h * 60 + m) * 60 + sec) * 1000)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -419,5 +461,21 @@ mod tests {
         let mut liar = boxed(b"moov", &[]);
         liar[..4].copy_from_slice(&u32::MAX.to_be_bytes());
         assert!(read_chapters(&mut Cursor::new(liar)).is_empty());
+    }
+    #[test]
+    fn a_description_with_times_is_a_chapter_list() {
+        let text = "Great set, enjoy!\n\n0:00 Intro\n[3:45] - Second track\n3. 1:02:03 | Late one\nLast one 1:30:00\nsee you at 5:00 tomorrow";
+        let list = from_text(text);
+        let got: Vec<(u64, &str)> = list.iter().map(|c| (c.start_ms, c.title.as_str())).collect();
+        assert_eq!(got, [(0, "Intro"), (225_000, "Second track"), (3_723_000, "Late one"), (5_400_000, "Last one")]);
+    }
+
+    #[test]
+    fn times_that_do_not_climb_or_too_few_make_no_list() {
+        assert!(from_text("0:00 A\n1:00 B").is_empty(), "two lines are no list");
+        assert!(from_text("Meet at 10:00 sharp, the film starts 20:30").is_empty());
+        let list = from_text("0:00 A\n5:00 B\n2:00 quote\n9:00 C");
+        assert_eq!(list.iter().map(|c| c.title.as_str()).collect::<Vec<_>>(), ["A", "B", "C"]);
+        assert!(from_text("0:00 A\n1:75 B\n2:00 C\n3:00 D").iter().all(|c| c.title != "B"), "75 seconds is no time");
     }
 }

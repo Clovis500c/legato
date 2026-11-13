@@ -28,6 +28,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'appearance', label: msg('Volume control'), keywords: msg('knob bar slider sound') },
   { section: 'appearance', label: msg('Sleep timer button'), keywords: msg('moon sleep timer button hide') },
   { section: 'playback', label: msg('Skip long songs'), keywords: msg('skip long songs minutes length duration mix') },
+  { section: 'playback', label: msg('Chapters of long YouTube videos'), keywords: msg('chapters timestamps dj set mix long video parts') },
   { section: 'playback', label: msg('Estimate tempo'), keywords: msg('estimate tempo bpm analysis rhythm beat') },
   { section: 'playback', label: msg('Volume per source'), keywords: msg('volume per source remember files youtube spotify different') },
   { section: 'playback', label: msg('Volume per output device'), keywords: msg('volume per output device speakers headphones remember') },

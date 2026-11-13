@@ -65,6 +65,17 @@ pub async fn track_chapters(state: State<'_, AppState>, track_id: i64) -> CmdRes
     tauri::async_runtime::spawn_blocking(move || Ok(std::fs::File::open(path).map(|f| music_core::chapters::read_chapters(&mut std::io::BufReader::new(f))).unwrap_or_default())).await.map_err(err)?
 }
 
+/// The chapters of a YouTube video that plays (its markers, else the times in its description). Only asked when the setting
+/// "Chapters of long YouTube videos" is on; the id is checked (11 characters of the id alphabet) before it goes anywhere.
+#[tauri::command]
+pub async fn youtube_chapters(state: State<'_, AppState>, video_id: String) -> CmdResult<Vec<music_core::chapters::Chapter>> {
+    if video_id.len() != 11 || !video_id.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-') {
+        return Err("Not a video id".into());
+    }
+    let web = music_connectors::ytweb::YouTubeWeb::with_api(crate::hosts::get().youtube, crate::ytm::session(&state.app).as_deref());
+    web.chapters(&video_id).await.map_err(err)
+}
+
 /// What Edit song info starts from: each song's tags, in the order asked.
 #[tauri::command]
 pub async fn read_tags(state: State<'_, AppState>, track_ids: Vec<i64>) -> CmdResult<Vec<FileTags>> {
