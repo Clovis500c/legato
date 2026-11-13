@@ -8,7 +8,7 @@ versions are in git (`git log -p -- docs/notes/handoff.md`). Updated 2026-11-13 
 - **master** = `a5339fed`, pushed. **Beta 1.1.932** came out from it (CI green). **Stable** 1.1.681 (2026-11-05): Windows
   installer, `latest.json`, the Android APK.
 - **platforms** = master + the local commits (`git log origin/master..platforms --oneline | wc -l`, this handoff
-  included). None is pushed. Opus has reread everything, up to `fb44c034`.
+  included). None is pushed. Opus has reread everything; its own commits of the night run after `04f3bc85`.
 - **The rename is done** (Beta 1.1.932): Music App → Legato in every format (QR prefix `LG1:`, `_legato._tcp`,
   `.legatosync`, `legato://` links). The one catch-up for data on disk is `src-tauri/src/rename.rs` (plus the old Run
   entry in `autostart.rs`, the old-install cleanup in `src-tauri/windows/hooks.nsh`): the plan line « Remove the rename
@@ -32,14 +32,16 @@ versions are in git (`git log -p -- docs/notes/handoff.md`). Updated 2026-11-13 
 - Icons in the built app (`d0db29ff`; `pnpm dev` doesn't show the release build's problem).
 - Audiobook chapters (a real `.m4b` from Audible or iTunes; an mp3 book) and sleep at the end of a chapter.
 - YouTube search while signed out: a song is found and plays.
+- Covers and theme backgrounds still show everywhere (`9868235b`: the `art` scheme answers the main window only), and
+  after killing the app in Task Manager, Settings › About › Copy diagnostics has « the last run ended without closing ».
 - Then the settings that are off, to switch on: volume per source (Playback), Focus and workout sessions (player menu),
   Last.fm suggestions (needs the owner's Last.fm key; asks once a day), the blind test (app menu; a library of 8+ songs).
 
 ## Open
-- **For Opus**: finish the whole-app security pass. Still to read: the arguments of each IPC command. Still open
-  (`fb44c034`): the `art` scheme answers third-party pages opened in the app with `ACAO: *` (local covers, the user's
-  images). Also: faster CI (not testable here), splitting `src-tauri/src/lib.rs` and `crates/core/src/library.rs`, a crash
-  without a Rust panic in the diagnostics, the reuse of YouTube embeds, sweet fades.
+- **For Opus**: nothing left of the night's list that can be done blind. Done 2026-11-13: the security pass (the `art`
+  scheme serves our own window only), a line for a run that ended without closing, lib.rs and library.rs split. Left,
+  each with its reason in plan-v2: faster CI (wants a branch's CI), sweet fades and reused YouTube embeds (want to be
+  heard in the running app).
 - **For the owner**: Discord (the sign-in waits for the application ID); the per-output equalizer and AutoEQ (skipped:
   the engine knows only the default output; AutoEQ needs a data and licence choice); Stream Deck; right-to-left
   translations; the photos of the big title (which side).
