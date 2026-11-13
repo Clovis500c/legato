@@ -59,6 +59,10 @@ pub fn fingerprint(samples: &[f32], rate: u32) -> Result<(String, u32)> {
     let pcm: Vec<i16> = samples.iter().map(|s| (s.clamp(-1.0, 1.0) * 32_767.0) as i16).collect();
     printer.consume(&pcm);
     printer.finish();
+    // Under about three seconds Chromaprint has nothing to say: no lookup with an empty print.
+    if printer.fingerprint().is_empty() {
+        bail!("too short to fingerprint");
+    }
     let raw = FingerprintCompressor::from(&config).compress(printer.fingerprint());
     let secs = (samples.len() as u64 / u64::from(rate)).max(1) as u32;
     Ok((base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(raw), secs))
@@ -211,6 +215,15 @@ mod tests {
         assert!(a.len() > 8 && a.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_'));
         assert_eq!(a, fingerprint(&tone, 44_100).unwrap().0);
         assert!(fingerprint(&[], 44_100).is_err());
+    }
+
+    #[test]
+    fn a_clip_too_short_or_silent_is_no_fingerprint_and_never_a_panic() {
+        assert!(fingerprint(&[0.2; 100], 44_100).is_err());
+        // Silence never gets here (the Detector stops at a silent clip); NaN and odd rates must not panic.
+        let _ = fingerprint(&vec![0.0; 44_100 * 10], 44_100);
+        let _ = fingerprint(&[f32::NAN; 4_000], 8_000);
+        let _ = fingerprint(&[0.5; 10], 1);
     }
 
     #[test]
