@@ -21,6 +21,12 @@ fn modified(path: &str) -> Option<i64> {
     Some(std::fs::metadata(Path::new(path)).ok()?.modified().ok()?.duration_since(UNIX_EPOCH).ok()?.as_millis() as i64)
 }
 
+/// One file's tempo, 0 when none. A decoder that panics on a broken file counts as no beat: kept as such, the scan
+/// moves past it instead of failing on it every time.
+fn tempo_of(detect: impl FnOnce() -> anyhow::Result<Option<u32>>) -> u32 {
+    std::panic::catch_unwind(std::panic::AssertUnwindSafe(detect)).ok().and_then(|r| r.ok().flatten()).unwrap_or(0)
+}
+
 /// Songs with a kept answer (to fill now) and those still to decode (id, file, modified).
 fn split(files: Vec<(i64, String)>, kept: &Guesses, modified: impl Fn(&str) -> Option<i64>) -> Split {
     let (mut fill, mut todo) = (Vec::new(), Vec::new());
@@ -54,7 +60,7 @@ pub async fn tempo_scan(state: State<'_, AppState>, limit: usize) -> CmdResult<u
     }
     let left = todo.len().saturating_sub(limit.min(5));
     let batch: Vec<_> = todo.into_iter().take(limit.min(5)).collect();
-    let found = tauri::async_runtime::spawn_blocking(move || batch.into_iter().map(|(id, path, m)| (id, music_player::tempo::detect(Path::new(&path)).ok().flatten().unwrap_or(0), path, m)).collect::<Vec<_>>())
+    let found = tauri::async_runtime::spawn_blocking(move || batch.into_iter().map(|(id, path, m)| (id, tempo_of(|| music_player::tempo::detect(Path::new(&path))), path, m)).collect::<Vec<_>>())
         .await
         .map_err(err)?;
     let lib = state.lib();
@@ -74,6 +80,13 @@ pub async fn tempo_scan(state: State<'_, AppState>, limit: usize) -> CmdResult<u
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_file_that_breaks_the_decoder_is_no_beat() {
+        assert_eq!(tempo_of(|| panic!("bad frame")), 0);
+        assert_eq!(tempo_of(|| anyhow::bail!("unreadable")), 0);
+        assert_eq!(tempo_of(|| Ok(Some(128))), 128);
+    }
 
     #[test]
     fn kept_answers_fill_and_changed_or_new_files_wait() {
