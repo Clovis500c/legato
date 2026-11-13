@@ -130,6 +130,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'general', label: msg('Reopen where you left off'), keywords: msg('restore state screen last session launch') },
   { section: 'general', label: msg('Living-room mode'), keywords: msg('living room tv television arrows remote gamepad big screen 10 foot') },
   { section: 'general', label: msg('Audiobooks'), keywords: msg('audiobooks book audio reading chapters spoken') },
+  { section: 'general', label: msg('Check podcasts'), keywords: msg('podcasts check new episodes feed background') },
   { section: 'general', label: msg('Resume playback on launch'), keywords: msg('restore continue reopen last track start') },
   { section: 'general', label: msg('Notification position'), keywords: msg('toast popup message where place corner bottom top right') },
   { section: 'general', label: msg('Which notifications'), keywords: msg('toast popup messages fewer quiet annoying errors only important') },

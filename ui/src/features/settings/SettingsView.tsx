@@ -783,6 +783,9 @@ function GeneralSection() {
           <Row setting="booksPage" label={msg('Audiobooks')} sub={tr('Adds Audiobooks to the app menu: the long local files (audiobook genre, or two hours and more) apart from music, with where you stopped')}>
             <Toggle label={tr('Audiobooks')} checked={s.booksPage} onChange={(booksPage) => update({ booksPage })} />
           </Row>
+          <Row setting="podcastCheck" label={msg('Check podcasts')} sub={tr('Reads each kept show’s feed every six hours while the app is open and announces new episodes (only the feed addresses you typed are asked for)')}>
+            <Toggle label={tr('Check podcasts')} checked={s.podcastCheck} onChange={(podcastCheck) => update({ podcastCheck })} />
+          </Row>
           <Row setting="resume" label={msg('Resume playback on launch')} sub={tr('The last song picks up where it stopped, with its queue, when the app opens')}>
             <Toggle label={tr('Resume playback on launch')} checked={s.resume} onChange={(resume) => update({ resume })} />
           </Row>
