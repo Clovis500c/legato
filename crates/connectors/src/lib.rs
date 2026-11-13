@@ -1,3 +1,4 @@
+pub mod acoustid;
 pub mod apk;
 pub mod apple_page;
 pub mod art;

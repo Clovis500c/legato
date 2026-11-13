@@ -7,4 +7,8 @@ export type DetectLayers = {
 /**
  * What the apps playing on this PC say they play (the OS's media session): metadata only, no sound.
  */
-session: boolean, };
+session: boolean, 
+/**
+ * A Chromaprint fingerprint of the clip (made here, the sound stays) looked up at AcoustID and MusicBrainz, free.
+ */
+acoustid: boolean, };

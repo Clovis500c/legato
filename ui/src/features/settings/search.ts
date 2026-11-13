@@ -150,6 +150,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'general', label: msg('Voice search'), keywords: msg('mic microphone speech speak dictation privacy') },
   { section: 'general', label: msg('Music Detector'), keywords: msg('identify recognize song shazam microphone audd listen what song') },
   { section: 'general', label: msg('Ask this PC’s media players first'), keywords: msg('media session smtc now playing metadata detector spotify browser vlc identify') },
+  { section: 'general', label: msg('Name songs with AcoustID (free)'), keywords: msg('acoustid musicbrainz chromaprint fingerprint free identify recognize shazam detector') },
   { section: 'playback', label: msg('Subtitles on videos'), keywords: msg('captions cc closed') },
   { section: 'playback', label: msg('YouTube controls on the video'), keywords: msg('overlay title buttons hover embed') },
 ]

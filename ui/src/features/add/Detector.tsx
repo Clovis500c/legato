@@ -25,6 +25,7 @@ const MISSES: Record<DetectMiss, string> = {
   silent: msg('The microphone heard almost nothing. Is it muted? Turn the music up or move closer.'),
   unclear: msg('The song couldn’t be made out: too quiet, too noisy or someone talking over it. Try again with the music louder.'),
   canceled: '',
+  acoustidKey: msg('The free AcoustID layer has no application key in this build yet. Turn it off in Settings to go on with AudD.'),
   badToken: msg('AudD refused your token. Check it on dashboard.audd.io.'),
   limit: msg('Your AudD token has no requests left: see your plan on dashboard.audd.io.'),
   freeLimit: msg('The free recognitions are used up for now. Add your own AudD token (free to try) to keep going.'),
@@ -125,7 +126,7 @@ export function Detector({ onFound }: { onFound: (t: Track) => void }) {
     setPhase({ name: 'listening', seconds: 0, level: 0 })
     const off = await api.onDetect((seconds, level) => setPhase((p) => (p.name === 'listening' ? { name: 'listening', seconds, level } : p)))
     try {
-      const r = await api.detectSong(region(), from, { session: useSettings.getState().settings.detectorSession })
+      const r = await api.detectSong(region(), from, { session: useSettings.getState().settings.detectorSession, acoustid: useSettings.getState().settings.detectorAcoustid })
       if (r.kind === 'found') {
         setPhase({ name: 'idle' })
         onFound(r.track)

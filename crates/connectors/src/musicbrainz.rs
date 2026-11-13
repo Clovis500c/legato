@@ -19,7 +19,7 @@ use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
 pub const API: &str = "https://musicbrainz.org/ws/2";
-const AGENT: &str = concat!("Legato/", env!("CARGO_PKG_VERSION"), " ( https://github.com/Clovis500c/legato )");
+pub(crate) const AGENT: &str = concat!("Legato/", env!("CARGO_PKG_VERSION"), " ( https://github.com/Clovis500c/legato )");
 /// Under this score the search matched something else than the artist's name.
 const MIN_SCORE: u32 = 90;
 /// Releases offered to pick from in Edit song info.

@@ -2,6 +2,7 @@
 //! AudD with the user's own token (keychain, never sent back to the interface).
 
 use crate::{AppState, CmdResult, err, session};
+use music_connectors::acoustid::{self, AcoustId};
 use music_connectors::audd::{AudD, Offline, Refused};
 use music_core::model::Track;
 use music_player::mic::{self, MicError};
@@ -44,6 +45,8 @@ static DETECT_STOP: AtomicBool = AtomicBool::new(false);
 pub struct Layers {
     /// What the apps playing on this PC say they play (the OS's media session): metadata only, no sound.
     pub session: bool,
+    /// A Chromaprint fingerprint of the clip (made here, the sound stays) looked up at AcoustID and MusicBrainz, free.
+    pub acoustid: bool,
 }
 
 /// What the Music Detector got. `Miss`: why not, worded by the UI.
@@ -71,6 +74,8 @@ pub enum DetectMiss {
     Unclear,
     Canceled,
     BadToken,
+    /// The AcoustID layer is on but this build has no application key (or AcoustID refused it).
+    AcoustidKey,
     Limit,
     /// No token, and AudD's free recognitions are used up (#901): a token of one's own now.
     FreeLimit,
@@ -98,6 +103,10 @@ pub async fn detect_song(app: tauri::AppHandle, state: State<'_, AppState>, mark
             return Ok(Detection::Found { track });
         }
     }
+    // Layer 2 needs the application key before anything is recorded: a clear answer, not ten seconds for nothing.
+    if layers.acoustid && acoustid::APPLICATION_KEY.trim().is_empty() {
+        return Ok(missed(DetectMiss::AcoustidKey));
+    }
     let clip = tauri::async_runtime::spawn_blocking(move || {
         mic::record(input, DETECT_SECONDS, &DETECT_STOP, |seconds, level| {
             let _ = app.emit_to("main", "detect", (seconds, level));
@@ -122,6 +131,19 @@ pub async fn detect_song(app: tauri::AppHandle, state: State<'_, AppState>, mark
     }
     if clip.silent() {
         return Ok(missed(DetectMiss::Silent));
+    }
+    // Layer 2: the fingerprint is made here and only it goes to AcoustID; no answer (or none sure) goes on to AudD.
+    if layers.acoustid {
+        let (samples, rate) = (clip.samples.clone(), clip.rate);
+        let printed = tauri::async_runtime::spawn_blocking(move || acoustid::fingerprint(&samples, rate)).await.map_err(err)?;
+        if let Ok((print, secs)) = printed {
+            match AcoustId::default().lookup(acoustid::APPLICATION_KEY, &print, secs).await {
+                Ok(Some(track)) => return Ok(Detection::Found { track }),
+                Err(e) if e.downcast_ref::<acoustid::Refused>().is_some() => return Ok(missed(DetectMiss::AcoustidKey)),
+                // Offline, a hiccup, nothing sure: AudD is next.
+                _ => {}
+            }
+        }
     }
     let wav = clip.wav();
     drop(clip);

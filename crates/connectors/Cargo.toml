@@ -8,6 +8,7 @@ publish.workspace = true
 anyhow = "1.0.104"
 async-trait = "0.1.92"
 base64 = "0.23.1"
+rusty-chromaprint = "0.3.0"
 chacha20poly1305 = "0.11.0"
 md-5 = "0.11.0"
 mdns-sd = "0.21.5"

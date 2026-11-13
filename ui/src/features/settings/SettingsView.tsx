@@ -854,6 +854,9 @@ function GeneralSection() {
           <Row setting="detectorSession" label={msg('Ask this PC’s media players first')} sub={tr('Music Detector on “This PC”: first asks the apps playing here (Spotify, a browser, VLC…) which song they say is playing, through Windows’ media session. Only the title, artist and album are read: no sound is listened to and nothing is sent anywhere.')}>
             <Toggle label={tr('Ask this PC’s media players first')} checked={s.detectorSession} onChange={(detectorSession) => update({ detectorSession })} />
           </Row>
+          <Row setting="detectorAcoustid" label={msg('Name songs with AcoustID (free)')} sub={tr('Music Detector: before AudD, a fingerprint of the clip is made on this PC and looked up at AcoustID and MusicBrainz, which are free. Only the fingerprint is sent, never the sound. Works best on the start of a studio recording: a song caught in the middle, live or through the microphone is often not found.')}>
+            <Toggle label={tr('Name songs with AcoustID (free)')} checked={s.detectorAcoustid} onChange={(detectorAcoustid) => update({ detectorAcoustid })} />
+          </Row>
         </div>
       </Group>
     </div>

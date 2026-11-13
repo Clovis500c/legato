@@ -401,6 +401,8 @@ export interface Settings {
   crossfade: number
   /** Songs longer than this many minutes skipped as the queue moves on (0 = off). */
   skipLong: number
+  /** Music Detector: a Chromaprint fingerprint of the clip is looked up at AcoustID and MusicBrainz (free) before AudD. Off by default. */
+  detectorAcoustid: boolean
   /** Music Detector on "This PC": asks the OS media session (what the playing apps say) before listening. Off by default. */
   detectorSession: boolean
   /** Adds a Scan with the webcam button to Add a device and Listening rooms (off: no button, the camera is never asked for; on: asked for only at the press). */
@@ -631,6 +633,7 @@ export const DEFAULTS: Settings = {
   libraryWide: false,
   crossfade: 2,
   skipLong: 0,
+  detectorAcoustid: false,
   detectorSession: false,
   webcamScan: false,
   eqPerDevice: false,
@@ -900,6 +903,7 @@ export function sanitize(raw: unknown): Settings {
     pipClassic: typeof r.pipClassic === 'boolean' ? r.pipClassic : DEFAULTS.pipClassic,
     crossfade: typeof r.crossfade === 'number' && Number.isFinite(r.crossfade) ? Math.min(12, Math.max(0, Math.round(r.crossfade))) : DEFAULTS.crossfade,
     skipLong: typeof r.skipLong === 'number' && Number.isFinite(r.skipLong) ? Math.min(60, Math.max(0, Math.round(r.skipLong))) : DEFAULTS.skipLong,
+    detectorAcoustid: r.detectorAcoustid === true,
     detectorSession: r.detectorSession === true,
     webcamScan: r.webcamScan === true,
     eqPerDevice: r.eqPerDevice === true,
