@@ -14,7 +14,7 @@ Run each step and report it in one line, in French for the owner, with what fail
 1. **Where things stand**: `git status` (nothing uncommitted that should go), the branch, and what would go out:
    `git log --oneline origin/master..HEAD`. A branch other than `master` is merged by the owner.
    The owner's private session reports never go out, not even in a commit that a later one deletes:
-   `git log --name-only --format= origin/master..HEAD | grep -i report` prints nothing (`.gitignore` keeps
+   `git log --name-only --format= origin/master..HEAD | grep -i notes/report` prints nothing (`.gitignore` keeps
    `docs/notes/report*.md` out; a commit that took one is rewritten before the push, never just undone after).
 2. **The suite**: `pnpm check` green (types written and committed: `git status` clean after it,
    `ui/src/shared/generated` included). Long: run it in the background. It runs on Windows only; GitHub also builds the
