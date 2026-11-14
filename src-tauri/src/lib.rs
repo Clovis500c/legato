@@ -571,7 +571,7 @@ async fn discord_artist_art(state: State<'_, AppState>, name: String, ask: bool)
             if !ask || links::importing() || !discord::LOOKS.lock().unwrap().take(std::time::Instant::now()) {
                 return Ok(None);
             }
-            match public_ytm().artist(&name).await {
+            match public_ytm().artist(&name, &[]).await {
                 Ok(page) => state.cache.artists.put(&key, page),
                 Err(e) => {
                     if music_connectors::refused(&err(e)) {
@@ -585,11 +585,16 @@ async fn discord_artist_art(state: State<'_, AppState>, name: String, ask: bool)
     Ok(page.as_ref().as_ref().and_then(|a| a.art.as_deref()).map(music_connectors::discord::square))
 }
 
+/// Songs of an artist the interface knows, to check a page against: at most 20, each trimmed and bounded (free text from the front end).
+pub(crate) fn song_titles(titles: Option<Vec<String>>) -> Vec<String> {
+    titles.unwrap_or_default().into_iter().map(|t| t.trim().chars().take(200).collect::<String>()).filter(|t| !t.is_empty()).take(20).collect()
+}
+
 /// An artist's picture for the big title (the owner's choice 2026-11-11): the artist page's own kept picture, else
 /// YouTube Music asked once for a song it plays (`ask`), one artist at a time, never during an import, nothing for
 /// 15 minutes after a refusal, a miss not asked again for 6 hours. Square art URL; None: not known, or not now.
 #[tauri::command]
-async fn artist_picture(state: State<'_, AppState>, name: String, ask: bool) -> CmdResult<Option<String>> {
+async fn artist_picture(state: State<'_, AppState>, name: String, ask: bool, titles: Option<Vec<String>>) -> CmdResult<Option<String>> {
     static ONE_AT_A_TIME: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
     static LOOKED: std::sync::LazyLock<Mutex<music_core::searchpace::Looked>> = std::sync::LazyLock::new(Default::default);
     let name = name.trim().to_string();
@@ -612,7 +617,7 @@ async fn artist_picture(state: State<'_, AppState>, name: String, ask: bool) -> 
     if !LOOKED.lock().unwrap().may_ask(&key, std::time::Instant::now()) {
         return Ok(None);
     }
-    match public_ytm().artist(&name).await {
+    match public_ytm().artist(&name, &song_titles(titles)).await {
         Ok(page) => Ok(art(&state.cache.artists.put(&key, page))),
         Err(e) => {
             let now = std::time::Instant::now();

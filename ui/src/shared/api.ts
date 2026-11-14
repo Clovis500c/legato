@@ -52,7 +52,7 @@ export const api = {
   ytmHome: (mood?: string) => invoke<YtmHome>('ytm_home', { mood: mood ?? null }),
   ytmList: (list: ListRef) => invoke<Track[]>('ytm_list', { list }),
   /** Null = no artist of that name on YouTube Music. Works signed out. */
-  ytmArtist: (name: string) => invoke<YtmArtist | null>('ytm_artist', { name }),
+  ytmArtist: (name: string, titles?: string[]) => invoke<YtmArtist | null>('ytm_artist', { name, titles }),
   /** Year and every song of an album from the Apple catalog, with which ones you have. Null = not in the store. */
   tempoScan: (limit: number) => invoke<number>('tempo_scan', { limit }),
   discordLoginStatus: () => invoke<DiscordCard | null>('discord_login_status'),
@@ -471,7 +471,7 @@ export const api = {
   /** The artist's picture for Discord (https, square). `ask`: YouTube Music may be asked (paced in Rust); null: not now. */
   discordArtistArt: (name: string, ask: boolean) => invoke<string | null>('discord_artist_art', { name, ask }),
   /** The big title's artist picture: kept, else asked once (`ask`), one artist at a time. */
-  artistPicture: (name: string, ask: boolean) => invoke<string | null>('artist_picture', { name, ask }),
+  artistPicture: (name: string, ask: boolean, titles?: string[]) => invoke<string | null>('artist_picture', { name, ask, titles }),
   /** Home's New from your artists: asks MusicBrainz once a day (the section is off until turned on). */
   newReleases: () => invoke<NewRelease[]>('new_releases'),
   /** An artist's links on MusicBrainz (its homepage, Wikipedia, Bandcamp…): two requests, when asked. */

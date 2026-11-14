@@ -17,12 +17,15 @@ import { usePlayer, type NowPlaying } from './store'
 export function ArtistLine({ now, className = '' }: { now: NowPlaying; className?: string }) {
   const names = useMemo(() => allArtists(now.artist), [now.artist])
   const pictures = usePictures()
+  const tracks = useStore((s) => s.tracks)
   const ripe = usePlayer((s) => s.now?.via === 'youtube' && asksPicture(s.now, s.playing, s.positionMs))
   useEffect(() => {
     for (const name of names) {
-      fetchPicture(name, ripe)
+      // The page found by the name must show one of these: the song playing, or songs of this artist you have.
+      const mine = tracks.filter((t) => allArtists(t.artist).includes(name)).slice(0, 12)
+      fetchPicture(name, ripe, [now.title, ...mine.map((t) => t.title)])
     }
-  }, [names, ripe])
+  }, [names, ripe, now.title, tracks])
   const open = (artist: string) => {
     usePlayer.getState().setFull(false)
     useStore.getState().go({ name: 'artist', artist })

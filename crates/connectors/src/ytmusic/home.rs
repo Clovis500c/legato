@@ -211,15 +211,52 @@ fn album_tracks(page: &Value) -> Vec<Track> {
         .collect()
 }
 
-/// Channel of the artist with this very name (case, accents, punctuation aside) in an artists search.
-fn artist_id(found: &Value, name: &str) -> Option<String> {
+/// Channels of the artists with this very name (case, accents, punctuation aside) in an artists search, in YouTube Music's
+/// order, at most `max`: two artists may share a name ("Rust"), and the first is only the most popular of them.
+fn artist_ids(found: &Value, name: &str, max: usize) -> Vec<String> {
     let want = normalize(name);
-    all(found, "musicResponsiveListItemRenderer").into_iter().find_map(|r| {
-        let id = r.pointer("/navigationEndpoint/browseEndpoint/browseId")?.as_str()?;
-        let title = r.pointer("/flexColumns/0/musicResponsiveListItemFlexColumnRenderer/text").and_then(text)?;
-        (id.starts_with("UC") && normalize(&title) == want).then(|| id.to_string())
-    })
+    all(found, "musicResponsiveListItemRenderer")
+        .into_iter()
+        .filter_map(|r| {
+            let id = r.pointer("/navigationEndpoint/browseEndpoint/browseId")?.as_str()?;
+            let title = r.pointer("/flexColumns/0/musicResponsiveListItemFlexColumnRenderer/text").and_then(text)?;
+            (id.starts_with("UC") && normalize(&title) == want).then(|| id.to_string())
+        })
+        .take(max)
+        .collect()
 }
+
+/// A song or card title as compared across pages: its credits "(feat. X)", "[Remix]" and " - Version" tail dropped, then normalized.
+fn loose(title: &str) -> String {
+    static GROUPS: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| regex::Regex::new(r"\([^)]*\)|\[[^\]]*\]").unwrap());
+    let plain = GROUPS.replace_all(title, " ");
+    let lower = plain.to_lowercase();
+    let cut = [" - ", " feat", " ft.", " featuring"].iter().filter_map(|m| lower.find(m)).min().unwrap_or(lower.len());
+    normalize(&lower[..cut])
+}
+
+/// Two titles name the same song: equal, or one the start of the other (a long enough one: "Bad Piggies Theme" and "Bad Piggies").
+fn same_song(a: &str, b: &str) -> bool {
+    !a.is_empty() && !b.is_empty() && (a == b || (a.len().min(b.len()) >= 6 && (a.starts_with(b) || b.starts_with(a))))
+}
+
+/// Is this page really the artist of the song(s) `titles`? Its top songs or a card of its shelves must be one of them.
+pub(crate) fn confirms(page: &Artist, titles: &[String]) -> bool {
+    let mine: Vec<String> = titles.iter().map(|t| loose(t)).collect();
+    let shown = page.songs.iter().map(|t| loose(&t.title)).chain(page.shelves.iter().flat_map(|s| s.items.iter().map(|i| loose(&i.title))));
+    shown.into_iter().any(|s| mine.iter().any(|m| same_song(&s, m)))
+}
+
+/// The first page that is the artist of one of `titles`. Without titles there is nothing to check against: the first page.
+pub(crate) fn pick_verified(pages: Vec<Artist>, titles: &[String]) -> Option<Artist> {
+    if titles.is_empty() {
+        return pages.into_iter().next();
+    }
+    pages.into_iter().find(|p| confirms(p, titles))
+}
+
+/// Pages asked at most, for one name: the most popular artist of that name and the next one.
+const CANDIDATES: usize = 2;
 
 /// Artist channel page: header, "Top songs" (rows, its "Show all" playlist), carousels.
 fn artist_page(page: &Value) -> Option<Artist> {
@@ -246,11 +283,19 @@ fn about(page: &Value, header: &Value) -> Option<String> {
 }
 
 impl YouTubeMusic {
-    /// An artist's page by name: the artists search's one with that very name. None: no such artist there.
-    pub async fn artist(&self, name: &str) -> Result<Option<Artist>> {
+    /// An artist's page by name, checked against `titles` (songs of that artist the app knows: the page must show one of them).
+    /// A name alone is not an artist: "Rust" the rapper's channel is not the band that tops the search. Of the artists with
+    /// that very name, the first two are looked at (the second only when the first does not confirm), one request each.
+    /// None: no artist of that name shows these songs. No titles: the first of that name, unchecked.
+    pub async fn artist(&self, name: &str, titles: &[String]) -> Result<Option<Artist>> {
         let found = self.call("search", json!({ "query": name, "params": ARTISTS })).await?;
-        let Some(id) = artist_id(&found, name) else { return Ok(None) };
-        Ok(artist_page(&self.call("browse", json!({ "browseId": id })).await?))
+        for id in artist_ids(&found, name, CANDIDATES) {
+            let Some(page) = artist_page(&self.call("browse", json!({ "browseId": id })).await?) else { continue };
+            if let Some(ok) = pick_verified(vec![page], titles) {
+                return Ok(Some(ok));
+            }
+        }
+        Ok(None)
     }
 
     /// Home shelves, first page and a couple more; `mood` = a chip's params (the home filtered to it).
@@ -374,9 +419,10 @@ mod tests {
     fn reads_an_artist_page() {
         let row = |name: &str, id: &str| json!({ "musicResponsiveListItemRenderer": { "navigationEndpoint": { "browseEndpoint": { "browseId": id } }, "flexColumns": [{ "musicResponsiveListItemFlexColumnRenderer": { "text": { "runs": [{ "text": name }] } } }] } });
         let found = json!({ "contents": [row("Daft Punk Tribute", "UC1"), row("Daft Punk", "UC2"), row("Beyoncé", "UC3")] });
-        assert_eq!(artist_id(&found, "daft punk").as_deref(), Some("UC2"));
-        assert_eq!(artist_id(&found, "Beyonce").as_deref(), Some("UC3"));
-        assert_eq!(artist_id(&found, "Daft"), None, "same name only");
+        let first = |n: &str| artist_ids(&found, n, 1).into_iter().next();
+        assert_eq!(first("daft punk").as_deref(), Some("UC2"));
+        assert_eq!(first("Beyonce").as_deref(), Some("UC3"));
+        assert_eq!(first("Daft"), None, "same name only");
 
         let col = |runs: Value| json!({ "musicResponsiveListItemFlexColumnRenderer": { "text": { "runs": runs } } });
         let song = json!({ "musicResponsiveListItemRenderer": { "playlistItemData": { "videoId": "k1" }, "flexColumns": [
@@ -451,7 +497,39 @@ mod tests {
             assert!(panel_tracks(v).is_empty(), "{v}");
             assert!(album_tracks(v).is_empty(), "{v}");
             assert_eq!(artist_page(v), None, "{v}");
-            assert_eq!(artist_id(v, "x"), None, "{v}");
+            assert!(artist_ids(v, "x", 1).is_empty(), "{v}");
         }
+    }
+
+    fn page(name: &str, songs: &[&str]) -> Artist {
+        let t = |title: &str| Track { title: title.into(), artist: name.into(), album: None, duration_ms: None, isrc: None, ids: Default::default(), art: None, musicness: None, explicit: false };
+        Artist { name: name.into(), art: None, songs: songs.iter().map(|s| t(s)).collect(), all_songs: None, shelves: vec![], about: None }
+    }
+
+    #[test]
+    fn two_artists_with_one_name_are_told_apart_by_the_songs_that_play() {
+        // The popular "Rust" of the catalogue, and the rapper whose channel the song came from.
+        let band = page("Rust", &["Diaspora", "Shanta", "Laa"]);
+        let rapper = page("Rust", &["Bad Piggies Theme", "Cybercity"]);
+        let playing = vec!["Bad Piggies Theme (featuring King Von)".to_string()];
+        // The first in the search is the band: it is not taken for a song it does not show.
+        let got = pick_verified(vec![band.clone(), rapper.clone()], &playing).unwrap();
+        assert_eq!(got.songs[0].title, "Bad Piggies Theme");
+        // Only the band shows up and the song is not on it: no artist at all, not the band's top songs.
+        assert!(pick_verified(vec![band.clone()], &playing).is_none());
+        // And the band's own song picks the band.
+        assert_eq!(pick_verified(vec![band, rapper], &["Shanta".to_string()]).unwrap().songs[0].title, "Diaspora");
+    }
+
+    #[test]
+    fn titles_are_compared_without_their_credits_and_versions() {
+        assert_eq!(loose("Bad Piggies Theme (featuring King Von)"), loose("Bad Piggies Theme"));
+        assert_eq!(loose("Song - 2011 Remaster"), loose("song"));
+        assert_eq!(loose("Song [Live] feat. Someone"), loose("Song"));
+        assert!(same_song(&loose("Bad Piggies Theme"), &loose("Bad Piggies")));
+        assert!(!same_song(&loose("Rust"), &loose("Rust Never Sleeps")), "a short title is not a prefix of another song");
+        assert!(!same_song("", ""));
+        // No titles: nothing to check against, the first page.
+        assert_eq!(pick_verified(vec![page("Rust", &["Diaspora"])], &[]).unwrap().songs[0].title, "Diaspora");
     }
 }

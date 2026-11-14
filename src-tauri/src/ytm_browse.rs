@@ -84,7 +84,7 @@ pub async fn ytm_list(state: State<'_, AppState>, list: ListRef) -> CmdResult<Ve
 /// An artist's YouTube Music page (top songs, albums, singles, playlists); None: no artist of that name there. Public
 /// page: asked without the account, signed in or not.
 #[tauri::command]
-pub async fn ytm_artist(state: State<'_, AppState>, name: String) -> CmdResult<Option<Artist>> {
+pub async fn ytm_artist(state: State<'_, AppState>, name: String, titles: Option<Vec<String>>) -> CmdResult<Option<Artist>> {
     // Trust boundary: free text goes into a YouTube search.
     let name = name.trim().to_string();
     if name.is_empty() || name.chars().count() > 200 {
@@ -94,6 +94,6 @@ pub async fn ytm_artist(state: State<'_, AppState>, name: String) -> CmdResult<O
     if let Some(hit) = state.cache.artists.get(&key) {
         return Ok((*hit).clone());
     }
-    let page = public_ytm().artist(&name).await.map_err(err)?;
+    let page = public_ytm().artist(&name, &crate::song_titles(titles)).await.map_err(err)?;
     Ok((*state.cache.artists.put(&key, page)).clone())
 }
