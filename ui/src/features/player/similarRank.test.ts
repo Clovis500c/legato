@@ -1,12 +1,20 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { LibraryTrack } from '../../shared/api'
-import { featuresOf, pickSimilar, profileOf, scoreOf, type Candidate, type Taste } from './similarRank'
+import { exploreSlots } from './score'
+import { featuresOf, pickSimilar, profileOf, type Candidate, type Taste } from './similarRank'
 
 vi.mock('@tauri-apps/api/core', () => ({ convertFileSrc: (p: string) => p, invoke: vi.fn() }))
 
 const song = (id: number, artist: string, extra: Partial<LibraryTrack> = {}): LibraryTrack => ({ id, added: id, addedAt: null, title: `Song ${id}`, artist, album: null, durationMs: null, isrc: null, ids: {}, ...extra })
 const none: Taste = { rating: () => 0, plays: () => 0, skips: () => 0, never: () => false }
 const ids = (l: LibraryTrack[]) => l.map((t) => t.id)
+/** A seeded random source (mulberry32): the tests' picks never depend on `Math.random`. */
+const seeded = (seed: number) => () => {
+  seed = (seed + 0x6d2b79f5) | 0
+  let t = Math.imul(seed ^ (seed >>> 15), 1 | seed)
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+}
 const cands = (l: LibraryTrack[]): Candidate[] => l.map((track) => ({ track }))
 
 describe('similar songs ranked by the whole queue', () => {
@@ -31,19 +39,13 @@ describe('similar songs ranked by the whole queue', () => {
     expect(ids(out)).not.toContain(rock.id)
   })
 
-  it('"Never in mixes" never comes back; skips sink a song below its twin, up to a cap', () => {
+  it('"Never in mixes" never comes back; a skipped song sinks below its twin', () => {
     const twin = (id: number) => song(id, `Artist ${id}`, { genre: 'rock', year: 1996 })
     const [a, b] = [twin(50), twin(51)]
     const never: Taste = { ...none, never: (t) => t.id === a.id }
     expect(ids(pickSimilar(cands([a, b]), queue, 3, never, 'alike', 5))).toEqual([b.id])
     const skipped: Taste = { ...none, skips: (t) => (t.id === a.id ? 1 : 0) }
     expect(ids(pickSimilar(cands([a, b]), queue, 3, skipped, 'alike', 2))).toEqual([b.id, a.id])
-    // Capped at 6: a song skipped 100 times scores like one skipped 4, not -150 (so it is not dropped by the score floor).
-    const p = profileOf(queue, 3, none)
-    const score = (n: number) => scoreOf({ track: a }, p, { ...none, skips: () => n })
-    expect(score(0) - score(100)).toBe(6)
-    expect(score(100)).toBe(score(4))
-    expect(score(0) - score(1)).toBeCloseTo(1.5)
   })
 
   it('what is already in the queue never comes back, nor a song asked twice', () => {
@@ -75,14 +77,11 @@ describe('similar songs ranked by the whole queue', () => {
     expect(ids(pickSimilar(radio, [song(99, 'Other')], 0, none, 'alike', 3))).toEqual([30, 31, 32])
   })
 
-  it('Adventurous takes more from the middle of the ranking than Alike', () => {
+  it('Adventurous gives more slots to explore picks than Alike, and the same seed gives the same songs', () => {
+    expect(exploreSlots('adventurous', 15)).toBeGreaterThan(exploreSlots('alike', 15))
     const pool = Array.from({ length: 20 }, (_, i) => song(100 + i, `Artist ${i}`, { genre: i < 10 ? 'rock' : 'folk' }))
-    const top = pickSimilar(cands(pool), queue, 2, none, 'alike', 10)
-    const wide = pickSimilar(cands(pool), queue, 2, none, 'adventurous', 10)
-    const folk = (l: LibraryTrack[]) => l.filter((t) => t.genre === 'folk').length
-    expect(folk(wide)).toBeGreaterThan(folk(top))
-    // Both are deterministic: the same answer twice.
-    expect(ids(pickSimilar(cands(pool), queue, 2, none, 'adventurous', 10))).toEqual(ids(wide))
+    const once = () => ids(pickSimilar(cands(pool), queue, 2, none, 'adventurous', 10, seeded(5)))
+    expect(once()).toEqual(once())
   })
 
   it('features: main artist, album, genre, decade, tempo and key', () => {

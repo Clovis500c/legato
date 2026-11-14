@@ -84,8 +84,12 @@ export async function similarForQueue(list: LibraryTrack[], index: number, max: 
     plays: (t: LibraryTrack) => stats[t.id]?.[0] ?? 0,
     skips: (t: LibraryTrack) => signals.get(t.id)?.skipsRecent ?? 0,
     never: (t: LibraryTrack) => signals.get(t.id)?.never ?? false,
+    less: (t: LibraryTrack) => signals.get(t.id)?.less ?? false,
+    liked: (t: LibraryTrack) => signals.get(t.id)?.liked ?? false,
+    decayed: (t: LibraryTrack) => signals.get(t.id)?.playsLong ?? 0,
+    lastPlayed: (t: LibraryTrack) => signals.get(t.id)?.lastPlayed ?? 0,
   }
   // Loaded when Up next runs out, not at launch.
   const { pickSimilar } = await import('./similarRank')
-  return pickSimilar(candidates, list, index, taste, settings.similarVariety, max)
+  return pickSimilar(candidates, list, index, taste, settings.similarVariety, max, Math.random, tracks)
 }
