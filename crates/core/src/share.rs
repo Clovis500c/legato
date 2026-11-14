@@ -455,6 +455,8 @@ mod tests {
         let (bare, pic) = (Shared { by: Some(Profile { id: "80351110224678912".into(), name: "Nelly".into(), avatar: None }), ..sample() }, with_avatar(HASH));
         let extra = to_web_link(&pic).len() - to_web_link(&bare).len();
         assert!((20..=64).contains(&extra), "{extra}");
+        // The website's test reads this very link (site/components/sharelink.test.ts).
+        println!("WEB4 {}", to_web_link(&Shared { name: "Mix".into(), items: vec![], by: pic.by.clone() }));
         // The QR code carries neither the name nor the picture: the same text with or without it.
         assert_eq!(to_qr_text(&pic), to_qr_text(&bare));
         assert_eq!(to_qr_text(&pic), to_qr_text(&sample()));

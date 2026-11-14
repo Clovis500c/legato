@@ -5,14 +5,16 @@ export type Item = { kind: 'youtube'; id: string; artist: string; title: string;
 export interface Shared {
   name: string
   items: Item[]
-  /** Version 3: who shared, as the sender's Discord sign-in said. NOT verified: a link can be written by hand. */
-  by?: { id: string; name: string }
+  /** Version 3: who shared, as the sender's Discord sign-in said; version 4 adds the picture's hash. NOT verified: a link can be written by hand. */
+  by?: { id: string; name: string; avatar?: string }
 }
 
 // Rust's limits: bytes from anyone.
 const MAX_ITEMS = 10_000
 const MAX_TEXT = 300
 const MAX_RAW = 4 << 20
+/** Discord's own shape for a picture hash: 32 lower-case hex digits, `a_` first when animated. */
+const AVATAR = /^(a_)?[0-9a-f]{32}$/
 const B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
 
 /** The playlist from its uncompressed bytes. Throws on anything Rust's `decode` refuses. */
@@ -46,7 +48,7 @@ export function readShare(raw: Uint8Array): Shared {
     return id + B64[Number(n & 15n) << 2]
   }
   const version = byte()
-  if (version < 1 || version > 3) throw new Error('This link was made by a newer version of Legato')
+  if (version < 1 || version > 4) throw new Error('This link was made by a newer version of Legato')
   const name = text()
   const count = varint()
   if (count > MAX_ITEMS) throw new Error('This link is damaged')
@@ -60,13 +62,23 @@ export function readShare(raw: Uint8Array): Shared {
     else throw new Error('This link is damaged')
   }
   let by: Shared['by']
-  if (version === 3) {
+  if (version >= 3) {
     by = { id: text(), name: text() }
     // Rust's `Profile::valid`.
     if (!/^\d{1,20}$/.test(by.id) || !by.name || by.name.length > 64 || /\p{Cc}/u.test(by.name)) throw new Error('This link is damaged')
+    // Version 4: the picture's hash, strictly Discord's shape and a real user id (Rust's `Profile::picture`).
+    if (version === 4) {
+      by.avatar = text()
+      if (!AVATAR.test(by.avatar) || !/^\d{17,20}$/.test(by.id)) throw new Error('This link is damaged')
+    }
   }
   if (at !== raw.length) throw new Error('This link is damaged')
   return by ? { name, items, by } : { name, items }
+}
+
+/** The small round picture's address: the one shape this page ever asks Discord's CDN for (Rust's `Profile::avatar_url`). Null: none, or not valid. */
+export function avatarUrl(by: Shared['by']): string | null {
+  return by?.avatar && AVATAR.test(by.avatar) && /^\d{17,20}$/.test(by.id) ? `https://cdn.discordapp.com/avatars/${by.id}/${by.avatar}.png?size=64` : null
 }
 
 /** zlib's bytes back, stopped past Rust's cap (a small link could unpack to gigabytes). */

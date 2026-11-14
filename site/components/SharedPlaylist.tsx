@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Logo } from './Logo'
-import { codeOf, fromFragment, hueOf, summary, type Item, type Shared } from './sharelink'
+import { avatarUrl, codeOf, fromFragment, hueOf, summary, type Item, type Shared } from './sharelink'
 
 const time = (secs: number) => `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`
 
@@ -16,9 +16,27 @@ function listen(i: Item): [string, string] {
 const button = 'rounded-full px-4 py-2 text-sm font-semibold'
 
 /**
+ * Who shared, with their Discord picture when the link carries a valid one: a small round image the visitor's browser asks
+ * Discord's CDN for directly (no referrer sent, lazy, no alt: the name is the text beside it). A fixed round tile with the
+ * name's initial stands in when there is no picture or it fails to load, so nothing jumps.
+ */
+function Sharer({ by }: { by: NonNullable<Shared['by']> }) {
+  const [failed, setFailed] = useState(false)
+  const url = avatarUrl(by)
+  return (
+    <span className="flex items-center gap-2">
+      <span aria-hidden className="grid size-6 shrink-0 place-items-center overflow-hidden rounded-full bg-white/20 text-xs font-bold">
+        {url && !failed ? <img src={url} alt="" width={24} height={24} referrerPolicy="no-referrer" loading="lazy" decoding="async" className="size-full object-cover" onError={() => setFailed(true)} /> : (Array.from(by.name.trim())[0]?.toUpperCase() ?? '?')}
+      </span>
+      <span>A playlist shared with Legato by {by.name}</span>
+    </span>
+  )
+}
+
+/**
  * A playlist shared from Legato (Share › Copy link), read from the address's fragment by this page's own script:
  * a browser never sends a fragment, so no server sees the playlist. English only (a recipient's page, one screen).
- * No covers: they would load from YouTube's image host. "Open in Legato" is a `legato://` link, which the installed app
+ * No covers: they would load from YouTube's image host. The one picture it may load is the sharer's Discord one (Sharer). "Open in Legato" is a `legato://` link, which the installed app
  * registers with Windows (src-tauri protocol.rs); on a PC without it the link does nothing, so "Copy the link for
  * Legato" stays beside it.
  */
@@ -52,8 +70,12 @@ export function SharedPlaylist() {
       {list && (
         <>
           <header className="flex flex-col gap-3 rounded-2xl p-6 text-white" style={{ background: `linear-gradient(135deg, hsl(${hueOf(list.name)} 55% 40%), hsl(${(hueOf(list.name) + 50) % 360} 60% 20%))` }}>
-            <p className="text-sm opacity-80">A playlist shared with Legato{list.by && ` by ${list.by.name}`}</p>
-            {list.by && <p className="text-xs opacity-70">The name comes with the link and is not verified: anyone can write a link with any name.</p>}
+            <p className="text-sm opacity-80">{list.by ? <Sharer by={list.by} /> : 'A playlist shared with Legato'}</p>
+            {list.by && (
+              <p className="text-xs opacity-70">
+                {list.by.avatar ? 'The name and picture come with the link and are not verified: anyone can write a link with any name or picture.' : 'The name comes with the link and is not verified: anyone can write a link with any name.'}
+              </p>
+            )}
             <h1 className="text-4xl font-black tracking-tight break-words">{list.name || 'Playlist'}</h1>
             <p className="flex flex-wrap gap-x-3 gap-y-1 text-sm opacity-90">
               <span>{list.items.length === 1 ? '1 song' : `${list.items.length.toLocaleString('en')} songs`}</span>
@@ -96,7 +118,8 @@ export function SharedPlaylist() {
         </>
       )}
       <p className="mt-auto text-xs text-ink-3">
-        This page read the playlist from the link itself, in your browser: nothing was sent to a server, and nothing loads from another site until you follow a link.
+        This page read the playlist from the link itself, in your browser: nothing was sent to a server, and nothing loads from another site until you follow a link
+        {list?.by?.avatar ? ', except the sharer’s Discord picture above, which your browser asked cdn.discordapp.com for (no referrer sent).' : '.'}{' '}
         Legato is a free music player for Windows and Android that plays YouTube, Spotify, Apple Music playlists and your own files in one place.
       </p>
     </main>

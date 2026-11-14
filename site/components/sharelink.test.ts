@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { fromFragment, hueOf, readShare, summary } from './sharelink'
+import { avatarUrl, fromFragment, hueOf, readShare, summary } from './sharelink'
 
 // Written by Rust (`share::tests::a_web_link_reads_like_the_app_link` prints it): both sides read the same bytes.
 const LINK = '#eNpj4g3KT0xRKCnKLFB4NKOBhaWUx-Lw1QWxR7iDMpOzFRyLS3JSK8X9UstSixTc8_PyEhXcM8tSFSLzSxVCC64yMu3rW7KMiZk9uKQoPzcxlc8xJ7-oWCE_TyElMa84lbHnijiDvkeoDABd0yPS'
@@ -40,7 +40,39 @@ describe('a link that says who shared', () => {
     expect(() => readShare(v3('abc', 'Nelly'))).toThrow('damaged')
     expect(() => readShare(v3('1', ''))).toThrow('damaged')
     expect(() => readShare(v3('1', 'a\u0007b'))).toThrow('damaged')
-    expect(() => readShare(Uint8Array.from([4, 0, 0]))).toThrow('newer')
+    expect(() => readShare(Uint8Array.from([5, 0, 0]))).toThrow('newer')
+  })
+})
+
+describe('a link that carries the sharer’s picture', () => {
+  const enc = new TextEncoder()
+  const str = (s: string) => [enc.encode(s).length, ...enc.encode(s)]
+  const v4 = (id: string, avatar: string) => Uint8Array.from([4, ...str('Mix'), 0, ...str(id), ...str('Nelly'), ...str(avatar)])
+  const HASH = '8342729096ea3675442027381ff50dfe'
+  // Written by Rust (`share::tests::a_picture_rides_in_the_link_beside_the_name` prints it).
+  const RUST = '#eNpjYfbNrGAQtDAwNjU0NDQwMjIxM7ewNDRi9UvNyalUsDA2MTI3sjSwNEtNNDYzNzUxMTIwMje2MExLMzVISUsFALVvDrg'
+
+  it('reads what Rust wrote, and builds the one address', async () => {
+    const list = await fromFragment(RUST)
+    expect(list.by).toEqual({ id: '80351110224678912', name: 'Nelly', avatar: HASH })
+    expect(avatarUrl(list.by)).toBe(`https://cdn.discordapp.com/avatars/80351110224678912/${HASH}.png?size=64`)
+  })
+
+  it('reads a still and an animated hash, and a link with no picture has none', () => {
+    expect(readShare(v4('80351110224678912', `a_${HASH}`)).by?.avatar).toBe(`a_${HASH}`)
+    expect(avatarUrl({ id: '80351110224678912', name: 'N', avatar: `a_${HASH}` })).toBe(`https://cdn.discordapp.com/avatars/80351110224678912/a_${HASH}.png?size=64`)
+    expect(avatarUrl({ id: '80351110224678912', name: 'N' })).toBeNull()
+    expect(avatarUrl(undefined)).toBeNull()
+  })
+
+  it('refuses a forged hash or id, and never builds an address from one', () => {
+    for (const bad of ['', 'abc', HASH.slice(1), `${HASH}0`, HASH.toUpperCase(), 'a_', `A_${HASH}`, `../${HASH.slice(3)}`, 'https://evil.example/x.png', `${HASH}/../../x`, `${HASH.slice(0, 31)}?`, `${HASH.slice(0, 31)}g`]) {
+      expect(() => readShare(v4('80351110224678912', bad)), bad).toThrow('damaged')
+      expect(avatarUrl({ id: '80351110224678912', name: 'N', avatar: bad }), bad).toBeNull()
+    }
+    expect(() => readShare(v4('1234567890123456', HASH))).toThrow('damaged')
+    expect(() => readShare(v4('123456789012345678901', HASH))).toThrow('damaged')
+    expect(avatarUrl({ id: '12', name: 'N', avatar: HASH })).toBeNull()
   })
 })
 
