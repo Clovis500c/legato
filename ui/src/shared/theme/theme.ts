@@ -73,7 +73,7 @@ export const PRESETS: Theme[] = [
   preset('high-contrast', 'High contrast', true, { bg: '#000000', panel: '#0A0A0A', raised: '#141414', recess: '#000000', line: '#8A8A8A', lineSoft: '#4A4A4A', ink: '#FFFFFF', ink2: '#E6E6E6', ink3: '#CFCFCF', ink4: '#7A7A7A', accent: '#FFE600', onAccent: '#000000', ledOff: '#5A5A5A' }, 'neutral', false, { radius: 'sharp', look: { covers: 'net', density: 'comfort' } }),
   preset('high-contrast-light', 'High contrast light', false, { bg: '#FFFFFF', panel: '#F5F5F5', raised: '#EDEDED', recess: '#E0E0E0', line: '#4A4A4A', lineSoft: '#9A9A9A', ink: '#000000', ink2: '#1A1A1A', ink3: '#333333', ink4: '#6A6A6A', accent: '#0033CC', onAccent: '#FFFFFF', ledOff: '#8A8A8A' }, 'neutral', false, { radius: 'sharp', look: { covers: 'net', density: 'comfort' } }),
   preset('midnight', 'Midnight', true, { bg: '#0A0F1F', panel: '#0E1530', raised: '#16203F', recess: '#050813', line: '#243158', lineSoft: '#172043', ink: '#E8EEFF', ink2: '#A9B6DD', ink3: '#8D9BC8', ink4: '#4A5788', accent: '#6EA8FF', onAccent: '#07122B', ledOff: '#2A3868' }, 'hifi', true, { look: { covers: 'rounded', density: 'comfort' } }),
-  preset('sepia', 'Sepia', false, { bg: '#F5ECD9', panel: '#EDE0C6', raised: '#FBF4E4', recess: '#E4D5B8', line: '#D6C4A0', lineSoft: '#E4D6B8', ink: '#2E2416', ink2: '#5E4E36', ink3: '#6D5C42', ink4: '#B5A27E', accent: '#B5651D', onAccent: '#FFF8EA', ledOff: '#D3C19B' }, 'modern', false, { look: { covers: 'rounded', density: 'comfort' }, css: 'body { font-family: Georgia, "Times New Roman", serif; }' }),
+  preset('sepia', 'Sepia', false, { bg: '#F5ECD9', panel: '#EDE0C6', raised: '#FBF4E4', recess: '#E4D5B8', line: '#D6C4A0', lineSoft: '#E4D6B8', ink: '#2E2416', ink2: '#5E4E36', ink3: '#685740', ink4: '#B5A27E', accent: '#A35A17', onAccent: '#FFF8EA', ledOff: '#D3C19B' }, 'modern', false, { look: { covers: 'rounded', density: 'comfort' }, css: 'body { font-family: Georgia, "Times New Roman", serif; }' }),
   preset('glass', 'Glass', true, { bg: '#0C1018', panel: '#121826', raised: '#1B2336', recess: '#070A10', line: '#2A3550', lineSoft: '#1C2438', ink: '#F2F6FF', ink2: '#B4C0DA', ink3: '#96A4C4', ink4: '#53607F', accent: '#7FD6FF', onAccent: '#06141D', ledOff: '#2F3B57' }, 'hifi', true, { radius: 'round', look: { covers: 'rounded', density: 'airy' } }),
   preset('neon', 'Neon', true, { bg: '#07050F', panel: '#0C0818', raised: '#150F28', recess: '#030208', line: '#2B1E4D', lineSoft: '#1B1233', ink: '#F7F0FF', ink2: '#C9B8EE', ink3: '#A894D6', ink4: '#5B4A8C', accent: '#FF2BD6', onAccent: '#12020F', ledOff: '#33244F' }, 'hifi', true, { look: { covers: 'vinyl', density: 'comfort' } }),
 ]
@@ -807,7 +807,7 @@ export function sanitizeTheme(raw: unknown): Theme | null {
   const r = raw as Record<string, unknown>
   if (!PALETTE_KEYS.every((k) => isHex(r[k]))) return null
   const name = typeof r.name === 'string' && r.name.trim() ? r.name.trim().slice(0, 40) : tr('My theme')
-  const id = typeof r.id === 'string' && /^custom-[\w-]{1,40}$/.test(r.id) ? r.id : `custom-${Date.now().toString(36)}`
+  const id = typeof r.id === 'string' && /^custom-[\w-]{1,40}$/.test(r.id) ? r.id : `custom-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
   const palette = Object.fromEntries(PALETTE_KEYS.map((k) => [k, (r[k] as string).toUpperCase()])) as Palette
   const b = r.background && typeof r.background === 'object' ? (r.background as Record<string, unknown>) : null
   const background: Background | undefined =
@@ -827,6 +827,9 @@ export function sanitizeTheme(raw: unknown): Theme | null {
     ...(css && { css }),
   }
 }
+
+/** A preset or theme copied to be edited: only its own parts (never the current theme's picture or CSS), a new id. */
+export const duplicateTheme = (t: Theme, name: string, patch: Partial<Theme> = {}) => sanitizeTheme({ ...t, ...patch, name, id: undefined })
 
 /** A theme's look: known keys only, each checked like a setting. */
 function sanitizeLook(raw: unknown): Look | undefined {

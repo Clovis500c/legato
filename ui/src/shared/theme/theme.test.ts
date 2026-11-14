@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { contrast, contrastReport, coverGlow, cssVars, DEFAULTS, glowVars, HOME_SECTIONS, lookOf, moveHome, placeHome, onAccentFor, paletteFrom, PRESETS, resolveTheme, sanitize, sanitizeHome, sanitizeTheme } from './theme'
+import { contrast, contrastReport, duplicateTheme, coverGlow, cssVars, DEFAULTS, glowVars, HOME_SECTIONS, lookOf, moveHome, placeHome, onAccentFor, paletteFrom, PRESETS, resolveTheme, sanitize, sanitizeHome, sanitizeTheme } from './theme'
 
 describe('sanitize', () => {
   it('falls back to defaults on junk', () => {
@@ -29,6 +29,18 @@ describe('sanitize', () => {
   })
 })
 
+describe('duplicateTheme', () => {
+  it('a clean copy: the preset’s own parts only, a new id every time, even within one millisecond', () => {
+    const pastel = PRESETS.find((t) => t.id === 'pastel')!
+    const a = duplicateTheme(pastel, 'Pastel custom')!
+    const b = duplicateTheme(pastel, 'Pastel custom', { radius: 'sharp' })!
+    expect(a.id).not.toBe(b.id)
+    expect(a.id).not.toBe(pastel.id)
+    expect([a.css, a.background, a.radius, b.radius, a.accent]).toEqual([undefined, undefined, 'round', 'sharp', pastel.accent])
+    expect(duplicateTheme(PRESETS.find((t) => t.id === 'terminal')!, 'T')!.css).toContain('monospace')
+  })
+})
+
 describe('contrast', () => {
   it('matches WCAG reference values', () => {
     expect(contrast('#000000', '#FFFFFF')).toBeCloseTo(21)
@@ -37,6 +49,14 @@ describe('contrast', () => {
 
   it('every preset passes AA for readable text', () => {
     for (const t of PRESETS) expect(contrastReport(t).filter((c) => !c.ok), t.id).toEqual([])
+  })
+
+  it('the whole styles read on every surface the components draw (rows on raised, wells on recess, labels on accent)', () => {
+    const styles = ['terminal', 'pastel', 'high-contrast', 'high-contrast-light', 'midnight', 'sepia', 'glass', 'neon']
+    for (const t of PRESETS.filter((p) => styles.includes(p.id))) {
+      for (const ink of [t.ink, t.ink2, t.ink3]) for (const bg of [t.bg, t.panel, t.raised, t.recess]) expect(contrast(ink, bg), `${t.id} ${ink} on ${bg}`).toBeGreaterThanOrEqual(4.5)
+      expect(contrast(t.onAccent, t.accent), t.id).toBeGreaterThanOrEqual(4.5)
+    }
   })
 })
 

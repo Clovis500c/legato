@@ -7,7 +7,7 @@ import { pickFile, saveFile } from '../../shared/files'
 import { coverImage } from '../../shared/art'
 import { msg, tr } from '../../shared/i18n/i18n'
 import { phoneApp } from '../../shared/platform'
-import { contrastReport, FITS, FONTS, isVideo, LOOK_KEYS, lookOf, MAX_THEME_CSS, paletteFrom, PALETTE_KEYS, PRESETS, RADII, sanitizeTheme, type Background, type Palette, type PaletteKey, type Theme } from '../../shared/theme/theme'
+import { contrastReport, duplicateTheme, FITS, FONTS, isVideo, LOOK_KEYS, lookOf, MAX_THEME_CSS, paletteFrom, PALETTE_KEYS, PRESETS, RADII, sanitizeTheme, type Background, type Palette, type PaletteKey, type Theme } from '../../shared/theme/theme'
 import { Button } from '../../shared/ui/Button'
 import { Led, RoundButton, Segmented, Toggle } from '../../shared/ui/controls'
 
@@ -340,7 +340,7 @@ export function ThemeStudio() {
   const pick = (t: Theme) => update({ theme: t.id, ...t.look })
   // A preset can't be edited: one gesture copies it into the custom themes and opens the editor on the copy.
   const dup = (t: Theme, patch: Partial<Theme> = {}) => {
-    const c = fresh({ ...t, ...patch, name: tr('{name} custom', { name: t.name }) })
+    const c = duplicateTheme(t, tr('{name} custom', { name: t.name }), patch)
     if (c) add(c)
   }
   const custom = settings.customThemes.some((x) => x.id === settings.theme)
