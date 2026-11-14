@@ -39,6 +39,8 @@ export const K = {
   radio: 1.5,
   /** Diversity: score minus this x the similarity to each of the last 4 picks. */
   mmr: 0.3,
+  /** The hours a song was played at (last 90 days) near now add up to `bonus` of its affinity, once there are `minPlays` plays of history. */
+  timeOfDay: { bonus: 0.1, span: 2, minPlays: 100 },
   /** Caps in any 10 picks. */
   perArtist: 2,
   perAlbum: 2,
@@ -63,6 +65,21 @@ export interface Taste {
   decayed?: (t: LibraryTrack) => number
   /** Unix s of the last listen, 0 = never. */
   lastPlayed?: (t: LibraryTrack) => number
+  /** Bit h = played at local hour h in the last 90 days. */
+  hours?: (t: LibraryTrack) => number
+}
+
+/** The hours within `K.timeOfDay.span` of `hour` (0-23), as a bit mask, wrapping midnight. */
+export function hourWindow(hour: number): number {
+  let m = 0
+  for (let d = -K.timeOfDay.span; d <= K.timeOfDay.span; d++) m |= 1 << (((hour + d) % 24 + 24) % 24)
+  return m
+}
+
+const bits = (n: number) => {
+  let c = 0
+  for (; n; n &= n - 1) c++
+  return c
 }
 
 /** A song to pick from: `rank` = its place in a radio's answer (0 first), none for a song of the library. */
@@ -154,10 +171,14 @@ function standardise(xs: number[]): number[] {
 }
 
 /** Score = affinity + preference (plays, rating, like) - skips, cut for Less and for what was just heard, then standardised over the candidates. */
-export function scoreAll(candidates: Candidate[], session: Map<string, number>, long: Map<string, number> | null, taste: Taste, now: number): Scored[] {
+export function scoreAll(candidates: Candidate[], session: Map<string, number>, long: Map<string, number> | null, taste: Taste, now: number, hour: number | null = null): Scored[] {
   const feats = candidates.map((c) => featuresOf(c.track))
   const aff = feats.map((f) => affinityOf(f, session, long))
-  const top = Math.max(0, ...aff)
+  // The hours the songs were played at: up to `bonus` more affinity for the ones played around this hour.
+  const win = hour === null || !taste.hours ? 0 : hourWindow(hour)
+  if (win) candidates.forEach((c, i) => (aff[i] *= 1 + (K.timeOfDay.bonus * bits((taste.hours?.(c.track) ?? 0) & win)) / (2 * K.timeOfDay.span + 1)))
+  let top = 0
+  for (const a of aff) if (a > top) top = a
   const raw = candidates.map((c, i) => {
     const t = c.track
     const rating = taste.rating(t)
@@ -217,6 +238,8 @@ export interface RankInput {
   library?: LibraryTrack[]
   /** Unix s. */
   now?: number
+  /** Local hour 0-23 for the time-of-day signal; none = off (callers give it only past `K.timeOfDay.minPlays` plays). */
+  hour?: number
 }
 
 /**
@@ -225,13 +248,13 @@ export interface RankInput {
  * `perArtist` songs per artist and `perAlbum` per album in any `window` picks, and never the same artist twice in a row while
  * another is left (the caps give way last-first when nothing else is left).
  */
-export function rankPicks({ candidates, queue, index, taste, variety, max, rand, library, now = Date.now() / 1000 }: RankInput): LibraryTrack[] {
+export function rankPicks({ candidates, queue, index, taste, variety, max, rand, library, now = Date.now() / 1000, hour }: RankInput): LibraryTrack[] {
   const inQueue = new Set(queue.map((t) => t.id))
   const seen = new Set<number>()
   const eligible = candidates.filter((c) => !inQueue.has(c.track.id) && !seen.has(c.track.id) && !!seen.add(c.track.id) && !lowRated(taste.rating(c.track)) && !taste.never(c.track))
   const decayed = taste.decayed
   const long = library && decayed ? longProfile(library, decayed) : null
-  let pool = scoreAll(eligible, profileOf(queue, index, taste), long && long.size ? long : null, taste, now)
+  let pool = scoreAll(eligible, profileOf(queue, index, taste), long && long.size ? long : null, taste, now, hour ?? null)
   // Only the best by score and some explore candidates can be picked: the rest of a 10 000-song library is not walked at each pick.
   const byZ = [...pool].sort((a, b) => b.z - a.z)
   const mids = byZ.slice(KEEP).filter((x) => isMid(x, taste)).slice(0, KEEP)

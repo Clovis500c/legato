@@ -6,4 +6,8 @@
  * 30-day half-life (taste now) and a 180-day one (the long profile); `last_played` unix s, 0 = never; `skips_recent` = skips
  * (under 30 s, not finished) in the last `SKIP_DAYS` days; `liked` = in Liked Music; `less` / `never` = the song's pref.
  */
-export type TasteSignal = { id: number, playsDecayed: number, playsLong: number, lastPlayed: number, skipsRecent: number, liked: boolean, less: boolean, never: boolean, };
+export type TasteSignal = { id: number, playsDecayed: number, playsLong: number, lastPlayed: number, skipsRecent: number, liked: boolean, less: boolean, never: boolean, 
+/**
+ * Bit h set = played (finished or 30 s heard) at local hour h in the last 90 days: the time-of-day signal.
+ */
+hours: number, };

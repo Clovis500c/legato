@@ -38,8 +38,8 @@ pub async fn mixes(state: State<'_, AppState>, utc_offset: i64) -> CmdResult<Res
 
 /// What the recommendation reads about every library song that has a signal (`Library::taste_signals`), in one call.
 #[tauri::command]
-pub async fn taste_signals(state: State<'_, AppState>) -> CmdResult<Vec<music_core::history::TasteSignal>> {
-    state.lib().taste_signals(unix_now()).map_err(err)
+pub async fn taste_signals(state: State<'_, AppState>, utc_offset: i64) -> CmdResult<Vec<music_core::history::TasteSignal>> {
+    state.lib().taste_signals(unix_now(), utc_offset.clamp(-14 * 3600, 14 * 3600)).map_err(err)
 }
 
 /// A walk from one artist to another through the artists listened to together (`walk::artist_path`); None = no chain.

@@ -43,7 +43,12 @@ export function tasteFor(stats: Record<number, [plays: number, last: number, sta
     never: (t: LibraryTrack) => signals.get(t.id)?.never ?? false,
     less: (t: LibraryTrack) => signals.get(t.id)?.less ?? false,
     liked: (t: LibraryTrack) => signals.get(t.id)?.liked ?? false,
-    decayed: (t: LibraryTrack) => signals.get(t.id)?.playsLong ?? 0,
+    // The long profile mixes the two memories as the design says: 70 % the last weeks (30-day half-life), 30 % the months (180).
+    decayed: (t: LibraryTrack) => {
+      const s = signals.get(t.id)
+      return s ? 0.7 * s.playsDecayed + 0.3 * s.playsLong : 0
+    },
+    hours: (t: LibraryTrack) => signals.get(t.id)?.hours ?? 0,
     lastPlayed: (t: LibraryTrack) => signals.get(t.id)?.lastPlayed ?? 0,
   }
 }

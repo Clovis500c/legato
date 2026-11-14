@@ -120,7 +120,7 @@ export const api = {
   artistPath: (from: string, to: string) => invoke<ArtistPath | null>('artist_path', { from, to }),
   mixes: () => invoke<Mix[]>('mixes', { utcOffset: -new Date().getTimezoneOffset() * 60 }),
   /** What the recommendation reads about every library song with a signal (decayed plays, last played, recent skips, liked, less, never); a song not listed has none. */
-  tasteSignals: () => invoke<TasteSignal[]>('taste_signals'),
+  tasteSignals: () => invoke<TasteSignal[]>('taste_signals', { utcOffset: -new Date().getTimezoneOffset() * 60 }),
   /** less = ranked lower in mixes, never = left out, null = back to normal. */
   setTrackPref: (trackId: number, pref: Pref | null) => invoke<void>('set_track_pref', { trackId, pref }),
   /** Your rating of a song in half stars (1..=10); 0 takes it off. */

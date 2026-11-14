@@ -23,4 +23,14 @@ describe('what plays when Up next runs out has no switch any more', () => {
     expect(usePlayer.getState().list.map((t) => t.id)).toEqual([901, 902, 903])
     expect(usePlayer.getState().now?.youtubeId).toBe('video902')
   })
+
+  it('a stop on purpose adds nothing: only a run-out asks for songs', async () => {
+    const { similarForQueue } = await import('./radio')
+    vi.mocked(similarForQueue).mockClear()
+    usePlayer.getState().playTracks([song(910), song(911)], 0)
+    usePlayer.getState().toggle()
+    await new Promise((r) => setTimeout(r))
+    expect(similarForQueue).not.toHaveBeenCalled()
+    expect(usePlayer.getState().list.map((t) => t.id)).toEqual([910, 911])
+  })
 })

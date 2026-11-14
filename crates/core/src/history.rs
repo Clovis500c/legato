@@ -52,10 +52,14 @@ pub struct TasteSignal {
     pub liked: bool,
     pub less: bool,
     pub never: bool,
+    /// Bit h set = played (finished or 30 s heard) at local hour h in the last 90 days: the time-of-day signal.
+    pub hours: u32,
 }
 
 /// How far back a skip still counts for the ranking.
 const SKIP_DAYS: i64 = 30;
+/// How far back the hours of the day a song is played at are kept.
+const HOUR_DAYS: i64 = 90;
 
 /// User control over mixes: Less = ranked lower, Never = left out.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, ts_rs::TS)]
@@ -135,10 +139,10 @@ impl Library {
     }
 
     /// The signals of every song that has any, from the plays, the prefs and Liked Music, in one pass over the plays (no per-song
-    /// call). `now` = unix seconds. Same weights and decays as the mixes (`mixes::play_weight`, `decay`, `long_decay`).
-    pub fn taste_signals(&self, now: i64) -> Result<Vec<TasteSignal>> {
+    /// call). `now` = unix seconds, `utc_offset` = local minus UTC in seconds (for `hours`). Same weights and decays as the mixes (`mixes::play_weight`, `decay`, `long_decay`).
+    pub fn taste_signals(&self, now: i64, utc_offset: i64) -> Result<Vec<TasteSignal>> {
         let mut out: HashMap<i64, TasteSignal> = HashMap::new();
-        let blank = |id| TasteSignal { id, plays_decayed: 0.0, plays_long: 0.0, last_played: 0, skips_recent: 0, liked: false, less: false, never: false };
+        let blank = |id| TasteSignal { id, plays_decayed: 0.0, plays_long: 0.0, last_played: 0, skips_recent: 0, liked: false, less: false, never: false, hours: 0 };
         let mut stmt = self.db.prepare_cached("SELECT p.track_id, p.started_at, p.listened_ms, p.completed, t.duration_ms FROM plays p JOIN tracks t ON t.id = p.track_id")?;
         let rows = stmt.query_map([], |r| Ok((Play { track_id: r.get(0)?, started_at: r.get(1)?, listened_ms: r.get(2)?, completed: r.get(3)? }, r.get::<_, Option<u32>>(4)?)))?;
         for row in rows {
@@ -150,6 +154,9 @@ impl Library {
             s.last_played = s.last_played.max(p.started_at);
             if !p.completed && p.listened_ms < crate::mixes::SKIP_MS && p.started_at >= now - SKIP_DAYS * 86_400 {
                 s.skips_recent += 1;
+            }
+            if (p.completed || p.listened_ms >= crate::mixes::SKIP_MS) && p.started_at >= now - HOUR_DAYS * 86_400 {
+                s.hours |= 1 << ((p.started_at + utc_offset).rem_euclid(86_400) / 3600);
             }
         }
         for (id, pref) in self.prefs()? {
@@ -255,7 +262,7 @@ mod tests {
     fn taste_signals_cover_the_whole_library_in_one_pass() -> Result<()> {
         let now = 400 * 86_400;
         let lib = Library::in_memory()?;
-        assert!(lib.taste_signals(now)?.is_empty(), "empty library");
+        assert!(lib.taste_signals(now, 0)?.is_empty(), "empty library");
         let (a, b, c, d) = (track(&lib, "A", Source::Youtube, "a"), track(&lib, "B", Source::Youtube, "b"), track(&lib, "C", Source::Youtube, "c"), track(&lib, "D", Source::Youtube, "d"));
         // A: a full listen now, one 30 days ago (half the weight), two recent skips, an old one (90 days).
         for (at, ms, done) in [(now - 5, 200_000, true), (now - 30 * 86_400, 200_000, true), (now - 10, 5_000, false), (now - 86_400, 29_000, false), (now - 90 * 86_400, 1_000, false)] {
@@ -265,7 +272,7 @@ mod tests {
         lib.set_pref(c, Some(Pref::Less))?;
         let liked = lib.edit_playlist(PlaylistEdit::Create { name: "Liked Music".into() })?.unwrap();
         lib.edit_playlist(PlaylistEdit::Add { id: liked, track_ids: vec![d] })?;
-        let got = lib.taste_signals(now)?;
+        let got = lib.taste_signals(now, 0)?;
         let by = |id| got.iter().find(|s| s.id == id).unwrap();
         let s = by(a);
         assert_eq!((s.skips_recent, s.last_played), (2, now - 5));
@@ -278,8 +285,22 @@ mod tests {
         assert!(by(c).less && !by(c).never, "Less is not Never");
         assert!(by(d).liked && by(d).last_played == 0, "liked, never played");
         let e = track(&lib, "E", Source::Youtube, "e");
-        assert!(lib.taste_signals(now)?.iter().all(|s| s.id != e), "a song with no signal is left out: absent = zero");
+        assert!(lib.taste_signals(now, 0)?.iter().all(|s| s.id != e), "a song with no signal is left out: absent = zero");
         assert!(got.iter().all(|s| s.id != 9999), "unknown id");
+        Ok(())
+    }
+
+    #[test]
+    fn taste_signals_keep_the_local_hours_a_song_was_played_in_the_last_90_days() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let a = track(&lib, "A", Source::Youtube, "a");
+        let now = 200 * 86_400 + 12 * 3600;
+        // 10:30 UTC two days ago, finished: with a +1 h offset that is local hour 11. A skip at 03:00 and a play 100 days ago leave no hour.
+        for (at, ms, done) in [(now - 2 * 86_400 - 5_400, 200_000, true), (now - 86_400 - 9 * 3600, 5_000, false), (now - 100 * 86_400, 200_000, true)] {
+            lib.record_play(&Play { track_id: a, started_at: at, listened_ms: ms, completed: done })?;
+        }
+        let s = lib.taste_signals(now, 3600)?.into_iter().find(|s| s.id == a).unwrap();
+        assert_eq!(s.hours, 1 << 11);
         Ok(())
     }
 

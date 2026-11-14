@@ -4,6 +4,7 @@ import { api, type LibraryTrack } from '../../shared/api'
 import { tr } from '../../shared/i18n/i18n'
 import { songsThatFit } from '../library/fit'
 import { radioName, radioQueue, radioSeeds, shuffled } from './radioMix'
+import { K } from './score'
 import type { Candidate } from './similarRank'
 import { remoteTrack, usePlayer } from './store'
 import { loadTaste, tasteFor, useTaste } from './taste'
@@ -59,6 +60,9 @@ export async function startRadioFrom(songs: LibraryTrack[], name = radioName(son
   playRadio(radioQueue(lead, more, shuffled(songs.filter((t) => t !== lead))), name)
 }
 
+/** The local hour for the time-of-day signal, only once there are enough plays of history to read it from. */
+const timeOfDay = (stats: Record<number, [plays: number, last: number, stars?: number] | undefined>) => (Object.values(stats).reduce((n, s) => n + (s?.[0] ?? 0), 0) >= K.timeOfDay.minPlays ? new Date().getHours() : undefined)
+
 /**
  * The songs added when Up next runs out: ranked against the whole queue and what you rated and play (similarRank.ts),
  * from YouTube Music's radio of the last song when signed in (its order counts) and from your library. Nothing new is asked:
@@ -82,5 +86,5 @@ export async function similarForQueue(list: LibraryTrack[], index: number, max: 
   const taste = tasteFor(stats, signals)
   // Loaded when Up next runs out, not at launch.
   const { pickSimilar } = await import('./similarRank')
-  return pickSimilar(candidates, list, index, taste, settings.similarVariety, max, Math.random, tracks)
+  return pickSimilar(candidates, list, index, taste, settings.similarVariety, max, Math.random, tracks, timeOfDay(stats))
 }

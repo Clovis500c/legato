@@ -8,7 +8,7 @@ vi.mock('@tauri-apps/api/core', () => ({ convertFileSrc: (p: string) => p, invok
 
 const song = (id: number): LibraryTrack => ({ id, added: 0, addedAt: null, title: `Song ${id}`, artist: `Artist ${id}`, album: null, durationMs: null, isrc: null, ids: { youtube: `v${id}` } })
 const list = Array.from({ length: 60 }, (_, i) => song(i + 1))
-const signal = (id: number): TasteSignal => ({ id, playsDecayed: 5, playsLong: 5, lastPlayed: 0, skipsRecent: 0, liked: true, less: false, never: false })
+const signal = (id: number): TasteSignal => ({ id, playsDecayed: 5, playsLong: 5, lastPlayed: 0, skipsRecent: 0, liked: true, less: false, never: false, hours: 0 })
 
 describe('Shuffle reads the taste store', () => {
   afterEach(() => {

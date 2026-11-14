@@ -7,6 +7,6 @@ import { rankPicks, type Candidate, type Taste, type Variety } from './score'
  */
 export { VARIETIES, featuresOf, profileOf, type Candidate, type Taste, type Variety } from './score'
 
-export function pickSimilar(candidates: Candidate[], queue: LibraryTrack[], index: number, taste: Taste, variety: Variety, max: number, rand: () => number = Math.random, library?: LibraryTrack[]): LibraryTrack[] {
-  return rankPicks({ candidates, queue, index, taste, variety, max, rand, library })
+export function pickSimilar(candidates: Candidate[], queue: LibraryTrack[], index: number, taste: Taste, variety: Variety, max: number, rand: () => number = Math.random, library?: LibraryTrack[], hour?: number): LibraryTrack[] {
+  return rankPicks({ candidates, queue, index, taste, variety, max, rand, library, hour })
 }
