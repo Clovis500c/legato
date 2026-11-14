@@ -64,15 +64,17 @@ describe('banner sources', () => {
 
   it('the wall: no cells without covers, neighbours never the same cover, every cover used when the cells allow', () => {
     expect(wallGrid(0, 4, 10)).toEqual([])
-    const g = wallGrid(6, 5, 12)
-    expect(g).toHaveLength(5)
-    expect(g.every((r) => r.length === 12)).toBe(true)
-    for (let r = 0; r < g.length; r++) for (let c = 0; c < 12; c++) {
-      if (c) expect(g[r][c]).not.toBe(g[r][c - 1])
-      // A row shifted by half a cell sits between two of the row above: never the same cover as either.
-      if (r) expect([g[r - 1][c], g[r - 1][c - 1]]).not.toContain(g[r][c])
+    for (const n of [3, 4, 5, 6, 7, 48]) {
+      const g = wallGrid(n, 6, 12)
+      expect(g).toHaveLength(6)
+      expect(g.every((r) => r.length === 12)).toBe(true)
+      for (let r = 0; r < g.length; r++) for (let c = 0; c < 12; c++) {
+        if (c) expect(g[r][c]).not.toBe(g[r][c - 1])
+        // Odd rows are shifted half a cell to the start: they sit between c-1 and c above; even rows between c and c+1.
+        if (r) expect(r % 2 ? [g[r - 1][c - 1], g[r - 1][c]] : [g[r - 1][c], g[r - 1][c + 1]]).not.toContain(g[r][c])
+      }
+      if (n <= 12) expect(new Set(g.flat()).size).toBe(n)
     }
-    expect(new Set(g.flat()).size).toBe(6)
     // Two covers repeat but still alternate; one cover is one cover.
     expect(wallGrid(2, 1, 4)).toEqual([[0, 1, 0, 1]])
     expect(new Set(wallGrid(1, 3, 3).flat())).toEqual(new Set([0]))

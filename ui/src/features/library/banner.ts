@@ -57,13 +57,14 @@ export function washOf(rgb: [number, number, number] | null, name: string, dark:
 
 /**
  * The wall's cells: `rows` rows of `cols` covers, each an index into `n` covers. A cell differs from its left neighbour and, with
- * three covers or more, from the two above it (rows offset by half a cell sit between two). Fewer covers than cells: they repeat,
+ * three covers or more, from the two above it (odd rows, offset by half a cell to the start, sit between cells c-1 and c; even rows between c and c+1). Fewer covers than cells: they repeat,
  * shifted so that two neighbours are never the same one. No covers: no cells.
  */
 export function wallGrid(n: number, rows: number, cols: number): number[][] {
   if (n <= 0) return []
-  const step = n > 2 ? 2 : 1
-  return Array.from({ length: rows }, (_, r) => Array.from({ length: cols }, (_, c) => (c + r * step) % n))
+  // An odd row (shifted to the start) touches cells c-1 and c above: +1 avoids both; an even row touches c and c+1: +2 more.
+  const shift = (r: number) => (n > 2 ? Math.floor(r / 2) * 3 + (r % 2) : r)
+  return Array.from({ length: rows }, (_, r) => Array.from({ length: cols }, (_, c) => (c + shift(r)) % n))
 }
 
 /** The page a scroller is on, from its position: `left` is `scrollLeft` (negative or inverted in right-to-left, the sign is dropped). Always within 0..pages-1. */
