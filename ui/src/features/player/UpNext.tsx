@@ -8,7 +8,7 @@ import { trackArt } from '../../shared/art'
 import { formatDuration } from '../../shared/format'
 import { Button } from '../../shared/ui/Button'
 import { onMenu, openMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
-import { RoundButton, Toggle } from '../../shared/ui/controls'
+import { RoundButton, Segmented, Toggle } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
 import { dragSource, useDrag, useDropTarget } from '../../shared/ui/drag'
 import { shaped, trackMenu } from '../menus'
@@ -99,6 +99,7 @@ export function UpNext({ onHide, className = CARD, heading, bare = false }: { on
   const nowArtist = usePlayer((s) => s.now?.artist ?? '')
   const track = useNowTrack()
   const autoplay = useSettings((s) => s.settings.autoplay)
+  const variety = useSettings((s) => s.settings.similarVariety)
   const dj = usePlayer((s) => !!s.dj)
   // Why each Auto-DJ pick came up (its stars, an artist you liked).
   const why = useDjWhy()
@@ -277,6 +278,22 @@ export function UpNext({ onHide, className = CARD, heading, bare = false }: { on
           </span>
           <Toggle label={tr('Then, similar songs')} checked={autoplay} onChange={(on) => useSettings.getState().update({ autoplay: on })} />
         </label>
+      )}
+      {!dj && autoplay && (
+        <div className="flex items-center justify-between gap-3 px-2 pt-1.5">
+          <span className="text-[0.6875rem] text-ink-3">{tr('Similar songs')}</span>
+          <Segmented
+            label={tr('Similar songs')}
+            quiet
+            value={variety}
+            onChange={(similarVariety) => useSettings.getState().update({ similarVariety })}
+            options={[
+              { value: 'alike', label: tr('Alike') },
+              { value: 'balanced', label: tr('Balanced') },
+              { value: 'adventurous', label: tr('Adventurous') },
+            ]}
+          />
+        </div>
       )}
     </aside>
   )

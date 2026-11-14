@@ -566,6 +566,8 @@ export interface Settings {
   voiceSearch: boolean
   /** Up next ran out: similar songs follow (YouTube Music's radio, or your library). */
   autoplay: boolean
+  /** Then, similar songs: how far from the queue they may stray (player/similarRank.ts). */
+  similarVariety: 'alike' | 'balanced' | 'adventurous'
   /** Top bar lists recent searches (kept on this PC only: localStorage, never synced). */
   rememberSearches: boolean
   /** Top bar asks YouTube's suggestions as you type (the text goes to Google). */
@@ -730,6 +732,7 @@ export const DEFAULTS: Settings = {
   liveYoutube: true,
   voiceSearch: false,
   autoplay: true,
+  similarVariety: 'balanced',
   rememberSearches: true,
   searchSuggestions: true,
   phoneRemote: false,
@@ -1004,6 +1007,7 @@ export function sanitize(raw: unknown): Settings {
     liveYoutube: typeof r.liveYoutube === 'boolean' ? r.liveYoutube : DEFAULTS.liveYoutube,
     voiceSearch: r.voiceSearch === true,
     autoplay: r.autoplay !== false,
+    similarVariety: pick(r.similarVariety, ['alike', 'balanced', 'adventurous'] as const, DEFAULTS.similarVariety),
     rememberSearches: r.rememberSearches !== false,
     searchSuggestions: r.searchSuggestions !== false,
     phoneRemote: r.phoneRemote === true,
