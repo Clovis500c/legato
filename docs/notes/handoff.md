@@ -2,20 +2,21 @@
 
 Where the work stands, for a session with no history here. Read this first, then only the parts of
 [plan-v2.md](plan-v2.md) you need. Rewrite it, short, when a branch, a release or the next step changes; its older
-versions are in git (`git log -p -- docs/notes/handoff.md`). Updated 2026-11-14 (window 13 closed).
+versions are in git (`git log -p -- docs/notes/handoff.md`). Updated 2026-11-15 (closure 14).
 
 ## Where things stand
-- **master** = `22cc704d`, pushed on the owner's word; **platforms** = master (`git log --oneline origin/master..HEAD` is
-  empty): the Lot 39 skip signals, the Lot 40-41 banner work, the Lot 42 recommendation (`2c006e25` design, `dacf3cd6`,
-  `a137385c`, `01475207`, `ca2f6720`, `74501e5d`, `7b6f2053`, `14e7b87d`, `66b542e8`, review fix `2f781c23`) and this
-  handoff are all on it. The push starts a Beta release (1.2.22 by `release.mjs --dry-run` at `22cc704d`): it may still be
-  running, not confirmed published here. Only the owner's word pushes.
+- **master** = `22cc704d`, pushed on the owner's word. **platforms** = master + 10 commits, **not pushed**
+  (`git log --oneline origin/master..HEAD`): the handoffs (`56343d20` and this one); Lot 43 Discord picture on a share link (`ad5071bb`
+  format, `6469df86` app, `bb94e707` site); Lot 44 Adaptive Sound buttons (`c74d9eb9`); Lot 45 Back on the phone
+  (`b9d175f6`); Lot 46 Home's flowing background (`8f0865fc`, veil fix `71deaa50`); plan references (`c375fa0f`).
+  Only the owner's word pushes. A push starts a Beta release: the next one is v1.2.31 (`release.mjs --dry-run`), not
+  confirmed published here.
 - **Stable 1.2.10** (tag `v1.2.10`, since 2026-11-14, promoted on the owner's word): Windows installer, `latest.json`, the
   Android APK. winget has an older Stable pending (see below).
 - **Version rule** (`CONTRIBUTING.md` › Version): `MAJOR.MINOR` is in `src-tauri/tauri.conf.json` (`1.2`). The patch is n,
   the number of commits since the base of that `MAJOR.MINOR` (`BASES` in `scripts/release.mjs`: `'1.2'` → `f8379a93`), with
   `n % 1000`. The patch is n, not a counter of your own. `node scripts/release.mjs --dry-run` prints the next Beta pushed
-  from here (v1.2.22 at `22cc704d`). A bump of `MAJOR.MINOR` is the owner's decision: a new base goes in
+  from here (v1.2.31 at this closure). A bump of `MAJOR.MINOR` is the owner's decision: a new base goes in
   `BASES` first.
 - **Before any push**: `pnpm check` green; `node scripts/budget.mjs` (JS 332 of 340 kB gzip: little room, lazy-load new
   features); `cargo clippy --workspace --all-targets -- -D warnings`; `pnpm build` in `site/`; a clean tree; **`pnpm e2e`
@@ -47,6 +48,9 @@ z-scores, explore dose by Variety, diversity re-rank) used by Shuffle (`shuffle.
 
 ## Try first (the owner)
 Most of what is new is behind a setting that is **off**, unless noted below.
+- **New since 1.2.10**: a Discord picture on a share link and on the share web page; **Adaptive Sound** icons under the
+  volume; **Back** on the phone from several pages, also after a reopen; the Home **flowing background** (Appearance, off by
+  default; it stops under Windows' reduce-motion).
 - **Shuffle**: your loved and often played songs come sooner, nothing is ever out, never the same artist twice in a row.
   Judge Alike (sticks to your favourites), Balanced, Adventurous by ear. **The end of Up next**: 15 songs added, a bounded
   dose of the new (10 / 20 / 35 %), at most 2 per artist in 10; there is no « Then, similar songs » switch any more.
@@ -68,6 +72,10 @@ Most of what is new is behind a setting that is **off**, unless noted below.
   closing » after a kill.
 
 ## Open
+- **Not run on a device**: Android Back (`b9d175f6`: reasoned from the Kotlin, never run on Android 16 / targetSdk 37); the
+  Discord picture from the real CDN; a real QR scan.
+- **GPU resets on the owner's PC under full builds**: cause not found; not the flowing background (believed, not measured).
+  Until it is known: cap jobs at 4 and run one heavy command at a time.
 - **For Opus**: a Subsonic playlist half-made if adding its tail fails after creation; the cast server stays open after the
   song ends (the token protects it); a public podcast name that resolves to a private address (DNS rebinding) still passes;
   the gamepad is polled every frame in living-room mode even with no pad; the Stream Deck inspector accepts more addresses
@@ -77,7 +85,9 @@ Most of what is new is behind a setting that is **off**, unless noted below.
 - **Left, for a run that can check it**: MPRIS and macOS Now Playing (CI skips the legato crate there); WASAPI exclusive;
   « Up next » per chapter; the website in Arabic and Hebrew; plural forms beyond one / other in ar and he; faster CI; reused
   YouTube embeds; the full `pnpm bench` (it now prints a « shuffle 10000 » line; the rest was not run for lot 42).
-- **For the owner**: the algorithm's weights by ear; a YouTube channel identifier stored with each song; preloading the next
+- **For the owner**: a share link with a Discord picture (version 4) is unreadable for older installed versions (they say
+  « update the app »); Quiet at -20 LUFS against Spotify's -19; the Adaptive Sound icons; the flowing background's static
+  look when `homeFlow` is off; the algorithm's weights by ear; a YouTube channel identifier stored with each song; preloading the next
   song's artist (a privacy decision); Last.fm / ListenBrainz as a source; the site redesign's taste; the theme and plugin
   gallery; profiles on a PC; the Discord bot and its signature; the Arabic and Hebrew review; the lines that need an account
   or a real network (Spotify and SoundCloud sends, concerts, TIDAL / Qobuz links, watch-page autoplay).
