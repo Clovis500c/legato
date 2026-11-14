@@ -31,6 +31,7 @@ import { frameAround } from '../../shared/artbox'
 import { bindLiveFrame, sendLive } from './live'
 import { useLiveSync } from './liveSync'
 import { AdaptiveBar } from './AdaptiveBar'
+import { AdaptiveSwitch } from './AdaptiveSwitch'
 import { toggleLike, useLiked } from './like'
 import { tr } from '../../shared/i18n/i18n'
 import { phoneApp } from '../../shared/platform'
@@ -285,19 +286,23 @@ export function VolumeControl({ big }: { big?: boolean }) {
         <span className="flex flex-col items-center gap-1">
           <Knob value={volume} onChange={setVolume} size={big ? 50 : 30} ticks={big} />
           <AdaptiveBar className="w-full" />
+          <AdaptiveSwitch className="-my-1" />
         </span>
       </span>
     )
   const Icon = volume === 0 ? SpeakerSlash : volume < 0.5 ? SpeakerLow : SpeakerHigh
   return (
-    <span className="flex max-w-full min-w-0 items-center gap-1">
-      <RoundButton label={volume > 0 ? tr('Mute') : tr('Unmute')} kind="plain" size={big ? 'md' : 'sm'} onClick={toggleMute}>
-        <Icon key={Icon.displayName} size={big ? 20 : 16} className="icon-in" />
-      </RoundButton>
-      <span className="relative flex min-w-0 items-center">
-        <Bar label={tr('Volume')} value={volume} max={1} onChange={setVolume} className={`min-w-10 shrink ${big ? 'w-32' : 'w-24'}`} />
-        <AdaptiveBar className="absolute inset-x-0 bottom-0" />
+    <span className="flex max-w-full min-w-0 flex-col items-end">
+      <span className="flex max-w-full min-w-0 items-center gap-1">
+        <RoundButton label={volume > 0 ? tr('Mute') : tr('Unmute')} kind="plain" size={big ? 'md' : 'sm'} onClick={toggleMute}>
+          <Icon key={Icon.displayName} size={big ? 20 : 16} className="icon-in" />
+        </RoundButton>
+        <span className="relative flex min-w-0 items-center">
+          <Bar label={tr('Volume')} value={volume} max={1} onChange={setVolume} className={`min-w-10 shrink ${big ? 'w-32' : 'w-24'}`} />
+          <AdaptiveBar className="absolute inset-x-0 bottom-0" />
+        </span>
       </span>
+      <AdaptiveSwitch className="-my-1 origin-right" />
     </span>
   )
 }
