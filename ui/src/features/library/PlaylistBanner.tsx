@@ -158,14 +158,13 @@ export function BannerCarousel({ playlists, open }: { playlists: LibraryPlaylist
  */
 export function PlaylistBackdrop({ p }: { p: LibraryPlaylist }) {
   const { arts, seed, wash } = useBanner(p, 'start')
-  // The far side fades into the page's colour: the right edge, and more in its bottom corner where a light blur softens the covers (on the phone, where the title spans the width, no fade). Mirrored in right-to-left.
+  // The far side fades into the page's colour: the right edge, and more in its bottom corner (on the phone, where the title spans the width, no fade). Mirrored in right-to-left.
   return (
     <span
       className="absolute inset-0 [mask-composite:intersect] [mask-image:linear-gradient(to_right,#000_72%,transparent),radial-gradient(ellipse_60%_100%_at_100%_100%,transparent,#000_90%)] [-webkit-mask-composite:source-in] phone:[mask-image:none] rtl:[mask-image:linear-gradient(to_left,#000_72%,transparent),radial-gradient(ellipse_60%_100%_at_0%_100%,transparent,#000_90%)] phone:rtl:[mask-image:none]"
     >
       <Wall arts={arts} rows={4} seed={seed} />
       <span aria-hidden className="absolute inset-0 rtl:-scale-x-100" style={{ background: wash }} />
-      <span aria-hidden className="absolute inset-y-0 end-0 w-2/5 backdrop-blur-sm [mask-image:radial-gradient(ellipse_at_100%_100%,#000,transparent_75%)] phone:hidden rtl:[mask-image:radial-gradient(ellipse_at_0%_100%,#000,transparent_75%)]" />
     </span>
   )
 }
