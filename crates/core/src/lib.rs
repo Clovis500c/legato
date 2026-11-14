@@ -20,6 +20,7 @@ pub mod search;
 pub mod session;
 pub mod searchpace;
 pub mod server;
+pub mod channels;
 pub mod share;
 pub mod songlist;
 pub mod spotify_export;

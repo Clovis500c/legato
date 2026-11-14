@@ -23,9 +23,9 @@ export function ArtistLine({ now, className = '' }: { now: NowPlaying; className
     for (const name of names) {
       // The page found by the name must show one of these: the song playing, or songs of this artist you have.
       const mine = tracks.filter((t) => allArtists(t.artist).includes(name)).slice(0, 12)
-      fetchPicture(name, ripe, [now.title, ...mine.map((t) => t.title)])
+      fetchPicture(name, ripe, [now.title, ...mine.map((t) => t.title)], now.youtubeId ?? mine.find((t) => t.ids.youtube)?.ids.youtube)
     }
-  }, [names, ripe, now.title, tracks])
+  }, [names, ripe, now.title, now.youtubeId, tracks])
   const open = (artist: string) => {
     usePlayer.getState().setFull(false)
     useStore.getState().go({ name: 'artist', artist })

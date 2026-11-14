@@ -26,8 +26,8 @@ export function warm(src: string) {
   img.src = sizedArt(src, 44, window.devicePixelRatio || 1)
 }
 
-/** Asks Rust for the picture of `name` (`ask` false: only what it already keeps, no request) and stores it. `titles`: the song(s) playing, to tell two artists of one name apart. */
-export function fetchPicture(name: string, ask: boolean, titles?: string[]) {
+/** Asks Rust for the picture of `name` (`ask` false: only what it already keeps, no request) and stores it. `titles`: the song(s) playing, to tell two artists of one name apart; `video`: one of its songs' YouTube video, to find an uploader channel that no catalogue page matches. */
+export function fetchPicture(name: string, ask: boolean, titles?: string[], video?: string) {
   const key = pictureKey(name)
   if (usePictures.getState()[key]) return
   const slot = `${key}
@@ -35,7 +35,7 @@ ${ask}`
   if (pending.has(slot)) return
   pending.add(slot)
   void api
-    .artistPicture(name, ask, titles)
+    .artistPicture(name, ask, titles, video)
     .then(
       (url) => {
         if (!url) return

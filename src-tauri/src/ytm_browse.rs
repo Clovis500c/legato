@@ -81,10 +81,29 @@ pub async fn ytm_list(state: State<'_, AppState>, list: ListRef) -> CmdResult<Ve
     Ok((*state.cache.lists.put(&key, tracks)).clone())
 }
 
+/// Library setting holding the channels found for artists that are no catalogue artist (`music_core::channels`).
+const CHANNELS: &str = "ytChannels";
+
+/// The artist's page: the channel kept for the name, else the catalogue's by name checked against `titles`, else, with `video` (one of
+/// its songs, on YouTube), the channel that song's byline links (an uploader such as a small producer's channel), kept for next time.
+/// Public pages, asked without the account. Same pacing as before: the callers' (`artist_picture`'s turn, its 6-hour miss, a refusal ends it).
+pub(crate) async fn artist_page_for(state: &AppState, name: &str, titles: &[String], video: Option<String>) -> anyhow::Result<Option<Artist>> {
+    let mut kept: std::collections::BTreeMap<String, String> = state.lib().setting(CHANNELS).ok().flatten().and_then(|v| serde_json::from_value(v).ok()).unwrap_or_default();
+    let id = kept.get(&music_core::channels::key(name)).cloned();
+    let (page, found) = public_ytm().artist_or_channel(name, titles, id.as_deref(), video.as_deref()).await?;
+    if let Some(found) = found
+        && music_core::channels::remember(&mut kept, name, &found)
+        && let Ok(v) = serde_json::to_value(&kept)
+    {
+        let _ = state.lib().set_setting(CHANNELS, &v);
+    }
+    Ok(page)
+}
+
 /// An artist's YouTube Music page (top songs, albums, singles, playlists); None: no artist of that name there. Public
 /// page: asked without the account, signed in or not.
 #[tauri::command]
-pub async fn ytm_artist(state: State<'_, AppState>, name: String, titles: Option<Vec<String>>) -> CmdResult<Option<Artist>> {
+pub async fn ytm_artist(state: State<'_, AppState>, name: String, titles: Option<Vec<String>>, video: Option<String>) -> CmdResult<Option<Artist>> {
     // Trust boundary: free text goes into a YouTube search.
     let name = name.trim().to_string();
     if name.is_empty() || name.chars().count() > 200 {
@@ -94,6 +113,6 @@ pub async fn ytm_artist(state: State<'_, AppState>, name: String, titles: Option
     if let Some(hit) = state.cache.artists.get(&key) {
         return Ok((*hit).clone());
     }
-    let page = public_ytm().artist(&name, &crate::song_titles(titles)).await.map_err(err)?;
+    let page = artist_page_for(&state, &name, &crate::song_titles(titles), video).await.map_err(err)?;
     Ok((*state.cache.artists.put(&key, page)).clone())
 }

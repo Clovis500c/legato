@@ -307,13 +307,13 @@ export function AlbumView({ album, artist }: { album: string; artist: string }) 
 }
 
 /** The artist's YouTube Music page (public, signed in or not). undefined = loading, null = none there. */
-/** `titles`: songs of this artist you have: the page found by the name must show one of them (two artists can share a name). */
-function useYtmArtist(artist: string, titles: string[]) {
+/** `titles`: songs of this artist you have: the page found by the name must show one of them (two artists can share a name). `video`: one of them on YouTube, for an uploader channel that has no catalogue page. */
+function useYtmArtist(artist: string, titles: string[], video?: string) {
   const [page, setPage] = useState<YtmArtist | null>()
   useEffect(() => {
     let live = true
     setPage(undefined)
-    api.ytmArtist(artist, titles).then(
+    api.ytmArtist(artist, titles, video).then(
       (p) => live && setPage(p),
       () => live && setPage(null),
     )
@@ -339,6 +339,7 @@ export function ArtistView({ artist }: { artist: string }) {
   const yt = useYtmArtist(
     artist,
     [...shown].sort((a, b) => (stats[b.id]?.[0] ?? 0) - (stats[a.id]?.[0] ?? 0)).slice(0, 12).map((t) => t.title),
+    shown.find((t) => t.ids.youtube)?.ids.youtube,
   )
   const ytSongs = useMemo(() => (yt?.songs ?? []).map(remoteTrack), [yt])
   const hiddenHere = useMemo(() => clean.hidden.filter((t) => fold(primaryArtist(t.artist)) === fold(artist)), [clean, artist])

@@ -594,7 +594,7 @@ pub(crate) fn song_titles(titles: Option<Vec<String>>) -> Vec<String> {
 /// YouTube Music asked once for a song it plays (`ask`), one artist at a time, never during an import, nothing for
 /// 15 minutes after a refusal, a miss not asked again for 6 hours. Square art URL; None: not known, or not now.
 #[tauri::command]
-async fn artist_picture(state: State<'_, AppState>, name: String, ask: bool, titles: Option<Vec<String>>) -> CmdResult<Option<String>> {
+async fn artist_picture(state: State<'_, AppState>, name: String, ask: bool, titles: Option<Vec<String>>, video: Option<String>) -> CmdResult<Option<String>> {
     static ONE_AT_A_TIME: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
     static LOOKED: std::sync::LazyLock<Mutex<music_core::searchpace::Looked>> = std::sync::LazyLock::new(Default::default);
     let name = name.trim().to_string();
@@ -617,7 +617,7 @@ async fn artist_picture(state: State<'_, AppState>, name: String, ask: bool, tit
     if !LOOKED.lock().unwrap().may_ask(&key, std::time::Instant::now()) {
         return Ok(None);
     }
-    match public_ytm().artist(&name, &song_titles(titles)).await {
+    match ytm_browse::artist_page_for(&state, &name, &song_titles(titles), video).await {
         Ok(page) => Ok(art(&state.cache.artists.put(&key, page))),
         Err(e) => {
             let now = std::time::Instant::now();

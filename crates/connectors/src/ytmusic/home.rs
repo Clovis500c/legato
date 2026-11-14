@@ -273,6 +273,42 @@ fn artist_page(page: &Value) -> Option<Artist> {
     Some(Artist { name, art: last_thumb(header.get("thumbnail")), songs, all_songs, shelves: shelves(page), about: about(page, header) })
 }
 
+/// A channel id from YouTube's own pages: `UC`, then letters, digits, - and _ (bounded). It goes into a `browse` request.
+pub fn valid_channel(id: &str) -> bool {
+    id.starts_with("UC") && id.len() >= 3 && id.len() <= 40 && id.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_')
+}
+
+/// The channel of the artist called `name` in a `next` response: the linked run of a song's byline (a catalogue artist's page, or an
+/// uploader's channel: `MUSIC_PAGE_TYPE_USER_CHANNEL`, which has no entry in the artists search) whose text is that very name.
+pub(crate) fn channel_in(v: &Value, name: &str) -> Option<String> {
+    let want = normalize(name);
+    all(v, "playlistPanelVideoRenderer").into_iter().flat_map(|p| [p.get("longBylineText"), p.get("shortBylineText")]).flatten().find_map(|b| {
+        b.get("runs")?.as_array()?.iter().find_map(|r| {
+            let id = r.pointer("/navigationEndpoint/browseEndpoint/browseId")?.as_str()?;
+            let linked = matches!(page_type(r), "MUSIC_PAGE_TYPE_ARTIST" | "MUSIC_PAGE_TYPE_USER_CHANNEL");
+            (linked && valid_channel(id) && normalize(r.get("text")?.as_str()?) == want).then(|| id.to_string())
+        })
+    })
+}
+
+/// An uploader channel's page: the artist page's own parse (its visual header, its carousels), and, with no "Top songs" shelf (a
+/// channel has videos), its first carousel of songs or videos as the top songs. The layout ytmusicapi's `get_user` reads.
+fn channel_page(page: &Value) -> Option<Artist> {
+    let mut a = artist_page(page)?;
+    if a.songs.is_empty() {
+        // A channel with no video listed still has its picture and name.
+        a.songs = a
+            .shelves
+            .iter()
+            .find_map(|s| {
+                let songs: Vec<Track> = s.items.iter().filter_map(|i| i.track.clone()).collect();
+                (!songs.is_empty()).then_some(songs)
+            })
+            .unwrap_or_default();
+    }
+    Some(a)
+}
+
 /// "About": the description shelf at the page's foot, else the header's own description (older layout).
 fn about(page: &Value, header: &Value) -> Option<String> {
     all(page, "musicDescriptionShelfRenderer")
@@ -297,6 +333,46 @@ impl YouTubeMusic {
             }
         }
         Ok(None)
+    }
+
+    /// A channel's page by its id (an uploader that is no catalogue artist, or an artist's own): one `browse`. None: not a page YouTube Music
+    /// shows for it. The id is checked first: it only ever comes from YouTube's own pages.
+    pub async fn channel(&self, id: &str) -> Result<Option<Artist>> {
+        if !valid_channel(id) {
+            return Ok(None);
+        }
+        Ok(channel_page(&self.call("browse", json!({ "browseId": id })).await?))
+    }
+
+    /// The channel of the artist `name` from one of its songs: one `next` for that video, its byline read. None: the byline links no
+    /// channel of that name. The caller keeps the answer, so a song is asked once per artist.
+    pub async fn channel_of(&self, video_id: &str, name: &str) -> Result<Option<String>> {
+        let ok = !video_id.is_empty() && video_id.len() <= 20 && video_id.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_');
+        if !ok {
+            return Ok(None);
+        }
+        Ok(channel_in(&self.call("next", json!({ "videoId": video_id, "isAudioOnly": true })).await?, name))
+    }
+
+    /// An artist's page for the app, whatever kind of "artist" it is: the channel kept for the name (`kept`: one request), else the
+    /// catalogue's by name checked against `titles` (as `artist`), else, given the video of one of its songs, the channel its byline
+    /// links (one `next`, one `browse`): an uploader that is no catalogue artist. The second value is a channel found that way, for
+    /// the caller to keep (so a song is asked once per artist). Any refusal is an error and ends it: no other endpoint, no retry.
+    pub async fn artist_or_channel(&self, name: &str, titles: &[String], kept: Option<&str>, video: Option<&str>) -> Result<(Option<Artist>, Option<String>)> {
+        if let Some(page) = match kept {
+            Some(id) => self.channel(id).await?,
+            None => None,
+        } {
+            return Ok((Some(page), None));
+        }
+        if let Some(page) = self.artist(name, titles).await? {
+            return Ok((Some(page), None));
+        }
+        let Some(video) = video else { return Ok((None, None)) };
+        let Some(id) = self.channel_of(video, name).await? else { return Ok((None, None)) };
+        let page = self.channel(&id).await?;
+        let found = page.is_some().then_some(id);
+        Ok((page, found))
     }
 
     /// Home shelves, first page and a couple more; `mood` = a chip's params (the home filtered to it).
@@ -449,6 +525,92 @@ mod tests {
         assert_eq!(a.all_songs, Some(ListRef::Browse { id: "VLOLAK5uy_top".into() }));
         assert_eq!(a.shelves.iter().map(|s| s.title.as_str()).collect::<Vec<_>>(), ["Featured on"], "artists-only shelf dropped");
         assert_eq!(a.about, None, "no About: none");
+    }
+
+    fn byline(runs: Vec<Value>) -> Value {
+        json!({ "contents": [{ "playlistPanelVideoRenderer": { "videoId": "v1", "title": { "runs": [{ "text": "Girl" }] }, "longBylineText": { "runs": runs } } }] })
+    }
+
+    #[test]
+    fn a_channel_id_is_only_ever_youtubes_own_shape() {
+        assert!(valid_channel("UCabcdefghijklmnopqrstuv"));
+        assert!(valid_channel("UC-_09aZ"));
+        for bad in ["", "UC", "VLPL1", "UC../x", "UC abc", "UC?x=1", "https://x", &format!("UC{}", "a".repeat(40))] {
+            assert!(!valid_channel(bad), "{bad:?}");
+        }
+    }
+
+    #[test]
+    fn the_channel_of_an_uploader_is_read_from_the_songs_byline() {
+        // An uploader channel (not a catalogue artist) as a song's linked byline run.
+        let page = byline(vec![run("prodphanda", Some(("MUSIC_PAGE_TYPE_USER_CHANNEL", "UCchan0000000000000000aa"))), run(" • ", None), run("3 views", None)]);
+        assert_eq!(channel_in(&page, "prodphanda").as_deref(), Some("UCchan0000000000000000aa"));
+        assert_eq!(channel_in(&page, "ProdPhanda").as_deref(), Some("UCchan0000000000000000aa"), "case and accents aside");
+        // A catalogue artist's page counts too; another name, an unlinked run and a bad id do not.
+        let art = byline(vec![run("Muse", Some(("MUSIC_PAGE_TYPE_ARTIST", "UC3abcdefghijklmnopqrstu")))]);
+        assert_eq!(channel_in(&art, "Muse").as_deref(), Some("UC3abcdefghijklmnopqrstu"));
+        assert_eq!(channel_in(&page, "Someone else"), None);
+        assert_eq!(channel_in(&byline(vec![run("prodphanda", None)]), "prodphanda"), None);
+        assert_eq!(channel_in(&byline(vec![run("prodphanda", Some(("MUSIC_PAGE_TYPE_USER_CHANNEL", "UC../evil")))]), "prodphanda"), None);
+        assert_eq!(channel_in(&json!({}), "x"), None);
+    }
+
+    #[test]
+    fn a_channel_page_gives_its_picture_and_its_videos_as_the_top_songs() {
+        // The shape ytmusicapi's get_user reads: a visual header, then carousels of videos (no "Top songs" shelf).
+        let video = json!({ "musicTwoRowItemRenderer": { "title": { "runs": [{ "text": "Girl (prod. phanda)" }] }, "subtitle": { "runs": [run("Video", None), run(" • ", None), run("prodphanda", Some(("MUSIC_PAGE_TYPE_USER_CHANNEL", "UCchan0000000000000000aa")))] }, "thumbnailRenderer": thumb("https://i.ytimg.com/vi/vid1/hqdefault.jpg"), "navigationEndpoint": { "watchEndpoint": { "videoId": "vid1" } } } });
+        let page = json!({
+            "header": { "musicVisualHeaderRenderer": { "title": { "runs": [{ "text": "prodphanda" }] }, "thumbnail": thumb("https://yt3.googleusercontent.com/avatar=w544-h544-p") } },
+            "contents": { "sectionListRenderer": { "contents": [json!({ "musicCarouselShelfRenderer": { "header": { "musicCarouselShelfBasicHeaderRenderer": { "title": { "runs": [{ "text": "Videos" }] } } }, "contents": [video] } })] } }
+        });
+        let got = channel_page(&page).unwrap();
+        assert_eq!(got.name, "prodphanda");
+        assert!(got.art.as_deref().unwrap().starts_with("https://yt3.googleusercontent.com/avatar"));
+        assert_eq!(got.songs.len(), 1);
+        assert_eq!(got.songs[0].title, "Girl (prod. phanda)");
+        assert_eq!(got.songs[0].ids[&Source::Youtube], "vid1");
+        assert_eq!(channel_page(&json!({})), None);
+    }
+
+    #[tokio::test]
+    async fn an_uploader_with_no_catalogue_page_is_found_through_its_songs_byline_once() {
+        let mut s = mockito::Server::new_async().await;
+        // The name search finds no artist; the song's own byline links the channel; the channel's page has the picture.
+        let search = s.mock("POST", "/search").match_query(mockito::Matcher::Any).with_body(r#"{"contents":{}}"#).expect(1).create_async().await;
+        let next = s.mock("POST", "/next").match_query(mockito::Matcher::Any).with_body(byline(vec![run("prodphanda", Some(("MUSIC_PAGE_TYPE_USER_CHANNEL", "UCchan0000000000000000aa")))]).to_string()).expect(1).create_async().await;
+        let browse = s
+            .mock("POST", "/browse")
+            .match_query(mockito::Matcher::Any)
+            .match_body(mockito::Matcher::PartialJson(json!({ "browseId": "UCchan0000000000000000aa" })))
+            .with_body(json!({ "header": { "musicVisualHeaderRenderer": { "title": { "runs": [{ "text": "prodphanda" }] }, "thumbnail": thumb("https://yt3.googleusercontent.com/avatar=w544-h544-p") } } }).to_string())
+            .expect(2)
+            .create_async()
+            .await;
+        let yt = YouTubeMusic::anonymous_with_api(&s.url());
+        // No video of its songs: nothing more is asked beyond the search.
+        assert_eq!(yt.artist_or_channel("prodphanda", &["Girl".into()], None, None).await.unwrap(), (None, None));
+        let (page, found) = yt.artist_or_channel("prodphanda", &["Girl".into()], None, Some("vid1")).await.unwrap();
+        // (the first call above searched too: the search mock expects 1, so reset its count by asking the kept way below)
+        let page = page.unwrap();
+        assert!(page.art.as_deref().unwrap().starts_with("https://yt3.googleusercontent.com/avatar"));
+        assert_eq!(found.as_deref(), Some("UCchan0000000000000000aa"));
+        // Kept: one browse, no search and no `next`.
+        let (again, new) = yt.artist_or_channel("prodphanda", &[], found.as_deref(), Some("vid1")).await.unwrap();
+        assert!(again.is_some() && new.is_none());
+        search.expect(2).assert_async().await;
+        next.assert_async().await;
+        browse.assert_async().await;
+    }
+
+    #[tokio::test]
+    async fn a_refusal_is_an_error_not_a_reason_to_try_another_way() {
+        let mut s = mockito::Server::new_async().await;
+        let search = s.mock("POST", "/search").match_query(mockito::Matcher::Any).with_status(429).with_body("Sorry").expect(1).create_async().await;
+        let next = s.mock("POST", "/next").match_query(mockito::Matcher::Any).expect(0).create_async().await;
+        let yt = YouTubeMusic::anonymous_with_api(&s.url());
+        assert!(yt.artist_or_channel("prodphanda", &[], None, Some("vid1")).await.is_err());
+        search.assert_async().await;
+        next.assert_async().await;
     }
 
     #[test]
