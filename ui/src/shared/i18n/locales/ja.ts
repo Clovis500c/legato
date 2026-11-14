@@ -1671,7 +1671,7 @@ const ja: Record<string, string> = {
   'toast popup messages fewer quiet annoying errors only important': 'トースト ポップアップ メッセージ 減らす 静か うるさい エラーのみ 重要',
   'toast popup message time seconds duration short long': 'トースト ポップアップ メッセージ 時間 秒 長さ 短い 長い',
   'What do you want to play?': '何を再生しますか？',
-  'Playing from {list}': '{list}から再生中',
+  'From': '元',
   'In the right panel': '右パネル内',
   'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': '右パネルやサイドバー内ならページを隠しません。フローティングならどこへでもドラッグできます。',
   'Expand Your library': 'ライブラリを広げる',

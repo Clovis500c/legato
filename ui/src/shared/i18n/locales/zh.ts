@@ -1671,7 +1671,7 @@ const zh: Record<string, string> = {
   'toast popup messages fewer quiet annoying errors only important': '弹出 提示 消息 减少 安静 烦人 仅错误 重要',
   'toast popup message time seconds duration short long': '弹出 提示 消息 时间 秒 时长 短 长',
   'What do you want to play?': '想听什么？',
-  'Playing from {list}': '正在从 {list} 播放',
+  'From': '来自',
   'In the right panel': '在右侧面板中',
   'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': '在右侧面板或侧边栏中时不会遮挡页面；悬浮时可拖到任意位置。',
   'Expand Your library': '展开你的音乐库',

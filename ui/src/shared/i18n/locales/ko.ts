@@ -1671,7 +1671,7 @@ const ko: Record<string, string> = {
   'toast popup messages fewer quiet annoying errors only important': '토스트 팝업 메시지 줄이기 조용히 귀찮음 오류만 중요',
   'toast popup message time seconds duration short long': '토스트 팝업 메시지 시간 초 길이 짧게 길게',
   'What do you want to play?': '무엇을 재생할까요?',
-  'Playing from {list}': '{list}에서 재생 중',
+  'From': '출처',
   'In the right panel': '오른쪽 패널에',
   'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': '오른쪽 패널이나 사이드바에서는 페이지를 가리지 않으며, 플로팅이면 어디로든 드래그할 수 있습니다.',
   'Expand Your library': '내 보관함 넓히기',

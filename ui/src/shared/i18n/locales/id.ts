@@ -1671,7 +1671,7 @@ const id: Record<string, string> = {
   'toast popup messages fewer quiet annoying errors only important': 'toast popup pesan lebih sedikit tenang mengganggu hanya galat penting',
   'toast popup message time seconds duration short long': 'toast popup pesan waktu detik durasi singkat lama',
   'What do you want to play?': 'Mau putar apa?',
-  'Playing from {list}': 'Diputar dari {list}',
+  'From': 'Dari',
   'In the right panel': 'Di panel kanan',
   'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'Di panel kanan atau bilah samping, pemutar tidak pernah menutupi halaman; saat mengambang, seret ke mana saja.',
   'Expand Your library': 'Perbesar Koleksimu',

@@ -20,6 +20,7 @@ import { playerMenu, vizMenu } from '../menus'
 import { useAmbient, useCoverHue } from './ambient'
 import { Backdrop } from './Backdrop'
 import { useBackdrop } from './immersive'
+import { FromTag } from './FromTag'
 import { VolumeControl } from './PlayerBar'
 import { SeekBar, TimeText, usePosition } from './Progress'
 import { viaLabel, type Via } from './sources'
@@ -294,7 +295,7 @@ export function NowPlaying() {
               <RoomPill />
             </span>
           ) : (
-            <p className="kicker min-w-0 flex-1 truncate text-center">{from ? tr('Playing from {list}', { list: from }) : tr('Now playing')}</p>
+            from ? <FromTag className="flex-1 justify-center" /> : <p className="kicker min-w-0 flex-1 truncate text-center">{tr('Now playing')}</p>
           )}
           <RoundButton label={tr('More')} kind="plain" size="md" onClick={(e) => openMenu(e, more(), { place: 'below' })}>
             <DotsThree size={24} weight="bold" />
@@ -352,7 +353,7 @@ export function NowPlaying() {
             </div>
           ) : (
             <div className="flex min-w-0 flex-col justify-center gap-4 pb-8">
-              {from && <p className="kicker truncate">{tr('Playing from {list}', { list: from })}</p>}
+              {from && <FromTag />}
               <h2 className="line-clamp-2 pb-1 text-[clamp(2.5rem,5.5vw,5.5rem)] leading-[1.05] font-black tracking-[-0.02em] break-words">{now.title}</h2>
               <ArtistLine now={now} className="text-[1.375rem] leading-7 font-bold" />
               {track?.album && <p className="truncate text-sm">{track.album}</p>}

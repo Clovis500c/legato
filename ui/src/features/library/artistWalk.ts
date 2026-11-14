@@ -18,7 +18,7 @@ export async function walkFrom(artist: string) {
     const list = walk?.trackIds.flatMap((id) => byId.get(id) ?? []) ?? []
     if (!walk || !list.length) return notify(tr('No walk found: nothing you listen to joins these two artists'))
     usePlayer.getState().playTracks(list, 0)
-    if (usePlayer.getState().list === list) usePlayer.setState({ from: walk.artists.join(' → ') })
+    if (usePlayer.getState().list === list) usePlayer.setState({ from: walk.artists.join(' → '), fromKind: 'walk', fromId: undefined })
     notify(trn(walk.artists.length, 'Walking through {n} artist', 'Walking through {n} artists'))
   } catch (e) {
     notify(String(e), { kind: 'error' })

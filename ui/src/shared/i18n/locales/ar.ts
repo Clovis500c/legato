@@ -1616,7 +1616,7 @@ const ar: Record<string, string> = {
   'toast popup messages fewer quiet annoying errors only important': 'إشعار منبثق رسائل أقل هادئ مزعج أخطاء فقط مهم',
   'toast popup message time seconds duration short long': 'إشعار منبثق رسالة وقت ثوانٍ مدة قصيرة طويلة',
   'What do you want to play?': 'ماذا تريد أن تشغّل؟',
-  'Playing from {list}': 'التشغيل من {list}',
+  'From': 'من',
   'In the right panel': 'في اللوحة اليمنى',
   'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'في اللوحة اليمنى أو الشريط الجانبي لا يغطي الصفحة أبدًا؛ وإذا كان عائمًا، اسحبه إلى أي مكان.',
   'Expand Your library': 'توسيع مكتبتك',

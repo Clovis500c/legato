@@ -9,6 +9,7 @@ import { albumGoesOn, demoGain, demoLength, fadeGain, NO_FADE, overlapDue, PICK_
 import { sweetFade } from './sweet'
 import { endsOf } from './sweetData'
 import { insertAt, keepQueued, moveInOrder, moveToSlot, nextIndex, playOrder, queued, tooLong, type Repeat } from './queue'
+import { contextOf, type FromKind } from './fromLabel'
 import { libraryScores, type Variety } from './score'
 import { BETA, RECENT_S, shapedOrder, smartOrder } from './shuffle'
 import { tasteFor, useTaste } from './taste'
@@ -54,6 +55,9 @@ interface PlayerState {
   added: number[]
   /** What the queue was started from (the page it was played on), for Up next's "Then from …". */
   from?: string
+  /** What `from` is (its icon in Now Playing) and, for a playlist, its id (its own cover). */
+  fromKind?: FromKind
+  fromId?: number
   /** The queue is a radio (radio.ts): endless, songs like the last few come as Up next runs out. */
   radio: boolean
   /** The queue is an Auto-DJ (autoDj.ts): songs of these library ids come by its rules as Up next runs out. */
@@ -585,14 +589,11 @@ async function tryOtherUpload(trackId: number, failed: string, why: string, caus
   p.step(1)
 }
 
-/** The page a queue is played from, for Up next's "Then from …". */
-function contextName(): string | undefined {
+/** The page a queue is played from, for Up next's "Then from …" and Now Playing's "From …". */
+function contextName() {
   const { view, playlists } = useStore.getState()
-  if (view.name === 'playlist') return playlists.find((p) => p.id === view.id)?.name
-  if (view.name === 'album') return view.album
-  if (view.name === 'artist') return view.artist
-  if (view.name === 'songs') return tr('Songs')
-  return undefined
+  const c = contextOf(view, playlists, { songs: tr('Songs') })
+  return { from: c?.from, fromKind: c?.kind, fromId: c?.id }
 }
 
 export const usePlayer = create<PlayerState>((set, get) => ({
@@ -633,7 +634,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     if (held) return held()
     const i = list.findIndex((t, j) => j >= index && canPlay(t))
     if (i < 0) return
-    set({ list, order: shuffleOrder(get(), list, i, get().shuffle), added: [], from: contextName(), radio: false, dj: undefined })
+    set({ list, order: shuffleOrder(get(), list, i, get().shuffle), added: [], ...contextName(), radio: false, dj: undefined })
     void get().playAt(i, i === index ? via : undefined)
   },
 
@@ -689,7 +690,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   resume({ list, index, order, added = [], shuffle, repeat, positionMs, via, paused = false }) {
     const valid = order.length === list.length && order.includes(index)
     // Queued songs come back with their order (session.ts); a rebuilt order makes them part of the list again.
-    set({ list, shuffle, repeat, order: valid ? order : shuffleOrder(get(), list, index, shuffle), added: valid ? added : [], from: undefined })
+    set({ list, shuffle, repeat, order: valid ? order : shuffleOrder(get(), list, index, shuffle), added: valid ? added : [], from: undefined, fromKind: undefined, fromId: undefined })
     void get().playAt(index, via, { from: positionMs, hold: paused })
   },
 

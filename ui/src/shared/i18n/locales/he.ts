@@ -1616,7 +1616,7 @@ const he: Record<string, string> = {
   'toast popup messages fewer quiet annoying errors only important': 'טוסט חלונית הודעות פחות שקט מטרד שגיאות בלבד חשוב',
   'toast popup message time seconds duration short long': 'טוסט חלונית הודעה זמן שניות משך קצר ארוך',
   'What do you want to play?': 'מה תרצו לנגן?',
-  'Playing from {list}': 'מנגן מ-{list}',
+  'From': 'מתוך',
   'In the right panel': 'בלוח הימני',
   'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'בלוח הימני או בסרגל הצד הוא אף פעם לא מכסה את העמוד; כשהוא צף, גררו אותו לכל מקום.',
   'Expand Your library': 'הרחבת הספרייה שלכם',

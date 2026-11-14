@@ -1671,7 +1671,7 @@ const sv: Record<string, string> = {
   'toast popup messages fewer quiet annoying errors only important': 'toast popup meddelanden färre tyst irriterande bara fel viktiga',
   'toast popup message time seconds duration short long': 'toast popup meddelande tid sekunder längd kort lång',
   'What do you want to play?': 'Vad vill du lyssna på?',
-  'Playing from {list}': 'Spelas från {list}',
+  'From': 'Från',
   'In the right panel': 'I högerpanelen',
   'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'I högerpanelen eller sidofältet täcker den aldrig sidan; flytande kan du dra den vart du vill.',
   'Expand Your library': 'Visa Ditt bibliotek större',

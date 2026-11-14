@@ -1671,7 +1671,7 @@ const hi: Record<string, string> = {
   'toast popup messages fewer quiet annoying errors only important': 'टोस्ट पॉपअप संदेश कम शांत परेशान सिर्फ़ त्रुटियाँ ज़रूरी',
   'toast popup message time seconds duration short long': 'टोस्ट पॉपअप संदेश समय सेकंड अवधि कम ज़्यादा',
   'What do you want to play?': 'आप क्या सुनना चाहते हैं?',
-  'Playing from {list}': '{list} से चल रहा है',
+  'From': 'से',
   'In the right panel': 'दाएँ पैनल में',
   'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'दाएँ पैनल या साइडबार में यह कभी पेज को नहीं ढकता; फ़्लोटिंग हो तो इसे कहीं भी खींचें।',
   'Expand Your library': 'आपकी लाइब्रेरी बड़ी करें',

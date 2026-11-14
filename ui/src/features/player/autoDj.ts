@@ -47,7 +47,7 @@ export function startAutoDj(songs: readonly LibraryTrack[], name?: string) {
   const picks = pick(pool, [])
   if (!picks.length) return useStore.getState().notify(tr('Nothing here the Auto-DJ can play'))
   usePlayer.getState().playTracks(picks, 0)
-  if (usePlayer.getState().list === picks) usePlayer.setState({ dj: pool, from: name ? tr('Auto-DJ: {name}', { name }) : tr('Auto-DJ') })
+  if (usePlayer.getState().list === picks) usePlayer.setState({ dj: pool, fromKind: 'dj', from: name ? tr('Auto-DJ: {name}', { name }) : tr('Auto-DJ') })
 }
 
 /** Up next ran out with the Auto-DJ on (autoplay.ts): its next picks, at the end. False: nothing left to play. */

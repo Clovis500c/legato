@@ -1671,7 +1671,7 @@ const fr: Record<string, string> = {
   'toast popup messages fewer quiet annoying errors only important': 'toast popup messages moins calme gênant erreurs seulement importantes',
   'toast popup message time seconds duration short long': 'toast popup message temps secondes durée court long',
   'What do you want to play?': 'Que voulez-vous écouter ?',
-  'Playing from {list}': 'Lecture depuis {list}',
+  'From': 'De',
   'In the right panel': 'Dans le panneau de droite',
   'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'Dans le panneau de droite ou la barre latérale, il ne cache jamais la page ; flottant, déplacez-le où vous voulez.',
   'Expand Your library': 'Agrandir Votre bibliothèque',

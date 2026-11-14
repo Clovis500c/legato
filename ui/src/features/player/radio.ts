@@ -36,7 +36,7 @@ export async function similarTo(seed: LibraryTrack[], skip: Set<string>, max: nu
 /** The radio plays, endless (autoplay.ts goes on with songs like the last few). */
 function playRadio(list: LibraryTrack[], name: string | undefined) {
   usePlayer.getState().playTracks(list, 0)
-  if (usePlayer.getState().list === list) usePlayer.setState({ radio: true, from: name ? tr('{name} radio', { name }) : tr('Radio') })
+  if (usePlayer.getState().list === list) usePlayer.setState({ radio: true, fromKind: 'radio', from: name ? tr('{name} radio', { name }) : tr('Radio') })
 }
 
 /** Right-click › Start radio: the song, then songs like it. */
@@ -99,5 +99,5 @@ export async function startMix(seed: LibraryTrack) {
   const list = mixFromSong({ seed, candidates, taste, variety, rand: Math.random, library, hour })
   if (list.length < 2) return useStore.getState().notify(tr('No similar songs found'))
   usePlayer.getState().playTracks(list, 0)
-  if (usePlayer.getState().list === list) usePlayer.setState({ from: tr('{title} mix', { title: seed.title }) })
+  if (usePlayer.getState().list === list) usePlayer.setState({ from: tr('{title} mix', { title: seed.title }), fromKind: 'mix', fromId: undefined })
 }

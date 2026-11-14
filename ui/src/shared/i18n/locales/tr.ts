@@ -1671,7 +1671,7 @@ const tr: Record<string, string> = {
   'toast popup messages fewer quiet annoying errors only important': 'açılır bildirim mesajlar daha az sessiz rahatsız edici yalnızca hatalar önemli',
   'toast popup message time seconds duration short long': 'açılır bildirim mesaj süre saniye kısa uzun',
   'What do you want to play?': 'Ne dinlemek istersin?',
-  'Playing from {list}': 'Çalınan liste: {list}',
+  'From': 'Kaynak',
   'In the right panel': 'Sağ panelde',
   'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'Sağ panelde veya kenar çubuğunda sayfayı asla kapatmaz; yüzerken istediğin yere sürükle.',
   'Expand Your library': 'Kitaplığını genişlet',

@@ -1671,7 +1671,7 @@ const uk: Record<string, string> = {
   'toast popup messages fewer quiet annoying errors only important': 'спливаючі повідомлення менше тихо дратує лише помилки важливі',
   'toast popup message time seconds duration short long': 'спливаюче повідомлення час секунди тривалість коротко довго',
   'What do you want to play?': 'Що хочеш послухати?',
-  'Playing from {list}': 'Грає з: {list}',
+  'From': 'З',
   'In the right panel': 'На правій панелі',
   'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'На правій або бічній панелі він ніколи не закриває сторінку; плаваючий можна перетягнути куди завгодно.',
   'Expand Your library': 'Розгорнути медіатеку',

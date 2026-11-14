@@ -1671,7 +1671,7 @@ const vi: Record<string, string> = {
   'toast popup messages fewer quiet annoying errors only important': 'popup thông báo ít hơn yên tĩnh phiền chỉ lỗi quan trọng',
   'toast popup message time seconds duration short long': 'popup thông báo thời gian giây độ dài ngắn dài',
   'What do you want to play?': 'Bạn muốn nghe gì?',
-  'Playing from {list}': 'Đang phát từ {list}',
+  'From': 'Từ',
   'In the right panel': 'Ở bảng bên phải',
   'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'Ở bảng bên phải hoặc thanh bên thì không bao giờ che trang; khi nổi, kéo đi đâu cũng được.',
   'Expand Your library': 'Mở rộng Thư viện của bạn',
