@@ -24,10 +24,12 @@ import { trackMenu, tracksMenu } from '../menus'
 import { MixCard, mixSongs } from '../mixes/MixesView'
 import { useMixes } from '../mixes/useMixes'
 import { mixTitle } from '../mixes/words'
+import { averageColor } from '../player/ambient'
 import { Backdrop } from '../player/Backdrop'
 import { useBackdrop } from '../player/immersive'
 import { remoteTrack, useNowTrack, usePlayer } from '../player/store'
 import { WaysIn } from '../welcome/WaysIn'
+import { BASE_DIM, homeVeil, parseColor } from './homeVeil'
 import { jumpLists, useOpenedLists, type OpenedList } from './recentLists'
 import { weekOf } from './week'
 import { phoneApp } from '../../shared/platform'
@@ -36,6 +38,9 @@ const ROW = 12
 
 // Your playlists as a carousel of banners (loaded with Home's section, not at launch).
 const BannerCarousel = lazy(() => import('../library/PlaylistBanner').then((m) => ({ default: m.BannerCarousel })))
+
+/** Over the flowing background the list does not end in a hard line under the chips or at the bottom: it fades out over 20 px (a static mask, nothing redrawn), with the room above it that the fade needs. */
+const FADE_EDGES = 'pt-5 [mask-image:linear-gradient(to_bottom,transparent,#000_20px,#000_calc(100%-24px),transparent)]'
 
 /** YouTube Music's mood chips come in English (requests use hl=en): the interface's language here. */
 const MOODS: Record<string, string> = {
@@ -89,7 +94,7 @@ function SongList({ tracks }: { tracks: LibraryTrack[] }) {
  * and two lines (a press and hold gives Play). */
 function JumpTile({ art, title, onOpen, onPlay, menu }: { art: ReactNode; title: string; onOpen: () => void; onPlay: () => void; menu: () => MenuEntry[] }) {
   return (
-    <div onContextMenu={onMenu(menu)} className="group flex h-14 items-center gap-3 overflow-hidden rounded-md bg-raised pe-2 transition-colors hover:bg-line phone:gap-2">
+    <div onContextMenu={onMenu(menu)} className="group flex h-14 items-center gap-3 overflow-hidden rounded-md bg-raised pe-2 transition-colors group-data-[flow=on]/home:bg-raised/60 hover:bg-line phone:gap-2">
       <button onClick={onOpen} className="flex h-full min-w-0 flex-1 items-center gap-3 text-start phone:gap-2.5">
         <span className="grid size-14 shrink-0 place-items-center overflow-hidden">{art}</span>
         <span className="truncate text-sm font-medium phone:line-clamp-2 phone:text-[0.8125rem] phone:leading-4 phone:whitespace-normal">{title}</span>
@@ -185,7 +190,7 @@ function YourWeek() {
   const tile = 'flex min-w-0 items-center gap-3 rounded-md border border-line-soft p-3 text-start transition-colors hover:bg-raised'
   // Three blocks centred on one line (user's request 2026-10-23): time, days, then top artist and song share the rest.
   return (
-    <div className="flex flex-wrap items-center gap-x-10 gap-y-5 rounded-lg border border-line bg-panel p-5">
+    <div className="flex flex-wrap items-center gap-x-10 gap-y-5 rounded-lg border border-line bg-panel p-5 group-data-[flow=on]/home:bg-panel/55">
       <div className="flex flex-col gap-2">
         <span className="text-[2rem] leading-none font-bold tracking-[-0.01em]">{hours(week.total)}</span>
         {/* Grey either way: sky blue only marks playback (docs/design.md). */}
@@ -314,12 +319,30 @@ function useYtmHome(on: boolean, mood: string | null) {
   return { home: homes[key], moods: homes['']?.moods ?? [], error }
 }
 
-/** The flowing background (Backdrop's shader, paused with the song and the window) behind Home, from the playing cover. Dimmed enough to read the cards. */
+/**
+ * The flowing background (Backdrop's shader, paused with the song and the window) behind Home, from the playing cover. The veil over it
+ * follows the cover: the base one for a dark cover, thicker for a bright one so the secondary text keeps 4.5:1 (homeVeil.ts). Nothing
+ * playing: no backdrop, Home's plain background.
+ */
 function HomeFlow() {
   const track = useNowTrack()
   const blur = useSettings((s) => s.settings.backdropBlur)
-  const url = useBackdrop(track ? trackArt(track)[0] : undefined, Math.max(blur, 40))
-  return <Backdrop url={url} dim={72} motion flowing />
+  const art = track ? trackArt(track)[0] : undefined
+  const url = useBackdrop(art, Math.max(blur, 40))
+  const [dim, setDim] = useState(BASE_DIM)
+  useEffect(() => {
+    if (!art) return
+    let live = true
+    void averageColor(art).then((cover) => {
+      if (!live) return
+      const css = getComputedStyle(document.documentElement)
+      setDim(homeVeil(cover, parseColor(css.getPropertyValue('--bg')), parseColor(css.getPropertyValue('--ink-2'))))
+    })
+    return () => {
+      live = false
+    }
+  }, [art])
+  return <Backdrop url={url} dim={dim} motion flowing />
 }
 
 /** New from your artists: MusicBrainz asked once a day by Rust (`new_releases`), only while the section is on. */
@@ -554,9 +577,10 @@ export function HomeView() {
 
   // No page title (mockup): chips, then the shortcut tiles, then the sections.
   return (
-    <div className="relative isolate flex min-h-0 flex-1 flex-col">
+    <div data-flow={homeFlow ? 'on' : undefined} className="group/home relative isolate flex min-h-0 flex-1 flex-col">
       {homeFlow && <HomeFlow />}
-      <div className="flex shrink-0 items-start gap-4 pb-4 phone:items-center phone:gap-1 phone:pb-3">
+      {/* Over the flowing background the sections' own top room is the chips' (no seam: the list fades out under them, below). */}
+      <div className={`flex shrink-0 items-start gap-4 phone:items-center phone:gap-1 phone:pb-3 ${homeFlow ? 'pb-0' : 'pb-4'}`}>
         {/* The phone: one row scrolled sideways. */}
         <div role="tablist" aria-label={tr('Show on Home')} className="no-scrollbar flex min-w-0 flex-1 flex-wrap items-center gap-2 phone:flex-nowrap phone:overflow-x-auto">
           <LedChip on={!mood && filter === 'all'} label={tr('All')} onClick={() => pick('all')} />
@@ -572,7 +596,7 @@ export function HomeView() {
         </RoundButton>
       </div>
       {/* Cards' padding reaches 12 px out (CardRow): room for it, or the row would scroll the page sideways. */}
-      <div className="@container stagger -mx-3 flex min-h-0 flex-1 flex-col gap-5.5 overflow-y-auto px-3 pb-8">
+      <div className={`@container stagger -mx-3 flex min-h-0 flex-1 flex-col gap-5.5 overflow-y-auto px-3 pb-8 ${homeFlow ? FADE_EDGES : ''}`}>
         {/* Nothing in the library yet: the welcome's ways in, first; tiles and a week with nothing in them, not yet. */}
         {empty && (
           <Section title={tr('Bring your music')} sub={tr('Your library is empty')}>
