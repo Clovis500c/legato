@@ -533,6 +533,22 @@ describe('Next on the last song with "Then, similar songs" on', () => {
     expect(usePlayer.getState().now?.youtubeId).toBe('video902')
   })
 
+  it('asks once: a double click waits for the answer, and an answer that adds nothing playable stops instead of asking again', async () => {
+    usePlayer.getState().playTracks([song(905)], 0)
+    usePlayer.getState().step(1)
+    usePlayer.getState().step(1)
+    await settle()
+    expect(similar).toHaveBeenCalledTimes(1)
+    // Says it added songs but nothing new lands (all already queued): one ask, then the old stop.
+    const empty = vi.fn(async () => true)
+    onQueueEnd(empty)
+    usePlayer.getState().playTracks([song(906)], 0)
+    usePlayer.getState().step(1)
+    await settle()
+    expect(empty).toHaveBeenCalledTimes(1)
+    expect(usePlayer.getState().now?.youtubeId).toBe('video906')
+  })
+
   it('with no similar song to add, Next still restarts the last one like Stop', async () => {
     onQueueEnd(async () => false)
     usePlayer.getState().playTracks([song(904)], 0)

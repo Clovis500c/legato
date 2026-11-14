@@ -155,6 +155,9 @@ const remoteIds = new Map<string, number>()
 let queueEnd: (() => Promise<boolean>) | null = null
 /** Called when Up next runs out by itself; true = songs were added, playback goes on. */
 export const onQueueEnd = (fn: () => Promise<boolean>) => void (queueEnd = fn)
+/** A run-out's ask in flight; the step right after its answer (that one never asks again). */
+let asking = false
+let again = false
 
 export function remoteTrack(t: Track): LibraryTrack {
   const key = t.ids.youtube ?? `${t.artist}\u0000${t.title}`
@@ -905,7 +908,26 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       // A radio station is live: no start to go back to (the engine refuses the seek with an error).
       if (!list[index]?.ids.server?.startsWith('radio:')) get().seek(0)
     }
-    if (queueEnd) return void queueEnd().then((added) => (added ? get().step(1, auto) : stopped()), stopped)
+    // One ask at a time (a second Next waits for the first answer), and one per run-out: what it added must play, or
+    // the old stop (songs all passed over or already queued never ask again in a loop).
+    if (asking) return
+    if (queueEnd && !again) {
+      asking = true
+      const done = () => void (asking = false)
+      return void queueEnd().then(
+        (added) => {
+          done()
+          if (!added) return stopped()
+          again = true
+          try {
+            get().step(1, auto)
+          } finally {
+            again = false
+          }
+        },
+        () => (done(), stopped()),
+      )
+    }
     stopped()
   },
 
