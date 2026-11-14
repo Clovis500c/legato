@@ -456,6 +456,8 @@ export function Story() {
     <section ref={section} style={{ ['--stages' as string]: LAST + TAIL }} className="story:relative story:-mt-[78px] story:h-[calc(100svh+var(--stages)*130svh)]">
       {mode && CHAPTER_SCENES.map(({ scene }, n) => <span key={scene} id={`chapter-${scene}`} style={{ top: `${(n + 1) * 130}svh` }} className="absolute" />)}
       <motion.div data-black={black || undefined} style={mode ? { perspective: mode === 'phone' ? 900 : 1800, zIndex } : undefined} className="text-ink story:sticky story:top-0 story:h-svh story:overflow-hidden">
+        {/* The playback blue's light behind the window: the app's one colour, nothing else on the page glows. */}
+        <div aria-hidden className="pointer-events-none absolute hidden pinned:block top-[8%] right-[-12%] size-[min(70vw,980px)] rounded-full bg-accent/18 blur-[150px]" />
         {mode && <motion.div aria-hidden style={{ opacity: night }} className="absolute inset-0 bg-[#131313]" />}
         {mode === 'pc' && <AppWindow {...windowProps} />}
         {mode === 'phone' && (

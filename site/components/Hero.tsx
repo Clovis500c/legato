@@ -52,7 +52,7 @@ export function Hero() {
         {c.hero.lead}
       </motion.p>
       <motion.div variants={rise} className="flex flex-wrap items-center gap-x-6 gap-y-3">
-        <a href={href} className="inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 text-[15px] font-medium text-on-ink">
+        <a href={href} className="inline-flex items-center gap-2 rounded-full bg-ink px-7 py-3.5 text-[15px] font-semibold text-on-ink shadow-[0_8px_30px_-8px] shadow-accent/50 transition-transform hover:-translate-y-px motion-reduce:transition-none">
           <WindowsLogo size={18} weight="fill" /> {c.hero.download}
         </a>
         <a href="#privacy" className="group inline-flex items-center gap-1.5 text-[15px] font-medium">
@@ -67,12 +67,12 @@ export function Hero() {
           {c.hero.android} (APK{android.version && `, ${android.version}`})
         </a>
       </motion.p>
-      <motion.ul variants={rise} aria-label={c.hero.works} className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-2.5 text-[13px] text-ink-2">
-        <li aria-hidden className="text-ink-3">
+      <motion.ul variants={rise} aria-label={c.hero.works} className="mt-2 flex flex-wrap items-center gap-2 text-[13px] text-ink-2">
+        <li aria-hidden className="mr-1 text-ink-2">
           {c.hero.works}
         </li>
         {works.map(([icon, label]) => (
-          <li key={label} className="flex items-center gap-[7px]">
+          <li key={label} className="flex items-center gap-[7px] rounded-full border border-line bg-bg/60 px-3 py-1.5 backdrop-blur">
             {icon}
             {label}
           </li>

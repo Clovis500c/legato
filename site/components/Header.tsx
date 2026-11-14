@@ -8,6 +8,8 @@ import { useCopy, useLangs } from './copy'
 import { LANGS, pageOf, rootOf } from './langs'
 import { useLatest } from './latest'
 import { Logo } from './Logo'
+import { Brand } from './Sections'
+import { siDiscord, siGithub } from 'simple-icons'
 import { SAVED } from './pick'
 
 /** The page's code among LANGS ('pt' for pt-BR, 'zh' for zh-Hans). */
@@ -32,33 +34,36 @@ export function Header({ base = '' }: { base?: string }) {
   const here = codeOf(c.lang)
   const langs = useLangs()
   const links = [
-    [c.nav.fixes, `${base}#fixes`],
     [c.nav.why, `${base}#why`],
     [c.nav.features, `${base}#features`],
     [c.nav.privacy, `${base}#privacy`],
-    [c.nav.next, `${base}#next`],
     [c.nav.faq, `${base}#faq`],
     [c.nav.docs, base ? './' : `${rootOf(c.lang)}docs/`],
-    [c.community.join, DISCORD],
-    ['GitHub', GITHUB],
   ]
+  const icon = 'hidden size-9 place-items-center rounded-full text-ink-2 transition-colors hover:bg-panel hover:text-ink sm:grid'
   return (
-    <header id="site-header" className={`sticky top-0 z-20 border-b transition-[background-color,border-color,transform] duration-200 ${solid ? 'border-line-soft bg-bg' : 'border-transparent'}`}>
+    <header id="site-header" className={`sticky top-0 z-20 border-b transition-[background-color,border-color,transform] duration-200 ${solid ? 'border-line-soft bg-bg/85 backdrop-blur-xl' : 'border-transparent'}`}>
       <div className="mx-auto flex h-[78px] max-w-[1440px] items-center justify-between gap-6 px-(--pad)">
         <a href={`${base}#top`} aria-label={c.nav.top} className="flex items-center gap-2.5 text-[28px] leading-none font-black tracking-[-0.02em]">
           <Logo className="size-8" />
           Legato
         </a>
-        <nav aria-label={c.nav.sections} className="flex items-center gap-7">
+        <nav aria-label={c.nav.sections} className="flex items-center gap-2 sm:gap-3">
           {links.map(([label, to]) => (
             // Longer words than English's: the links wait for a wider window.
-            <a key={to} href={to} className={`hidden text-sm font-medium whitespace-nowrap text-ink-2 transition-colors hover:text-ink ${here === 'en' ? 'lg:inline' : 'xl:inline'}`}>
+            <a key={to} href={to} className={`mr-4 hidden text-sm font-medium whitespace-nowrap text-ink-2 transition-colors hover:text-ink ${here === 'en' ? 'lg:inline' : 'xl:inline'}`}>
               {label}
             </a>
           ))}
+          <a href={DISCORD} rel="noopener" aria-label="Discord" title="Discord" className={icon}>
+            <Brand path={siDiscord.path} />
+          </a>
+          <a href={GITHUB} aria-label="GitHub" title="GitHub" className={icon}>
+            <Brand path={siGithub.path} />
+          </a>
           {/* Every language's page, by its own name; no script needed. */}
           <details className="relative">
-            <summary aria-label={c.nav.language} title={c.nav.language} className="flex cursor-pointer list-none items-center gap-1.5 text-sm font-medium text-ink-2 hover:text-ink [&::-webkit-details-marker]:hidden">
+            <summary aria-label={c.nav.language} title={c.nav.language} className="mx-1 flex cursor-pointer list-none items-center gap-1.5 text-sm font-medium text-ink-2 hover:text-ink [&::-webkit-details-marker]:hidden">
               <Translate size={18} aria-hidden />
               <span className="uppercase">{here}</span>
             </summary>
