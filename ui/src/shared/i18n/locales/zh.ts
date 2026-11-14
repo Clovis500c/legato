@@ -1505,6 +1505,8 @@ const zh: Record<string, string> = {
   '{n} duplicates': '{n} 个重复项',
   'Start radio': '开始电台',
   '{name} radio': '{name} 电台',
+  'Start a mix from this song': '从这首歌开始混音',
+  '{title} mix': '{title} 混音',
   'No similar songs found': '未找到相似歌曲',
   'Sleep timer': '睡眠定时器',
   'End of song': '歌曲结束时',

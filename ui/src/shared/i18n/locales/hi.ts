@@ -1505,6 +1505,8 @@ const hi: Record<string, string> = {
   '{n} duplicates': '{n} डुप्लिकेट',
   'Start radio': 'रेडियो शुरू करें',
   '{name} radio': '{name} रेडियो',
+  'Start a mix from this song': 'इस गाने से मिक्स शुरू करें',
+  '{title} mix': '{title} मिक्स',
   'No similar songs found': 'कोई मिलता-जुलता गाना नहीं मिला',
   'Sleep timer': 'स्लीप टाइमर',
   'End of song': 'गाने के अंत में',

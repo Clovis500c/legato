@@ -1505,6 +1505,8 @@ const ja: Record<string, string> = {
   '{n} duplicates': '{n}件の重複',
   'Start radio': 'ラジオを開始',
   '{name} radio': '{name} ラジオ',
+  'Start a mix from this song': 'この曲からミックスを開始',
+  '{title} mix': '{title} ミックス',
   'No similar songs found': '似た曲は見つかりませんでした',
   'Sleep timer': 'スリープタイマー',
   'End of song': '曲の終わり',

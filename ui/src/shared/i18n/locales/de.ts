@@ -1505,6 +1505,8 @@ const de: Record<string, string> = {
   '{n} duplicates': '{n} Duplikate',
   'Start radio': 'Radio starten',
   '{name} radio': '{name} Radio',
+  'Start a mix from this song': 'Mix aus diesem Song starten',
+  '{title} mix': '{title}-Mix',
   'No similar songs found': 'Keine ähnlichen Songs gefunden',
   'Sleep timer': 'Sleep-Timer',
   'End of song': 'Ende des Songs',

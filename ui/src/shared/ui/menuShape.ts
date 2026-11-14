@@ -48,6 +48,7 @@ export const MENU_ITEMS: Record<MenuKind, ItemDef[]> = {
     def('removeFromQueue', 'Remove from queue', 'play', 'essential'),
     def('playVia', 'Play with', 'play', 'detail'),
     def('startRadio', 'Start radio', 'play', 'standard'),
+    def('startMix', 'Start a mix from this song', 'play', 'standard'),
     def('addTo', 'Add to playlist', 'library', 'essential'),
     def('removeFromPlaylist', 'Remove from this playlist', 'library', 'essential'),
     def('removeFrom', msg('Remove from library'), 'library', 'essential'),

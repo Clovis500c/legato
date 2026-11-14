@@ -1505,6 +1505,8 @@ const uk: Record<string, string> = {
   '{n} duplicates': 'Дублікатів: {n}',
   'Start radio': 'Увімкнути радіо',
   '{name} radio': 'Радіо {name}',
+  'Start a mix from this song': 'Запустити мікс із цієї пісні',
+  '{title} mix': 'Мікс {title}',
   'No similar songs found': 'Схожих пісень не знайдено',
   'Sleep timer': 'Таймер сну',
   'End of song': 'Кінець пісні',

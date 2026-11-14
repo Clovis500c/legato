@@ -110,8 +110,8 @@ function computeFeatures(t: LibraryTrack): [string, number][] {
   return f
 }
 
-const lowRated = (rating: number) => rating >= 1 && rating <= 2
-const artistOf = (t: LibraryTrack) => primaryArtist(t.artist).toLowerCase()
+export const lowRated = (rating: number) => rating >= 1 && rating <= 2
+export const artistOf = (t: LibraryTrack) => primaryArtist(t.artist).toLowerCase()
 
 /** How much a song of the queue counts: the last ones played most (0.8 less each step back), queued ones half as much, a high rating doubles it, a low one nearly drops it. */
 function queueWeight(distance: number, rating: number): number {
@@ -238,6 +238,8 @@ export interface RankInput {
   library?: LibraryTrack[]
   /** Unix s. */
   now?: number
+  /** Songs per artist in any `K.window` picks (default `K.perArtist`); a mix from a song gives its own artist more. */
+  perArtist?: (artist: string) => number
   /** Local hour 0-23 for the time-of-day signal; none = off (callers give it only past `K.timeOfDay.minPlays` plays). */
   hour?: number
 }
@@ -248,7 +250,7 @@ export interface RankInput {
  * `perArtist` songs per artist and `perAlbum` per album in any `window` picks, and never the same artist twice in a row while
  * another is left (the caps give way last-first when nothing else is left).
  */
-export function rankPicks({ candidates, queue, index, taste, variety, max, rand, library, now = Date.now() / 1000, hour }: RankInput): LibraryTrack[] {
+export function rankPicks({ candidates, queue, index, taste, variety, max, rand, library, now = Date.now() / 1000, hour, perArtist }: RankInput): LibraryTrack[] {
   const inQueue = new Set(queue.map((t) => t.id))
   const seen = new Set<number>()
   const eligible = candidates.filter((c) => !inQueue.has(c.track.id) && !seen.has(c.track.id) && !!seen.add(c.track.id) && !lowRated(taste.rating(c.track)) && !taste.never(c.track))
@@ -273,7 +275,7 @@ export function rankPicks({ candidates, queue, index, taste, variety, max, rand,
     const fits = (x: Scored, rules: number) => {
       const t = x.c.track
       if (rules >= 1 && prev && prevArtist === x.artist) return false
-      if (rules >= 2 && lastArtists.filter((a) => a === x.artist).length >= K.perArtist) return false
+      if (rules >= 2 && lastArtists.filter((a) => a === x.artist).length >= (perArtist?.(x.artist) ?? K.perArtist)) return false
       return !(rules >= 3 && !!t.album && lastN.filter((o) => o.album === t.album).length >= K.perAlbum)
     }
     let open = pool

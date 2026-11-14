@@ -1505,6 +1505,8 @@ const id: Record<string, string> = {
   '{n} duplicates': '{n} duplikat',
   'Start radio': 'Mulai radio',
   '{name} radio': 'Radio {name}',
+  'Start a mix from this song': 'Mulai mix dari lagu ini',
+  '{title} mix': 'Mix {title}',
   'No similar songs found': 'Tidak ditemukan lagu serupa',
   'Sleep timer': 'Timer tidur',
   'End of song': 'Akhir lagu',

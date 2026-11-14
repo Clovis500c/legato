@@ -1505,6 +1505,8 @@ const es: Record<string, string> = {
   '{n} duplicates': '{n} duplicados',
   'Start radio': 'Iniciar radio',
   '{name} radio': 'Radio de {name}',
+  'Start a mix from this song': 'Iniciar una mezcla a partir de esta canción',
+  '{title} mix': 'Mezcla de {title}',
   'No similar songs found': 'No se encontraron canciones parecidas',
   'Sleep timer': 'Temporizador de apagado',
   'End of song': 'Fin de la canción',

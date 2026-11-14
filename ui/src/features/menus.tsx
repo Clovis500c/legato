@@ -34,7 +34,7 @@ import { PRACTICE, practiceNow, practicePatch } from './editor/practice'
 import { loadPlugins, pluginCommands, runCommand } from './plugins/host'
 import { canPlay, isRemote, nowTrack, remoteTrack, usePlayer } from './player/store'
 import { startAutoDj } from './player/autoDj'
-import { startRadio, startRadioFrom } from './player/radio'
+import { startMix, startRadio, startRadioFrom } from './player/radio'
 import { chaptersMenu } from './player/chapters'
 import { sleepMenu } from './player/sleep'
 import { openBlind } from './blind/blindOpen'
@@ -435,6 +435,7 @@ export function trackMenu(t: LibraryTrack, ctx: { list?: LibraryTrack[]; index?:
     ctx.queueIndex !== undefined && { id: 'removeFromQueue', label: tr('Remove from queue'), icon: <MinusCircle size={16} />, onSelect: () => player().dequeue(ctx.queueIndex!) },
     tag('playVia', playVia(t, list, index)),
     vias(t, sp()).length > 0 && { id: 'startRadio', label: tr('Start radio'), icon: <Radio size={16} />, onSelect: () => void startRadio(t) },
+    vias(t, sp()).length > 0 && { id: 'startMix', label: tr('Start a mix from this song'), icon: <Sparkle size={16} />, onSelect: () => void startMix(t) },
     '-',
     tag('addTo', addTo(() => [t], t)),
     ctx.playlistId !== undefined && { id: 'removeFromPlaylist', label: tr('Remove from this playlist'), icon: <MinusCircle size={16} />, onSelect: () => void removeFromPlaylist(ctx.playlistId!, ctx.position!) },

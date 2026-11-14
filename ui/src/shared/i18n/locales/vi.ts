@@ -1505,6 +1505,8 @@ const vi: Record<string, string> = {
   '{n} duplicates': '{n} bài trùng lặp',
   'Start radio': 'Bắt đầu radio',
   '{name} radio': 'Radio {name}',
+  'Start a mix from this song': 'Bắt đầu mix từ bài hát này',
+  '{title} mix': 'Mix {title}',
   'No similar songs found': 'Không tìm thấy bài tương tự',
   'Sleep timer': 'Hẹn giờ tắt',
   'End of song': 'Hết bài',

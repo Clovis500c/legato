@@ -1461,6 +1461,8 @@ const ar: Record<string, string> = {
   '{n} duplicates': '{n} تكرارات',
   'Start radio': 'بدء الراديو',
   '{name} radio': 'راديو {name}',
+  'Start a mix from this song': 'ابدأ مزيجًا من هذه الأغنية',
+  '{title} mix': 'مزيج {title}',
   'No similar songs found': 'لم يتم العثور على أغانٍ مشابهة',
   'Sleep timer': 'مؤقّت النوم',
   'End of song': 'نهاية الأغنية',

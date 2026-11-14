@@ -1505,6 +1505,8 @@ const nl: Record<string, string> = {
   '{n} duplicates': '{n} dubbele nummers',
   'Start radio': 'Radio starten',
   '{name} radio': '{name} Radio',
+  'Start a mix from this song': 'Start een mix vanaf dit nummer',
+  '{title} mix': '{title}-mix',
   'No similar songs found': 'Geen vergelijkbare nummers gevonden',
   'Sleep timer': 'Slaaptimer',
   'End of song': 'Einde van nummer',

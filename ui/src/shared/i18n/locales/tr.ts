@@ -1505,6 +1505,8 @@ const tr: Record<string, string> = {
   '{n} duplicates': '{n} yinelenen',
   'Start radio': 'Radyo başlat',
   '{name} radio': '{name} Radyosu',
+  'Start a mix from this song': 'Bu şarkıdan bir miks başlat',
+  '{title} mix': '{title} miksi',
   'No similar songs found': 'Benzer şarkı bulunamadı',
   'Sleep timer': 'Uyku zamanlayıcısı',
   'End of song': 'Şarkının sonu',

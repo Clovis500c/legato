@@ -1461,6 +1461,8 @@ const he: Record<string, string> = {
   '{n} duplicates': '{n} כפילויות',
   'Start radio': 'התחלת רדיו',
   '{name} radio': 'רדיו {name}',
+  'Start a mix from this song': 'התחל מיקס מהשיר הזה',
+  '{title} mix': 'מיקס {title}',
   'No similar songs found': 'לא נמצאו שירים דומים',
   'Sleep timer': 'טיימר שינה',
   'End of song': 'סוף השיר',

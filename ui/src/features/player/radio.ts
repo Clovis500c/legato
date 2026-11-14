@@ -63,16 +63,10 @@ export async function startRadioFrom(songs: LibraryTrack[], name = radioName(son
 /** The local hour for the time-of-day signal, only once there are enough plays of history to read it from. */
 const timeOfDay = (stats: Record<number, [plays: number, last: number, stars?: number] | undefined>) => (Object.values(stats).reduce((n, s) => n + (s?.[0] ?? 0), 0) >= K.timeOfDay.minPlays ? new Date().getHours() : undefined)
 
-/**
- * The songs added when Up next runs out: ranked against the whole queue and what you rated and play (similarRank.ts),
- * from YouTube Music's radio of the last song when signed in (its order counts) and from your library. Nothing new is asked:
- * the one radio request is the one it always made.
- */
-export async function similarForQueue(list: LibraryTrack[], index: number, max: number): Promise<LibraryTrack[]> {
+/** What a pick around `last` is made from: the library, YouTube Music's radio of `last` when signed in (its order counts), your taste. Nothing new is asked: that one radio request is the one it always made. */
+async function around(last: LibraryTrack) {
   const { settings } = useSettings.getState()
   const { status, tracks, stats } = useStore.getState()
-  const last = list[index]
-  if (!last) return []
   const fresh = (t: LibraryTrack) => !(settings.hideExplicit && t.explicit) && t.musicness !== 'notMusic'
   const candidates: Candidate[] = tracks.filter(fresh).map((track) => ({ track }))
   const video = last.ids.youtube
@@ -82,9 +76,28 @@ export async function similarForQueue(list: LibraryTrack[], index: number, max: 
   }
   // Never in mixes and recent skips come from the taste store (loaded when idle; asked here only if it is still empty).
   if (!useTaste.getState().loaded) await loadTaste()
-  const signals = useTaste.getState().signals
-  const taste = tasteFor(stats, signals)
+  return { candidates, library: tracks, taste: tasteFor(stats, useTaste.getState().signals), variety: settings.similarVariety, hour: timeOfDay(stats) }
+}
+
+/**
+ * The songs added when Up next runs out: ranked against the whole queue and what you rated and play (similarRank.ts),
+ * scored by your taste with a dose of the new (docs/recommendation.md).
+ */
+export async function similarForQueue(list: LibraryTrack[], index: number, max: number): Promise<LibraryTrack[]> {
+  const last = list[index]
+  if (!last) return []
+  const { candidates, library, taste, variety, hour } = await around(last)
   // Loaded when Up next runs out, not at launch.
   const { pickSimilar } = await import('./similarRank')
-  return pickSimilar(candidates, list, index, taste, settings.similarVariety, max, Math.random, tracks, timeOfDay(stats))
+  return pickSimilar(candidates, list, index, taste, variety, max, Math.random, library, hour)
+}
+
+/** Right-click › Start a mix from this song: 30 songs of its style laid out as an arc (songMix.ts, a chunk loaded here), named "<Title> mix". */
+export async function startMix(seed: LibraryTrack) {
+  const { candidates, library, taste, variety, hour } = await around(seed)
+  const { mixFromSong } = await import('./songMix')
+  const list = mixFromSong({ seed, candidates, taste, variety, rand: Math.random, library, hour })
+  if (list.length < 2) return useStore.getState().notify(tr('No similar songs found'))
+  usePlayer.getState().playTracks(list, 0)
+  if (usePlayer.getState().list === list) usePlayer.setState({ from: tr('{title} mix', { title: seed.title }) })
 }
