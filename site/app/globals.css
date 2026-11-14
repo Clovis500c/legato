@@ -13,6 +13,8 @@
   --on-ink: #ffffff;
   --accent: #7cb8ff;
   --on-accent: #0f0f0f;
+  /* The sky blue as text or an icon on the page: darker in light mode to read at 4.5:1. */
+  --accent-ink: #1d64c4;
   --shot-shadow: 0 32px 80px -32px rgb(23 22 20 / 0.35);
   --pad: clamp(16px, 5vw, 72px);
   color-scheme: light;
@@ -28,6 +30,7 @@
     --ink-2: #b3b3b3;
     --ink-3: #8c8c8c;
     --on-ink: #0f0f0f;
+    --accent-ink: #7cb8ff;
     --shot-shadow: 0 32px 96px -24px rgb(0 0 0 / 0.85);
     color-scheme: dark;
   }
@@ -44,6 +47,7 @@
   --ink-2: #b3b3b3;
   --ink-3: #8c8c8c;
   --on-ink: #0f0f0f;
+  --accent-ink: #7cb8ff;
 }
 
 /* The scroll story's stage with animations on (components/Story.tsx): `pinned` the PC's window from 1000 px, `pocket`
@@ -69,6 +73,7 @@ html[data-story='phone'] #site-header {
   --color-on-ink: var(--on-ink);
   --color-accent: var(--accent);
   --color-on-accent: var(--on-accent);
+  --color-accent-ink: var(--accent-ink);
   --font-sans: var(--font-roboto), 'Segoe UI', system-ui, sans-serif;
 }
 

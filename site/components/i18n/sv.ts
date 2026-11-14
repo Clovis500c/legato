@@ -147,5 +147,5 @@ export const sv: Copy = {
     ],
   },
   community: { title: 'Gå med i communityn', text: 'Frågor, idéer, hjälp och nyheter från andra lyssnare och från skaparen, på Discord.', join: 'Gå med i Discord', discussions: 'GitHub Discussions' },
-  footer: { code: 'Källkoden tillgänglig. Gratis att använda. Koden på [GitHub].', releases: 'Utgåvor', docs: 'Dokumentation för utvecklare', license: 'Licens', notices: 'Tredjepartslicenser', font: 'Typsnittets licens', marks: 'Spotify, YouTube och Apple Music är varumärken som tillhör sina ägare.' },
+  footer: { community: 'Gemenskap', legal: 'Juridiskt', code: 'Källkoden tillgänglig. Gratis att använda. Koden på [GitHub].', releases: 'Utgåvor', docs: 'Dokumentation för utvecklare', license: 'Licens', notices: 'Tredjepartslicenser', font: 'Typsnittets licens', marks: 'Spotify, YouTube och Apple Music är varumärken som tillhör sina ägare.' },
 }

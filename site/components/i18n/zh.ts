@@ -147,5 +147,5 @@ export const zh: Copy = {
     ],
   },
   community: { title: '加入社区', text: '来自其他听众和作者的提问、想法、帮助和消息，在 Discord 上。', join: '加入 Discord', discussions: 'GitHub Discussions' },
-  footer: { code: '源码公开。免费使用。代码在 [GitHub] 上。', releases: '版本发布', docs: '开发者文档', license: '许可证', notices: '第三方许可证', font: '字体许可证', marks: 'Spotify、YouTube 和 Apple Music 是其各自所有者的商标。' },
+  footer: { community: '社区', legal: '法律信息', code: '源码公开。免费使用。代码在 [GitHub] 上。', releases: '版本发布', docs: '开发者文档', license: '许可证', notices: '第三方许可证', font: '字体许可证', marks: 'Spotify、YouTube 和 Apple Music 是其各自所有者的商标。' },
 }

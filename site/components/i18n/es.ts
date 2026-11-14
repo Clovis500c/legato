@@ -147,5 +147,5 @@ export const es: Copy = {
     ],
   },
   community: { title: 'Únete a la comunidad', text: 'Preguntas, ideas, ayuda y novedades de otros oyentes y del autor, en Discord.', join: 'Unirse al Discord', discussions: 'GitHub Discussions' },
-  footer: { code: 'Fuente disponible. Gratis. El código está en [GitHub].', releases: 'Versiones', docs: 'Docs para desarrolladores', license: 'Licencia', notices: 'Licencias de terceros', font: 'Licencia de la fuente', marks: 'Spotify, YouTube y Apple Music son marcas de sus respectivos dueños.' },
+  footer: { community: 'Comunidad', legal: 'Legal', code: 'Fuente disponible. Gratis. El código está en [GitHub].', releases: 'Versiones', docs: 'Docs para desarrolladores', license: 'Licencia', notices: 'Licencias de terceros', font: 'Licencia de la fuente', marks: 'Spotify, YouTube y Apple Music son marcas de sus respectivos dueños.' },
 }

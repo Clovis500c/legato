@@ -147,5 +147,5 @@ export const ru: Copy = {
     ],
   },
   community: { title: 'Присоединяйтесь к сообществу', text: 'Вопросы, идеи, помощь и новости от других слушателей и от автора, в Discord.', join: 'Войти в Discord', discussions: 'GitHub Discussions' },
-  footer: { code: 'Исходники доступны. Бесплатно. Код на [GitHub].', releases: 'Версии', docs: 'Документация для разработчиков', license: 'Лицензия', notices: 'Сторонние лицензии', font: 'Лицензия шрифта', marks: 'Spotify, YouTube и Apple Music — товарные знаки их владельцев.' },
+  footer: { community: 'Сообщество', legal: 'Правовая информация', code: 'Исходники доступны. Бесплатно. Код на [GitHub].', releases: 'Версии', docs: 'Документация для разработчиков', license: 'Лицензия', notices: 'Сторонние лицензии', font: 'Лицензия шрифта', marks: 'Spotify, YouTube и Apple Music — товарные знаки их владельцев.' },
 }

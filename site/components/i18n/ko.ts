@@ -147,5 +147,5 @@ export const ko: Copy = {
     ],
   },
   community: { title: '커뮤니티 참여', text: '다른 청취자와 제작자의 질문, 아이디어, 도움, 소식을 Discord에서.', join: 'Discord 참여', discussions: 'GitHub Discussions' },
-  footer: { code: '소스 공개. 무료로 사용. 코드는 [GitHub]에.', releases: '릴리스', docs: '개발자 문서', license: '라이선스', notices: '서드 파티 라이선스', font: '글꼴 라이선스', marks: 'Spotify, YouTube, Apple Music은 각 소유자의 상표입니다.' },
+  footer: { community: '커뮤니티', legal: '법적 고지', code: '소스 공개. 무료로 사용. 코드는 [GitHub]에.', releases: '릴리스', docs: '개발자 문서', license: '라이선스', notices: '서드 파티 라이선스', font: '글꼴 라이선스', marks: 'Spotify, YouTube, Apple Music은 각 소유자의 상표입니다.' },
 }

@@ -147,5 +147,5 @@ export const hi: Copy = {
     ],
   },
   community: { title: 'समुदाय से जुड़ें', text: 'दूसरे श्रोताओं और लेखक से सवाल, विचार, मदद और ख़बरें, Discord पर।', join: 'Discord से जुड़ें', discussions: 'GitHub Discussions' },
-  footer: { code: 'सोर्स उपलब्ध। इस्तेमाल मुफ़्त। कोड [GitHub] पर।', releases: 'रिलीज़', docs: 'डेवलपर के लिए दस्तावेज़', license: 'लाइसेंस', notices: 'तीसरे पक्ष के लाइसेंस', font: 'फ़ॉन्ट लाइसेंस', marks: 'Spotify, YouTube और Apple Music अपने मालिकों के ट्रेडमार्क हैं।' },
+  footer: { community: 'समुदाय', legal: 'कानूनी', code: 'सोर्स उपलब्ध। इस्तेमाल मुफ़्त। कोड [GitHub] पर।', releases: 'रिलीज़', docs: 'डेवलपर के लिए दस्तावेज़', license: 'लाइसेंस', notices: 'तीसरे पक्ष के लाइसेंस', font: 'फ़ॉन्ट लाइसेंस', marks: 'Spotify, YouTube और Apple Music अपने मालिकों के ट्रेडमार्क हैं।' },
 }

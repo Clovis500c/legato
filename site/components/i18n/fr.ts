@@ -147,5 +147,5 @@ export const fr: Copy = {
     ],
   },
   community: { title: 'Rejoindre la communauté', text: 'Questions, idées, aide et nouvelles des autres auditeurs et de l’auteur, sur Discord.', join: 'Rejoindre le Discord', discussions: 'GitHub Discussions' },
-  footer: { code: 'Source disponible. Gratuit. Le code est sur [GitHub].', releases: 'Versions', docs: 'Docs pour les développeurs', license: 'Licence', notices: 'Licences tierces', font: 'Licence de la police', marks: 'Spotify, YouTube et Apple Music sont des marques de leurs propriétaires.' },
+  footer: { community: 'Communauté', legal: 'Mentions légales', code: 'Source disponible. Gratuit. Le code est sur [GitHub].', releases: 'Versions', docs: 'Docs pour les développeurs', license: 'Licence', notices: 'Licences tierces', font: 'Licence de la police', marks: 'Spotify, YouTube et Apple Music sont des marques de leurs propriétaires.' },
 }

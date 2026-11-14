@@ -147,5 +147,5 @@ export const nl: Copy = {
     ],
   },
   community: { title: 'Word lid van de community', text: 'Vragen, ideeën, hulp en nieuws van andere luisteraars en van de maker, op Discord.', join: 'Naar de Discord', discussions: 'GitHub Discussions' },
-  footer: { code: 'Broncode inzichtelijk. Gratis te gebruiken. Code op [GitHub].', releases: 'Releases', docs: 'Documentatie voor ontwikkelaars', license: 'Licentie', notices: 'Licenties van derden', font: 'Licentie van het lettertype', marks: 'Spotify, YouTube en Apple Music zijn handelsmerken van hun eigenaars.' },
+  footer: { community: 'Community', legal: 'Juridisch', code: 'Broncode inzichtelijk. Gratis te gebruiken. Code op [GitHub].', releases: 'Releases', docs: 'Documentatie voor ontwikkelaars', license: 'Licentie', notices: 'Licenties van derden', font: 'Licentie van het lettertype', marks: 'Spotify, YouTube en Apple Music zijn handelsmerken van hun eigenaars.' },
 }

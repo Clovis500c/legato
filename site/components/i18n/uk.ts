@@ -147,5 +147,5 @@ export const uk: Copy = {
     ],
   },
   community: { title: 'Приєднуйтеся до спільноти', text: 'Питання, ідеї, допомога й новини від інших слухачів і від автора, у Discord.', join: 'Приєднатися до Discord', discussions: 'GitHub Discussions' },
-  footer: { code: 'Вихідний код доступний. Безкоштовно. Код на [GitHub].', releases: 'Версії', docs: 'Документація для розробників', license: 'Ліцензія', notices: 'Сторонні ліцензії', font: 'Ліцензія шрифту', marks: 'Spotify, YouTube і Apple Music — торговельні марки їхніх власників.' },
+  footer: { community: 'Спільнота', legal: 'Правова інформація', code: 'Вихідний код доступний. Безкоштовно. Код на [GitHub].', releases: 'Версії', docs: 'Документація для розробників', license: 'Ліцензія', notices: 'Сторонні ліцензії', font: 'Ліцензія шрифту', marks: 'Spotify, YouTube і Apple Music — торговельні марки їхніх власників.' },
 }

@@ -147,5 +147,5 @@ export const id: Copy = {
     ],
   },
   community: { title: 'Gabung dengan komunitas', text: 'Pertanyaan, ide, bantuan, dan kabar dari pendengar lain dan penulisnya, di Discord.', join: 'Gabung ke Discord', discussions: 'GitHub Discussions' },
-  footer: { code: 'Sumber bisa dilihat. Gratis dipakai. Kode di [GitHub].', releases: 'Rilis', docs: 'Dokumen untuk pengembang', license: 'Lisensi', notices: 'Lisensi pihak ketiga', font: 'Lisensi font', marks: 'Spotify, YouTube, dan Apple Music adalah merek dagang pemiliknya.' },
+  footer: { community: 'Komunitas', legal: 'Legal', code: 'Sumber bisa dilihat. Gratis dipakai. Kode di [GitHub].', releases: 'Rilis', docs: 'Dokumen untuk pengembang', license: 'Lisensi', notices: 'Lisensi pihak ketiga', font: 'Lisensi font', marks: 'Spotify, YouTube, dan Apple Music adalah merek dagang pemiliknya.' },
 }

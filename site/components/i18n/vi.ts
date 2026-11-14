@@ -147,5 +147,5 @@ export const vi: Copy = {
     ],
   },
   community: { title: 'Tham gia cộng đồng', text: 'Câu hỏi, ý tưởng, trợ giúp và tin tức từ những người nghe khác và từ tác giả, trên Discord.', join: 'Tham gia Discord', discussions: 'GitHub Discussions' },
-  footer: { code: 'Xem được mã nguồn. Dùng miễn phí. Mã trên [GitHub].', releases: 'Bản phát hành', docs: 'Tài liệu cho nhà phát triển', license: 'Giấy phép', notices: 'Giấy phép bên thứ ba', font: 'Giấy phép phông chữ', marks: 'Spotify, YouTube và Apple Music là thương hiệu của chủ sở hữu tương ứng.' },
+  footer: { community: 'Cộng đồng', legal: 'Pháp lý', code: 'Xem được mã nguồn. Dùng miễn phí. Mã trên [GitHub].', releases: 'Bản phát hành', docs: 'Tài liệu cho nhà phát triển', license: 'Giấy phép', notices: 'Giấy phép bên thứ ba', font: 'Giấy phép phông chữ', marks: 'Spotify, YouTube và Apple Music là thương hiệu của chủ sở hữu tương ứng.' },
 }

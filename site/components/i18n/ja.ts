@@ -147,5 +147,5 @@ export const ja: Copy = {
     ],
   },
   community: { title: 'コミュニティに参加', text: '他のリスナーや作者からの質問、アイデア、ヘルプ、お知らせを Discord で。', join: 'Discord に参加', discussions: 'GitHub Discussions' },
-  footer: { code: 'ソース公開。無料で使えます。コードは [GitHub] に。', releases: 'リリース', docs: '開発者向けドキュメント', license: 'ライセンス', notices: 'サードパーティーのライセンス', font: 'フォントのライセンス', marks: 'Spotify、YouTube、Apple Music は各所有者の商標です。' },
+  footer: { community: 'コミュニティ', legal: '法的情報', code: 'ソース公開。無料で使えます。コードは [GitHub] に。', releases: 'リリース', docs: '開発者向けドキュメント', license: 'ライセンス', notices: 'サードパーティーのライセンス', font: 'フォントのライセンス', marks: 'Spotify、YouTube、Apple Music は各所有者の商標です。' },
 }
