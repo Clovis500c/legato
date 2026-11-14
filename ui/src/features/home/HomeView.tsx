@@ -130,7 +130,7 @@ function Shortcuts({ mixes }: { mixes?: Mix[] }) {
     }
     const cover = songs.find((t) => t.art) ?? songs[0]
     const openIt = () => go({ name: 'artist', artist: l.artist })
-    return <JumpTile key={`r${l.artist}`} art={<Cover title={l.artist} art={trackArt(cover)} size={44} className="rounded-full!" />} title={artistName(l.artist)} onOpen={openIt} onPlay={() => play(songs, 0)} menu={open([{ label: tr('Open'), icon: <ArrowRight size={16} />, onSelect: openIt }], songs)} />
+    return <JumpTile key={`r${l.artist}`} art={<Cover artist title={l.artist} art={trackArt(cover)} size={44} className="rounded-full!" />} title={artistName(l.artist)} onOpen={openIt} onPlay={() => play(songs, 0)} menu={open([{ label: tr('Open'), icon: <ArrowRight size={16} />, onSelect: openIt }], songs)} />
   }
   const openSongs = () => go({ name: 'songs' })
   // 3 columns × 2 rows as in the mockup; 2 columns when the page is narrow.
@@ -206,7 +206,7 @@ function YourWeek() {
       <div className="grid min-w-0 flex-1 basis-72 grid-cols-[repeat(auto-fit,minmax(13rem,1fr))] gap-2">
         {topArtist && (
           <button onClick={() => go({ name: 'artist', artist: topArtist.name })} onContextMenu={onMenu(() => tracksMenu(tracks.filter((t) => primaryArtist(t.artist) === topArtist.name), [{ id: 'goToArtist', label: tr('Go to artist'), onSelect: () => go({ name: 'artist', artist: topArtist.name }) }, '-']))} className={tile}>
-            <Cover title={topArtist.name} art={trackArt(topArtist.cover)} size={48} className="rounded-full!" />
+            <Cover artist title={topArtist.name} art={trackArt(topArtist.cover)} size={48} className="rounded-full!" />
             <span className="flex min-w-0 flex-col">
               <span className="text-[0.6875rem] text-ink-3">{tr('Top artist')}</span>
               <span className="truncate text-sm font-semibold">{topArtist.name}</span>

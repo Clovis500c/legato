@@ -359,7 +359,7 @@ export function ArtistView({ artist }: { artist: string }) {
   const header = (
     <PageHeader
       onContextMenu={onMenu(() => tracksMenu(playable, walk))}
-      art={<Cover title={artist} art={photo} size={168} eager className="rounded-full! border-0" />}
+      art={<Cover artist title={artist} art={photo} size={168} eager className="rounded-full! border-0" />}
       tint={tint}
       kicker={tr('Artist')}
       title={artistName(artist)}

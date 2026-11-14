@@ -488,7 +488,7 @@ export function ArtistsView() {
           <div role="listitem" key={a.artist} onContextMenu={onMenu(() => tracksMenu(a.tracks))} className="h-full">
             <button onClick={() => go({ name: 'artist', artist: a.artist })} className="flex h-full w-full items-center gap-4 rounded-md px-2 text-start transition-colors hover:bg-raised">
               <span className="w-8 text-end text-[0.8125rem] text-ink-3 tabular-nums">{i + 1}</span>
-              <Cover title={a.artist} art={trackArt(a.cover)} size={40} className="rounded-full!" />
+              <Cover artist title={a.artist} art={trackArt(a.cover)} size={40} className="rounded-full!" />
               <span className="flex-1 truncate text-sm font-medium">{artistName(a.artist)}</span>
               <span className="text-[0.8125rem] text-ink-3">
                 {trn(a.count, '{n} track', '{n} tracks')} · {trn(a.albums, '{n} album', '{n} albums')}

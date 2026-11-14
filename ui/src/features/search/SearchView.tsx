@@ -335,7 +335,7 @@ export function SearchView() {
 
   // A catalog's chip shows that catalog alone: your library's matches step aside.
   const mine = only ? NONE : lib
-  const artistCard = (a: ArtistGroup) => <MediaCard key={a.artist} round title={artistName(a.artist)} sub={trn(a.count, '{n} song', '{n} songs')} art={<Cover title={a.artist} art={trackArt(a.cover)} size={176} className="rounded-full!" />} onOpen={() => go({ name: 'artist', artist: a.artist })} onPlay={() => play(a.tracks, 0)} menu={() => tracksMenu(a.tracks)} />
+  const artistCard = (a: ArtistGroup) => <MediaCard key={a.artist} round title={artistName(a.artist)} sub={trn(a.count, '{n} song', '{n} songs')} art={<Cover artist title={a.artist} art={trackArt(a.cover)} size={176} className="rounded-full!" />} onOpen={() => go({ name: 'artist', artist: a.artist })} onPlay={() => play(a.tracks, 0)} menu={() => tracksMenu(a.tracks)} />
   const albumCard = (a: AlbumGroup) => <MediaCard key={`${a.album}\u0000${a.artist}`} title={a.album} sub={artistName(a.artist)} art={<Cover title={a.album} art={trackArt(a.tracks[0])} size={176} />} onOpen={() => go({ name: 'album', album: a.album, artist: a.artist })} onPlay={() => play(a.tracks, 0)} menu={() => tracksMenu(a.tracks)} />
   const playlistCards = mine.playlists.map((p) => <MediaCard key={p.id} title={p.name} sub={trn(p.trackCount, '{n} song', '{n} songs')} art={<PlaylistCover p={p} size={176} big />} onOpen={() => go({ name: 'playlist', id: p.id })} onPlay={() => void playlistSongs(p.id).then((t) => play(t, 0))} menu={() => playlistMenu(p)} />)
   // Library page filtered by the same text (its own token on).
@@ -378,7 +378,7 @@ export function SearchView() {
   )
   const top = topArtist
     ? topCard(
-        <Cover title={topArtist.artist} art={trackArt(topArtist.cover)} size={96} className="rounded-full!" />,
+        <Cover artist title={topArtist.artist} art={trackArt(topArtist.cover)} size={96} className="rounded-full!" />,
         <button onClick={() => go({ name: 'artist', artist: topArtist.artist })} className={`${display} hover:underline`}>
           {artistName(topArtist.artist)}
         </button>,

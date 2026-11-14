@@ -2,17 +2,21 @@ import { useEffect, useState } from 'react'
 import { isLetterboxed, sizedArt } from '../art'
 import { cropStyle, cropTo, mayHaveBars } from '../artbox'
 import { fits, measure } from '../artfit'
+import { hueOf } from '../hue'
 
 /**
  * Artwork with a typographic fallback tile (initials). art = image candidates, best first (shared/art); each failed one falls to the next. eager = big, on screen right away.
  * Video frames: black bars cut off, art centered in the square. fit = big cover: real shape reported instead (the
- * parent sizes the frame to it); `square`: cut square all the same (a round cover, any art).
+ * parent sizes the frame to it); `square`: cut square all the same (a round cover, any art). `artist`: the tile before the
+ * picture is initials on a gradient of the name's own hue (never an empty box), the picture fading in over it.
  */
-export function Cover({ title, art = [], size = 38, className = '', eager = false, fit, square = false }: { title: string; art?: string[]; size?: number; className?: string; eager?: boolean; fit?: (ratio: number) => void; square?: boolean }) {
+export function Cover({ title, art = [], size = 38, className = '', eager = false, fit, square = false, artist = false }: { title: string; art?: string[]; size?: number; className?: string; eager?: boolean; fit?: (ratio: number) => void; square?: boolean; artist?: boolean }) {
   // Failed URLs, not an index: virtualized rows reuse this component for other tracks.
   const [failed, setFailed] = useState<string[]>([])
   const full = art.find((s) => !failed.includes(s))
   const [, setMeasured] = useState(0)
+  // An artist's picture arrives over its placeholder: the image fades in once decoded (instant with reduced motion).
+  const [loaded, setLoaded] = useState<string>()
   // Measured once per image (cached): video frames everywhere, any image for the big cover.
   const measured = !!full && (!!fit || mayHaveBars(full))
   // Lists never decode a full-size cover: the smallest thumbnail that covers the drawn size (Rust cuts it once, then keeps it). The big cover (fit) wants the picture itself.
@@ -30,7 +34,7 @@ export function Cover({ title, art = [], size = 38, className = '', eager = fals
     .join('')
     .toUpperCase()
   return (
-    <span aria-hidden className={`relative grid shrink-0 place-items-center overflow-hidden rounded-cover border border-line-soft bg-recess font-mono font-semibold text-ink-3 ${className}`} style={{ width: size, height: size, fontSize: Math.max(9, size * 0.3) }}>
+    <span aria-hidden className={`relative grid shrink-0 place-items-center overflow-hidden rounded-cover border border-line-soft font-mono font-semibold ${artist ? 'text-white/85' : 'bg-recess text-ink-3'} ${className}`} style={{ width: size, height: size, fontSize: Math.max(9, size * 0.3), ...(artist && { background: `linear-gradient(135deg, hsl(${hueOf(title)} 42% 36%), hsl(${hueOf(title)} 48% 26%))` }) }}>
       {initials || '♪'}
       {src && (
         <img
@@ -41,13 +45,18 @@ export function Cover({ title, art = [], size = 38, className = '', eager = fals
           crossOrigin="anonymous"
           draggable={false}
           onError={() => setFailed((f) => [...f, full!])}
+          ref={(el) => {
+            // Already in the webview's memory: shown at once, no fade to wait for.
+            if (artist && el?.complete && el.naturalWidth) setLoaded(src)
+          }}
           onLoad={(e) => {
+            if (artist) setLoaded(src)
             if (!measured || fits.has(src)) return
             measure(e.currentTarget, src)
             setMeasured((n) => n + 1)
           }}
-          style={known ? cropStyle(cropTo(known.box, known.width, known.height, fit && !square ? known.ratio : 1)) : undefined}
-          className={known ? 'absolute' : `absolute inset-0 size-full object-cover ${isLetterboxed(full!) ? 'scale-[1.34]' : ''}`}
+          style={{ ...(known && cropStyle(cropTo(known.box, known.width, known.height, fit && !square ? known.ratio : 1))), ...(artist && loaded !== src && { opacity: 0 }) }}
+          className={`${known ? 'absolute' : `absolute inset-0 size-full object-cover ${isLetterboxed(full!) ? 'scale-[1.34]' : ''}`} ${artist ? 'transition-opacity duration-300 motion-reduce:transition-none' : ''}`}
         />
       )}
     </span>

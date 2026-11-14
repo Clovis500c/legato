@@ -34,7 +34,7 @@ export function ArtistLine({ now, className = '' }: { now: NowPlaying; className
         const inner = (
           <>
             <span className="min-w-0 truncate group-hover:underline">{artistName(name)}</span>
-            {art && <Cover title={name} art={[art]} size={32} className="rounded-full! border-0! shadow-[0_2px_10px_var(--shadow)]" />}
+            <Cover artist title={name} art={art ? [art] : []} size={32} className="rounded-full! border-0! shadow-[0_2px_10px_var(--shadow)]" />
           </>
         )
         // A dropped file has no artist page to open.

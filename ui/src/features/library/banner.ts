@@ -1,3 +1,4 @@
+import { hueOf } from '../../shared/hue'
 import type { LibraryTrack } from '../../shared/api'
 import { trackArt } from '../../shared/art'
 
@@ -33,18 +34,7 @@ export function bannerCovers(ids: number[] | undefined, byId: Map<number, Librar
   return out
 }
 
-/** A hue (0-359) from a name: the same playlist always gets the same colour when it has no cover to take one from. */
-export function hueOf(name: string): number {
-  let h = 0
-  for (const c of name) h = (h * 31 + c.codePointAt(0)!) % 360
-  return h
-}
-
-/** First letter or digit of a name, upper case ("?" when it has none): the tile's mark without covers. */
-export function initialOf(name: string): string {
-  const m = name.match(/[\p{L}\p{N}]/u)
-  return m ? m[0].toUpperCase() : '?'
-}
+export { hueOf, initialOf } from '../../shared/hue'
 
 const clamp = (v: number) => Math.round(Math.max(0, Math.min(255, v)))
 
