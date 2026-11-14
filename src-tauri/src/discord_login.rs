@@ -40,7 +40,14 @@ pub fn current(state: &AppState) -> Option<Profile> {
         let _ = state.lib().set_setting(PROFILE, &serde_json::Value::Null);
         let _ = state.lib().set_setting(CARD, &serde_json::Value::Null);
     }
-    profile
+    // Signed in before pictures rode in links: the hash is in the card's address, no new ask of Discord.
+    profile.map(|p| match p.avatar {
+        Some(_) => p,
+        None => {
+            let avatar = state.lib().setting(CARD).ok().flatten().and_then(|v| serde_json::from_value::<DiscordCard>(v).ok()).and_then(|c| c.avatar).and_then(|a| music_core::share::avatar_hash_of(&a));
+            Profile { avatar, ..p }
+        }
+    })
 }
 
 fn save(state: &AppState, profile: &Profile, card: &DiscordCard) -> CmdResult<()> {
@@ -88,7 +95,7 @@ mod tests {
 
     #[test]
     fn a_profile_counts_only_while_the_keychain_holds_the_sign_in() {
-        let p = Profile { id: "1".into(), name: "Nelly".into() };
+        let p = Profile { id: "1".into(), name: "Nelly".into(), avatar: None };
         assert_eq!(standing(Some(p.clone()), true), (Some(p.clone()), false));
         assert_eq!(standing(Some(p), false), (None, true));
         assert_eq!(standing(None, true), (None, false));

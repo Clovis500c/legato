@@ -2,7 +2,8 @@
 //! One entry per track, best id first: YouTube (full playback for anyone), Apple Music, else artist + title.
 //! Spotify ids / ISRC skipped: receiver without Premium or Apple API can't resolve them; text it can search.
 //! Version 2: a YouTube entry carries the sender's artist, title and length, so the receiver adds the song as is, no
-//! request to YouTube. Version 1 codes still read. QR codes stay version 1 (ids only): names don't fit a QR code.
+//! request to YouTube. Version 3 adds the sender's Discord profile, 4 its picture's hash (only written when there is one).
+//! Version 1 codes still read. QR codes stay version 1 (ids only): names don't fit a QR code.
 
 use crate::model::{Source, Track};
 use anyhow::{Context, Result, bail, ensure};
@@ -29,6 +30,11 @@ pub struct Profile {
     /// Discord user id (digits).
     pub id: String,
     pub name: String,
+    /// Version 4: the picture's hash on Discord's CDN (32 hex digits, `a_` first for an animated one): never an address. The
+    /// still PNG is what is shown, built only by `avatar_url`.
+    // default: a profile saved before pictures rode in links has none.
+    #[serde(default)]
+    pub avatar: Option<String>,
 }
 
 /// What Settings › Accounts shows of the signed-in Discord account: a profile card. Never carried in a link (only `Profile` is).
@@ -43,10 +49,40 @@ pub struct DiscordCard {
     pub accent: Option<u32>,
 }
 
+/// Discord's own shape for a picture hash: 32 lower-case hex digits, `a_` before them when it is animated.
+fn avatar_hash_ok(h: &str) -> bool {
+    let hex = h.strip_prefix("a_").unwrap_or(h);
+    hex.len() == 32 && hex.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+}
+
+/// A version 4 profile's picture must be one `picture` accepts.
+fn avatar_ok(p: &Profile) -> bool {
+    p.picture().is_some()
+}
+
+/// The hash in an address the Discord sign-in built (`https://cdn.discordapp.com/avatars/<id>/<hash>.png?size=…`), checked.
+pub fn avatar_hash_of(url: &str) -> Option<String> {
+    let rest = url.strip_prefix("https://cdn.discordapp.com/avatars/")?;
+    let file = rest.split_once('/')?.1.split('?').next()?;
+    let hash = file.strip_suffix(".png")?;
+    avatar_hash_ok(hash).then(|| hash.to_string())
+}
+
 impl Profile {
     /// Trust boundary: an id of digits, a name without control characters.
     pub fn valid(&self) -> bool {
         (1..=20).contains(&self.id.len()) && self.id.bytes().all(|b| b.is_ascii_digit()) && (1..=64).contains(&self.name.len()) && !self.name.chars().any(char::is_control)
+    }
+
+    /// The picture's hash when there is one a link may carry: a real user id (17 to 20 digits) and a hash of Discord's shape.
+    fn picture(&self) -> Option<&str> {
+        self.avatar.as_deref().filter(|h| avatar_hash_ok(h) && (17..=20).contains(&self.id.len()) && self.id.bytes().all(|b| b.is_ascii_digit()))
+    }
+
+    /// The small round picture's address, the one shape this app and the website ever ask Discord's CDN for. None: no picture,
+    /// or one that is not valid (a link can carry anything).
+    pub fn avatar_url(&self) -> Option<String> {
+        Some(format!("https://cdn.discordapp.com/avatars/{}/{}.png?size=64", self.id, self.picture()?))
     }
 }
 
@@ -62,6 +98,8 @@ pub struct Shared {
 const VERSION: u8 = 2;
 /// Names on YouTube entries, then the sender's profile.
 const WITH_PROFILE: u8 = 3;
+/// The same, and the sender's picture hash after the profile: written only when the sender has one, so every other link stays version 3.
+const WITH_AVATAR: u8 = 4;
 /// Ids only: written when no entry has names (QR codes), read by every version of the app.
 const COMPACT: u8 = 1;
 const MAX_ITEMS: u64 = 10_000;
@@ -180,7 +218,7 @@ impl Reader<'_> {
 pub fn encode(s: &Shared) -> Vec<u8> {
     let named = |i: &Item| matches!(i, Item::Youtube { title, .. } if !title.is_empty());
     let by = s.by.as_ref().filter(|p| p.valid());
-    let mut raw = vec![if by.is_some() { WITH_PROFILE } else if s.items.iter().any(named) { VERSION } else { COMPACT }];
+    let mut raw = vec![if by.is_some_and(|p| p.picture().is_some()) { WITH_AVATAR } else if by.is_some() { WITH_PROFILE } else if s.items.iter().any(named) { VERSION } else { COMPACT }];
     put_str(&mut raw, &s.name);
     put_varint(&mut raw, s.items.len() as u64);
     for item in &s.items {
@@ -209,6 +247,9 @@ pub fn encode(s: &Shared) -> Vec<u8> {
     if let Some(p) = by {
         put_str(&mut raw, &p.id);
         put_str(&mut raw, &p.name);
+        if let Some(h) = p.picture() {
+            put_str(&mut raw, h);
+        }
     }
     let mut z = ZlibEncoder::new(Vec::new(), Compression::best());
     z.write_all(&raw).unwrap();
@@ -221,7 +262,7 @@ pub fn decode(bytes: &[u8]) -> Result<Shared> {
     ZlibDecoder::new(bytes).take(MAX_RAW).read_to_end(&mut raw).context("Share code is damaged")?;
     let mut r = Reader(&raw);
     let version = r.byte()?;
-    ensure!(version == VERSION || version == COMPACT || version == WITH_PROFILE, "Share code made by a newer version of Legato: update the app");
+    ensure!(version == VERSION || version == COMPACT || version == WITH_PROFILE || version == WITH_AVATAR, "Share code made by a newer version of Legato: update the app");
     let name = r.str()?;
     let count = r.varint()?;
     ensure!(count <= MAX_ITEMS, "Too many tracks in share code");
@@ -246,9 +287,11 @@ pub fn decode(bytes: &[u8]) -> Result<Shared> {
             t => bail!("Unknown entry {t} in share code"),
         });
     }
-    let by = if version == WITH_PROFILE {
-        let p = Profile { id: r.str()?, name: r.str()? };
-        ensure!(p.valid(), "Bad profile in share code");
+    let by = if version == WITH_PROFILE || version == WITH_AVATAR {
+        let (id, name) = (r.str()?, r.str()?);
+        let avatar = if version == WITH_AVATAR { Some(r.str()?) } else { None };
+        let p = Profile { id, name, avatar };
+        ensure!(p.valid() && (avatar_ok(&p) || p.avatar.is_none()), "Bad profile in share code");
         Some(p)
     } else {
         None
@@ -382,9 +425,89 @@ mod tests {
         }
     }
 
+    const HASH: &str = "8342729096ea3675442027381ff50dfe";
+
+    fn with_avatar(avatar: &str) -> Shared {
+        Shared { by: Some(Profile { id: "80351110224678912".into(), name: "Nelly".into(), avatar: Some(avatar.into()) }), ..sample() }
+    }
+
+    /// A raw version 4 code with the given profile fields, as a hand-made link could carry.
+    fn v4(id: &str, avatar: &str) -> Vec<u8> {
+        let mut raw = vec![WITH_AVATAR];
+        put_str(&mut raw, "n");
+        put_varint(&mut raw, 0);
+        put_str(&mut raw, id);
+        put_str(&mut raw, "Nelly");
+        put_str(&mut raw, avatar);
+        let mut z = ZlibEncoder::new(Vec::new(), Compression::fast());
+        z.write_all(&raw).unwrap();
+        z.finish().unwrap()
+    }
+
+    #[test]
+    fn a_picture_rides_in_the_link_beside_the_name() {
+        for hash in [HASH, &format!("a_{HASH}")] {
+            let with = with_avatar(hash);
+            assert_eq!(parse(&to_web_link(&with)).unwrap(), with);
+            assert_eq!(parse(&to_link(&with)).unwrap().by.unwrap().avatar.as_deref(), Some(hash));
+        }
+        // The cost in the link: the hash alone, a few dozen characters.
+        let (bare, pic) = (Shared { by: Some(Profile { id: "80351110224678912".into(), name: "Nelly".into(), avatar: None }), ..sample() }, with_avatar(HASH));
+        let extra = to_web_link(&pic).len() - to_web_link(&bare).len();
+        assert!((20..=64).contains(&extra), "{extra}");
+        // The QR code carries neither the name nor the picture: the same text with or without it.
+        assert_eq!(to_qr_text(&pic), to_qr_text(&bare));
+        assert_eq!(to_qr_text(&pic), to_qr_text(&sample()));
+    }
+
+    #[test]
+    fn a_link_with_no_picture_is_the_older_version_and_an_old_link_still_reads() {
+        let bare = Shared { by: Some(Profile { id: "80351110224678912".into(), name: "Nelly".into(), avatar: None }), ..sample() };
+        let mut raw = Vec::new();
+        ZlibDecoder::new(&encode(&bare)[..]).read_to_end(&mut raw).unwrap();
+        assert_eq!(raw[0], WITH_PROFILE, "no picture: version 3, as before, so older apps read it");
+        assert_eq!(decode(&encode(&bare)).unwrap(), bare);
+        let mut raw = Vec::new();
+        ZlibDecoder::new(&encode(&with_avatar(HASH))[..]).read_to_end(&mut raw).unwrap();
+        assert_eq!(raw[0], WITH_AVATAR);
+    }
+
+    #[test]
+    fn a_forged_picture_is_refused_and_never_becomes_an_address() {
+        assert!(decode(&v4("80351110224678912", HASH)).is_ok());
+        for bad in [
+            "", "abc", &HASH[..31], &format!("{HASH}0"), &HASH.to_uppercase(), "a_", &format!("A_{HASH}"), &format!("../{}", &HASH[3..]), "https://evil.example/x.png",
+            "8342729096ea3675442027381ff50dfe/../../x", "8342729096ea3675442027381ff50d?x", "8342729096ea3675442027381ff50dfg", " 8342729096ea3675442027381ff50df",
+        ] {
+            assert!(decode(&v4("80351110224678912", bad)).is_err(), "{bad:?}");
+            // Written by this side: dropped, the name stays.
+            let w = decode(&encode(&with_avatar(bad))).unwrap();
+            assert_eq!(w.by.as_ref().map(|p| (p.name.as_str(), p.avatar.clone())), Some(("Nelly", None)), "{bad:?}");
+        }
+        // The id must be a real snowflake for a picture: 17 to 20 digits.
+        assert!(decode(&v4("1234567890123456", HASH)).is_err());
+        assert!(decode(&v4("123456789012345678901", HASH)).is_err());
+        assert!(decode(&v4("8035111022467891x", HASH)).is_err());
+    }
+
+    #[test]
+    fn the_picture_address_is_built_one_way_only() {
+        let p = |id: &str, hash: Option<&str>| Profile { id: id.into(), name: "N".into(), avatar: hash.map(Into::into) };
+        assert_eq!(p("80351110224678912", Some(HASH)).avatar_url().as_deref(), Some("https://cdn.discordapp.com/avatars/80351110224678912/8342729096ea3675442027381ff50dfe.png?size=64"));
+        // An animated one still asks for the still PNG.
+        assert_eq!(p("80351110224678912", Some(&format!("a_{HASH}"))).avatar_url().as_deref(), Some(&*format!("https://cdn.discordapp.com/avatars/80351110224678912/a_{HASH}.png?size=64")));
+        assert_eq!(p("80351110224678912", None).avatar_url(), None);
+        assert_eq!(p("12", Some(HASH)).avatar_url(), None);
+        assert_eq!(p("80351110224678912", Some("evil/x")).avatar_url(), None);
+        // The hash of an address the sign-in built, for a profile saved before pictures rode in links.
+        assert_eq!(avatar_hash_of("https://cdn.discordapp.com/avatars/80351110224678912/a_8342729096ea3675442027381ff50dfe.png?size=256").as_deref(), Some("a_8342729096ea3675442027381ff50dfe"));
+        assert_eq!(avatar_hash_of("https://evil.example/avatars/1/8342729096ea3675442027381ff50dfe.png"), None);
+        assert_eq!(avatar_hash_of("https://cdn.discordapp.com/avatars/1/xyz.png"), None);
+    }
+
     #[test]
     fn a_profile_rides_in_the_link_and_a_forged_one_is_refused() {
-        let by = Profile { id: "80351110224678912".into(), name: "Nelly".into() };
+        let by = Profile { id: "80351110224678912".into(), name: "Nelly".into(), avatar: None };
         let with = Shared { by: Some(by.clone()), ..sample() };
         assert_eq!(parse(&to_web_link(&with)).unwrap(), with);
         // No profile: the same bytes as before, so older apps still read it.
@@ -392,7 +515,7 @@ mod tests {
         // The QR code never carries it.
         assert!(with.compact().by.is_none());
         // A bad profile is dropped on writing and refused on reading.
-        let bad = Shared { by: Some(Profile { id: "x".into(), name: "Nelly".into() }), ..sample() };
+        let bad = Shared { by: Some(Profile { id: "x".into(), name: "Nelly".into(), avatar: None }), ..sample() };
         assert_eq!(decode(&encode(&bad)).unwrap().by, None);
         let mut raw = vec![WITH_PROFILE];
         put_str(&mut raw, "n");
@@ -501,7 +624,7 @@ mod tests {
         assert!(parse("LG1:abc").is_err());
         assert!(parse(&format!("{LINK}%%%")).is_err());
         let mut z = ZlibEncoder::new(Vec::new(), Compression::fast());
-        z.write_all(&[WITH_PROFILE + 1, 0, 0]).unwrap();
+        z.write_all(&[WITH_AVATAR + 1, 0, 0]).unwrap();
         assert!(decode(&z.finish().unwrap()).unwrap_err().to_string().contains("newer"));
     }
 

@@ -7,4 +7,9 @@ export type Profile = {
 /**
  * Discord user id (digits).
  */
-id: string, name: string, };
+id: string, name: string, 
+/**
+ * Version 4: the picture's hash on Discord's CDN (32 hex digits, `a_` first for an animated one): never an address. The
+ * still PNG is what is shown, built only by `avatar_url`.
+ */
+avatar: string | null, };

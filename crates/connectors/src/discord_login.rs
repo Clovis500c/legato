@@ -83,7 +83,7 @@ impl DiscordLogin {
     pub async fn identity(&self) -> Result<(Profile, DiscordCard)> {
         let me: Me = self.oauth.json(Method::GET, &format!("{}/users/@me", self.api), None).await?;
         let name: String = me.global_name.filter(|n| !n.trim().is_empty()).unwrap_or(me.username).trim().chars().take(32).collect();
-        let p = Profile { id: me.id, name };
+        let p = Profile { id: me.id, name, avatar: me.avatar.clone() };
         if !p.valid() {
             bail!("Discord sent a profile Legato cannot read");
         }
@@ -150,7 +150,7 @@ mod tests {
         let login = DiscordLogin::with_urls("CID", store, opener(Some("CODE"), seen.clone()), &server.url(), &server.url(), 0);
         let (p, card) = login.connect().await.unwrap();
         assert_eq!(card, DiscordCard { name: "Nelly".into(), avatar: None, banner: None, accent: None });
-        assert_eq!(p, Profile { id: "80351110224678912".into(), name: "Nelly".into() });
+        assert_eq!(p, Profile { id: "80351110224678912".into(), name: "Nelly".into(), avatar: None });
         token.assert_async().await;
         me.assert_async().await;
         let q = seen.lock().unwrap().clone().unwrap();
@@ -203,7 +203,9 @@ mod tests {
             .create_async()
             .await;
         let login = DiscordLogin::with_urls("CID", crate::oauth::tests::valid_store("discord-login"), crate::oauth::tests::no_open(), &server.url(), &server.url(), 0);
-        let (_, card) = login.identity().await.unwrap();
+        let (p, card) = login.identity().await.unwrap();
+        // The link carries the hash only; the card has the address.
+        assert_eq!(p.avatar.as_deref(), Some("a_8342729096ea3675442027381ff50dfe"));
         assert_eq!(card.avatar.as_deref(), Some("https://cdn.discordapp.com/avatars/80351110224678912/a_8342729096ea3675442027381ff50dfe.png?size=256"));
         assert_eq!(card.banner, None);
         assert_eq!(card.accent, Some(3_447_003));
