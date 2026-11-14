@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { CATEGORIES, categoryOf, groupDef, GROUPS, labelOf, missingLabels, SETTINGS } from './catalog'
 import { DESKTOP_ONLY } from './desktopOnly'
@@ -77,5 +77,12 @@ describe('settings catalog', () => {
       { id: 'C', in: 'Fades', label: 'Forgot' },
     ]
     expect(missingLabels({ Done: 'Fait' }, defs)).toEqual(['Forgot'])
+  })
+
+  it('a relabelled setting drawn by hand shows its label, never its old text', () => {
+    const root = new URL('../../', import.meta.url)
+    const files = (readdirSync(root, { recursive: true }) as string[]).filter((f) => /\.tsx$/.test(f) && !f.includes('i18n'))
+    const code = files.map((f) => readFileSync(new URL(f.replace(/\\/g, '/'), root), 'utf8')).join('\n')
+    for (const e of SETTINGS.filter((d) => d.label)) expect(code.includes(`tr('${e.id}')`) || code.includes(`tr("${e.id}")`), e.id).toBe(false)
   })
 })

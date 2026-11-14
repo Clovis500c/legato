@@ -12,7 +12,7 @@ import { fileName, starsText } from '../shared/format'
 import { COVER_ORDERS, VIZ_BANDINGS, VIZ_COLORMAPS, VIZ_COLORS, VIZ_FACES, VIZ_GRADIENTS, VIZ_PRESET_COLORS, VIZ_WEIGHTINGS, type PlaylistCover, type PlaylistFolder } from '../shared/theme/theme'
 import type { MenuEntry } from '../shared/ui/ContextMenu'
 import { shapeMenu, type MenuKind } from '../shared/ui/menuShape'
-import { CATEGORIES } from './settings/catalog'
+import { CATEGORIES, labelOf } from './settings/catalog'
 import { SourceIcon } from '../shared/ui/SourceIcon'
 import type { Addon } from './addons/registry'
 import { isOn, setAddon } from './addons/state'
@@ -718,7 +718,7 @@ export function navMenu(to: View, tracks?: LibraryTrack[]): MenuEntry[] {
     '-',
     ...(tracks?.length ? tracksMenu(tracks) : []),
     '-',
-    { id: 'counts', label: tr('Counts in the sidebar'), checked: settings.sidebarCounts, onSelect: () => update({ sidebarCounts: !settings.sidebarCounts }) },
+    { id: 'counts', label: tr(labelOf('Counts in the sidebar')), checked: settings.sidebarCounts, onSelect: () => update({ sidebarCounts: !settings.sidebarCounts }) },
     // One of the five entries: hidden from here, back in Settings › Appearance › Sidebar entries. The page stays reachable;
     // on it, Home takes over.
     nav && { id: 'hide', label: tr('Hide from the sidebar'), icon: <EyeSlash size={16} />, onSelect: () => (update({ hiddenNav: withHidden(settings.hiddenNav, nav, true) }), navOf(app().view.name) === nav && app().go({ name: 'home' })) },

@@ -262,7 +262,7 @@ function Appearance() {
             <Toggle label={tr('Cover tint')} checked={s.tint} onChange={(tint) => update({ tint })} />
           </Row>
           <Row setting="appTint" label={msg('Whole app in the cover’s color')} sub={tr('While a song plays, every page takes a soft color from its cover. Text stays readable')}>
-            <Toggle label={tr('Whole app in the cover’s color')} checked={s.appTint} onChange={(appTint) => update({ appTint })} />
+            <Toggle label={tr(labelOf('Whole app in the cover’s color'))} checked={s.appTint} onChange={(appTint) => update({ appTint })} />
           </Row>
           <Row setting="miniPlayer" label={msg('Mini player')} sub={tr('For every source. YouTube always shows one: its video must stay visible.')} preview={<MiniPlayerScene miniPlayer={s.miniPlayer} />}>
             <Toggle label={tr('Mini player')} checked={s.miniPlayer} onChange={(miniPlayer) => update({ miniPlayer })} />
@@ -292,7 +292,7 @@ function Appearance() {
             />
           </Row>
           <Row setting="coverClock" label={msg('Clock on the cover display')} sub={tr('The cover display (Now Playing, beside Karaoke) shows the time and the day in a corner, for a second screen')}>
-            <Toggle label={tr('Clock on the cover display')} checked={s.coverClock} onChange={(coverClock) => update({ coverClock })} />
+            <Toggle label={tr(labelOf('Clock on the cover display'))} checked={s.coverClock} onChange={(coverClock) => update({ coverClock })} />
           </Row>
         </div>
       </Group>
@@ -319,7 +319,7 @@ function Appearance() {
             <Toggle label={tr('Flowing background')} checked={s.backdropFlow} onChange={(backdropFlow) => update({ backdropFlow })} />
           </Row>
           <Row setting="homeFlow" label={msg('Flowing background behind Home')} sub={tr('The same flowing colours from the playing song’s cover, behind Home. Off by default; it needs Animations on')}>
-            <Toggle label={tr('Flowing background behind Home')} checked={s.homeFlow} onChange={(homeFlow) => update({ homeFlow })} />
+            <Toggle label={tr(labelOf('Flowing background behind Home'))} checked={s.homeFlow} onChange={(homeFlow) => update({ homeFlow })} />
           </Row>
         </div>
       </Group>
@@ -358,7 +358,7 @@ function Appearance() {
             <Toggle label={tr('Hide explicit songs')} checked={s.hideExplicit} onChange={(hideExplicit) => update({ hideExplicit })} />
           </Row>
           <Row setting="releaseCovers" label={msg('Covers for new releases')} sub={tr('Home’s New from your artists shows each release’s cover from Cover Art Archive (coverartarchive.org, then archive.org). Off by default: those hosts then see which releases you look at')}>
-            <Toggle label={tr('Covers for new releases')} checked={s.releaseCovers} onChange={(releaseCovers) => update({ releaseCovers })} />
+            <Toggle label={tr(labelOf('Covers for new releases'))} checked={s.releaseCovers} onChange={(releaseCovers) => update({ releaseCovers })} />
           </Row>
           <Row setting="hiddenNav" label={msg('Sidebar entries')} sub={tr('Untick what you don’t use. A hidden page is still there: search, links and shortcuts open it')}>
             <div className="flex flex-wrap gap-x-4 gap-y-2">
@@ -371,7 +371,7 @@ function Appearance() {
             </div>
           </Row>
           <Row setting="sidebarCounts" label={msg('Counts in the sidebar')} sub={tr('Number of songs next to each entry')} preview={<CountsScene sidebarCounts={s.sidebarCounts} />}>
-            <Toggle label={tr('Counts in the sidebar')} checked={s.sidebarCounts} onChange={(sidebarCounts) => update({ sidebarCounts })} />
+            <Toggle label={tr(labelOf('Counts in the sidebar'))} checked={s.sidebarCounts} onChange={(sidebarCounts) => update({ sidebarCounts })} />
           </Row>
           <Row setting="motion" label={msg('Animations')} sub={tr('Pages, menus, Now Playing and covers move a little. Off: nothing moves')} preview={<MotionScene motion={s.motion} />}>
             <Toggle label={tr('Animations')} checked={s.motion} onChange={(motion) => update({ motion })} />
@@ -449,7 +449,7 @@ function ShieldSection() {
       <div className="rounded-xl border border-line bg-raised">
         <Row label={msg('Block ads and trackers')} sub={tr('Network: right away. YouTube player: on next launch.')}>
           <Toggle
-            label={tr('Block ads and trackers')}
+            label={tr(labelOf('Block ads and trackers'))}
             checked={settings.shield}
             onChange={(shield) => {
               update({ shield })
@@ -663,12 +663,12 @@ function SoundGroup() {
         )}
         {s.visualizer && (
           <Row setting="visualizerBackdrop" label={msg('Visualizer behind Now Playing')} sub={tr('Big and faint across the bottom of Now Playing, behind the song')}>
-            <Toggle label={tr('Visualizer behind Now Playing')} checked={s.visualizerBackdrop} onChange={(visualizerBackdrop) => update({ visualizerBackdrop })} />
+            <Toggle label={tr(labelOf('Visualizer behind Now Playing'))} checked={s.visualizerBackdrop} onChange={(visualizerBackdrop) => update({ visualizerBackdrop })} />
           </Row>
         )}
         {s.visualizer && (
           <Row setting="visualizerMini" label={msg('Visualizer in the mini player')} sub={tr('A thin strip of it under the song in the mini player, wherever it sits')}>
-            <Toggle label={tr('Visualizer in the mini player')} checked={s.visualizerMini} onChange={(visualizerMini) => update({ visualizerMini })} />
+            <Toggle label={tr(labelOf('Visualizer in the mini player'))} checked={s.visualizerMini} onChange={(visualizerMini) => update({ visualizerMini })} />
           </Row>
         )}
         <Row
@@ -817,7 +817,7 @@ function GeneralSection() {
         <div className="rounded-xl border border-line bg-raised">
           <OpenAtStartup />
           <Row setting="closeToTray" label={msg('Keep running in the notification area')} sub={s.closeToTray ? tr('Closing the window keeps the music going; Quit from the icon’s menu') : tr('Closing the window quits the app')}>
-            <Toggle label={tr('Keep running in the notification area')} checked={s.closeToTray} onChange={(closeToTray) => update({ closeToTray })} />
+            <Toggle label={tr(labelOf('Keep running in the notification area'))} checked={s.closeToTray} onChange={(closeToTray) => update({ closeToTray })} />
           </Row>
           <Row setting="pipOnMinimize" label={msg('Picture-in-picture on minimize')} sub={tr('Minimizing while a song plays opens picture in picture, a small player above the other windows; its button brings the full window back')}>
             <Toggle label={tr('Picture-in-picture on minimize')} checked={s.pipOnMinimize} onChange={(pipOnMinimize) => update({ pipOnMinimize })} />
@@ -826,10 +826,10 @@ function GeneralSection() {
             <Toggle label={tr('Classic mini player')} checked={s.pipClassic} onChange={(pipClassic) => update({ pipClassic })} />
           </Row>
           <Row setting="reopen" label={msg('Reopen where you left off')} sub={tr('Same screen as when the app closed, Now Playing open if it was')}>
-            <Toggle label={tr('Reopen where you left off')} checked={s.reopen} onChange={(reopen) => update({ reopen })} />
+            <Toggle label={tr(labelOf('Reopen where you left off'))} checked={s.reopen} onChange={(reopen) => update({ reopen })} />
           </Row>
           <Row setting="resume" label={msg('Resume playback on launch')} sub={tr('The last song picks up where it stopped, with its queue, when the app opens')}>
-            <Toggle label={tr('Resume playback on launch')} checked={s.resume} onChange={(resume) => update({ resume })} />
+            <Toggle label={tr(labelOf('Resume playback on launch'))} checked={s.resume} onChange={(resume) => update({ resume })} />
           </Row>
           <Row label={msg('Open on')} sub={s.reopen ? tr('Used when “Reopen where you left off” is off (above)') : tr('Screen shown when the app starts')}>
             <Segmented label={tr('Open on')} value={s.startView} onChange={(startView) => update({ startView })} options={[{ value: 'home', label: tr('Home') }, { value: 'songs', label: tr('Songs') }, { value: 'mixes', label: tr('Mixes') }, { value: 'albums', label: tr('Albums') }, { value: 'artists', label: tr('Artists') }]} />
@@ -900,7 +900,7 @@ function GeneralSection() {
             <Segmented label={tr('Which notifications')} value={s.toastShow} onChange={(toastShow) => update({ toastShow })} options={[{ value: 'all', label: tr('All') }, { value: 'important', label: tr('Important only') }]} />
           </Row>
           <Row setting="toastTime" label={msg('How long notifications stay')} sub={tr('Errors stay twice as long')}>
-            <Segmented label={tr('How long notifications stay')} value={s.toastTime} onChange={(toastTime) => update({ toastTime })} options={[{ value: 'short', label: tr('Short') }, { value: 'normal', label: tr('Normal') }, { value: 'long', label: tr('Long') }]} />
+            <Segmented label={tr(labelOf('How long notifications stay'))} value={s.toastTime} onChange={(toastTime) => update({ toastTime })} options={[{ value: 'short', label: tr('Short') }, { value: 'normal', label: tr('Normal') }, { value: 'long', label: tr('Long') }]} />
           </Row>
         </div>
       </Group>
@@ -923,10 +923,10 @@ function GeneralSection() {
             <Toggle label={tr('Music Detector')} checked={s.detector} onChange={(detector) => update({ detector })} />
           </Row>
           <Row setting="detectorSession" label={msg('Ask this PC’s media players first')} sub={tr('Music Detector on “This PC”: first asks the apps playing here (Spotify, a browser, VLC…) which song they say is playing, through Windows’ media session. Only the title, artist and album are read: no sound is listened to and nothing is sent anywhere.')}>
-            <Toggle label={tr('Ask this PC’s media players first')} checked={s.detectorSession} onChange={(detectorSession) => update({ detectorSession })} />
+            <Toggle label={tr(labelOf('Ask this PC’s media players first'))} checked={s.detectorSession} onChange={(detectorSession) => update({ detectorSession })} />
           </Row>
           <Row setting="detectorAcoustid" label={msg('Name songs with AcoustID (free)')} sub={tr('Music Detector: before AudD, a fingerprint of the clip is made on this PC and looked up at AcoustID and MusicBrainz, which are free. Only the fingerprint is sent, never the sound. Works best on the start of a studio recording: a song caught in the middle, live or through the microphone is often not found.')}>
-            <Toggle label={tr('Name songs with AcoustID (free)')} checked={s.detectorAcoustid} onChange={(detectorAcoustid) => update({ detectorAcoustid })} />
+            <Toggle label={tr(labelOf('Name songs with AcoustID (free)'))} checked={s.detectorAcoustid} onChange={(detectorAcoustid) => update({ detectorAcoustid })} />
           </Row>
         </div>
       </Group>
@@ -1008,7 +1008,7 @@ function PlaybackSection() {
             <Toggle label={tr('Advanced fade')} checked={s.fade.advanced} onChange={(advanced) => update({ fade: { ...s.fade, advanced } })} />
           </Row>
           <Row setting="gaplessAlbums" label={msg('No fade within an album')} sub={tr('Songs of one album that follow each other play on without a fade: a live or continuous album never dips')}>
-            <Toggle label={tr('No fade within an album')} checked={s.gaplessAlbums} onChange={(gaplessAlbums) => update({ gaplessAlbums })} />
+            <Toggle label={tr(labelOf('No fade within an album'))} checked={s.gaplessAlbums} onChange={(gaplessAlbums) => update({ gaplessAlbums })} />
           </Row>
           <Row setting="earlyEnds" label={msg('Early endings')} sub={tr('YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play')}>
             <Toggle label={tr('Early endings')} checked={s.earlyEnds} onChange={(earlyEnds) => update({ earlyEnds })} />
@@ -1045,13 +1045,13 @@ function PlaybackSection() {
       <Group title={msg('Volume and output')}>
         <div className="rounded-xl border border-line bg-raised">
           <Row setting="eqPerDevice" label={msg('Equalizer per output device')} sub={tr('Adds Equalizer for this output to the player\'s menu: one preset per output device, applied while it is in use (remembered on this PC)')}>
-            <Toggle label={tr('Equalizer per output device')} checked={s.eqPerDevice} onChange={(eqPerDevice) => update({ eqPerDevice })} />
+            <Toggle label={tr(labelOf('Equalizer per output device'))} checked={s.eqPerDevice} onChange={(eqPerDevice) => update({ eqPerDevice })} />
           </Row>
           <Row setting="volumePerSource" label={msg('Volume per source')} sub={tr('Each source remembers the volume you last set on it: files, YouTube and Spotify need no turn of the knob when the queue switches source')}>
             <Toggle label={tr('Volume per source')} checked={s.volumePerSource} onChange={(volumePerSource) => update({ volumePerSource })} />
           </Row>
           <Row setting="volumePerDevice" label={msg('Volume per output device')} sub={tr('Each output device picked in the player menu remembers the volume you last set on it and gets it back when you switch to it')}>
-            <Toggle label={tr('Volume per output device')} checked={s.volumePerDevice} onChange={(volumePerDevice) => update({ volumePerDevice })} />
+            <Toggle label={tr(labelOf('Volume per output device'))} checked={s.volumePerDevice} onChange={(volumePerDevice) => update({ volumePerDevice })} />
           </Row>
         </div>
       </Group>
@@ -1071,7 +1071,7 @@ function PlaybackSection() {
             <Toggle label={tr('Cast to speakers')} checked={s.castSpeakers} onChange={(castSpeakers) => update({ castSpeakers })} />
           </Row>
           <Row setting="webcamScan" label={msg('Scan QR codes with the webcam')} sub={tr('Adds a Scan with the webcam button to Add a device and Listening rooms. The camera is asked for only when you press it; nothing is recorded and no picture leaves this PC.')}>
-            <Toggle label={tr('Scan QR codes with the webcam')} checked={s.webcamScan} onChange={(webcamScan) => update({ webcamScan })} />
+            <Toggle label={tr(labelOf('Scan QR codes with the webcam'))} checked={s.webcamScan} onChange={(webcamScan) => update({ webcamScan })} />
           </Row>
         </div>
       </Group>
@@ -1092,7 +1092,7 @@ function PlaybackSection() {
       <Group title={msg('Headphones and calls')}>
         <div className="rounded-xl border border-line bg-raised">
           <Row setting="pauseOnUnplug" label={msg('Pause when headphones disconnect')} sub={tr('Headphones unplugged, a Bluetooth headset or speaker turned off: the music pauses instead of going on through the speakers')}>
-            <Toggle label={tr('Pause when headphones disconnect')} checked={s.pauseOnUnplug} onChange={(pauseOnUnplug) => update({ pauseOnUnplug })} />
+            <Toggle label={tr(labelOf('Pause when headphones disconnect'))} checked={s.pauseOnUnplug} onChange={(pauseOnUnplug) => update({ pauseOnUnplug })} />
           </Row>
           <Row setting="pauseOnCall" label={msg('Pause during calls')} sub={tr('A Teams or Skype call starts: the music pauses, and plays on when the call ends. Off: Windows lowers it, as set in its sound settings')}>
             <Toggle label={tr('Pause during calls')} checked={s.pauseOnCall} onChange={(pauseOnCall) => update({ pauseOnCall })} />
@@ -1123,7 +1123,7 @@ function PlaybackSection() {
           </Row>
           {s.streamOverlay && (
             <Row setting="visualizerOverlay" label={msg('Visualizer on the overlay')} sub={tr('Bars under the song that move with the music, measured only while OBS shows the page')}>
-              <Toggle label={tr('Visualizer on the overlay')} checked={s.visualizerOverlay} onChange={(visualizerOverlay) => update({ visualizerOverlay })} />
+              <Toggle label={tr(labelOf('Visualizer on the overlay'))} checked={s.visualizerOverlay} onChange={(visualizerOverlay) => update({ visualizerOverlay })} />
             </Row>
           )}
           {s.streamOverlay && <OverlayPanel />}
@@ -1136,10 +1136,10 @@ function PlaybackSection() {
             <Toggle label={tr('Subtitles on videos')} checked={s.subtitles} onChange={(subtitles) => update({ subtitles })} />
           </Row>
           <Row setting="youtubeControls" label={msg('YouTube controls on the video')} sub={tr("YouTube's own title, buttons and hover menu on the video. From the next track.")}>
-            <Toggle label={tr('YouTube controls on the video')} checked={s.youtubeControls} onChange={(youtubeControls) => update({ youtubeControls })} />
+            <Toggle label={tr(labelOf('YouTube controls on the video'))} checked={s.youtubeControls} onChange={(youtubeControls) => update({ youtubeControls })} />
           </Row>
           <Row setting="youtubeChapters" label={msg('Chapters of long YouTube videos')} sub={tr('Asks YouTube for the chapters of a long video that plays (its own markers, or the times in its description) and adds Chapters to the player\'s menu')}>
-            <Toggle label={tr('Chapters of long YouTube videos')} checked={s.youtubeChapters} onChange={(youtubeChapters) => update({ youtubeChapters })} />
+            <Toggle label={tr(labelOf('Chapters of long YouTube videos'))} checked={s.youtubeChapters} onChange={(youtubeChapters) => update({ youtubeChapters })} />
           </Row>
         </div>
       </Group>

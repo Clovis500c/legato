@@ -6,6 +6,7 @@ import { Segmented, Toggle } from '../../shared/ui/controls'
 import { curveHints, curveLabels, curvePath, DEMO_GAP, demoLength, effectiveFade, shape, type Fade } from '../player/fade'
 import { usePlayer } from '../player/store'
 import { msg, tr } from '../../shared/i18n/i18n'
+import { labelOf } from './catalog'
 
 // Graph geometry (viewBox units). One time line, 0 = end of the song; the next one starts as the fade out does (X).
 const W = 640
@@ -260,18 +261,18 @@ export function FadeEditor() {
       <div className="rounded-xl border border-line bg-raised">
         <div data-setting="Fade in after a skip" className="flex items-center gap-4 border-b border-line-soft px-4 py-3">
           <div className="flex-1">
-            <p className="text-[0.8125rem] font-medium">{tr('Fade in after a skip')}</p>
+            <p className="text-[0.8125rem] font-medium">{tr(labelOf('Fade in after a skip'))}</p>
             <p className="text-xs text-ink-2">{tr('Songs you pick yourself fade in too, not only the ones that follow on their own')}</p>
           </div>
-          <Toggle label={tr('Fade in after a skip')} checked={f.skip} onChange={(skip) => set({ skip })} />
+          <Toggle label={tr(labelOf('Fade in after a skip'))} checked={f.skip} onChange={(skip) => set({ skip })} />
         </div>
         <div data-setting="Fade on pause and play" className="flex items-center gap-4 px-4 py-3">
           <div className="flex-1">
-            <p className="text-[0.8125rem] font-medium">{tr('Fade on pause and play')}</p>
+            <p className="text-[0.8125rem] font-medium">{tr(labelOf('Fade on pause and play'))}</p>
             <p className="text-xs text-ink-2">{tr('Volume glides down before a pause and back up after (not with Spotify)')}</p>
           </div>
           <Segmented
-            label={tr('Fade on pause and play')}
+            label={tr(labelOf('Fade on pause and play'))}
             value={String(f.pause)}
             onChange={(v) => set({ pause: +v })}
             options={[

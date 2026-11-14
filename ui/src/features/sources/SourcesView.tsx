@@ -26,6 +26,7 @@ import { useLastfm } from './lastfm'
 import { useListenbrainz } from './listenbrainz'
 import { syncServer, useServers } from './servers'
 import { explain } from '../../shared/errors'
+import { labelOf } from '../settings/catalog'
 
 /** Each account's sync direction (user's request 2026-10-29), kept in Rust (music_core::sync). */
 function useDirections() {
@@ -386,10 +387,10 @@ function GoogleAccounts() {
           </div>
           <div data-setting="Update every 15 minutes" className="ms-13 @max-lg:ms-0 flex items-center gap-3 px-3">
             <div className="flex-1">
-              <p className="text-[0.8125rem] font-medium">{tr('Update every 15 minutes')}</p>
+              <p className="text-[0.8125rem] font-medium">{tr(labelOf('Update every 15 minutes'))}</p>
               <p className="text-xs text-ink-2">{tr('While the app is open, your playlists and Liked Music come in again by themselves. If Google limits this PC, it waits longer.')}</p>
             </div>
-            <Toggle label={tr('Update every 15 minutes')} checked={autoSync} onChange={(on) => updateSettings({ autoSync: on })} />
+            <Toggle label={tr(labelOf('Update every 15 minutes'))} checked={autoSync} onChange={(on) => updateSettings({ autoSync: on })} />
           </div>
           <div className="ms-13 @max-lg:ms-0 flex gap-2">
             <Button variant="ghost" onClick={() => signIn(true)}>
