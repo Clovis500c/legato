@@ -504,7 +504,7 @@ describe('radio stations in the queue', () => {
   })
 })
 
-describe('Next on the last song with "Then, similar songs" on', () => {
+describe('Next on the last song, with similar songs always on', () => {
   // autoplay.ts's hook, stood in for: it adds one similar song and says so.
   const similar = vi.fn(async () => {
     usePlayer.getState().enqueue([song(902)], false, false)

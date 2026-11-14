@@ -562,9 +562,7 @@ export interface Settings {
   liveYoutube: boolean
   /** Voice search agreed to (Windows' online speech recognition: the voice goes to Microsoft while the mic listens). */
   voiceSearch: boolean
-  /** Up next ran out: similar songs follow (YouTube Music's radio, or your library). */
-  autoplay: boolean
-  /** Then, similar songs: how far from the queue they may stray (player/similarRank.ts). */
+  /** Variety: how far from the queue and your usual songs Up next, Shuffle and mixes may stray (player/score.ts). */
   similarVariety: 'alike' | 'balanced' | 'adventurous'
   /** Top bar lists recent searches (kept on this PC only: localStorage, never synced). */
   rememberSearches: boolean
@@ -728,7 +726,6 @@ export const DEFAULTS: Settings = {
   skipNonMusic: false,
   liveYoutube: true,
   voiceSearch: false,
-  autoplay: true,
   similarVariety: 'balanced',
   rememberSearches: true,
   searchSuggestions: true,
@@ -1002,7 +999,6 @@ export function sanitize(raw: unknown): Settings {
     skipNonMusic: r.skipNonMusic === true,
     liveYoutube: typeof r.liveYoutube === 'boolean' ? r.liveYoutube : DEFAULTS.liveYoutube,
     voiceSearch: r.voiceSearch === true,
-    autoplay: r.autoplay !== false,
     similarVariety: pick(r.similarVariety, ['alike', 'balanced', 'adventurous'] as const, DEFAULTS.similarVariety),
     rememberSearches: r.rememberSearches !== false,
     searchSuggestions: r.searchSuggestions !== false,

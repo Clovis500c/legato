@@ -32,7 +32,7 @@ export async function similarTo(seed: LibraryTrack[], skip: Set<string>, max: nu
     .slice(0, max)
 }
 
-/** The radio plays, endless (autoplay.ts goes on with songs like the last few, whatever the setting). */
+/** The radio plays, endless (autoplay.ts goes on with songs like the last few). */
 function playRadio(list: LibraryTrack[], name: string | undefined) {
   usePlayer.getState().playTracks(list, 0)
   if (usePlayer.getState().list === list) usePlayer.setState({ radio: true, from: name ? tr('{name} radio', { name }) : tr('Radio') })
@@ -60,7 +60,7 @@ export async function startRadioFrom(songs: LibraryTrack[], name = radioName(son
 }
 
 /**
- * The songs "Then, similar songs" adds: ranked against the whole queue and what you rated and play (similarRank.ts),
+ * The songs added when Up next runs out: ranked against the whole queue and what you rated and play (similarRank.ts),
  * from YouTube Music's radio of the last song when signed in (its order counts) and from your library. Nothing new is asked:
  * the one radio request is the one it always made.
  */

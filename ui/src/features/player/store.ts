@@ -54,7 +54,7 @@ interface PlayerState {
   added: number[]
   /** What the queue was started from (the page it was played on), for Up next's "Then from …". */
   from?: string
-  /** The queue is a radio (radio.ts): endless, songs like the last few come as Up next runs out, autoplay on or off. */
+  /** The queue is a radio (radio.ts): endless, songs like the last few come as Up next runs out. */
   radio: boolean
   /** The queue is an Auto-DJ (autoDj.ts): songs of these library ids come by its rules as Up next runs out. */
   dj?: number[]
@@ -913,7 +913,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     }
     if (i !== null) return void get().playAt(i, undefined, { auto })
     if (delta <= 0) return
-    // Up next ran out, by the song's end or by Next: similar songs when the setting says so (autoplay.ts; false = none to add).
+    // Up next ran out, by the song's end or by Next: similar songs (autoplay.ts; false = none to add).
     // Next used to restart the last song before it ever asked (a queue of one song, a .lmix, replayed itself).
     const stopped = () => {
       if (auto) return void set({ playing: false })

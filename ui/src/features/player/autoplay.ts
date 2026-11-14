@@ -1,4 +1,3 @@
-import { useSettings } from '../../app/settings'
 import { djMore } from './autoDj'
 import { similarForQueue } from './radio'
 import { onQueueEnd, usePlayer } from './store'
@@ -7,13 +6,12 @@ import { onQueueEnd, usePlayer } from './store'
 const MORE = 15
 
 /**
- * Up next ran out (setting autoplay, "Then, similar songs", or a radio playing): songs like the whole queue, ranked by what you
- * rate and play, never one artist three times running (similarRank.ts, radio.ts).
+ * Up next ran out (always: there is no switch any more, docs/recommendation.md): songs like the whole queue, scored by your taste with
+ * a dose of the new and a cap per artist (similarRank.ts, score.ts, radio.ts).
  * The Auto-DJ on: its own picks instead (autoDj.ts). False = nothing to add.
  */
 async function similarSongs(): Promise<boolean> {
   if (usePlayer.getState().dj) return djMore()
-  if (!useSettings.getState().settings.autoplay && !usePlayer.getState().radio) return false
   const { list, index, enqueue } = usePlayer.getState()
   const more = await similarForQueue(list, index, MORE)
   if (!more.length) return false

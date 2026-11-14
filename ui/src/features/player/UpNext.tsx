@@ -8,7 +8,7 @@ import { trackArt } from '../../shared/art'
 import { formatDuration } from '../../shared/format'
 import { Button } from '../../shared/ui/Button'
 import { onMenu, openMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
-import { RoundButton, Segmented, Toggle } from '../../shared/ui/controls'
+import { RoundButton, Segmented } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
 import { dragSource, useDrag, useDropTarget } from '../../shared/ui/drag'
 import { shaped, trackMenu } from '../menus'
@@ -98,7 +98,6 @@ export function UpNext({ onHide, className = CARD, heading, bare = false }: { on
   const nowTitle = usePlayer((s) => s.now?.title ?? '')
   const nowArtist = usePlayer((s) => s.now?.artist ?? '')
   const track = useNowTrack()
-  const autoplay = useSettings((s) => s.settings.autoplay)
   const variety = useSettings((s) => s.settings.similarVariety)
   const dj = usePlayer((s) => !!s.dj)
   // Why each Auto-DJ pick came up (its stars, an artist you liked).
@@ -254,7 +253,7 @@ export function UpNext({ onHide, className = CARD, heading, bare = false }: { on
         </div>
         {next === 0 && <li className="py-6 text-center text-ink-3">{tr('Nothing after this track.')}</li>}
       </ol>
-      {/* Auto-DJ on: its picks come instead of similar songs, its rules one click away. */}
+      {/* Auto-DJ on: its picks come instead of the app's, its rules one click away; else the Variety control (Up next, Shuffle, mixes). */}
       {dj ? (
         <div className="flex items-center justify-between gap-3 border-t border-line-soft px-2 pt-2.5">
           <span className="flex min-w-0 flex-col">
@@ -271,19 +270,10 @@ export function UpNext({ onHide, className = CARD, heading, bare = false }: { on
           </span>
         </div>
       ) : (
-        <label className="flex items-center justify-between gap-3 border-t border-line-soft px-2 pt-2.5">
-          <span className="flex flex-col">
-            <span className="text-xs font-semibold">{tr('Then, similar songs')}</span>
-            <span className="text-[0.6875rem] text-ink-3">{tr('When Up next runs out')}</span>
-          </span>
-          <Toggle label={tr('Then, similar songs')} checked={autoplay} onChange={(on) => useSettings.getState().update({ autoplay: on })} />
-        </label>
-      )}
-      {!dj && autoplay && (
-        <div className="flex items-center justify-between gap-3 px-2 pt-1.5">
-          <span className="text-[0.6875rem] text-ink-3">{tr('Similar songs')}</span>
+        <div className="flex items-center justify-between gap-3 border-t border-line-soft px-2 pt-2.5">
+          <span className="text-[0.6875rem] text-ink-3">{tr('Variety')}</span>
           <Segmented
-            label={tr('Similar songs')}
+            label={tr('Variety')}
             quiet
             value={variety}
             onChange={(similarVariety) => useSettings.getState().update({ similarVariety })}
