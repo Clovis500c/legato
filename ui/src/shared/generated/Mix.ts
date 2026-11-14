@@ -8,9 +8,9 @@ export type Mix = { id: string, title: string,
  */
 reason: string, trackIds: Array<number>, 
 /**
- * Section on the Mixes page: daily, moment, favorites, explore.
+ * Section on the Mixes page: daily, moment, favorites, loved ("Like <song>"), explore.
  */
-kind: "daily" | "moment" | "favorites" | "explore", 
+kind: "daily" | "moment" | "favorites" | "loved" | "explore", 
 /**
  * What `title` and `reason` are made of, for the UI to word them in its language (they stay English).
  */

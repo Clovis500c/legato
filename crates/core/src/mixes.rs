@@ -45,6 +45,8 @@ const ARTIST_MIXES: usize = 3;
 /// Mixes from the genres and decades your local files' tags name, and how many songs a genre or decade needs.
 const TAG_MIXES: usize = 2;
 const TAG_MIN: usize = 8;
+/// "Like <song>" mixes at most.
+const SONG_MIXES: usize = 8;
 const REDISCOVER_AFTER: i64 = 60 * DAY;
 /// Aural fixation: this much in one month (full listens' worth), at least FIXATION_SHARE of all its plays, at most
 /// FIXATION_SINCE after it; the month FIXATION_MONTHS back or more (this one = 0).
@@ -101,8 +103,8 @@ pub struct Mix {
     /// Shown under the title: why these tracks.
     pub reason: String,
     pub track_ids: Vec<i64>,
-    /// Section on the Mixes page: daily, moment, favorites, explore.
-    #[ts(type = r#""daily" | "moment" | "favorites" | "explore""#)]
+    /// Section on the Mixes page: daily, moment, favorites, loved ("Like <song>"), explore.
+    #[ts(type = r#""daily" | "moment" | "favorites" | "loved" | "explore""#)]
     pub kind: &'static str,
     /// What `title` and `reason` are made of, for the UI to word them in its language (they stay English).
     pub words: Words,
@@ -572,6 +574,7 @@ pub fn mixes(input: &Input) -> Vec<Mix> {
     let mut groups: Vec<(f64, Vec<String>)> = clusters(&nodes, &edges, input.seed).into_iter().map(|g| (g.iter().map(|a| affinity[a.as_str()]).sum(), g)).collect();
     groups.sort_by(|a, b| b.0.total_cmp(&a.0));
 
+    let group_of: HashMap<String, usize> = groups.iter().enumerate().flat_map(|(i, (_, g))| g.iter().map(move |a| (a.clone(), i))).collect();
     let score_of = |id: i64| taste.score.get(&id).copied().unwrap_or(0.0);
     let by_artists = |set: &HashSet<&str>, opts: Opts| -> Vec<i64> { taste.pick(input.tracks.iter().filter(|t| set.contains(taste.artist[&t.id].as_str())).map(|t| (t.id, score_of(t.id))), opts) };
     let shown = |artists: &[&str], n: usize| -> Vec<String> {
@@ -705,6 +708,54 @@ pub fn mixes(input: &Input) -> Vec<Mix> {
     };
     tagged(&|t| t.genre.as_deref().map(str::trim).filter(|g| !g.is_empty() && g.chars().count() <= 40).map(|g| (g.to_lowercase(), g.to_string())), "genre", "favorites", &mut out, &taste);
     tagged(&|t| t.year.filter(|y| (1900..=2100).contains(y)).map(|y| (format!("{}", y / 10 * 10), format!("{}s", y / 10 * 10))), "decade", "favorites", &mut out, &taste);
+
+    // "Like <song>": one mix per style (genre + decade where tagged, else the artists you listen together), seeded by one of that style's
+    // most loved songs, the seed turning with the day (same input and seed, same mixes). The seed leads; Never and Less songs never seed.
+    let by_id: HashMap<i64, &LibraryTrack> = input.tracks.iter().map(|t| (t.id, t)).collect();
+    let style_of = |t: &LibraryTrack| -> Option<String> {
+        let genre = t.genre.as_deref().map(str::trim).filter(|g| !g.is_empty()).map(str::to_lowercase);
+        let decade = t.year.filter(|y| (1900..=2100).contains(y)).map(|y| y / 10);
+        match (genre, decade) {
+            (Some(g), Some(d)) => Some(format!("g:{g}|{d}")),
+            (Some(g), None) => Some(format!("g:{g}")),
+            _ => group_of.get(&taste.artist[&t.id]).map(|i| format!("c:{i}")),
+        }
+    };
+    let mut loved: Vec<(i64, f64)> = input.tracks.iter().filter(|t| taste.allowed(t.id) && taste.pref(t.id) != Some(Pref::Less)).filter_map(|t| Some((t.id, score_of(t.id))).filter(|(_, s)| *s > 0.0)).collect();
+    loved.sort_by(|a, b| b.1.total_cmp(&a.1).then(a.0.cmp(&b.0)));
+    let mut songs_seen = HashSet::new();
+    loved.retain(|(id, _)| songs_seen.insert(&taste.song[id]));
+    let mut styles: Vec<(String, Vec<i64>)> = Vec::new();
+    for (id, _) in &loved {
+        let Some(style) = style_of(by_id[id]) else { continue };
+        match styles.iter_mut().find(|(k, _)| *k == style) {
+            Some((_, top)) if top.len() < 3 => top.push(*id),
+            Some(_) => {}
+            None => styles.push((style, vec![*id])),
+        }
+    }
+    let mut liked: Vec<Mix> = Vec::new();
+    for (n, (style, top)) in styles.iter().enumerate() {
+        if liked.len() == SONG_MIXES {
+            break;
+        }
+        let seed = top[(local_day(input.now) + n as i64).rem_euclid(top.len() as i64) as usize];
+        let (title, artist) = (&by_id[&seed].track.title, &taste.artist[&seed]);
+        let cands: Vec<(i64, f64)> = input.tracks.iter().filter(|t| style_of(t).as_deref() == Some(style.as_str())).map(|t| (t.id, (score_of(t.id) + 0.5) * if t.id == seed { 3.0 } else { 1.0 })).collect();
+        if cands.len() < TAG_MIN {
+            continue;
+        }
+        let mut ids = taste.pick(cands.into_iter(), Opts { cooldown: true, favored: Some(artist.as_str()) });
+        ids.retain(|id| *id != seed);
+        ids.insert(0, seed);
+        ids.truncate(MIX_LEN);
+        if ids.len() < TAG_MIN || !new_enough(&liked, &ids) {
+            continue;
+        }
+        let name = taste.display[artist].clone();
+        liked.push(Mix { id: format!("like-{}", liked.len() + 1), title: format!("Like {title}"), reason: format!("Because you love {title}, by {name}"), track_ids: ids, kind: "loved", words: Words { name: Some(title.clone()), names: vec![name], ..Words::default() }, found: Vec::new() });
+    }
+    out.extend(liked);
 
     // By tempo, from the tags of local files (a workout, winding down): songs at 120 BPM and above, or 90 and below.
     for (id, title, reason, pass) in [("upbeat", "Up tempo", "Your songs at 120 BPM and above", (120..=400)), ("mellow", "Slow down", "Your songs at 90 BPM and below", (30..=90))] {
@@ -897,6 +948,91 @@ mod tests {
         assert!(w(false, 150_000, Some(200_000)) > w(false, 40_000, Some(200_000)) && w(false, 40_000, Some(200_000)) > 0.0);
         assert!(w(false, 3_000, None) < w(false, 25_000, None) && w(false, 2_000, None) > FLOOR);
         assert!((decay(30 * DAY) - 0.5).abs() < 1e-9 && decay(0) == 1.0 && decay(-5) == 1.0);
+    }
+
+    /// A library of two styles: rock of the 90s (ids 1..=40, 8 artists) and jazz of the 50s (ids 41..=80, 8 artists), all played.
+    fn styled() -> (Vec<LibraryTrack>, Vec<Play>) {
+        let tracks: Vec<LibraryTrack> = (1..=80)
+            .map(|i| {
+                let mut x = t(i, &format!("Band {}", (i - 1) / 5));
+                (x.genre, x.year) = if i <= 40 { (Some("rock".into()), Some(1995)) } else { (Some("jazz".into()), Some(1955)) };
+                x
+            })
+            .collect();
+        let plays = (1..=80).map(|i| play(i, NOW - 3 * DAY + i * 300, true)).collect();
+        (tracks, plays)
+    }
+
+    fn likes(out: &[Mix]) -> Vec<&Mix> {
+        out.iter().filter(|m| m.kind == "loved").collect()
+    }
+
+    #[test]
+    fn mixes_like_a_loved_song_one_per_style() {
+        let (tracks, plays) = styled();
+        let out = run(&tracks, &plays, &HashMap::new(), 3);
+        let l = likes(&out);
+        assert_eq!(l.len(), 2, "one per style: {out:?}");
+        for m in &l {
+            assert!(m.id.starts_with("like-") && m.title.starts_with("Like ") && m.track_ids.len() >= 8 && m.track_ids.len() <= MIX_LEN, "{m:?}");
+            // The seed first, and everything in its style.
+            let style: BTreeSet<Option<String>> = m.track_ids.iter().map(|id| tracks.iter().find(|t| t.id == *id).unwrap().genre.clone()).collect();
+            assert_eq!(style.len(), 1, "{m:?}");
+            assert_eq!(m.words.name.as_deref(), Some(tracks.iter().find(|t| t.id == m.track_ids[0]).unwrap().track.title.as_str()));
+        }
+        assert_ne!(l[0].track_ids, l[1].track_ids);
+    }
+
+    #[test]
+    fn like_mixes_are_deterministic_and_the_seed_rotates_with_the_day() {
+        let (tracks, plays) = styled();
+        let seeds = |now: i64| -> Vec<i64> {
+            let input = Input { tracks: &tracks, plays: &plays, playlists: &[], saved: &[], liked: &[], prefs: &HashMap::new(), now, utc_offset: 0, seed: 3, found: &[] };
+            let again = mixes(&input);
+            assert_eq!(again, mixes(&input), "same input and seed, same mixes");
+            likes(&again).iter().map(|m| m.track_ids[0]).collect()
+        };
+        let today = seeds(NOW);
+        assert_eq!(today, seeds(NOW + 600), "the same day");
+        assert!((1..=5).any(|d| seeds(NOW + d * DAY) != today), "another day, another seed somewhere");
+    }
+
+    #[test]
+    fn like_mixes_honour_never_less_and_a_small_library() {
+        let (tracks, plays) = styled();
+        let mut prefs = HashMap::new();
+        for id in 1..=40 {
+            prefs.insert(id, Pref::Never);
+        }
+        for id in 41..=50 {
+            prefs.insert(id, Pref::Less);
+        }
+        let out = run(&tracks, &plays, &prefs, 3);
+        let l = likes(&out);
+        assert_eq!(l.len(), 1, "the rock is never: {l:?}");
+        assert!(l[0].track_ids.iter().all(|id| *id > 40));
+        // Less is not Never, but a Less song is not the seed.
+        assert!(!(41..=50).contains(&l[0].track_ids[0]));
+        // Under 8 songs of a style: no mix.
+        let (small, sp) = (tracks[..6].to_vec(), plays[..6].to_vec());
+        assert!(likes(&run(&small, &sp, &HashMap::new(), 3)).is_empty());
+    }
+
+    #[test]
+    fn like_mixes_cap_an_artist_and_group_untagged_songs_by_who_is_played_with_whom() {
+        let (tracks, plays) = styled();
+        let out = run(&tracks, &plays, &HashMap::new(), 3);
+        for m in likes(&out) {
+            for a in artists(&tracks, m) {
+                let n = m.track_ids.iter().filter(|id| tracks.iter().find(|t| t.id == **id).unwrap().track.artist == a).count();
+                assert!(n <= MIX_LEN / 2, "{a} fills {n}");
+            }
+        }
+        // No tags at all (streamed songs): the two sessions' artists make two groups.
+        let (plain, pp) = library();
+        let big: Vec<LibraryTrack> = plain.iter().cloned().chain((13..=24).map(|i| t(i, ["Alpha", "Charlie"][(i % 2) as usize]))).collect();
+        let _ = pp;
+        assert!(likes(&run(&big, &(1..=24).map(|i| play(i, NOW - DAY + i * 200, true)).collect::<Vec<_>>(), &HashMap::new(), 3)).len() <= 8);
     }
 
     #[test]

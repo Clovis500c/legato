@@ -41,6 +41,7 @@ function useMixTracks(mix?: Mix): LibraryTrack[] {
 function mixMark(mix: Mix): { label: string; mark: string } {
   const n = mix.id.match(/^daily-(\d)/)?.[1]
   if (n) return { label: tr('Daily'), mark: `0${n}` }
+  if (mix.id.startsWith('like-')) return { label: tr('Like'), mark: (mix.words?.name ?? mix.title.replace(/^Like /, '')).slice(0, 2).toUpperCase() }
   const a = mix.id.match(/^artist-(\d)/)?.[1]
   if (a) return { label: tr('Artist'), mark: (mix.words?.name ?? mix.title.replace(/ Mix$/, '')).slice(0, 2).toUpperCase() }
   const marks: Record<string, { label: string; mark: string }> = {
@@ -107,6 +108,7 @@ const SECTIONS: { kind: Mix['kind']; title: string }[] = [
   { kind: 'daily', title: msg('Your daily mixes') },
   { kind: 'moment', title: msg('For right now') },
   { kind: 'favorites', title: msg('Your favorites') },
+  { kind: 'loved', title: msg('Made from songs you love') },
   { kind: 'explore', title: msg('Explore your library') },
 ]
 

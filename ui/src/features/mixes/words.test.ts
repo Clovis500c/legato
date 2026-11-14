@@ -19,6 +19,8 @@ describe('mix words', () => {
     expect(mixTitle(mix('fixation', { month: '2024-03' }))).toBe('Back to March 2024')
     expect(mixReason(mix('fixation', { month: '2024-03' }))).toBe('Played a lot in March 2024, hardly since')
     expect(monthName('2024-12', 'short')).toBe('Dec')
+    expect(mixTitle(mix('like-1', { name: 'Kettle Song', names: ['Marlow Finch'] }))).toBe('Like Kettle Song')
+    expect(mixReason(mix('like-1', { name: 'Kettle Song', names: ['Marlow Finch'] }))).toBe('Because you love Kettle Song, by Marlow Finch')
     // Unknown to the UI: Rust's own words.
     expect(mixTitle(mix('future-kind', {}, 'Something new'))).toBe('Something new')
   })
