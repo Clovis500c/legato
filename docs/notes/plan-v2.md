@@ -212,6 +212,7 @@ Where a line says "reading", the owner hasn't confirmed it.
       (plugins' API, themes, the link and file formats, contributing). The design is a piece Fable may do itself (the
       owner's word).
       2026-11-13 (lot 32), looked at before touching anything: the hero at 1440 px (dark) and 375 px (light), through the built-in browser on `next dev`. It is already a product page (the headline as the picture, the real interface tilted in 3D from the demo, one download button, the privacy link, the platforms line) and holds at phone width in the light theme; no redesign was made, because a taste change nobody could judge here would only risk what works. The plan's "too basic" predates the Story and the demo. Left for the owner's eyes: the chapters below the hero, the Features block, the 18 languages' longest lines.
+      - [x] `M` Site 1: sections after the scroll story as cards (fixes, measures plate, bento of features, a card per source, privacy as three promises + the services + every PRIVACY row opening in place, numbered start with the download, roadmap as a line, community card), a footer in columns shared with the docs, a lighter header (Discord and GitHub as icons), hero chips and the playback blue's light; the docs open on two doors. Left: the chapters' own look, a real phone, the 16 other languages read by eye.
 
 ## The owner's asks of 2026-11-13
 
