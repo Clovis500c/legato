@@ -90,9 +90,9 @@ const GROUP_SORTS: readonly GroupSort[] = ['name', 'name-desc', 'artist', 'songs
 
 /** Home's sections, default order. */
 export const HOME_SECTIONS = ['quick', 'week', 'mixes', 'recent', 'playlists', 'youtube', 'releases', 'added'] as const
-/** Off until turned on: the sidebar lists your playlists already (user's pick 2026-10-23); `releases` sends your top
- *  artists' names to MusicBrainz, so it waits for the user's own switch. */
-const HOME_OFF: readonly HomeSectionId[] = ['playlists', 'releases']
+/** Off until turned on: `releases` sends your top artists' names to MusicBrainz, so it waits for the user's own switch.
+ *  (Your playlists, the banners carousel, was off too until v11, 2026-11-14.) */
+const HOME_OFF: readonly HomeSectionId[] = ['releases']
 export const PLAYLIST_ORDERS = ['custom', 'name', 'songs', 'opened'] as const
 export type PlaylistOrder = (typeof PLAYLIST_ORDERS)[number]
 /** Home's chips: everything, your library only, YouTube Music only (remembered). */
@@ -275,7 +275,7 @@ export interface DiscordSettings {
 }
 
 /** Bumped when defaults change for everyone (saved settings get the new ones once). */
-const DEFAULTS_VERSION = 10
+const DEFAULTS_VERSION = 11
 
 /** Glow levels (Settings › Appearance › Glow). */
 export const GLOW_LEVELS = ['off', 'soft', 'strong'] as const
@@ -767,7 +767,7 @@ function v8(r: Record<string, unknown>): Partial<Settings> {
   }
 }
 
-/** Version 6 (Home v4, 2026-10-23): Your playlists off (see HOME_OFF), applied below. */
+/** Version 6 (Home v4, 2026-10-23): the sections of HOME_OFF off, applied below. */
 
 /** Version 5 (user's picks 2026-10-22): mini player in the sidebar, bigger text; 2 s fades instead of 5 for those who
  * never changed them. */
@@ -1030,7 +1030,9 @@ export function sanitize(raw: unknown): Settings {
     ...(saved < 9 && (r.visualizerStyle ?? 'bars') === 'bars' ? { visualizerStyle: 'led' as const } : {}),
     // v10 (glow and simplicity, 2026-11-06): the moon leaves the player bar (in its More; a running timer still shows).
     ...(saved < 10 ? { sleepButton: false } : {}),
-    ...(saved < 6 ? { homeSections: sanitizeHome(r.homeSections).map((x) => (HOME_OFF.includes(x.id) ? { ...x, on: false } : x)) } : {}),
+    // v6: the sections of HOME_OFF off once. v11 (2026-11-14): Your playlists (the banners carousel) on once; the v6 forced it off,
+    // so an explicit "off" is not told from the default: everyone saved before gets it on, and turning it off again sticks.
+    ...(saved < 11 ? { homeSections: sanitizeHome(r.homeSections).map((x) => (saved < 6 && HOME_OFF.includes(x.id) ? { ...x, on: false } : x.id === 'playlists' ? { ...x, on: true } : x)) } : {}),
   }
 }
 

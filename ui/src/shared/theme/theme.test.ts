@@ -136,7 +136,7 @@ describe('resolveTheme', () => {
 
   it('settings saved before v2 get the new defaults once, later choices stay', () => {
     const old = sanitize({ volume: 'knob', tuner: true, clickToPlay: 'double', zoom: 110 })
-    expect(old).toMatchObject({ volume: 'bar', tuner: false, clickToPlay: 'single', stage: 'auto', zoom: 110, startView: 'home', defaultsVersion: 10 })
+    expect(old).toMatchObject({ volume: 'bar', tuner: false, clickToPlay: 'single', stage: 'auto', zoom: 110, startView: 'home', defaultsVersion: 11 })
     // Saved at v2: only v3's change applies.
     expect(sanitize({ volume: 'knob', stage: 'video', defaultsVersion: 2 })).toMatchObject({ volume: 'knob', stage: 'auto' })
     // Home opens first once (v4), then the user's pick stays.
@@ -146,10 +146,14 @@ describe('resolveTheme', () => {
     expect(sanitize({ crossfade: 5, fade: { out: 5, in: 5 }, defaultsVersion: 4 })).toMatchObject({ crossfade: 2, fade: { out: 2, in: 2 } })
     expect(sanitize({ crossfade: 8, fade: { out: 8, in: 3 }, defaultsVersion: 4 })).toMatchObject({ crossfade: 8, fade: { out: 8, in: 3 } })
     expect(sanitize({ crossfade: 5, fade: { out: 5, in: 5 }, defaultsVersion: 5 })).toMatchObject({ crossfade: 5, fade: { out: 5, in: 5 } })
-    // Your playlists off once (v6), back on when the user turns it on again.
-    const off = (x: ReturnType<typeof sanitize>) => x.homeSections.find((h) => h.id === 'playlists')?.on
-    expect(off(sanitize({ homeSections: [{ id: 'playlists', on: true }], defaultsVersion: 5 }))).toBe(false)
-    expect(off(sanitize({ homeSections: [{ id: 'playlists', on: true }], defaultsVersion: 6 }))).toBe(true)
+    // Releases off once (v6); Your playlists on once (v11, the banners carousel), and off again for good when the user turns it off.
+    const on = (x: ReturnType<typeof sanitize>, id: string) => x.homeSections.find((h) => h.id === id)?.on
+    const saved = [{ id: 'playlists', on: false }, { id: 'releases', on: true }]
+    expect(on(sanitize({ homeSections: saved, defaultsVersion: 5 }), 'releases')).toBe(false)
+    expect(on(sanitize({ homeSections: saved, defaultsVersion: 5 }), 'playlists')).toBe(true)
+    expect(on(sanitize({ homeSections: saved, defaultsVersion: 10 }), 'playlists')).toBe(true)
+    expect(on(sanitize({ homeSections: saved, defaultsVersion: 10 }), 'releases')).toBe(true)
+    expect(on(sanitize({ homeSections: saved, defaultsVersion: 11 }), 'playlists')).toBe(false)
     // App v2 (v8): old defaults move once (Windows accent → sky blue, compact rows, square covers, flat Now Playing);
     // covers stay on the rows.
     expect(sanitize({ accent: 'system', density: 'comfort', listCovers: true, covers: 'rounded', immersive: true, defaultsVersion: 7 })).toMatchObject({ accent: null, density: 'compact', listCovers: true, covers: 'net', immersive: false })
@@ -214,7 +218,8 @@ describe('themes v2', () => {
 describe('Home sections', () => {
   it('keeps the saved order, adds new sections where they belong, drops unknown and repeated ones', () => {
     expect(sanitizeHome(undefined).map((x) => x.id)).toEqual([...HOME_SECTIONS])
-    expect(sanitizeHome(undefined).find((x) => x.id === 'playlists')?.on).toBe(false)
+    expect(sanitizeHome(undefined).find((x) => x.id === 'playlists')?.on).toBe(true)
+    expect(sanitizeHome(undefined).find((x) => x.id === 'releases')?.on).toBe(false)
     const saved = [{ id: 'added', on: true }, { id: 'quick', on: false }, { id: 'nope', on: true }, { id: 'added', on: false }]
     const got = sanitizeHome(saved)
     expect(got.slice(0, 2)).toEqual([{ id: 'added', on: true }, { id: 'quick', on: false }])

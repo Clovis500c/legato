@@ -56,8 +56,8 @@ nothing on.
   Right-click). Standard is the default and loses nothing.
 - **Themes**: eight presets with a live preview; « Duplicate to edit » copies a preset; the editor sits under Advanced.
 - **Playlist banners**: always on (no setting). A playlist page's header is a wall of its covers; the Home carousel
-  « Browse your playlists » shows the same wall. The Home section « Your playlists » stays off until you turn it on in
-  « Personalise Home ».
+  « Browse your playlists » shows the same wall. The Home section « Your playlists » is on by default (v11; everyone
+  saved before gets it on once, turning it off again sticks).
 - **Free song recognition**: Windows' media panel (SMTC) and Chromaprint + AcoustID. AcoustID needs its application key
   registered on acoustid.org; until then the detector says so and asks for nothing.
 - **Similar songs** (Close / Balanced / Adventurous): the queue's taste profile; « Next » on the last song is fixed.
