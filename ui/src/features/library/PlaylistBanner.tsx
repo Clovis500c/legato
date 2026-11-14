@@ -42,18 +42,20 @@ function useBanner(p: LibraryPlaylist, to: 'bottom' | 'start' = 'bottom') {
  * of columns follows the box's size. Covers repeat, shifted, when the playlist has fewer than the cells (banner.ts `wallGrid`).
  * Decorative: the name is the label. Still: nothing moves, so reduced motion has nothing to turn off.
  */
-function Wall({ arts, rows }: { arts: string[]; rows: number }) {
+function Wall({ arts, rows, fixed }: { arts: string[]; rows: number; fixed?: { w: number; h: number } }) {
   const box = useRef<HTMLSpanElement>(null)
-  const [size, setSize] = useState({ w: 1200, h: 230 })
+  const [measured, setSize] = useState({ w: 1200, h: 230 })
+  const size = fixed ?? measured
   useEffect(() => {
     const e = box.current
-    if (!e) return
+    // A tile's size is known: no observer per tile in the carousel.
+    if (!e || fixed) return
     const measure = () => setSize({ w: e.clientWidth || 1200, h: e.clientHeight || 230 })
     measure()
     const watch = new ResizeObserver(measure)
     watch.observe(e)
     return () => watch.disconnect()
-  }, [])
+  }, [fixed])
   // Rows tall enough to cover the tilt's corners: a row more than the box shows on each side.
   const cell = Math.max(36, Math.ceil(size.h / rows))
   const shown = rows + 2
@@ -75,12 +77,15 @@ function Wall({ arts, rows }: { arts: string[]; rows: number }) {
   )
 }
 
+/** A tile's size (the phone's 240 px wide one shows less of the same wall). */
+const TILE = { w: 280, h: 140 }
+
 /** One tile: the wall (or, without covers, the plain wash and the name's first letter), the wash, the name in white capitals. */
 function Face({ p }: { p: LibraryPlaylist }) {
   const { arts, wash } = useBanner(p)
   return (
     <>
-      <Wall arts={arts} rows={3} />
+      <Wall arts={arts} rows={3} fixed={TILE} />
       <span aria-hidden className="absolute inset-0" style={{ background: wash }} />
       {!arts.length && (
         <span aria-hidden className="absolute inset-0 grid place-items-center text-7xl font-black text-white/20">
