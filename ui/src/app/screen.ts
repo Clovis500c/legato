@@ -1,4 +1,5 @@
 import { usePlayer } from '../features/player/store'
+import { MAX_BACK } from './navHistory'
 import { useStore, type View } from './store'
 
 /** Where the app was: screen and Now Playing open. Per device (window state), localStorage. */
@@ -36,12 +37,19 @@ export function validScreen(raw: unknown, playlistIds: number[]): Screen | null 
   return { view, full: r.full === true }
 }
 
+/** A stored back stack, read back at launch: each page checked like a restored screen (a deleted playlist drops out), the oddities dropped, the last `MAX_BACK` kept. */
+export function validBack(raw: unknown, playlistIds: number[]): View[] {
+  if (!Array.isArray(raw)) return []
+  return raw.flatMap((v) => validScreen({ view: v }, playlistIds)?.view ?? []).slice(-MAX_BACK)
+}
+
 /** After launch (settings, library and resume done): same screen, Now Playing open if it was. */
 export function restoreScreen() {
   const saved = validScreen(atLaunch, useStore.getState().playlists.map((p) => p.id))
   if (!saved) return
   useStore.getState().go(saved.view)
-  useStore.setState({ back: [] })
+  // The pages before it come back too: after the app was killed and reopened, Back still goes back a page instead of leaving.
+  useStore.setState({ back: validBack((atLaunch as { back?: unknown } | null)?.back, useStore.getState().playlists.map((p) => p.id)) })
   if (saved.full && usePlayer.getState().now) usePlayer.getState().setFull(true)
 }
 
@@ -56,7 +64,7 @@ export function startClosingPlayerOnNavigate(): () => void {
 export function startScreenSaving(): () => void {
   const save = () => {
     try {
-      localStorage.setItem(KEY, JSON.stringify({ view: useStore.getState().view, full: usePlayer.getState().full }))
+      localStorage.setItem(KEY, JSON.stringify({ view: useStore.getState().view, full: usePlayer.getState().full, back: useStore.getState().back.slice(-MAX_BACK) }))
     } catch {
       // Storage off: opens on the start screen.
     }

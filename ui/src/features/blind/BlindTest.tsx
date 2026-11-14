@@ -5,6 +5,7 @@ import { Button } from '../../shared/ui/Button'
 import { tr, trn } from '../../shared/i18n/i18n'
 import { usePlayer } from '../player/store'
 import { pickRounds, SNIPPET_MS, snippetStart } from './rounds'
+import { holdLayer } from '../../shared/ui/layers'
 import { closeBlind } from './blindOpen'
 
 /** A round's song, started at its snippet (asked as the start: a seek sent with the play reaches the song before it). */
@@ -43,6 +44,8 @@ export function BlindTest() {
     }
   }, [current, answer])
   useEffect(() => () => usePlayer.getState().pauseNow(), [])
+  // Android's Back closes the game (it is a full-window cover over the page, not a page of its own).
+  useEffect(() => holdLayer(closeBlind), [])
 
   const right = useMemo(() => (current ? current.choices.indexOf(current.song) : -1), [current])
   const pick = (i: number) => {

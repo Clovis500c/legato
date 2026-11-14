@@ -7,6 +7,8 @@ import { tr, trn } from '../shared/i18n/i18n'
 import { noteList } from '../features/home/recentLists'
 import { advance, BEAT, newRun, summary, type ImportKind, type ImportRun } from '../features/add/importRun'
 import { patchLibrary } from './libraryPatch'
+import { pushView } from './navHistory'
+import { rememberScroll, restoreScroll } from './scrollMemory'
 import { fold, oneLiked, ownLiked, shownIds, youtubeLiked, type Lists } from '../features/library/likedMusic'
 
 export type SettingsSection = 'general' | 'playback' | 'appearance' | 'features' | 'devices' | 'library' | 'sources' | 'sync' | 'shield' | 'privacy' | 'shortcuts' | 'about'
@@ -284,20 +286,25 @@ export const useStore = create<State>((set, get) => {
     toastPrefs: { important: false, scale: 1 },
 
     go: (view) => {
-      set({ back: [...get().back, get().view].slice(-50), fwd: [] })
+      rememberScroll(get().view)
+      set({ back: pushView(get().back, get().view, view), fwd: [] })
       show(view)
     },
     goBack: () => {
       const { back, fwd, view } = get()
       if (!back.length) return
+      rememberScroll(view)
       set({ back: back.slice(0, -1), fwd: [view, ...fwd] })
       show(back[back.length - 1])
+      restoreScroll(back[back.length - 1])
     },
     goForward: () => {
       const { back, fwd, view } = get()
       if (!fwd.length) return
+      rememberScroll(view)
       set({ back: [...back, view], fwd: fwd.slice(1) })
       show(fwd[0])
+      restoreScroll(fwd[0])
     },
     setQuery: (query) => set({ query }),
     setScoped: (scoped) => set({ scoped }),
