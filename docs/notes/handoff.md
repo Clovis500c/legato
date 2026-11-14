@@ -2,21 +2,19 @@
 
 Where the work stands, for a session with no history here. Read this first, then only the parts of
 [plan-v2.md](plan-v2.md) you need. Rewrite it, short, when a branch, a release or the next step changes; its older
-versions are in git (`git log -p -- docs/notes/handoff.md`). Updated 2026-11-15 (closure 14).
+versions are in git (`git log -p -- docs/notes/handoff.md`). Updated 2026-11-15 (closure 15).
 
 ## Where things stand
-- **master** = `22cc704d`, pushed on the owner's word. **platforms** = master + 10 commits, **not pushed**
-  (`git log --oneline origin/master..HEAD`): the handoffs (`56343d20` and this one); Lot 43 Discord picture on a share link (`ad5071bb`
-  format, `6469df86` app, `bb94e707` site); Lot 44 Adaptive Sound buttons (`c74d9eb9`); Lot 45 Back on the phone
-  (`b9d175f6`); Lot 46 Home's flowing background (`8f0865fc`, veil fix `71deaa50`); plan references (`c375fa0f`).
-  Only the owner's word pushes. A push starts a Beta release: the next one is v1.2.31 (`release.mjs --dry-run`), not
-  confirmed published here.
+- **master** = `22fe3c83`: Beta 1.2.32 published (2026-11-14 23:06 UTC, per the owner's run; its tag is not fetched here).
+  **platforms** = master + 4 commits, **not pushed** (`git log --oneline origin/master..HEAD`): Lot 47 channel picture
+  (`91a7b86c`, fix `ab016e43`); Lot 48 From label (`8cb3e92e`); this handoff. Only the owner's word pushes. A push starts
+  a Beta release: `release.mjs --dry-run` says v1.2.36 at this closure, not confirmed published here.
 - **Stable 1.2.10** (tag `v1.2.10`, since 2026-11-14, promoted on the owner's word): Windows installer, `latest.json`, the
   Android APK. winget has an older Stable pending (see below).
 - **Version rule** (`CONTRIBUTING.md` › Version): `MAJOR.MINOR` is in `src-tauri/tauri.conf.json` (`1.2`). The patch is n,
   the number of commits since the base of that `MAJOR.MINOR` (`BASES` in `scripts/release.mjs`: `'1.2'` → `f8379a93`), with
   `n % 1000`. The patch is n, not a counter of your own. `node scripts/release.mjs --dry-run` prints the next Beta pushed
-  from here (v1.2.31 at this closure). A bump of `MAJOR.MINOR` is the owner's decision: a new base goes in
+  from here (v1.2.36 at this closure). A bump of `MAJOR.MINOR` is the owner's decision: a new base goes in
   `BASES` first.
 - **Before any push**: `pnpm check` green; `node scripts/budget.mjs` (JS 332 of 340 kB gzip: little room, lazy-load new
   features); `cargo clippy --workspace --all-targets -- -D warnings`; `pnpm build` in `site/`; a clean tree; **`pnpm e2e`
@@ -48,6 +46,8 @@ z-scores, explore dose by Variety, diversity re-rank) used by Shuffle (`shuffle.
 
 ## Try first (the owner)
 Most of what is new is behind a setting that is **off**, unless noted below.
+- **New since 1.2.32**: play one song by the YouTube channel « prodphanda », wait about 10 s: its picture shows beside the
+  title, and its artist page opens. **From** label: Now Playing says « From », the playlist's picture, the name in bold.
 - **New since 1.2.10**: a Discord picture on a share link and on the share web page; **Adaptive Sound** icons under the
   volume; **Back** on the phone from several pages, also after a reopen; the Home **flowing background** (Appearance, off by
   default; it stops under Windows' reduce-motion).
@@ -72,6 +72,8 @@ Most of what is new is behind a setting that is **off**, unless noted below.
   closing » after a kill.
 
 ## Open
+- **Channel picture never tried for real** (`91a7b86c`, `ab016e43`): no real YouTube call yet; the `browse` shape of an
+  uploader's channel is unknown and ytmusicapi's shape was not re-read.
 - **Not run on a device**: Android Back (`b9d175f6`: reasoned from the Kotlin, never run on Android 16 / targetSdk 37); the
   Discord picture from the real CDN; a real QR scan.
 - **GPU resets on the owner's PC under full builds**: cause not found; not the flowing background (believed, not measured).
