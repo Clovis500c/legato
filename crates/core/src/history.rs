@@ -36,18 +36,25 @@ pub struct Play {
     pub completed: bool,
 }
 
-/// What the similar-songs ranking reads about a song: skips in the last `SKIP_DAYS` days (under 30 s, not finished) and
-/// "Never in mixes".
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, ts_rs::TS)]
+/// What the recommendation reads about a library song (`taste_signals`; a song with none of it is left out: absent = zero).
+/// `plays_*` = the sum of the plays' weights (`mixes::play_weight`, a skip counts below zero) each decayed by its age, with a
+/// 30-day half-life (taste now) and a 180-day one (the long profile); `last_played` unix s, 0 = never; `skips_recent` = skips
+/// (under 30 s, not finished) in the last `SKIP_DAYS` days; `liked` = in Liked Music; `less` / `never` = the song's pref.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export)]
-pub struct SimilarSignal {
+pub struct TasteSignal {
     pub id: i64,
+    pub plays_decayed: f64,
+    pub plays_long: f64,
+    pub last_played: i64,
     pub skips_recent: u32,
-    pub never_in_mixes: bool,
+    pub liked: bool,
+    pub less: bool,
+    pub never: bool,
 }
 
-/// How far back a skip still counts for similar songs.
+/// How far back a skip still counts for the ranking.
 const SKIP_DAYS: i64 = 30;
 
 /// User control over mixes: Less = ranked lower, Never = left out.
@@ -127,12 +134,34 @@ impl Library {
         Ok(rows.filter_map(Result::ok).filter_map(|(id, p)| Some((id, if p == "never" { Pref::Never } else if p == "less" { Pref::Less } else { return None }))).collect())
     }
 
-    /// One answer per id asked, in order; an unknown id is zero skips and not never. `now` = unix seconds.
-    pub fn similar_signals(&self, ids: &[i64], now: i64) -> Result<Vec<SimilarSignal>> {
-        let mut stmt = self.db.prepare_cached("SELECT track_id, COUNT(*) FROM plays WHERE started_at >= ?1 AND NOT completed AND listened_ms < ?2 GROUP BY track_id")?;
-        let skips: HashMap<i64, u32> = stmt.query_map(params![now - SKIP_DAYS * 86_400, crate::mixes::SKIP_MS], |r| Ok((r.get(0)?, r.get(1)?)))?.collect::<rusqlite::Result<_>>()?;
-        let prefs = self.prefs()?;
-        Ok(ids.iter().map(|&id| SimilarSignal { id, skips_recent: skips.get(&id).copied().unwrap_or(0), never_in_mixes: prefs.get(&id) == Some(&Pref::Never) }).collect())
+    /// The signals of every song that has any, from the plays, the prefs and Liked Music, in one pass over the plays (no per-song
+    /// call). `now` = unix seconds. Same weights and decays as the mixes (`mixes::play_weight`, `decay`, `long_decay`).
+    pub fn taste_signals(&self, now: i64) -> Result<Vec<TasteSignal>> {
+        let mut out: HashMap<i64, TasteSignal> = HashMap::new();
+        let blank = |id| TasteSignal { id, plays_decayed: 0.0, plays_long: 0.0, last_played: 0, skips_recent: 0, liked: false, less: false, never: false };
+        let mut stmt = self.db.prepare_cached("SELECT p.track_id, p.started_at, p.listened_ms, p.completed, t.duration_ms FROM plays p JOIN tracks t ON t.id = p.track_id")?;
+        let rows = stmt.query_map([], |r| Ok((Play { track_id: r.get(0)?, started_at: r.get(1)?, listened_ms: r.get(2)?, completed: r.get(3)? }, r.get::<_, Option<u32>>(4)?)))?;
+        for row in rows {
+            let (p, duration) = row?;
+            let s = out.entry(p.track_id).or_insert_with(|| blank(p.track_id));
+            let w = crate::mixes::play_weight(&p, duration);
+            s.plays_decayed += w * crate::mixes::decay(now - p.started_at);
+            s.plays_long += w * crate::mixes::long_decay(now - p.started_at);
+            s.last_played = s.last_played.max(p.started_at);
+            if !p.completed && p.listened_ms < crate::mixes::SKIP_MS && p.started_at >= now - SKIP_DAYS * 86_400 {
+                s.skips_recent += 1;
+            }
+        }
+        for (id, pref) in self.prefs()? {
+            let s = out.entry(id).or_insert_with(|| blank(id));
+            (s.less, s.never) = (pref == Pref::Less, pref == Pref::Never);
+        }
+        for id in self.liked_tracks()? {
+            out.entry(id).or_insert_with(|| blank(id)).liked = true;
+        }
+        let mut all: Vec<_> = out.into_values().collect();
+        all.sort_by_key(|s| s.id);
+        Ok(all)
     }
 
     /// Reset: plays and preferences gone, library untouched.
@@ -223,22 +252,34 @@ mod tests {
     }
 
     #[test]
-    fn similar_signals_report_recent_skips_and_never() -> Result<()> {
+    fn taste_signals_cover_the_whole_library_in_one_pass() -> Result<()> {
+        let now = 400 * 86_400;
         let lib = Library::in_memory()?;
-        let (a, b, c) = (track(&lib, "A", Source::Youtube, "a"), track(&lib, "B", Source::Youtube, "b"), track(&lib, "C", Source::Youtube, "c"));
-        let now = 100 * 86_400;
-        // A: two recent skips, an old one, a full listen; B: never; C: less.
-        for (at, ms, done) in [(now - 10, 5_000, false), (now - 86_400, 29_000, false), (now - 90 * 86_400, 1_000, false), (now - 5, 200_000, true)] {
+        assert!(lib.taste_signals(now)?.is_empty(), "empty library");
+        let (a, b, c, d) = (track(&lib, "A", Source::Youtube, "a"), track(&lib, "B", Source::Youtube, "b"), track(&lib, "C", Source::Youtube, "c"), track(&lib, "D", Source::Youtube, "d"));
+        // A: a full listen now, one 30 days ago (half the weight), two recent skips, an old one (90 days).
+        for (at, ms, done) in [(now - 5, 200_000, true), (now - 30 * 86_400, 200_000, true), (now - 10, 5_000, false), (now - 86_400, 29_000, false), (now - 90 * 86_400, 1_000, false)] {
             lib.record_play(&Play { track_id: a, started_at: at, listened_ms: ms, completed: done })?;
         }
         lib.set_pref(b, Some(Pref::Never))?;
         lib.set_pref(c, Some(Pref::Less))?;
-        let got = lib.similar_signals(&[a, b, c, 9999], now)?;
+        let liked = lib.edit_playlist(PlaylistEdit::Create { name: "Liked Music".into() })?.unwrap();
+        lib.edit_playlist(PlaylistEdit::Add { id: liked, track_ids: vec![d] })?;
+        let got = lib.taste_signals(now)?;
         let by = |id| got.iter().find(|s| s.id == id).unwrap();
-        assert_eq!((by(a).skips_recent, by(a).never_in_mixes), (2, false));
-        assert_eq!((by(b).skips_recent, by(b).never_in_mixes), (0, true));
-        assert_eq!((by(c).skips_recent, by(c).never_in_mixes), (0, false), "Less is not Never");
-        assert_eq!((by(9999).skips_recent, by(9999).never_in_mixes), (0, false), "unknown id: zero");
+        let s = by(a);
+        assert_eq!((s.skips_recent, s.last_played), (2, now - 5));
+        // 1 + 0.5 (30 days: half-life) - 0.8 - 0.31 - 0.11 (the 90-day skip, an eighth).
+        assert!((s.plays_decayed - 0.277).abs() < 0.01, "{}", s.plays_decayed);
+        // The long profile (half-life 180 days): 1 + 0.89 - 0.8 - 0.32 - 0.62.
+        assert!((s.plays_long - 0.150).abs() < 0.01, "{}", s.plays_long);
+        assert!(!s.never && !s.less && !s.liked);
+        assert!(by(b).never && !by(b).less && by(b).skips_recent == 0);
+        assert!(by(c).less && !by(c).never, "Less is not Never");
+        assert!(by(d).liked && by(d).last_played == 0, "liked, never played");
+        let e = track(&lib, "E", Source::Youtube, "e");
+        assert!(lib.taste_signals(now)?.iter().all(|s| s.id != e), "a song with no signal is left out: absent = zero");
+        assert!(got.iter().all(|s| s.id != 9999), "unknown id");
         Ok(())
     }
 

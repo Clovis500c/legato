@@ -28,6 +28,7 @@ export function startDeferred(): () => void {
     ['Jump List', () => import('../features/home/jumpList').then((m) => m.startJumpList())],
     ['Opened links', () => import('../features/share/openedLink').then((m) => m.startOpenedLinks())],
     ['Scan progress', () => import('../features/library/scanProgress').then((m) => m.startScanProgress())],
+    ['Taste signals', () => import('../features/player/taste').then((m) => m.startTaste())],
     ['Metronome', () => import('../features/player/metronome').then((m) => m.followSong())],
     ['Resume long songs', () => import('../features/player/resumeLong').then((m) => m.startResume())],
     ['Book chapters', () => import('../features/player/chaptersLoad').then((m) => m.startChapters())],

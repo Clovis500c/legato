@@ -6,6 +6,7 @@ import { songsThatFit } from '../library/fit'
 import { radioName, radioQueue, radioSeeds, shuffled } from './radioMix'
 import type { Candidate } from './similarRank'
 import { remoteTrack, usePlayer } from './store'
+import { loadTaste, useTaste } from './taste'
 
 const keyOf = (t: LibraryTrack) => t.ids.youtube ?? `#${t.id}`
 
@@ -75,13 +76,14 @@ export async function similarForQueue(list: LibraryTrack[], index: number, max: 
     const radio = (await api.ytmList({ type: 'radio', videoId: video, playlistId: `RDAMVM${video}` }).catch(() => [])).map(remoteTrack).filter(fresh)
     radio.forEach((track, rank) => candidates.push({ track, rank }))
   }
-  // One ask for the candidates' signals (library songs only: a radio's remote ids are negative).
-  const signals = new Map((await api.similarSignals(candidates.map((c) => c.track.id).filter((id) => id > 0)).catch(() => [])).map((x) => [x.id, x]))
+  // Never in mixes and recent skips come from the taste store (loaded when idle; asked here only if it is still empty).
+  if (!useTaste.getState().loaded) await loadTaste()
+  const signals = useTaste.getState().signals
   const taste = {
     rating: (t: LibraryTrack) => stats[t.id]?.[2] ?? 0,
     plays: (t: LibraryTrack) => stats[t.id]?.[0] ?? 0,
     skips: (t: LibraryTrack) => signals.get(t.id)?.skipsRecent ?? 0,
-    never: (t: LibraryTrack) => signals.get(t.id)?.neverInMixes ?? false,
+    never: (t: LibraryTrack) => signals.get(t.id)?.never ?? false,
   }
   // Loaded when Up next runs out, not at launch.
   const { pickSimilar } = await import('./similarRank')

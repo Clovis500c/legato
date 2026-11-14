@@ -36,10 +36,10 @@ pub async fn mixes(state: State<'_, AppState>, utc_offset: i64) -> CmdResult<Res
     Ok(json(answer))
 }
 
-/// Recent skips and "Never in mixes" of library songs, for the similar-songs ranking (`History::similar_signals`).
+/// What the recommendation reads about every library song that has a signal (`Library::taste_signals`), in one call.
 #[tauri::command]
-pub async fn similar_signals(state: State<'_, AppState>, ids: Vec<i64>) -> CmdResult<Vec<music_core::history::SimilarSignal>> {
-    state.lib().similar_signals(&ids, unix_now()).map_err(err)
+pub async fn taste_signals(state: State<'_, AppState>) -> CmdResult<Vec<music_core::history::TasteSignal>> {
+    state.lib().taste_signals(unix_now()).map_err(err)
 }
 
 /// A walk from one artist to another through the artists listened to together (`walk::artist_path`); None = no chain.

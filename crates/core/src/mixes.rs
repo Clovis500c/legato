@@ -169,6 +169,11 @@ fn fade(age_s: i64, half_life_days: f64) -> f64 {
     0.5f64.powf(age_s.max(0) as f64 / DAY as f64 / half_life_days)
 }
 
+/// Halves every 180 days (the long profile).
+pub fn long_decay(age_s: i64) -> f64 {
+    fade(age_s, LONG_HALF_LIFE_DAYS)
+}
+
 static ARTIST_DASH: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^\s*(.+?)\s*[-–—]\s+(.+)$").unwrap());
 /// Right of " - " naming a version, not a song ("Song - 2011 Remaster", "Song - Live", "Song - Slowed").
 static VERSION_TAIL: LazyLock<Regex> = LazyLock::new(|| {
