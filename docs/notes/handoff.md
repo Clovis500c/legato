@@ -2,21 +2,20 @@
 
 Where the work stands, for a session with no history here. Read this first, then only the parts of
 [plan-v2.md](plan-v2.md) you need. Rewrite it, short, when a branch, a release or the next step changes; its older
-versions are in git (`git log -p -- docs/notes/handoff.md`). Updated 2026-11-14 (window 11 closed).
+versions are in git (`git log -p -- docs/notes/handoff.md`). Updated 2026-11-14 (window 12 closed).
 
 ## Where things stand
-- **master** = `38fa57be` = **Beta 1.2.1** (published 2026-11-14; CI, release and APK green on that commit, per the
-  orchestrator). **Stable** stays 1.1.681 (2026-11-05): Windows installer, `latest.json`, the Android APK.
-- **platforms** = master + the local commits: `35a73841`, `21c968bd`, `5889f9ab` (playlist banners) and this handoff's
-  commit. `git log origin/master..platforms --oneline | wc -l` gives the count. **None is pushed by this session.** The
-  owner pushes on his word; the push of this batch is his call, not the orchestrator's.
+- **master** = `0ed01470` = **Beta 1.2.6** (published 2026-11-14 15:57). **Stable** stays 1.1.681 (2026-11-05): Windows
+  installer, `latest.json`, the Android APK.
+- **platforms** = master + three local commits, **none pushed**: `914b3589` (similar songs weigh skips and Never),
+  `e502eb65` (playlist banner: real variety, four corners covered, fade on the right), `653de239` (review 23 in plan-v2).
+  The owner pushes on his word; the push is his call, not the orchestrator's.
 - **Version rule** (`CONTRIBUTING.md` › Version): `MAJOR.MINOR` is in `src-tauri/tauri.conf.json` (now `1.2`). The patch
   is n, the number of commits since the base of that `MAJOR.MINOR` (`BASES` in `scripts/release.mjs`: `'1.2'` →
   `f8379a93`), with `n % 1000`; the minor goes up by one per 1000 commits (`versionOf`). Every push gets a higher version
-  and a higher Android versionCode (major·10⁶ + minor·10³ + patch). Beware: the patch is n, not a counter of your own.
-  At this commit n = 5 (commits after `f8379a93`, this handoff included), so the next Beta pushed from here would be
-  **1.2.5**; `release.mjs --dry-run` prints it. A bump of `MAJOR.MINOR` is the owner's decision: a new base goes in
-  `BASES` first.
+  and a higher Android versionCode. The patch is n, not a counter of your own. At this commit (this handoff included)
+  n = 10: `node scripts/release.mjs --dry-run` prints **v1.2.10**, the next Beta pushed from here. A bump of
+  `MAJOR.MINOR` is the owner's decision: a new base goes in `BASES` first.
 - **Before any push**: `pnpm check` green; `node scripts/budget.mjs` (JS 329 of 340 kB gzip); `cargo clippy --workspace
   --all-targets -- -D warnings`; `pnpm build` in `site/`; a clean tree; **`pnpm e2e` locally when the push touches
   startup** (`setup` in `src-tauri/src/lib.rs`, anything that reads `AppState`); and
@@ -25,27 +24,23 @@ versions are in git (`git log -p -- docs/notes/handoff.md`). Updated 2026-11-14 
 - **Stable**: only on the owner's word, never on a Beta's green CI.
 - **Reports** (`docs/notes/report*.md`, the owner's French reports) are git-ignored and never committed. The history was
   purged of them before the push of window 10 (`filter-branch`); nothing was lost from the tree.
-- **The rename is done** (Beta 1.1.932): Music App → Legato in every format (QR prefix `LG1:`, `_legato._tcp`,
-  `.legatosync`, `legato://` links). The one catch-up for data on disk is `src-tauri/src/rename.rs` (plus the old Run
-  entry in `autostart.rs`, the old-install cleanup in `src-tauri/windows/hooks.nsh`): the plan line « Remove the rename
-  catch-up » lists what to delete, once every PC of the owner has the new name.
+- **The rename is done** (Beta 1.1.932): Music App → Legato in every format. The one catch-up for data on disk is
+  `src-tauri/src/rename.rs` (plus the old Run entry in `autostart.rs`, the old-install cleanup in `src-tauri/windows/hooks.nsh`):
+  the plan line « Remove the rename catch-up » lists what to delete, once every PC of the owner has the new name.
 - **Cost, accepted**: old share links and QR codes stop working; a PC on an older version is invisible on the local
   network and in the sync folder until it's updated.
 - **Android**: the release job compiles the whole crate; anything desktop-only sits behind `#[cfg(desktop)]` or
   `#[cfg(windows)]`. `aarch64-linux-android` and the Kotlin toolchain are not usable on this PC: the CI's android job is
-  the check. Beta 1.2.1's APK builds in CI; the widgets never ran on a phone.
-- **Website** https://clovis500c.github.io/legato/, deployed from master: 18 languages, the Discord invitation included.
-  A first pass of the redesign and a Docs page are in; not yet in Arabic or Hebrew (the app is).
-- **Discord sign-in** (`75b90e76`): the portal side is set by the owner per the orchestrator (redirect
-  `http://127.0.0.1:47819/callback`, « Client public » on, application « Legato Manager ») and not re-checked here. The
-  public ID is in the code. The bot is a plan line for later.
+  the check. The widgets never ran on a phone.
+- **Website** https://clovis500c.github.io/legato/, deployed from master: 18 languages. Not yet in Arabic or Hebrew (the
+  app is).
+- **Discord sign-in** (`75b90e76`): the portal side is set by the owner per the orchestrator and not re-checked here.
 - **winget**: microsoft/winget-pkgs#474341 (Stable 1.1.681): waiting for a moderator. Each new Stable needs a new
   manifest (`packaging/README.md`).
 - **Never tried for real**: plan-v2 › Check live in the real app. The owner's finds there come first. Most features of
   the last windows were never run on a screen, an ear, a real feed, a TV, a pad, a phone, a speaker, a webcam, a Stream
   Deck, a Subsonic server, or with the real translation, YouTube or AcoustID services.
-- **Untracked, never committed**: `docs/notes/report*.md` and `docs/notes/report-inbox.md`, and the old transcript
-  `2026-10-30-001238-…txt` at the root.
+- **Untracked, never committed**: `docs/notes/report*.md`, and the old transcript `2026-10-30-001238-…txt` at the root.
 
 ## Try first (the owner)
 Everything new is behind a setting that is **off** by default, unless noted. Nothing changes for someone who switches
@@ -55,12 +50,16 @@ nothing on.
 - **Right-click menus**: three levels, Essentials / Standard / Full detail, and « Personalise the menus » (Appearance ›
   Right-click). Standard is the default and loses nothing.
 - **Themes**: eight presets with a live preview; « Duplicate to edit » copies a preset; the editor sits under Advanced.
-- **Playlist banners**: always on (no setting). A playlist page's header is a wall of its covers; the Home carousel
-  « Browse your playlists » shows the same wall. The Home section « Your playlists » is on by default (v11; everyone
-  saved before gets it on once, turning it off again sticks).
+- **Playlist banners**: always on (no setting). A playlist page's header is a wall of its covers, now drawn from the whole
+  playlist (no repeat in a 5 × 3 grid), covering its four corners at any size, fading into the page on the right with a
+  light blur in the bottom-right corner (a first idea for taste); the title column is limited to 70 %. The Home carousel
+  « Your playlists » shows the same wall; it is **on by default** (since Beta 1.2.6; whoever saved settings before gets
+  it on once, turning it off again sticks).
+- **Similar songs** (Close / Balanced / Adventurous): the queue's taste profile; « Next » on the last song is fixed. A
+  song skipped in the last 30 days (−1.5, capped) or put in « Never in mixes » is pushed down or out of the list: judge
+  it by ear.
 - **Free song recognition**: Windows' media panel (SMTC) and Chromaprint + AcoustID. AcoustID needs its application key
   registered on acoustid.org; until then the detector says so and asks for nothing.
-- **Similar songs** (Close / Balanced / Adventurous): the queue's taste profile; « Next » on the last song is fixed.
 - **Wrong artist** fixed: an artist's page is kept only when one of its songs is one the app knows of that artist.
 - **YouTube chapters** of a long video (player menu). **Sweet fades** (tempo, loudness, silence) between two songs.
 - **Lyrics translation** (MyMemory): asks each time in a box; the words of one song are sent only after your yes.
@@ -87,24 +86,23 @@ chapters (a real `.m4b`; an mp3 book); YouTube search while signed out.
 
 ## Open
 - **For Opus**: the security pass is done (`9f845dcb`), and so are the lib.rs and library.rs splits. Known leftovers in
-  the reports: a Subsonic playlist half-made if adding its tail fails after creation (a new send makes a second one); the
-  cast server stays open after the song ends (the token protects it); a public podcast name that resolves to a private
-  address (DNS rebinding) still passes; the gamepad is polled every frame with living-room mode on, even with no pad;
-  `artistOf` is recomputed per candidate in the similar-songs ranking (not measured); the Stream Deck inspector accepts
-  more addresses than the plugin; the e2e failed once at the home screen (a dialog left open), not reproduced in three
-  runs: `5c1dd96b` names the dialog next time; the Android target was never compiled here.
+  the reports: a Subsonic playlist half-made if adding its tail fails after creation; the cast server stays open after
+  the song ends (the token protects it); a public podcast name that resolves to a private address (DNS rebinding) still
+  passes; the gamepad is polled every frame with living-room mode on, even with no pad; `artistOf` is recomputed per
+  candidate in the similar-songs ranking (not measured); the Stream Deck inspector accepts more addresses than the
+  plugin; the e2e failed once at the home screen (a dialog left open), not reproduced in three runs: `5c1dd96b` names
+  the dialog next time; the Android target was never compiled here. Review 23 (lots 38–40) found no bug.
 - **Left, for a run that can check it**: MPRIS and macOS Now Playing (CI skips the legato crate on ubuntu and macos, so
   nothing could check it here); WASAPI exclusive (cpal has none: an own COM renderer, needs the device); « Up next » per
   chapter (a change to the player and the queue, needs a start offset); the website in Arabic and Hebrew; plural forms
-  beyond one / other in ar and he; the skip signals as negative weights in similar songs (a Rust command, types and two
-  tests: written in plan-v2); faster CI (test on a branch); reused YouTube embeds.
-- **For the owner**: the skip signals and the choices behind similar songs (a YouTube channel identifier stored with each
-  song; preloading the next song's artist, a privacy decision; Last.fm / ListenBrainz as a source); whether « Your
-  playlists » stays off by default; the site redesign's taste (the chapters under the hero, the lines of the Features
-  block, a fair comparison with other apps); the theme and plugin gallery (no index repository yet); profiles on a PC
-  (the launch path comes first); the Discord bot and its signature; Stream Deck; the Arabic and Hebrew review; the
-  photos of the big title (which side); the lines that need an account or a real network (Spotify and SoundCloud sends,
-  concerts, TIDAL / Qobuz links, watch-page autoplay).
+  beyond one / other in ar and he; the skip signals as negative weights in similar songs (done in lot 39, to be tried by
+  ear); faster CI (test on a branch); reused YouTube embeds.
+- **For the owner**: whether « Your playlists » stays on by default (now on); the skip signals' weights by ear; a
+  YouTube channel identifier stored with each song; preloading the next song's artist (a privacy decision); Last.fm /
+  ListenBrainz as a source; the site redesign's taste; the theme and plugin gallery (no index repository yet); profiles
+  on a PC (the launch path comes first); the Discord bot and its signature; the Arabic and Hebrew review; the photos of
+  the big title (which side); the lines that need an account or a real network (Spotify and SoundCloud sends, concerts,
+  TIDAL / Qobuz links, watch-page autoplay).
 
 ## Next
 The sweep at the end of Lot 20 in the private report says what blocks each line. The remaining lines need a real account
@@ -165,6 +163,8 @@ PC's own setup is in Claude Code's private memory on that PC, not in the repo.
   `<img>` and a canvas (`phoneCover`).
 - Headless emulator: `emulator -avd legato36 -no-window -gpu swiftshader_indirect -no-snapshot -no-audio -no-boot-anim`;
   stop it after a test. Never answer Windows' firewall or any system prompt.
+- A PC whose working copy is CRLF: `no_sync_command_locks_the_library` fails (it wants LF). Convert the `.rs` copy to LF
+  locally; git sees no real change (`servers.rs` may show as modified: line endings only).
 - `pnpm notices` (cargo-about) once on a new PC: a release build stops without `src-tauri/third-party-licenses.html`.
 - Google limits an address after about 40 anonymous searches (a 5-minute block, then one every 15 s): expect it in any
   search test, never route around it.
@@ -177,12 +177,11 @@ PC's own setup is in Claude Code's private memory on that PC, not in the repo.
 
 ## History
 The 0.1 releases, 1.0 (the redesign), the rename to Legato (2026-10-29, finished 2026-11-13 in every format), 1.1 and
-the v2 plan (Stable 1.1.479, 2026-10-31); then imports, lyrics, the phone (Android from 2026-11-02, its updates in the
-app), device sync, the visualizer's v2, listening rooms, personal servers, Against Liner, the website in 18 languages;
-Stable 1.1.681 (2026-11-05), Betas up to 1.1.795 (2026-11-07), Beta 1.1.896 (2026-11-12), Beta 1.1.932 (2026-11-13),
-Beta 1.1.973 (the startup panic fix), Beta 1.1.994 (`611dc3b0`), Beta 1.2.1 (2026-11-14, `38fa57be`, the first on the
-1.2 version line). Since 1.1.932: podcasts by RSS, the output device, practice speed, living-room mode, an audiobooks
-page, the podcast check, Discord sign-in, tempo estimate, YouTube chapters, sweet fades, lyrics translation, DLNA cast,
+the v2 plan (Stable 1.1.479, 2026-10-31); then imports, lyrics, the phone (Android from 2026-11-02), device sync, the
+visualizer's v2, listening rooms, personal servers, the website in 18 languages; Stable 1.1.681 (2026-11-05), Betas up to
+1.1.994 (`611dc3b0`), Beta 1.2.1 (2026-11-14, `38fa57be`, the first on the 1.2 version line), Beta 1.2.6 (2026-11-14,
+`0ed01470`). Since 1.1.932: podcasts by RSS, the output device, practice speed, living-room mode, an audiobooks page, the
+podcast check, Discord sign-in, tempo estimate, YouTube chapters, sweet fades, lyrics translation, DLNA cast,
 right-to-left, the Stream Deck plugin, webcam QR scan, Subsonic playlists, the settings reorganisation, the right-click
 levels, themes, playlist banners, similar songs, artist photos, the wrong-artist fix, free song recognition.
 The rest: `git log`, the release notes.
