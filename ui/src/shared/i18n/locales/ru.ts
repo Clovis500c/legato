@@ -2462,6 +2462,7 @@ const ru: Record<string, string> = {
   'Sign in with Discord': 'Войти через Discord',
   'Waiting for Discord…': 'Ожидание Discord…',
   'Shared by {name} (not verified)': 'Поделился(-ась) {name} (не проверено)',
+  'Shared by {name} (name and picture not verified)': 'Поделился {name} (имя и картинка не проверены)',
   'Discord sign-in': 'Вход через Discord',
   'discord sign in login profile name share shared by account': 'discord вход войти профиль имя поделиться от кого аккаунт',
   'On-screen keyboard': 'Экранная клавиатура',

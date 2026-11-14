@@ -2462,6 +2462,7 @@ const zh: Record<string, string> = {
   'Sign in with Discord': '使用 Discord 登录',
   'Waiting for Discord…': '正在等待 Discord…',
   'Shared by {name} (not verified)': '由 {name} 分享（未验证）',
+  'Shared by {name} (name and picture not verified)': '由 {name} 分享（名称和图片未经验证）',
   'Discord sign-in': 'Discord 登录',
   'discord sign in login profile name share shared by account': 'discord 登录 个人资料 名称 分享 分享者 账号',
   'On-screen keyboard': '屏幕键盘',

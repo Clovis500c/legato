@@ -2462,6 +2462,7 @@ const pt: Record<string, string> = {
   'Sign in with Discord': 'Entrar com o Discord',
   'Waiting for Discord…': 'Aguardando o Discord…',
   'Shared by {name} (not verified)': 'Compartilhado por {name} (não verificado)',
+  'Shared by {name} (name and picture not verified)': 'Compartilhado por {name} (nome e imagem não verificados)',
   'Discord sign-in': 'Entrar com o Discord',
   'discord sign in login profile name share shared by account': 'discord entrar login perfil nome compartilhar compartilhado por conta',
   'On-screen keyboard': 'Teclado na tela',

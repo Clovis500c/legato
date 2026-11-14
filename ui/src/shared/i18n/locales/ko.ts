@@ -2462,6 +2462,7 @@ const ko: Record<string, string> = {
   'Sign in with Discord': 'Discord로 로그인',
   'Waiting for Discord…': 'Discord를 기다리는 중…',
   'Shared by {name} (not verified)': '{name}님이 공유함(검증되지 않음)',
+  'Shared by {name} (name and picture not verified)': '{name}님이 공유 (이름과 사진은 확인되지 않음)',
   'Discord sign-in': 'Discord 로그인',
   'discord sign in login profile name share shared by account': 'discord 로그인 프로필 이름 공유 공유한 사람 계정',
   'On-screen keyboard': '화상 키보드',

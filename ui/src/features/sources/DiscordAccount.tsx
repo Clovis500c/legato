@@ -3,19 +3,13 @@ import { useEffect, useState } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { api, type DiscordCard } from '../../shared/api'
-import { remoteArt } from '../../shared/art'
 import { tr } from '../../shared/i18n/i18n'
 import { Button } from '../../shared/ui/Button'
 import { Led } from '../../shared/ui/controls'
+import { Picture } from '../../shared/ui/Picture'
 
 /** The accent Discord keeps for an account with no banner, as CSS. */
 const hex = (n: number) => `#${n.toString(16).padStart(6, '0')}`
-
-/** A picture from Discord's CDN through the `art` scheme; any failure (offline, a removed picture) shows `fallback`. */
-function Picture({ url, className, fallback }: { url: string | null; className: string; fallback: React.ReactNode }) {
-  const [failed, setFailed] = useState(false)
-  return url && !failed ? <img src={remoteArt(url)} alt="" draggable={false} onError={() => setFailed(true)} className={className} /> : <>{fallback}</>
-}
 
 /** Discord's profile card, the way Discord draws it: the banner on top (the accent colour when there is none), the round picture overlapping, the name. */
 function Card({ card, onSignOut }: { card: DiscordCard; onSignOut: () => void }) {

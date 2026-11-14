@@ -13,4 +13,8 @@ ready: number,
 /**
  * The sender's Discord profile when the link carries one. NOT verified: anyone can write a link by hand.
  */
-by: Profile | null, };
+by: Profile | null, 
+/**
+ * The sender's picture on Discord's CDN, built by `Profile::avatar_url` alone (None: no picture, or one that is not valid). Shown through the `art` scheme.
+ */
+avatarUrl: string | null, };

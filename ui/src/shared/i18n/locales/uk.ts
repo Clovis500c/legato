@@ -2462,6 +2462,7 @@ const uk: Record<string, string> = {
   'Sign in with Discord': 'Увійти через Discord',
   'Waiting for Discord…': 'Очікування Discord…',
   'Shared by {name} (not verified)': 'Поділився(-лась) {name} (не перевірено)',
+  'Shared by {name} (name and picture not verified)': 'Поділився {name} (імʼя та зображення не перевірені)',
   'Discord sign-in': 'Вхід через Discord',
   'discord sign in login profile name share shared by account': 'discord вхід увійти профіль ім’я поділитися від кого акаунт',
   'On-screen keyboard': 'Екранна клавіатура',

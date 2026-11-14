@@ -2462,6 +2462,7 @@ const vi: Record<string, string> = {
   'Sign in with Discord': 'Đăng nhập bằng Discord',
   'Waiting for Discord…': 'Đang chờ Discord…',
   'Shared by {name} (not verified)': 'Được chia sẻ bởi {name} (chưa xác minh)',
+  'Shared by {name} (name and picture not verified)': 'Được chia sẻ bởi {name} (tên và ảnh chưa xác minh)',
   'Discord sign-in': 'Đăng nhập Discord',
   'discord sign in login profile name share shared by account': 'discord đăng nhập hồ sơ tên chia sẻ được chia sẻ bởi tài khoản',
   'On-screen keyboard': 'Bàn phím trên màn hình',

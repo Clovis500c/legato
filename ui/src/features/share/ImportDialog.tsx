@@ -6,6 +6,7 @@ import { region } from '../../shared/format'
 import { Button } from '../../shared/ui/Button'
 import { Stat } from '../../shared/ui/controls'
 import { Dialog } from '../../shared/ui/Dialog'
+import { Picture } from '../../shared/ui/Picture'
 import { tr } from '../../shared/i18n/i18n'
 
 /** Shared code (pasted, QR image, nearby) → preview → the import screen → new custom playlist. */
@@ -50,7 +51,15 @@ export function ImportDialog({ code }: { code: string }) {
             <Stat label={tr('In your library')} value={preview.known} />
             <Stat label={tr('To look up')} value={preview.tracks - preview.known - preview.ready} />
           </div>
-          {preview.by && <p className="text-xs text-ink-2">{tr('Shared by {name} (not verified)', { name: preview.by.name })}</p>}
+          {preview.by && (
+            <p className="flex items-center gap-2 text-xs text-ink-2">
+              {/* A fixed round tile: the picture when the link has a valid one, else the name's initial; no layout jump either way. */}
+              <span aria-hidden className="grid size-6 shrink-0 place-items-center overflow-hidden rounded-full bg-raised text-[0.6875rem] font-bold text-ink-2">
+                <Picture url={preview.avatarUrl} className="size-full object-cover" fallback={Array.from(preview.by.name.trim())[0]?.toUpperCase() ?? '?'} />
+              </span>
+              {preview.avatarUrl ? tr('Shared by {name} (name and picture not verified)', { name: preview.by.name }) : tr('Shared by {name} (not verified)', { name: preview.by.name })}
+            </p>
+          )}
           <p className="text-xs text-ink-2">{tr('Missing tracks are looked up on YouTube and Apple Music. You get a custom playlist you can edit.')}</p>
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={close}>

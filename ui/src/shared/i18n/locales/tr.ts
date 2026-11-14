@@ -2462,6 +2462,7 @@ const tr: Record<string, string> = {
   'Sign in with Discord': 'Discord ile giriş yap',
   'Waiting for Discord…': 'Discord bekleniyor…',
   'Shared by {name} (not verified)': '{name} paylaştı (doğrulanmadı)',
+  'Shared by {name} (name and picture not verified)': '{name} paylaştı (ad ve resim doğrulanmadı)',
   'Discord sign-in': 'Discord ile giriş',
   'discord sign in login profile name share shared by account': 'discord giriş oturum profil ad paylaş paylaşan hesap',
   'On-screen keyboard': 'Ekran klavyesi',

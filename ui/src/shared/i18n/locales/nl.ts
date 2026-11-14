@@ -2462,6 +2462,7 @@ const nl: Record<string, string> = {
   'Sign in with Discord': 'Inloggen met Discord',
   'Waiting for Discord…': 'Wachten op Discord…',
   'Shared by {name} (not verified)': 'Gedeeld door {name} (niet gecontroleerd)',
+  'Shared by {name} (name and picture not verified)': 'Gedeeld door {name} (naam en afbeelding niet gecontroleerd)',
   'Discord sign-in': 'Inloggen met Discord',
   'discord sign in login profile name share shared by account': 'discord inloggen aanmelden profiel naam delen gedeeld door account',
   'On-screen keyboard': 'Schermtoetsenbord',

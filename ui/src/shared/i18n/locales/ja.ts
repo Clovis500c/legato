@@ -2462,6 +2462,7 @@ const ja: Record<string, string> = {
   'Sign in with Discord': 'Discord でサインイン',
   'Waiting for Discord…': 'Discord を待っています…',
   'Shared by {name} (not verified)': '{name} が共有（未検証）',
+  'Shared by {name} (name and picture not verified)': '{name} が共有（名前と画像は未検証）',
   'Discord sign-in': 'Discord でサインイン',
   'discord sign in login profile name share shared by account': 'discord サインイン ログイン プロフィール 名前 共有 共有者 アカウント',
   'On-screen keyboard': '画面キーボード',

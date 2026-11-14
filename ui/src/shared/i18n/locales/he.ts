@@ -2399,6 +2399,7 @@ const he: Record<string, string> = {
   'Sign in with Discord': 'התחברות עם Discord',
   'Waiting for Discord…': 'ממתין ל-Discord…',
   'Shared by {name} (not verified)': 'שותף על ידי {name} (לא מאומת)',
+  'Shared by {name} (name and picture not verified)': 'שותף על ידי {name} (השם והתמונה לא אומתו)',
   'Discord sign-in': 'התחברות Discord',
   'discord sign in login profile name share shared by account': 'discord התחברות פרופיל שם שיתוף שותף על ידי חשבון',
   'On-screen keyboard': 'מקלדת על המסך',

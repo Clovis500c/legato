@@ -2462,6 +2462,7 @@ const sv: Record<string, string> = {
   'Sign in with Discord': 'Logga in med Discord',
   'Waiting for Discord…': 'Väntar på Discord…',
   'Shared by {name} (not verified)': 'Delad av {name} (overifierat)',
+  'Shared by {name} (name and picture not verified)': 'Delad av {name} (namn och bild ej verifierade)',
   'Discord sign-in': 'Inloggning med Discord',
   'discord sign in login profile name share shared by account': 'discord logga in inloggning profil namn dela delad av konto',
   'On-screen keyboard': 'Skärmtangentbord',

@@ -2399,6 +2399,7 @@ const ar: Record<string, string> = {
   'Sign in with Discord': 'تسجيل الدخول بـ Discord',
   'Waiting for Discord…': 'بانتظار Discord…',
   'Shared by {name} (not verified)': 'شاركها {name} (غير موثّق)',
+  'Shared by {name} (name and picture not verified)': 'شاركه {name} (الاسم والصورة غير موثَّقين)',
   'Discord sign-in': 'تسجيل الدخول بـ Discord',
   'discord sign in login profile name share shared by account': 'discord تسجيل دخول ملف اسم مشاركة شاركها حساب',
   'On-screen keyboard': 'لوحة المفاتيح على الشاشة',

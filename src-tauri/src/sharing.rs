@@ -111,6 +111,8 @@ pub struct SharePreview {
     ready: usize,
     /// The sender's Discord profile when the link carries one. NOT verified: anyone can write a link by hand.
     by: Option<share::Profile>,
+    /// The sender's picture on Discord's CDN, built by `Profile::avatar_url` alone (None: no picture, or one that is not valid). Shown through the `art` scheme.
+    avatar_url: Option<String>,
 }
 
 #[tauri::command]
@@ -119,7 +121,7 @@ pub async fn share_preview(state: State<'_, AppState>, code: String) -> CmdResul
     let lib = state.lib();
     let rows = shared.items.iter().map(|i| lib.find(&probe(i))).collect::<anyhow::Result<Vec<_>>>().map_err(err)?;
     let ready = shared.items.iter().zip(&rows).filter(|(i, row)| row.is_none() && i.ready().is_some()).count();
-    Ok(SharePreview { name: shared.name, tracks: shared.items.len(), known: rows.iter().flatten().count(), ready, by: shared.by })
+    Ok(SharePreview { name: shared.name, tracks: shared.items.len(), known: rows.iter().flatten().count(), ready, avatar_url: shared.by.as_ref().and_then(share::Profile::avatar_url), by: shared.by })
 }
 
 /// QR code from a dropped screenshot or photo → share text.

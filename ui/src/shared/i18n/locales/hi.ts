@@ -2462,6 +2462,7 @@ const hi: Record<string, string> = {
   'Sign in with Discord': 'Discord से साइन इन करें',
   'Waiting for Discord…': 'Discord की प्रतीक्षा…',
   'Shared by {name} (not verified)': '{name} ने साझा किया (असत्यापित)',
+  'Shared by {name} (name and picture not verified)': '{name} द्वारा साझा (नाम और तस्वीर सत्यापित नहीं)',
   'Discord sign-in': 'Discord साइन-इन',
   'discord sign in login profile name share shared by account': 'discord साइन इन लॉगिन प्रोफ़ाइल नाम साझा खाता',
   'On-screen keyboard': 'ऑन-स्क्रीन कीबोर्ड',

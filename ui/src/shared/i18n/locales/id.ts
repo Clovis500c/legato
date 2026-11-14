@@ -2462,6 +2462,7 @@ const id: Record<string, string> = {
   'Sign in with Discord': 'Masuk dengan Discord',
   'Waiting for Discord…': 'Menunggu Discord…',
   'Shared by {name} (not verified)': 'Dibagikan oleh {name} (belum diverifikasi)',
+  'Shared by {name} (name and picture not verified)': 'Dibagikan oleh {name} (nama dan gambar belum diverifikasi)',
   'Discord sign-in': 'Masuk dengan Discord',
   'discord sign in login profile name share shared by account': 'discord masuk login profil nama bagikan dibagikan oleh akun',
   'On-screen keyboard': 'Papan ketik layar',
