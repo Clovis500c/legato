@@ -9,7 +9,9 @@ import { albumGoesOn, demoGain, demoLength, fadeGain, NO_FADE, overlapDue, PICK_
 import { sweetFade } from './sweet'
 import { endsOf } from './sweetData'
 import { insertAt, keepQueued, moveInOrder, moveToSlot, nextIndex, playOrder, queued, tooLong, type Repeat } from './queue'
-import { RECENT_S, smartOrder } from './shuffle'
+import { libraryScores, type Variety } from './score'
+import { BETA, RECENT_S, shapedOrder, smartOrder } from './shuffle'
+import { tasteFor, useTaste } from './taste'
 import { isNative, nativePath, SERVER_PATH, serverDown, toFind, vias, viaOfPath, type Via } from './sources'
 import { formatDuration } from '../../shared/format'
 import { endCut, isUndone, landed, rememberUndone, toSkip, useSponsor } from './sponsor'
@@ -68,6 +70,8 @@ interface PlayerState {
   sweetFades: boolean
   /** Settings › Playback › Smart shuffle: artists spread, songs heard lately last (shuffle.ts). */
   smartShuffle: boolean
+  /** Settings' Variety: how sharply Shuffle follows the score. */
+  shuffleVariety: Variety
   /** Settings › Playback › Early endings: a video ends where its song does (ends.ts). */
   earlyEnds: boolean
   /** Settings › Playback › Skip silence: songs start on the music and end where it ends (ends.ts, engine for local files). */
@@ -269,16 +273,26 @@ const endRun = () => {
 }
 // Knob drags fire many changes: one Spotify call per pause.
 let volumeTimer: ReturnType<typeof setTimeout> | undefined
-/** Play order for `list` from `current`: smart shuffle's (artists spread, songs heard in the last day last) unless off. */
+/**
+ * Play order for `list` from `current`: smart shuffle's unless off. Shaped by the taste score (docs/recommendation.md: songs you like
+ * tend to come sooner, none is ever out) once the taste store has loaded; before that, artists spread. Songs heard in the last day
+ * and songs rated 1-2 come last. Never waits: a cold store gives the plain smart order.
+ */
 function shuffleOrder(p: PlayerState, list: LibraryTrack[], current: number, shuffle: boolean): number[] {
   if (!shuffle || !p.smartShuffle) return playOrder(list.length, current, shuffle)
-  const { stats } = useStore.getState()
-  const since = Date.now() / 1000 - RECENT_S
-  return smartOrder(
-    list.map((t) => t.artist),
-    current,
-    (i) => (stats[list[i].id]?.[1] ?? 0) >= since,
-  )
+  const { stats, tracks } = useStore.getState()
+  const now = Date.now() / 1000
+  const recent = (i: number) => (stats[list[i].id]?.[1] ?? 0) >= now - RECENT_S
+  const artists = list.map((t) => t.artist)
+  const { loaded, signals } = useTaste.getState()
+  if (!loaded) return smartOrder(artists, current, recent)
+  const taste = tasteFor(stats, signals)
+  const zs = libraryScores(list, tracks, taste, now)
+  const low = (i: number) => {
+    const r = taste.rating(list[i])
+    return r >= 1 && r <= 2
+  }
+  return shapedOrder(artists, current, (i) => recent(i) || low(i), zs, BETA[p.shuffleVariety])
 }
 
 // Last volume sent to the playing source (fades send many).
@@ -598,6 +612,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   gaplessAlbums: true,
   sweetFades: false,
   smartShuffle: true,
+  shuffleVariety: 'balanced',
   earlyEnds: true,
   skipSilence: false,
   levelling: 'off',

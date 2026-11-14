@@ -6,7 +6,7 @@ import { songsThatFit } from '../library/fit'
 import { radioName, radioQueue, radioSeeds, shuffled } from './radioMix'
 import type { Candidate } from './similarRank'
 import { remoteTrack, usePlayer } from './store'
-import { loadTaste, useTaste } from './taste'
+import { loadTaste, tasteFor, useTaste } from './taste'
 
 const keyOf = (t: LibraryTrack) => t.ids.youtube ?? `#${t.id}`
 
@@ -79,16 +79,7 @@ export async function similarForQueue(list: LibraryTrack[], index: number, max: 
   // Never in mixes and recent skips come from the taste store (loaded when idle; asked here only if it is still empty).
   if (!useTaste.getState().loaded) await loadTaste()
   const signals = useTaste.getState().signals
-  const taste = {
-    rating: (t: LibraryTrack) => stats[t.id]?.[2] ?? 0,
-    plays: (t: LibraryTrack) => stats[t.id]?.[0] ?? 0,
-    skips: (t: LibraryTrack) => signals.get(t.id)?.skipsRecent ?? 0,
-    never: (t: LibraryTrack) => signals.get(t.id)?.never ?? false,
-    less: (t: LibraryTrack) => signals.get(t.id)?.less ?? false,
-    liked: (t: LibraryTrack) => signals.get(t.id)?.liked ?? false,
-    decayed: (t: LibraryTrack) => signals.get(t.id)?.playsLong ?? 0,
-    lastPlayed: (t: LibraryTrack) => signals.get(t.id)?.lastPlayed ?? 0,
-  }
+  const taste = tasteFor(stats, signals)
   // Loaded when Up next runs out, not at launch.
   const { pickSimilar } = await import('./similarRank')
   return pickSimilar(candidates, list, index, taste, settings.similarVariety, max, Math.random, tracks)

@@ -272,3 +272,9 @@ export function rankPicks({ candidates, queue, index, taste, variety, max, rand,
   }
   return out
 }
+
+/** The z-scores of the songs of `list` against the whole `library`'s long profile (Shuffle: no queue yet, so no session profile). */
+export function libraryScores(list: LibraryTrack[], library: LibraryTrack[], taste: Taste, now = Date.now() / 1000): number[] {
+  const long = taste.decayed ? longProfile(library, taste.decayed) : null
+  return scoreAll(list.map((track) => ({ track })), new Map(), long && long.size ? long : null, taste, now).map((x) => x.z)
+}
