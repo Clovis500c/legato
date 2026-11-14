@@ -5,16 +5,17 @@ Where the work stands, for a session with no history here. Read this first, then
 versions are in git (`git log -p -- docs/notes/handoff.md`). Updated 2026-11-14 (window 13 closed).
 
 ## Where things stand
-- **master** = `1215f5b4` = **Beta 1.2.10**, and **Stable 1.2.10** since 2026-11-14 (promoted by the orchestrator on the
-  owner's word): Windows installer, `latest.json`, the Android APK. winget has an older Stable pending (see below).
-- **platforms** = master + 12 local commits, **none pushed** (`git log --oneline origin/master..HEAD`): the Lot 39 skip
-  signals, the Lot 40-41 banner work, the Lot 42 recommendation (`2c006e25` design, `dacf3cd6`, `a137385c`, `01475207`,
-  `ca2f6720`, `74501e5d`, `7b6f2053`, `14e7b87d`, `66b542e8`, review fix `2f781c23`) and this handoff. Only the
-  orchestrator pushes, on the owner's word.
+- **master** = `22cc704d`, pushed on the owner's word; **platforms** = master (`git log --oneline origin/master..HEAD` is
+  empty): the Lot 39 skip signals, the Lot 40-41 banner work, the Lot 42 recommendation (`2c006e25` design, `dacf3cd6`,
+  `a137385c`, `01475207`, `ca2f6720`, `74501e5d`, `7b6f2053`, `14e7b87d`, `66b542e8`, review fix `2f781c23`) and this
+  handoff are all on it. The push starts a Beta release (1.2.22 by `release.mjs --dry-run` at `22cc704d`): it may still be
+  running, not confirmed published here. Only the owner's word pushes.
+- **Stable 1.2.10** (tag `v1.2.10`, since 2026-11-14, promoted on the owner's word): Windows installer, `latest.json`, the
+  Android APK. winget has an older Stable pending (see below).
 - **Version rule** (`CONTRIBUTING.md` › Version): `MAJOR.MINOR` is in `src-tauri/tauri.conf.json` (`1.2`). The patch is n,
   the number of commits since the base of that `MAJOR.MINOR` (`BASES` in `scripts/release.mjs`: `'1.2'` → `f8379a93`), with
   `n % 1000`. The patch is n, not a counter of your own. `node scripts/release.mjs --dry-run` prints the next Beta pushed
-  from here (v1.2.22 with this handoff's commit). A bump of `MAJOR.MINOR` is the owner's decision: a new base goes in
+  from here (v1.2.22 at `22cc704d`). A bump of `MAJOR.MINOR` is the owner's decision: a new base goes in
   `BASES` first.
 - **Before any push**: `pnpm check` green; `node scripts/budget.mjs` (JS 332 of 340 kB gzip: little room, lazy-load new
   features); `cargo clippy --workspace --all-targets -- -D warnings`; `pnpm build` in `site/`; a clean tree; **`pnpm e2e`
@@ -97,9 +98,10 @@ For a new orchestrating session with an empty context:
 1. Read `CLAUDE.md`, this handoff, then only the useful parts of `docs/notes/plan-v2.md`. The owner's private notes
    (`docs/notes/report-asks.md`, `report-2026-11-12.md`, `report-orchestrator-prompt.md`) are untracked: read them for what
    was asked and decided, never copy them into tracked files.
-2. **Sessions**: one Sonnet builder and one Opus reviewer, no Haiku; reuse the sessions already open (send a message) rather
-   than starting new ones. The builder works in small slices, the reviewer rereads each batch and does the delicate parts
-   (startup, security, the release).
+2. **Sessions**: one per model, reused (send a message) rather than restarted: one Sonnet (builds, `claude-sonnet-5-5`), one
+   Opus (reviews and designs, `claude-opus-5-5`; `start_session` ignores a model dearer than the orchestrator's), one Haiku
+   (docs, handoff, reports, checks). The builder works in small slices, the reviewer rereads each batch and does the
+   delicate parts (startup, security, the release).
 3. One writer at a time on the checkout. Stage by name (`git add <file>`), never `git add -A` or `.`. Commit only what the
    task names. No push without the owner's word.
 4. **Heavy checks** (`pnpm check`, `cargo clippy`, `cargo test`, `pnpm vite build`, `pnpm build`, `pnpm e2e`): in the
@@ -148,5 +150,6 @@ The 0.1 releases, 1.0 (the redesign), the rename to Legato (2026-10-29, finished
 the website in 18 languages; Stable 1.1.681 (2026-11-05), Betas up to 1.1.994, Beta 1.2.1 (the first on the 1.2 line),
 Beta and Stable 1.2.10 (2026-11-14, `1215f5b4`). Since 1.1.932: podcasts, the output device, living-room mode, audiobooks,
 Discord sign-in, YouTube chapters, sweet fades, lyrics translation, DLNA cast, right-to-left, the Stream Deck plugin, the
-settings reorganisation, right-click levels, themes, playlist banners, free song recognition, and (unpushed) the
-recommendation algorithm. The rest: `git log`, the release notes.
+settings reorganisation, right-click levels, themes, playlist banners, free song recognition, and the recommendation
+algorithm (on master since `22cc704d`). Reviews 23 to 25 were run by Sonnet in the Opus session; that session was switched
+to Opus 5.5 only afterwards. The rest: `git log`, the release notes.
