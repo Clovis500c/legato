@@ -12,7 +12,7 @@
 //   karaoke      K opens the lyrics screen, Esc closes it
 //   search       typed text: suggestions, then YouTube, YouTube Music and Apple results, all from e2e/mock.mjs; the song plays on
 //   links        a pasted Deezer playlist (Add music) and Apple album (Ctrl+V): the progress toast, Cancel, the playlist made
-//   quit         "Keep running in the notification area" off, the window's Close: the app ends by itself, exit code 0
+//   quit         "Close to tray" (Keep running in the notification area) off, the window's Close: the app ends by itself, exit code 0
 //   relaunch     the same data again: no welcome, the library is there; one more quit
 // The native folder picker is an OS dialog a page can't drive: the script answers its IPC request (CDP Fetch). Nothing
 // else is faked on the page; the app's own side is the e2e build (src-tauri/src/hosts.rs, crates/player/src/output.rs).
@@ -681,8 +681,8 @@ async function walk(o, dataDirs) {
       await page.press('Settings')
       // The page's first rows move down when the startup row appears (it asks Windows first): wait for it, or the click lands on it.
       await app.cdp.waitFor(`!!document.querySelector('[aria-label="Open at startup"]')`, { timeout: 10000 })
-      await page.press('Keep running in the notification area')
-      await app.cdp.waitFor(`document.querySelector('[aria-label="Keep running in the notification area"]')?.getAttribute('aria-checked') === 'false'`, { timeout: 5000 })
+      await page.press('Close to tray')
+      await app.cdp.waitFor(`document.querySelector('[aria-label="Close to tray"]')?.getAttribute('aria-checked') === 'false'`, { timeout: 5000 })
       // Saved, not just shown: the window's close reads it from the library.
       await app.cdp.waitFor("window.__TAURI_INTERNALS__.invoke('load_settings').then((s) => s.closeToTray === false)", { timeout: 10000 })
       await shot('6-settings')
