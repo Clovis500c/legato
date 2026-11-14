@@ -419,7 +419,11 @@ async function walk(o, dataDirs) {
       if (folders.length !== 1 || path.resolve(folders[0]) !== path.resolve(DEMO)) throw new Error(`the library watches ${JSON.stringify(folders)}, not the demo folder`)
       await shot('2-library')
       await page.press('Start listening')
-      await app.cdp.waitFor("!document.querySelector('[role=dialog]')", { timeout: 10000 })
+      // Once failed with a dialog still up (2026-11-14), not seen since: name the one left, to find out which.
+      await app.cdp.waitFor("!document.querySelector('[role=dialog]')", { timeout: 10000 }).catch(async () => {
+        const left = await app.cdp.evaluate("(d => d && (d.getAttribute('aria-label') || d.innerText.slice(0, 80)))(document.querySelector('[role=dialog]'))").catch(() => '?')
+        throw new Error(`a dialog stayed after Start listening: ${left}`)
+      })
     })
 
     await step('songs', async () => {
