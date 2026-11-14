@@ -4,7 +4,7 @@ import { api, type LibraryTrack } from '../../shared/api'
 import { tr } from '../../shared/i18n/i18n'
 import { songsThatFit } from '../library/fit'
 import { radioName, radioQueue, radioSeeds, shuffled } from './radioMix'
-import { pickSimilar, type Candidate } from './similarRank'
+import type { Candidate } from './similarRank'
 import { remoteTrack, usePlayer } from './store'
 
 const keyOf = (t: LibraryTrack) => t.ids.youtube ?? `#${t.id}`
@@ -76,5 +76,7 @@ export async function similarForQueue(list: LibraryTrack[], index: number, max: 
     const radio = (await api.ytmList({ type: 'radio', videoId: video, playlistId: `RDAMVM${video}` }).catch(() => [])).map(remoteTrack).filter(fresh)
     radio.forEach((track, rank) => candidates.push({ track, rank }))
   }
+  // Loaded when Up next runs out, not at launch.
+  const { pickSimilar } = await import('./similarRank')
   return pickSimilar(candidates, list, index, taste, settings.similarVariety, max)
 }

@@ -46,6 +46,15 @@ describe('similar songs ranked by the whole queue', () => {
     expect(out[0].artist).not.toBe('Alpha')
   })
 
+  it('the rules hold however far ahead a song scores: no third artist in a row, no song rated 1-2', () => {
+    const fan = (id: number) => song(id, 'Omega', { album: 'Best', genre: 'pop', year: 2001, bpm: 120, key: 'C' })
+    const queue30 = Array.from({ length: 30 }, (_, i) => fan(100 + i))
+    const taste: Taste = { rating: (t) => (t.id === 200 ? 1 : t.artist === 'Omega' ? 10 : 0), plays: () => 1000 }
+    const out = pickSimilar(cands([fan(200), fan(201), fan(202), song(300, 'Other'), song(301, 'Else')]), queue30, 29, taste, 'alike', 4)
+    expect(ids(out)).not.toContain(200)
+    expect(out[0].artist).not.toBe('Omega')
+  })
+
   it('a radio’s answer order counts, and its first song beats its last', () => {
     const radio: Candidate[] = [song(30, 'Zed'), song(31, 'Yan'), song(32, 'Xi')].map((track, rank) => ({ track, rank }))
     expect(ids(pickSimilar(radio, [song(99, 'Other')], 0, none, 'alike', 3))).toEqual([30, 31, 32])

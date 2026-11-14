@@ -65,6 +65,7 @@ export function scoreOf(c: Candidate, profile: Map<string, number>, taste: Taste
   return s
 }
 
+const lowRated = (rating: number) => rating >= 1 && rating <= 2
 const artistOf = (t: LibraryTrack) => primaryArtist(t.artist).toLowerCase()
 
 /**
@@ -77,7 +78,8 @@ export function pickSimilar(candidates: Candidate[], queue: LibraryTrack[], inde
   const inQueue = new Set(queue.map((t) => t.id))
   const seen = new Set<number>()
   let pool = candidates
-    .filter((c) => !inQueue.has(c.track.id) && !seen.has(c.track.id) && !!seen.add(c.track.id))
+    // Rated 1-2: never, whatever else it shares with the queue (a score alone can climb back over any penalty).
+    .filter((c) => !inQueue.has(c.track.id) && !seen.has(c.track.id) && !!seen.add(c.track.id) && !lowRated(taste.rating(c.track)))
     .map((c) => ({ c, s: scoreOf(c, profile, taste) }))
     .filter((x) => x.s > -10)
   const recent = queue.slice(Math.max(0, index - 1), index + 1)
@@ -86,7 +88,11 @@ export function pickSimilar(candidates: Candidate[], queue: LibraryTrack[], inde
   while (out.length < max && pool.length) {
     const tail = [...recent, ...out].slice(-2)
     const adj = (x: (typeof pool)[number]) => x.s - 4 * tail.filter((t) => artistOf(t) === artistOf(x.c.track)).length - (tail.at(-1)?.album && tail.at(-1)!.album === x.c.track.album ? 2 : 0)
-    const ranked = pool.map((x) => ({ x, v: adj(x) })).sort((a, b) => b.v - a.v)
+    // The last two by one artist: a third is out, not just lower (unless nothing else is left).
+    const run = tail.length === 2 && artistOf(tail[0]) === artistOf(tail[1]) ? artistOf(tail[0]) : null
+    const all = pool.map((x) => ({ x, v: adj(x) })).sort((a, b) => b.v - a.v)
+    const others = run === null ? all : all.filter(({ x }) => artistOf(x.c.track) !== run)
+    const ranked = others.length ? others : all
     const k = out.length
     // Slot k is an adjacent one when it crosses a multiple of 1/f: the middle third of what is left.
     const adjacent = Math.floor((k + 1) * f) > Math.floor(k * f)
