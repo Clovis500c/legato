@@ -280,9 +280,10 @@ pub fn valid_channel(id: &str) -> bool {
 
 /// The channel of the artist called `name` in a `next` response: the linked run of a song's byline (a catalogue artist's page, or an
 /// uploader's channel: `MUSIC_PAGE_TYPE_USER_CHANNEL`, which has no entry in the artists search) whose text is that very name.
-pub(crate) fn channel_in(v: &Value, name: &str) -> Option<String> {
+pub(crate) fn channel_in(v: &Value, video: &str, name: &str) -> Option<String> {
     let want = normalize(name);
-    all(v, "playlistPanelVideoRenderer").into_iter().flat_map(|p| [p.get("longBylineText"), p.get("shortBylineText")]).flatten().find_map(|b| {
+    // The asked song's own entry only: the radio after it is other uploads, whose same-named channel would be a guess.
+    all(v, "playlistPanelVideoRenderer").into_iter().filter(|p| p.get("videoId").and_then(Value::as_str) == Some(video)).flat_map(|p| [p.get("longBylineText"), p.get("shortBylineText")]).flatten().find_map(|b| {
         b.get("runs")?.as_array()?.iter().find_map(|r| {
             let id = r.pointer("/navigationEndpoint/browseEndpoint/browseId")?.as_str()?;
             let linked = matches!(page_type(r), "MUSIC_PAGE_TYPE_ARTIST" | "MUSIC_PAGE_TYPE_USER_CHANNEL");
@@ -351,7 +352,7 @@ impl YouTubeMusic {
         if !ok {
             return Ok(None);
         }
-        Ok(channel_in(&self.call("next", json!({ "videoId": video_id, "isAudioOnly": true })).await?, name))
+        Ok(channel_in(&self.call("next", json!({ "videoId": video_id, "isAudioOnly": true })).await?, video_id, name))
     }
 
     /// An artist's page for the app, whatever kind of "artist" it is: the channel kept for the name (`kept`: one request), else the
@@ -544,15 +545,23 @@ mod tests {
     fn the_channel_of_an_uploader_is_read_from_the_songs_byline() {
         // An uploader channel (not a catalogue artist) as a song's linked byline run.
         let page = byline(vec![run("prodphanda", Some(("MUSIC_PAGE_TYPE_USER_CHANNEL", "UCchan0000000000000000aa"))), run(" • ", None), run("3 views", None)]);
-        assert_eq!(channel_in(&page, "prodphanda").as_deref(), Some("UCchan0000000000000000aa"));
-        assert_eq!(channel_in(&page, "ProdPhanda").as_deref(), Some("UCchan0000000000000000aa"), "case and accents aside");
+        assert_eq!(channel_in(&page, "v1", "prodphanda").as_deref(), Some("UCchan0000000000000000aa"));
+        assert_eq!(channel_in(&page, "v1", "ProdPhanda").as_deref(), Some("UCchan0000000000000000aa"), "case and accents aside");
         // A catalogue artist's page counts too; another name, an unlinked run and a bad id do not.
         let art = byline(vec![run("Muse", Some(("MUSIC_PAGE_TYPE_ARTIST", "UC3abcdefghijklmnopqrstu")))]);
-        assert_eq!(channel_in(&art, "Muse").as_deref(), Some("UC3abcdefghijklmnopqrstu"));
-        assert_eq!(channel_in(&page, "Someone else"), None);
-        assert_eq!(channel_in(&byline(vec![run("prodphanda", None)]), "prodphanda"), None);
-        assert_eq!(channel_in(&byline(vec![run("prodphanda", Some(("MUSIC_PAGE_TYPE_USER_CHANNEL", "UC../evil")))]), "prodphanda"), None);
-        assert_eq!(channel_in(&json!({}), "x"), None);
+        assert_eq!(channel_in(&art, "v1", "Muse").as_deref(), Some("UC3abcdefghijklmnopqrstu"));
+        assert_eq!(channel_in(&page, "v1", "Someone else"), None);
+        assert_eq!(channel_in(&byline(vec![run("prodphanda", None)]), "v1", "prodphanda"), None);
+        assert_eq!(channel_in(&byline(vec![run("prodphanda", Some(("MUSIC_PAGE_TYPE_USER_CHANNEL", "UC../evil")))]), "v1", "prodphanda"), None);
+        assert_eq!(channel_in(&json!({}), "v1", "x"), None);
+    }
+
+    #[test]
+    fn only_the_asked_songs_own_byline_counts_not_the_radio_after_it() {
+        // `next` answers the song (v1) and a radio of others: a same-named channel there is not confirmed as this artist.
+        let mut page = byline(vec![run("prodphanda", None)]);
+        page["contents"].as_array_mut().unwrap().push(json!({ "playlistPanelVideoRenderer": { "videoId": "v2", "longBylineText": { "runs": [run("prodphanda", Some(("MUSIC_PAGE_TYPE_USER_CHANNEL", "UCother000000000000000aa")))] } } }));
+        assert_eq!(channel_in(&page, "v1", "prodphanda"), None);
     }
 
     #[test]
@@ -589,13 +598,13 @@ mod tests {
         let yt = YouTubeMusic::anonymous_with_api(&s.url());
         // No video of its songs: nothing more is asked beyond the search.
         assert_eq!(yt.artist_or_channel("prodphanda", &["Girl".into()], None, None).await.unwrap(), (None, None));
-        let (page, found) = yt.artist_or_channel("prodphanda", &["Girl".into()], None, Some("vid1")).await.unwrap();
+        let (page, found) = yt.artist_or_channel("prodphanda", &["Girl".into()], None, Some("v1")).await.unwrap();
         // (the first call above searched too: the search mock expects 1, so reset its count by asking the kept way below)
         let page = page.unwrap();
         assert!(page.art.as_deref().unwrap().starts_with("https://yt3.googleusercontent.com/avatar"));
         assert_eq!(found.as_deref(), Some("UCchan0000000000000000aa"));
         // Kept: one browse, no search and no `next`.
-        let (again, new) = yt.artist_or_channel("prodphanda", &[], found.as_deref(), Some("vid1")).await.unwrap();
+        let (again, new) = yt.artist_or_channel("prodphanda", &[], found.as_deref(), Some("v1")).await.unwrap();
         assert!(again.is_some() && new.is_none());
         search.expect(2).assert_async().await;
         next.assert_async().await;
