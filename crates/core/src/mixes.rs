@@ -725,6 +725,8 @@ pub fn mixes(input: &Input) -> Vec<Mix> {
     loved.sort_by(|a, b| b.1.total_cmp(&a.1).then(a.0.cmp(&b.0)));
     let mut songs_seen = HashSet::new();
     loved.retain(|(id, _)| songs_seen.insert(&taste.song[id]));
+    // Each song's style once: a library with thousands of tiny genres would otherwise re-read every song for every style.
+    let track_style: Vec<Option<String>> = input.tracks.iter().map(style_of).collect();
     let mut styles: Vec<(String, Vec<i64>)> = Vec::new();
     for (id, _) in &loved {
         let Some(style) = style_of(by_id[id]) else { continue };
@@ -741,7 +743,7 @@ pub fn mixes(input: &Input) -> Vec<Mix> {
         }
         let seed = top[(local_day(input.now) + n as i64).rem_euclid(top.len() as i64) as usize];
         let (title, artist) = (&by_id[&seed].track.title, &taste.artist[&seed]);
-        let cands: Vec<(i64, f64)> = input.tracks.iter().filter(|t| style_of(t).as_deref() == Some(style.as_str())).map(|t| (t.id, (score_of(t.id) + 0.5) * if t.id == seed { 3.0 } else { 1.0 })).collect();
+        let cands: Vec<(i64, f64)> = input.tracks.iter().zip(&track_style).filter(|(_, s)| s.as_deref() == Some(style.as_str())).map(|(t, _)| (t.id, (score_of(t.id) + 0.5) * if t.id == seed { 3.0 } else { 1.0 })).collect();
         if cands.len() < TAG_MIN {
             continue;
         }
@@ -1453,5 +1455,14 @@ mod tests {
         let kept = without_blocked(found.clone(), &blocked);
         assert_eq!(kept.iter().map(|(_, v)| v.iter().map(|t| t.title.as_str()).collect::<Vec<_>>()).collect::<Vec<_>>(), [vec!["Odd Look"], vec![]]);
         assert_eq!(without_blocked(found.clone(), &HashSet::new()), found);
+    }
+
+    #[test]
+    fn like_mixes_stay_fast_with_thousands_of_tiny_genres() {
+        let tracks: Vec<LibraryTrack> = (1..=10_000).map(|i| { let mut x = t(i, &format!("Band {}", i % 700)); x.genre = Some(format!("g{}", i % 3000)); x.year = Some(1990 + (i % 30) as u32); x }).collect();
+        let plays: Vec<Play> = (1..=10_000).map(|i| play(i, NOW - 3 * DAY + i * 5, true)).collect();
+        let t0 = std::time::Instant::now();
+        let out = run(&tracks, &plays, &HashMap::new(), 3);
+        assert!(!out.is_empty() && t0.elapsed().as_secs() < 8, "10 000 songs, 3 000 genres: {:?}", t0.elapsed());
     }
 }
