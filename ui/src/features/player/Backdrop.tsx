@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSettings } from '../../app/settings'
+import { allowsMotion, useSystemReduced } from '../../shared/motion'
 import { startFlow, type Flow } from './flow'
 import { usePlayer } from './store'
 
@@ -36,10 +37,13 @@ function FlowCanvas({ url, onFail }: { url: string; onFail: () => void }) {
  * Blurred cover layers: each new one fades in over the last, which goes once covered. Veil in the theme's color keeps
  * text readable. Flowing background on (and animations): the shader's canvas instead, on every screen with a backdrop.
  */
-export function Backdrop({ url, dim, motion, flowing }: { url?: string; dim: number; motion: boolean; flowing?: boolean }) {
+export function Backdrop({ url, dim, motion: moves, flowing }: { url?: string; dim: number; motion: boolean; flowing?: boolean }) {
+  // Windows' animation effects off (prefers-reduced-motion) stops the drift and the flowing shader too, as Settings › Animations does.
+  const reduced = useSystemReduced()
+  const motion = allowsMotion(moves, reduced)
   const [layers, setLayers] = useState<string[]>([])
   const box = useRef<HTMLDivElement>(null)
-  const wantFlow = useSettings((s) => (flowing ?? s.settings.backdropFlow) && s.settings.motion)
+  const wantFlow = useSettings((s) => (flowing ?? s.settings.backdropFlow) && allowsMotion(s.settings.motion, reduced))
   const [noGl, setNoGl] = useState(false)
   const noFlow = useCallback(() => setNoGl(true), [])
   const flow = wantFlow && !noGl
