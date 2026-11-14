@@ -32,7 +32,7 @@ import { ThemeStudio } from './ThemeStudio'
 import { FadeEditor } from './FadeEditor'
 import { BrowserScene, CountsScene, CoverShapes, DensityScene, FadeScene, ListCoversScene, MiniPlayerScene, MixCoverScene, MotionScene, NowPlayingScene, ProgressScene, SleepButtonScene, SourceIconScene, TunerScene, VolumeScene } from './previews'
 import { searchSettings, type SettingEntry } from './search'
-import { CATEGORIES, categoryOf, groupDef, type Category } from './catalog'
+import { CATEGORIES, categoryOf, groupDef, labelOf, type Category } from './catalog'
 import { locale, msg, tr } from '../../shared/i18n/i18n'
 import { nextAlarm } from '../player/alarmTime'
 import { phoneApp } from '../../shared/platform'
@@ -89,7 +89,7 @@ function Group({ title, count, hint, bare, children }: { title: string; count?: 
       <details data-setting={title} data-fold style={{ order: 1000 + rank }} className="group/fold border-b border-line-soft">
         <summary className="flex min-h-12 cursor-pointer list-none items-center gap-3 text-[0.9375rem] font-medium [&::-webkit-details-marker]:hidden">
           <span className="min-w-0 flex-1 truncate">
-            {tr(title)}
+            {tr(labelOf(title))}
             {count !== undefined && ` · ${count}`}
           </span>
           {hint && <span className="kicker shrink-0">{hint}</span>}
@@ -102,7 +102,7 @@ function Group({ title, count, hint, bare, children }: { title: string; count?: 
     <section data-setting={title} style={{ order: rank }} className="flex flex-col gap-2.5 rounded-lg">
       <div className="flex items-center justify-between">
         <h2 className="kicker">
-          {tr(title)}
+          {tr(labelOf(title))}
           {count !== undefined && ` · ${count}`}
         </h2>
         {hint && <span className="kicker">{hint}</span>}
@@ -124,14 +124,14 @@ function Row({ label, sub, children, preview, setting }: { label: string; sub?: 
       data-setting={label}
       onContextMenu={onMenu(() => [
         setting && { label: tr('Back to the default'), icon: <ArrowCounterClockwise size={16} />, disabled: !changed, onSelect: () => useSettings.getState().update({ [setting]: DEFAULTS[setting] }) },
-        { label: tr('Copy name'), icon: <Copy size={16} />, onSelect: () => void navigator.clipboard.writeText(tr(label)) },
+        { label: tr('Copy name'), icon: <Copy size={16} />, onSelect: () => void navigator.clipboard.writeText(tr(labelOf(label))) },
       ])}
       // A narrow pane (the phone, a small window) keeps the words at least half the row: a wide control goes under them.
       className="flex items-center gap-4 border-b border-line-soft px-4 py-3 last:border-0 @max-lg:flex-wrap @max-lg:gap-y-2.5"
     >
       <div className="flex-1 @max-lg:min-w-[55%]">
         <p className="flex items-center gap-2 text-[0.8125rem] font-medium">
-          {tr(label)}
+          {tr(labelOf(label))}
           {changed && (
             <button type="button" onClick={() => useSettings.getState().update({ [setting!]: DEFAULTS[setting!] })} title={tr('Back to the default')} className="flex items-center gap-1 rounded-full bg-raised px-2 py-px text-[0.6875rem] font-normal text-ink-2 hover:text-ink">
               <ArrowCounterClockwise size={11} /> {tr('Reset')}
@@ -1166,7 +1166,7 @@ function SettingsSearch({ onPick }: { onPick: (e: SettingEntry) => void }) {
           {hits.length === 0 && <p className="px-2 py-2 text-xs text-ink-3">{tr('No setting matches.')}</p>}
           {hits.map((e) => (
             <button key={`${e.section}/${e.label}`} onClick={() => pick(e)} className="flex flex-col rounded-md px-2 py-1.5 text-start hover:bg-raised">
-              <span className="text-[0.8125rem]">{tr(e.label)}</span>
+              <span className="text-[0.8125rem]">{tr(e.name ?? e.label)}</span>
               <span className="kicker">{tr(sections.find((s) => s.id === e.section)!.label)}</span>
             </button>
           ))}

@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { CATEGORIES, categoryOf, groupDef, GROUPS, SETTINGS } from './catalog'
+import { CATEGORIES, categoryOf, groupDef, GROUPS, labelOf, missingLabels, SETTINGS } from './catalog'
 import { DESKTOP_ONLY } from './desktopOnly'
 import { PHONE_FOLDED } from './phoneFold'
-import { searchSettings } from './search'
+import { searchSettings, type SettingEntry } from './search'
 
 /** Every setting the search knew before the reorganisation (2026-11-13), by its English label: none may be lost. */
 const BEFORE = [
@@ -59,5 +59,23 @@ describe('settings catalog', () => {
 
   it('the phone’s lists name settings or groups the table knows', () => {
     for (const id of [...DESKTOP_ONLY, ...PHONE_FOLDED]) expect(categoryOf(id) ?? groupDef(id)?.category, id).toBeDefined()
+  })
+
+  it('every setting and group shows a label (its id by default), and a relabelled one is still found by its old name', () => {
+    for (const e of [...GROUPS, ...SETTINGS]) expect(labelOf(e.id).trim(), e.id).not.toBe('')
+    expect(labelOf('Sleep timer button')).toBe('Sleep timer button')
+    for (const e of [...GROUPS, ...SETTINGS].filter((d) => d.label)) expect(searchSettings(e.id).map((h) => h.label), e.id).toContain(e.id)
+    const moved: SettingEntry = { section: 'playback', label: 'Old name', name: 'Short' }
+    expect(searchSettings('old name', [moved])).toEqual([moved])
+    expect(searchSettings('short', [moved])).toEqual([moved])
+  })
+
+  it('a label must be in every language unless it is marked to translate', () => {
+    const defs = [
+      { id: 'A', in: 'Fades', label: 'Done' },
+      { id: 'B', in: 'Fades', label: 'Later', toTranslate: true as const },
+      { id: 'C', in: 'Fades', label: 'Forgot' },
+    ]
+    expect(missingLabels({ Done: 'Fait' }, defs)).toEqual(['Forgot'])
   })
 })

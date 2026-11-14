@@ -2,6 +2,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
+import { missingLabels } from '../../features/settings/catalog'
 import { CATALOG, LANGUAGES, loadLang, resolveLang, tr, trn, useLang } from './i18n'
 
 const LOCALES = import.meta.glob<Record<string, string>>('./locales/*.ts', { eager: true, import: 'default' })
@@ -49,6 +50,10 @@ describe.each(Object.entries(LOCALES))('translations %s', (path, table) => {
 
   it('keeps no text gone from the code', () => {
     expect(Object.keys(table).filter((k) => !texts.has(k))).toEqual([])
+  })
+
+  it('has every setting label, unless it is marked toTranslate', () => {
+    expect(missingLabels(table)).toEqual([])
   })
 
   it('keeps the same {slots}', () => {

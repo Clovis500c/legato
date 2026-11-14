@@ -29,6 +29,10 @@ export const CATEGORIES: { id: Category; label: string }[] = [
 
 export interface GroupDef {
   id: string
+  /** Shown text (English, translated by tr), when it differs from the id; the id stays its data-setting and key. */
+  label?: string
+  /** The label's translations aren't written yet: a plain string (not msg), shown in English meanwhile. */
+  toTranslate?: true
   category: Category
   advanced?: true
 }
@@ -76,8 +80,15 @@ export const GROUPS: GroupDef[] = [
 ]
 
 export interface SettingDef {
-  /** English label: the row's (or group's) `data-setting`, found and flashed when picked in the search. */
+  /**
+   * The row's (or group's) id: its `data-setting`, its translation key until it has a label, its search key. Stays
+   * English and stable (Sync Mode, links, the search's old name): rename a setting with `label`, never here.
+   */
   id: string
+  /** Shown text (English, translated by tr), when it differs from the id. The search finds both. */
+  label?: string
+  /** The label's translations aren't written yet: a plain string (not msg), shown in English meanwhile. */
+  toTranslate?: true
   /** Its group's id, or a category for a page drawn by its own component (Accounts, Sync Mode, Privacy, About…). */
   in: string
   keywords?: string
@@ -244,3 +255,12 @@ export function categoryOf(id: string): Category | undefined {
   const where = s ? s.in : id
   return GROUP.get(where)?.category ?? (CATEGORY_IDS.has(where) ? (where as Category) : undefined)
 }
+
+const LABEL = new Map<string, string>([...GROUPS, ...SETTINGS].filter((e) => e.label).map((e) => [e.id, e.label!]))
+
+/** The English text shown for a setting or group id (translate it with tr): its label, or the id itself. */
+export const labelOf = (id: string) => LABEL.get(id) ?? id
+
+/** Labels a language lacks that aren't marked toTranslate (i18n.test.ts asks each of the 19 for none). */
+export const missingLabels = (table: Record<string, string>, defs: (GroupDef | SettingDef)[] = [...GROUPS, ...SETTINGS]) =>
+  defs.filter((e) => e.label && !e.toTranslate && !(e.label in table)).map((e) => e.label!)
