@@ -24,7 +24,7 @@ const HALF_LIFE_DAYS: f64 = 30.0;
 /// Supermix: taste over the months, not the last weeks.
 const LONG_HALF_LIFE_DAYS: f64 = 180.0;
 /// Under this = skipped (negative signal).
-const SKIP_MS: u32 = 30_000;
+pub(crate) const SKIP_MS: u32 = 30_000;
 const SESSION_GAP: i64 = 30 * 60;
 const PLAYLIST_BONUS: f64 = 1.5;
 /// Imported playlists (YouTube Music likes, Spotify): saved there, not picked here.

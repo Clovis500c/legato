@@ -69,12 +69,19 @@ export async function similarForQueue(list: LibraryTrack[], index: number, max: 
   const last = list[index]
   if (!last) return []
   const fresh = (t: LibraryTrack) => !(settings.hideExplicit && t.explicit) && t.musicness !== 'notMusic'
-  const taste = { rating: (t: LibraryTrack) => stats[t.id]?.[2] ?? 0, plays: (t: LibraryTrack) => stats[t.id]?.[0] ?? 0 }
   const candidates: Candidate[] = tracks.filter(fresh).map((track) => ({ track }))
   const video = last.ids.youtube
   if (status.youtube.connected && video) {
     const radio = (await api.ytmList({ type: 'radio', videoId: video, playlistId: `RDAMVM${video}` }).catch(() => [])).map(remoteTrack).filter(fresh)
     radio.forEach((track, rank) => candidates.push({ track, rank }))
+  }
+  // One ask for the candidates' signals (library songs only: a radio's remote ids are negative).
+  const signals = new Map((await api.similarSignals(candidates.map((c) => c.track.id).filter((id) => id > 0)).catch(() => [])).map((x) => [x.id, x]))
+  const taste = {
+    rating: (t: LibraryTrack) => stats[t.id]?.[2] ?? 0,
+    plays: (t: LibraryTrack) => stats[t.id]?.[0] ?? 0,
+    skips: (t: LibraryTrack) => signals.get(t.id)?.skipsRecent ?? 0,
+    never: (t: LibraryTrack) => signals.get(t.id)?.neverInMixes ?? false,
   }
   // Loaded when Up next runs out, not at launch.
   const { pickSimilar } = await import('./similarRank')

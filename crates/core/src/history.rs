@@ -36,6 +36,20 @@ pub struct Play {
     pub completed: bool,
 }
 
+/// What the similar-songs ranking reads about a song: skips in the last `SKIP_DAYS` days (under 30 s, not finished) and
+/// "Never in mixes".
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, ts_rs::TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct SimilarSignal {
+    pub id: i64,
+    pub skips_recent: u32,
+    pub never_in_mixes: bool,
+}
+
+/// How far back a skip still counts for similar songs.
+const SKIP_DAYS: i64 = 30;
+
 /// User control over mixes: Less = ranked lower, Never = left out.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
@@ -111,6 +125,14 @@ impl Library {
         let mut stmt = self.db.prepare_cached("SELECT track_id, pref FROM track_prefs")?;
         let rows = stmt.query_map([], |r| Ok((r.get::<_, i64>(0)?, r.get::<_, String>(1)?)))?;
         Ok(rows.filter_map(Result::ok).filter_map(|(id, p)| Some((id, if p == "never" { Pref::Never } else if p == "less" { Pref::Less } else { return None }))).collect())
+    }
+
+    /// One answer per id asked, in order; an unknown id is zero skips and not never. `now` = unix seconds.
+    pub fn similar_signals(&self, ids: &[i64], now: i64) -> Result<Vec<SimilarSignal>> {
+        let mut stmt = self.db.prepare_cached("SELECT track_id, COUNT(*) FROM plays WHERE started_at >= ?1 AND NOT completed AND listened_ms < ?2 GROUP BY track_id")?;
+        let skips: HashMap<i64, u32> = stmt.query_map(params![now - SKIP_DAYS * 86_400, crate::mixes::SKIP_MS], |r| Ok((r.get(0)?, r.get(1)?)))?.collect::<rusqlite::Result<_>>()?;
+        let prefs = self.prefs()?;
+        Ok(ids.iter().map(|&id| SimilarSignal { id, skips_recent: skips.get(&id).copied().unwrap_or(0), never_in_mixes: prefs.get(&id) == Some(&Pref::Never) }).collect())
     }
 
     /// Reset: plays and preferences gone, library untouched.
@@ -197,6 +219,26 @@ mod tests {
         assert!(lib.record_play(&Play { track_id: 999, started_at: 1, listened_ms: 1, completed: true }).is_err(), "unknown track");
         lib.clear_history()?;
         assert!(lib.plays()?.is_empty());
+        Ok(())
+    }
+
+    #[test]
+    fn similar_signals_report_recent_skips_and_never() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let (a, b, c) = (track(&lib, "A", Source::Youtube, "a"), track(&lib, "B", Source::Youtube, "b"), track(&lib, "C", Source::Youtube, "c"));
+        let now = 100 * 86_400;
+        // A: two recent skips, an old one, a full listen; B: never; C: less.
+        for (at, ms, done) in [(now - 10, 5_000, false), (now - 86_400, 29_000, false), (now - 90 * 86_400, 1_000, false), (now - 5, 200_000, true)] {
+            lib.record_play(&Play { track_id: a, started_at: at, listened_ms: ms, completed: done })?;
+        }
+        lib.set_pref(b, Some(Pref::Never))?;
+        lib.set_pref(c, Some(Pref::Less))?;
+        let got = lib.similar_signals(&[a, b, c, 9999], now)?;
+        let by = |id| got.iter().find(|s| s.id == id).unwrap();
+        assert_eq!((by(a).skips_recent, by(a).never_in_mixes), (2, false));
+        assert_eq!((by(b).skips_recent, by(b).never_in_mixes), (0, true));
+        assert_eq!((by(c).skips_recent, by(c).never_in_mixes), (0, false), "Less is not Never");
+        assert_eq!((by(9999).skips_recent, by(9999).never_in_mixes), (0, false), "unknown id: zero");
         Ok(())
     }
 

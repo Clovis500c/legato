@@ -18,6 +18,10 @@ const ADJACENT: Record<Variety, number> = { alike: 0.1, balanced: 0.3, adventuro
 export interface Taste {
   rating: (t: LibraryTrack) => number
   plays: (t: LibraryTrack) => number
+  /** Skips in the last 30 days. */
+  skips: (t: LibraryTrack) => number
+  /** "Never in mixes". */
+  never: (t: LibraryTrack) => boolean
 }
 
 /** A song to pick from: `rank` = its place in a radio's answer (0 first), none for a song of the library. */
@@ -25,6 +29,10 @@ export interface Candidate {
   track: LibraryTrack
   rank?: number
 }
+
+/** Each recent skip costs this much, up to SKIP_CAP in all (a first guess, never heard by ear). */
+const SKIP_COST = 1.5
+const SKIP_CAP = 6
 
 const FEATURE_WEIGHT = { artist: 3, album: 1.5, genre: 2, decade: 1, tempo: 0.8, key: 0.8 }
 
@@ -60,7 +68,7 @@ export function scoreOf(c: Candidate, profile: Map<string, number>, taste: Taste
   let s = 0
   for (const [f, fw] of featuresOf(c.track)) s += (profile.get(f) ?? 0) * (fw / 3)
   const rating = taste.rating(c.track)
-  s += 0.4 * Math.log1p(taste.plays(c.track)) + (rating >= 8 ? 6 : rating >= 6 ? 2.5 : 0) - (rating >= 1 && rating <= 2 ? 50 : 0)
+  s += 0.4 * Math.log1p(taste.plays(c.track)) + (rating >= 8 ? 6 : rating >= 6 ? 2.5 : 0) - (rating >= 1 && rating <= 2 ? 50 : 0) - Math.min(SKIP_CAP, SKIP_COST * taste.skips(c.track))
   if (c.rank !== undefined) s += 2.5 / (1 + c.rank * 0.2)
   return s
 }
@@ -78,8 +86,8 @@ export function pickSimilar(candidates: Candidate[], queue: LibraryTrack[], inde
   const inQueue = new Set(queue.map((t) => t.id))
   const seen = new Set<number>()
   let pool = candidates
-    // Rated 1-2: never, whatever else it shares with the queue (a score alone can climb back over any penalty).
-    .filter((c) => !inQueue.has(c.track.id) && !seen.has(c.track.id) && !!seen.add(c.track.id) && !lowRated(taste.rating(c.track)))
+    // Rated 1-2 or "Never in mixes": never, whatever else it shares with the queue (a score alone can climb back over any penalty).
+    .filter((c) => !inQueue.has(c.track.id) && !seen.has(c.track.id) && !!seen.add(c.track.id) && !lowRated(taste.rating(c.track)) && !taste.never(c.track))
     .map((c) => ({ c, s: scoreOf(c, profile, taste) }))
     .filter((x) => x.s > -10)
   const recent = queue.slice(Math.max(0, index - 1), index + 1)
