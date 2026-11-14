@@ -18,7 +18,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
-    "streamdeck": "node --test integrations/streamdeck/",
+    "streamdeck": "node --test \"integrations/streamdeck/*.test.mjs\"",
     "test:rust": "cargo test --workspace",
     "check:licenses": "node scripts/licenses.mjs && cargo deny check licenses bans sources",
     "notices": "node scripts/notices.mjs",
