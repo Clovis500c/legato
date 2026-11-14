@@ -2349,6 +2349,8 @@ const zh: Record<string, string> = {
   'Send my password as it is': '原样发送我的密码',
   'Hide explicit songs': '隐藏含露骨内容的歌曲',
   'Variety': '多样性',
+  'variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next': '多样性 相近 均衡 大胆 随机播放 混音 variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next',
+  'Up next and Shuffle stray further from your usual songs, and so do mixes made from a song': '接下来播放和随机播放会更偏离你常听的歌曲，由歌曲生成的混音也是如此',
   'Alike': '相近',
   'Balanced': '均衡',
   'Adventurous': '大胆',

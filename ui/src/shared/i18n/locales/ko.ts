@@ -2349,6 +2349,8 @@ const ko: Record<string, string> = {
   'Send my password as it is': '내 비밀번호를 그대로 보내기',
   'Hide explicit songs': '선정적인 곡 숨기기',
   'Variety': '다양성',
+  'variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next': '다양성 가까운 균형 모험적 셔플 믹스 variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next',
+  'Up next and Shuffle stray further from your usual songs, and so do mixes made from a song': '다음 곡과 셔플, 곡으로 만든 믹스가 평소 듣는 곡에서 더 멀리 벗어납니다',
   'Alike': '가까운',
   'Balanced': '균형',
   'Adventurous': '모험적',

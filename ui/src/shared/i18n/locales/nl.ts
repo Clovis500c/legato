@@ -2349,6 +2349,8 @@ const nl: Record<string, string> = {
   'Send my password as it is': 'Mijn wachtwoord verzenden zoals het is',
   'Hide explicit songs': 'Expliciete nummers verbergen',
   'Variety': 'Variatie',
+  'variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next': 'Variatie Dichtbij Gebalanceerd Avontuurlijk Shuffle Mixen variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next',
+  'Up next and Shuffle stray further from your usual songs, and so do mixes made from a song': 'Volgende nummers en shuffle wijken verder af van je gebruikelijke nummers, net als mixen vanuit een nummer',
   'Alike': 'Dichtbij',
   'Balanced': 'Gebalanceerd',
   'Adventurous': 'Avontuurlijk',

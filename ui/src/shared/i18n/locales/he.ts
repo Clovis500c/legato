@@ -2289,6 +2289,8 @@ const he: Record<string, string> = {
   'Send my password as it is': 'שליחת הסיסמה שלי כפי שהיא',
   'Hide explicit songs': 'הסתרת שירים מפורשים',
   'Variety': 'מגוון',
+  'variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next': 'מגוון קרובים מאוזן הרפתקני ערבוב מיקסים variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next',
+  'Up next and Shuffle stray further from your usual songs, and so do mixes made from a song': 'התור הבא והערבוב מתרחקים יותר מהשירים הרגילים שלך, וכך גם מיקסים שנוצרו משיר',
   'Alike': 'קרובים',
   'Balanced': 'מאוזן',
   'Adventurous': 'הרפתקני',

@@ -2349,6 +2349,8 @@ const tr: Record<string, string> = {
   'Send my password as it is': 'Parolamı olduğu gibi gönder',
   'Hide explicit songs': 'Müstehcen şarkıları gizle',
   'Variety': 'Çeşitlilik',
+  'variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next': 'Çeşitlilik Yakın Dengeli Maceracı Karıştır Mix’ler variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next',
+  'Up next and Shuffle stray further from your usual songs, and so do mixes made from a song': 'Sıradaki ve karışık çalma, olağan şarkılarından daha fazla uzaklaşır; bir şarkıdan yapılan miksler de',
   'Alike': 'Yakın',
   'Balanced': 'Dengeli',
   'Adventurous': 'Maceracı',

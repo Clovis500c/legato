@@ -2349,6 +2349,8 @@ const vi: Record<string, string> = {
   'Send my password as it is': 'Gửi mật khẩu của tôi nguyên văn',
   'Hide explicit songs': 'Ẩn bài hát có nội dung nhạy cảm',
   'Variety': 'Đa dạng',
+  'variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next': 'Đa dạng Gần giống Cân bằng Phiêu lưu Phát ngẫu nhiên Bản phối variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next',
+  'Up next and Shuffle stray further from your usual songs, and so do mixes made from a song': 'Bài tiếp theo và phát ngẫu nhiên đi xa hơn các bài quen thuộc của bạn, mix tạo từ một bài hát cũng vậy',
   'Alike': 'Gần giống',
   'Balanced': 'Cân bằng',
   'Adventurous': 'Phiêu lưu',

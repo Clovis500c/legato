@@ -2289,6 +2289,8 @@ const ar: Record<string, string> = {
   'Send my password as it is': 'أرسل كلمة مروري كما هي',
   'Hide explicit songs': 'إخفاء الأغاني الصريحة',
   'Variety': 'التنوع',
+  'variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next': 'التنوع قريبة متوازن مغامر ترتيب عشوائي المزيج variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next',
+  'Up next and Shuffle stray further from your usual songs, and so do mixes made from a song': 'يبتعد التشغيل التالي والعشوائي أكثر عن أغانيك المعتادة، وكذلك المزيجات المصنوعة من أغنية',
   'Alike': 'قريبة',
   'Balanced': 'متوازن',
   'Adventurous': 'مغامر',

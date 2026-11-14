@@ -2349,6 +2349,8 @@ const ru: Record<string, string> = {
   'Send my password as it is': 'Отправить пароль как есть',
   'Hide explicit songs': 'Скрывать песни с ненормативной лексикой',
   'Variety': 'Разнообразие',
+  'variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next': 'Разнообразие Близкие Баланс Смелые Перемешать Миксы variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next',
+  'Up next and Shuffle stray further from your usual songs, and so do mixes made from a song': 'Следующие песни и перемешивание уходят дальше от ваших привычных песен, как и миксы из песни',
   'Alike': 'Близкие',
   'Balanced': 'Баланс',
   'Adventurous': 'Смелые',

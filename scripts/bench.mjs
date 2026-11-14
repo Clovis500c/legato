@@ -21,6 +21,8 @@
 //   --keep                    leave the bench data folders after the run
 //   --note "text"             goes in the Notes cell
 //   --shots <dir>             a PNG of the window at each step
+// A "shuffle 10000" line is measured too (ui/src/features/player/shuffleBench.test.ts, in Node, on the code the app runs): the taste
+// store's load, the scores, the weighted order and the artist pass of a Shuffle over the whole library, target under 50 ms.
 
 import { execFileSync, spawn, spawnSync } from 'node:child_process'
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
@@ -575,6 +577,17 @@ ${''.padEnd(30)} ${'Now Playing'.padStart(8)} ${'extra'.padStart(7)} ${'full scr
 Budget: under 3 % of the PC over the controls. Not saved: put the numbers in docs/performance.md.`)
 }
 
+/** The cost of a Shuffle over 10 000 songs, in ms (best of 5), from the test that prints it; null when it could not run. */
+function shuffleBench() {
+  const r = spawnSync('pnpm.cmd', ['exec', 'vitest', 'run', 'ui/src/features/player/shuffleBench.test.ts', '--reporter=verbose', '--disable-console-intercept'], { cwd: ROOT, env: { ...process.env, LEGATO_BENCH: '1' }, encoding: 'utf8', shell: true })
+  return shuffleLine(`${r.stdout}\n${r.stderr}`)
+}
+
+/** "BENCH shuffle 10000: 26.9 ms (...)" in a test's output: that text, or null. */
+export function shuffleLine(out) {
+  return out.match(/BENCH (shuffle 10000: [\d.]+ ms[^\n]*)/)?.[1] ?? null
+}
+
 async function main() {
   let o
   try {
@@ -592,6 +605,8 @@ async function main() {
   if (o.buildOnly) return
   if (!carriesId(readFileSync(EXE), conf.identifier)) fail(`${EXE} was not built for ${conf.identifier}: run without --skip-build`)
 
+  const shuffle = shuffleBench()
+  console.log(shuffle ?? 'shuffle 10000: not measured (the vitest run failed)')
   const t = plan(o.quick)
   const threads = os.cpus().length
   const args = browserArgs(readFileSync(path.join(ROOT, 'src-tauri', 'src', 'background.rs'), 'utf8'))
@@ -673,7 +688,7 @@ async function main() {
       play,
       tray,
       trace,
-      note: [o.quick ? 'quick run' : null, 'other apps were running', `PC load ${Math.round(idle.pcLoad ?? 0)} / ${Math.round(play.pcLoad ?? 0)} / ${Math.round(tray.pcLoad ?? 0)} %`, o.note || null].filter(Boolean).join('; '),
+      note: [o.quick ? 'quick run' : null, 'other apps were running', `PC load ${Math.round(idle.pcLoad ?? 0)} / ${Math.round(play.pcLoad ?? 0)} / ${Math.round(tray.pcLoad ?? 0)} %`, shuffle, o.note || null].filter(Boolean).join('; '),
     }
     print(result)
     if (o.save) {

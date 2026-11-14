@@ -15,7 +15,7 @@ const BEFORE = [
   'Counts in the sidebar', 'Open on', 'Update channel', 'Cover cache size', 'Back up your library', 'Restore a backup', 'Clear covers', 'Your library', 'Lyrics and song analyses',
   'Diagnostics log', 'Animations', 'List columns', 'YouTube Music', 'Update every 15 minutes', 'Sync direction', 'Spotify', 'OneDrive', 'Your devices', 'Spotify web player',
   'Apple Music', 'Local files', 'Your music server', 'Block ads and trackers', 'The app', 'App windows', 'Automatic updates', 'App status', 'About', 'Third-party licenses',
-  'Copy diagnostics', 'Smart shuffle', 'Songs heard lately', 'Your ratings count', 'Alarm', 'Same artist again', 'Pause during calls', 'Keep the screen on', 'Phone remote',
+  'Copy diagnostics', 'Smart shuffle', 'Variety', 'Songs heard lately', 'Your ratings count', 'Alarm', 'Same artist again', 'Pause during calls', 'Keep the screen on', 'Phone remote',
   'Streaming overlay', 'Visualizer on the overlay', 'Pause when headphones disconnect', 'No fade within an album', 'Advanced fade', 'Fade in after a skip', 'Fade on pause and play',
   'Sound processing', 'Adaptive Sound', 'Adaptive Sound level', 'Volume levelling', 'Moving cover', 'Visualizer', 'Visualizer style', 'Meter face', 'Spectrogram colors',
   'Visualizer preset', 'Preset colors', 'Visualizer weighting', 'Visualizer color', 'Visualizer gradient', 'Visualizer bands', 'Visualizer reflection',

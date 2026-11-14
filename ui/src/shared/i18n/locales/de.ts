@@ -2349,6 +2349,8 @@ const de: Record<string, string> = {
   'Send my password as it is': 'Mein Passwort unverändert senden',
   'Hide explicit songs': 'Explizite Songs ausblenden',
   'Variety': 'Vielfalt',
+  'variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next': 'Vielfalt Nah dran Ausgewogen Abenteuerlich Zufallswiedergabe Mixe variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next',
+  'Up next and Shuffle stray further from your usual songs, and so do mixes made from a song': 'Als Nächstes und Zufallswiedergabe weichen weiter von deinen gewohnten Songs ab, ebenso Mixe aus einem Song',
   'Alike': 'Nah dran',
   'Balanced': 'Ausgewogen',
   'Adventurous': 'Abenteuerlich',

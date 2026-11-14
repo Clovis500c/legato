@@ -2349,6 +2349,8 @@ const uk: Record<string, string> = {
   'Send my password as it is': 'Надіслати пароль як є',
   'Hide explicit songs': 'Приховувати пісні з відвертим змістом',
   'Variety': 'Різноманітність',
+  'variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next': 'Різноманітність Близькі Збалансовано Сміливі Перемішати Мікси variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next',
+  'Up next and Shuffle stray further from your usual songs, and so do mixes made from a song': 'Далі та перемішування відходять далі від ваших звичних пісень, як і мікси з пісні',
   'Alike': 'Близькі',
   'Balanced': 'Збалансовано',
   'Adventurous': 'Сміливі',

@@ -2349,6 +2349,8 @@ const hi: Record<string, string> = {
   'Send my password as it is': 'मेरा पासवर्ड जैसा है वैसा भेजें',
   'Hide explicit songs': 'स्पष्ट (explicit) गाने छिपाएँ',
   'Variety': 'विविधता',
+  'variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next': 'विविधता करीब संतुलित साहसी शफ़ल मिक्स variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next',
+  'Up next and Shuffle stray further from your usual songs, and so do mixes made from a song': 'अगला और शफ़ल आपके आम गानों से और दूर जाते हैं, गाने से बने मिक्स भी',
   'Alike': 'करीब',
   'Balanced': 'संतुलित',
   'Adventurous': 'साहसी',

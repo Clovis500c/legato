@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { BENCH_ID, benchFolders, browserArgs, carriesId, cpuSeconds, isBuildInput, kindsText, memory, noticesReady, parseArgs, plan, share, summarize, tableRow, withRow } from './bench.mjs'
+import { BENCH_ID, benchFolders, browserArgs, carriesId, cpuSeconds, isBuildInput, kindsText, memory, noticesReady, parseArgs, plan, share, shuffleLine, summarize, tableRow, withRow } from './bench.mjs'
 
 const MB = 1024 * 1024
 const proc = (pid: number, name: string, cpu: number, wsp: number | null) => ({ pid, name, cpu, wsp })
@@ -155,5 +155,12 @@ describe('bench results file', () => {
     expect(withRow('# T\n\n| a |\n|---|\n| 1 |\n', row)).toBe(`# T\n\n| a |\n|---|\n| 1 |\n${row}\n`)
     expect(() => withRow('# T\n\n| a |\n|---|\n\ntext after\n', row)).toThrow('results table')
     expect(doc.trimEnd().split('\n').pop()!.startsWith('|')).toBe(true)
+  })
+})
+
+describe('the shuffle line', () => {
+  it('is read from the test output, and null when the test printed none', () => {
+    expect(shuffleLine('x\nBENCH shuffle 10000: 26.9 ms (store load 0.3, scores 14.3, order 12.3)\ny')).toBe('shuffle 10000: 26.9 ms (store load 0.3, scores 14.3, order 12.3)')
+    expect(shuffleLine('FAIL')).toBeNull()
   })
 })

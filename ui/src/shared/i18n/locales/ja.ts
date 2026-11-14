@@ -2349,6 +2349,8 @@ const ja: Record<string, string> = {
   'Send my password as it is': 'パスワードをそのまま送る',
   'Hide explicit songs': '露骨な表現を含む曲を隠す',
   'Variety': 'バラエティ',
+  'variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next': 'バラエティ 近い バランス 冒険 シャッフル ミックス variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next',
+  'Up next and Shuffle stray further from your usual songs, and so do mixes made from a song': '次の曲とシャッフル、曲から作るミックスが、いつもの曲からより離れます',
   'Alike': '近い',
   'Balanced': 'バランス',
   'Adventurous': '冒険',

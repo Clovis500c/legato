@@ -2349,6 +2349,8 @@ const id: Record<string, string> = {
   'Send my password as it is': 'Kirim kata sandi saya apa adanya',
   'Hide explicit songs': 'Sembunyikan lagu eksplisit',
   'Variety': 'Variasi',
+  'variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next': 'Variasi Mirip Seimbang Berani Acak Mix variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next',
+  'Up next and Shuffle stray further from your usual songs, and so do mixes made from a song': 'Berikutnya dan Acak melenceng lebih jauh dari lagu biasamu, begitu juga mix dari sebuah lagu',
   'Alike': 'Mirip',
   'Balanced': 'Seimbang',
   'Adventurous': 'Berani',

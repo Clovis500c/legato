@@ -103,3 +103,10 @@ audio is downloaded, recorded or analysed from a platform; only local files' tag
 - Mok et al., The Dynamics of Exploration on Spotify (ICWSM 2022): https://ojs.aaai.org/index.php/ICWSM/article/view/19324
 - Efraimidis, Spirakis, Weighted random sampling with a reservoir (2006); the log form: https://opensource.posit.co/blog/2020-07-29_parallelized-sampling/
 - Result Diversification in Search and Recommendation: A Survey (MMR, DPP): https://arxiv.org/pdf/2212.14464
+
+## Measured (2026-11-14, lot 42B)
+Node, the code the app runs, 10 000 songs with tags, best of 5 on a PC doing other things: a whole Shuffle (the taste store built from
+the signals, `libraryScores`, `weightedOrder`, the artist pass) takes about 27 ms (store 0.3, scores 14, order 12), under the 50 ms
+target, so the scoring stays in the front end. 15 picks for the end of Up next (profiles, scores, dose, MMR) take about 30 ms. `pnpm
+bench` prints the Shuffle line and puts it in the row's notes (`shuffleBench.test.ts`); the rest of that run (start, RAM, CPU) was
+not run for this lot. Never heard by ear: every weight here is a first guess.

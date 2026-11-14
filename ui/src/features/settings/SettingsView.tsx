@@ -1034,6 +1034,9 @@ function PlaybackSection() {
           <Row setting="smartShuffle" label={msg('Smart shuffle')} sub={tr('Shuffle spreads each artist through the queue and plays the songs you heard in the last day after the others')}>
             <Toggle label={tr('Smart shuffle')} checked={s.smartShuffle} onChange={(smartShuffle) => update({ smartShuffle })} />
           </Row>
+          <Row setting="similarVariety" label={msg('Variety')} sub={tr('Up next and Shuffle stray further from your usual songs, and so do mixes made from a song')}>
+            <Segmented label={tr('Variety')} value={s.similarVariety} onChange={(similarVariety) => update({ similarVariety })} options={[{ value: 'alike', label: tr('Alike') }, { value: 'balanced', label: tr('Balanced') }, { value: 'adventurous', label: tr('Adventurous') }]} />
+          </Row>
           <Row setting="skipLong" label={msg('Skip long songs')} sub={s.skipLong ? tr('Songs over {n} min are skipped as the queue moves on', { n: s.skipLong }) : tr('Off')}>
             <input type="range" aria-label={tr('Skip long songs')} min={0} max={60} step={1} value={s.skipLong} onChange={(e) => update({ skipLong: +e.target.value })} className="bar w-40" style={{ backgroundImage: `linear-gradient(to right, var(--ink) ${(s.skipLong / 60) * 100}%, var(--line) 0)` }} />
           </Row>

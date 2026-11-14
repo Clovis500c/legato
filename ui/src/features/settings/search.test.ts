@@ -12,6 +12,8 @@ describe('settings search', () => {
     expect(labels('google playlists')).toEqual(['YouTube Music'])
     expect(labels('credits')).toEqual(['Third-party licenses'])
     expect(labels('beta')).toEqual(['Update channel'])
+    expect(labels('variety')[0]).toBe('Variety')
+    expect(labels('adventurous')).toContain('Variety')
     expect(labels('zzz')).toEqual([])
     expect(labels('  ')).toEqual([])
   })

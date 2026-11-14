@@ -174,6 +174,7 @@ export const SETTINGS: SettingDef[] = [
   { id: msg('Third-party licenses'), in: 'about', keywords: msg('open source credits notices attribution copyright mit apache mpl fonts') },
   { id: msg('Copy diagnostics'), in: 'about', keywords: msg('diagnostics log errors crash bug report support debug clipboard') },
   { id: msg('Smart shuffle'), in: 'Up next', keywords: msg('shuffle random artist spread same artist twice recently played repeat') },
+  { id: msg('Variety'), in: 'Up next', keywords: msg('variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next') },
   { id: msg('Songs heard lately'), in: 'Auto-DJ', keywords: msg('auto-dj autodj recently played wait days week month') },
   { id: msg('Your ratings count'), in: 'Auto-DJ', keywords: msg('auto-dj autodj stars rating favourite weight') },
   { id: msg('Alarm'), in: 'Alarm', keywords: msg('alarm clock wake up wakeup morning ring rise sunrise') },

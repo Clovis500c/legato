@@ -2349,6 +2349,8 @@ const sv: Record<string, string> = {
   'Send my password as it is': 'Skicka mitt lösenord som det är',
   'Hide explicit songs': 'Dölj explicita låtar',
   'Variety': 'Variation',
+  'variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next': 'Variation Nära Balanserat Äventyrligt Blanda Mixar variety alike balanced adventurous similar songs shuffle mixes stray explore new discovery up next',
+  'Up next and Shuffle stray further from your usual songs, and so do mixes made from a song': 'Nästa och blandat spelar mer avvikande från dina vanliga låtar, liksom mixar från en låt',
   'Alike': 'Nära',
   'Balanced': 'Balanserat',
   'Adventurous': 'Äventyrligt',
