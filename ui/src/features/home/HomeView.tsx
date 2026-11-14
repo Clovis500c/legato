@@ -330,6 +330,8 @@ function HomeFlow() {
   const art = track ? trackArt(track)[0] : undefined
   const url = useBackdrop(art, Math.max(blur, 40))
   const [dim, setDim] = useState(BASE_DIM)
+  // The veil is measured against the theme's colours: a switch between light and dark measures it again.
+  const dark = useSettings((s) => s.current().dark)
   useEffect(() => {
     if (!art) return
     let live = true
@@ -341,7 +343,7 @@ function HomeFlow() {
     return () => {
       live = false
     }
-  }, [art])
+  }, [art, dark])
   return <Backdrop url={url} dim={dim} motion flowing />
 }
 
