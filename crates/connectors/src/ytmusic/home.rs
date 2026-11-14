@@ -230,8 +230,9 @@ fn artist_ids(found: &Value, name: &str, max: usize) -> Vec<String> {
 fn loose(title: &str) -> String {
     static GROUPS: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| regex::Regex::new(r"\([^)]*\)|\[[^\]]*\]").unwrap());
     let plain = GROUPS.replace_all(title, " ");
-    let lower = plain.to_lowercase();
-    let cut = [" - ", " feat", " ft.", " featuring"].iter().filter_map(|m| lower.find(m)).min().unwrap_or(lower.len());
+    // A space after: "feat" and "ft" as whole words ("Birds of a Feather" keeps its feather).
+    let lower = format!("{} ", plain.to_lowercase());
+    let cut = [" - ", " feat. ", " feat ", " ft. ", " ft ", " featuring "].iter().filter_map(|m| lower.find(m)).min().unwrap_or(lower.len());
     normalize(&lower[..cut])
 }
 
@@ -529,6 +530,9 @@ mod tests {
         assert!(same_song(&loose("Bad Piggies Theme"), &loose("Bad Piggies")));
         assert!(!same_song(&loose("Rust"), &loose("Rust Never Sleeps")), "a short title is not a prefix of another song");
         assert!(!same_song("", ""));
+        // "feat" as a whole word only: a title with a word that starts with it keeps that word.
+        assert_ne!(loose("Birds of a Feather"), loose("Birds of a"));
+        assert_eq!(loose("Song ft Someone"), loose("Song"));
         // No titles: nothing to check against, the first page.
         assert_eq!(pick_verified(vec![page("Rust", &["Diaspora"])], &[]).unwrap().songs[0].title, "Diaspora");
     }
