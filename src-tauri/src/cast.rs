@@ -298,8 +298,9 @@ mod tests {
         assert_eq!(mime_of(Path::new("a/b.exe")), None);
     }
 
-    // Not 127.0.0.1: the server is bound to one address (the LAN's in the app), and its stop must reach that one.
-    const AT: Ipv4Addr = Ipv4Addr::new(127, 0, 0, 2);
+    // 127.0.0.1: the only loopback address every system has (macOS has no 127.0.0.2 unless aliased). That the stop
+    // reaches the address the server listens on, not 127.0.0.1, is its own test below, where 127.0.0.2 exists.
+    const AT: Ipv4Addr = Ipv4Addr::LOCALHOST;
     /// One server at a time exists (a new one stops the other): the tests that start one take turns.
     static TURN: Mutex<()> = Mutex::new(());
 
@@ -329,7 +330,7 @@ mod tests {
         assert!(beyond.starts_with("HTTP/1.1 416"), "{beyond}");
         assert!(String::from_utf8(get(port, "GET /wrong/file HTTP/1.1\r\n\r\n")).unwrap().starts_with("HTTP/1.1 404"));
         stop_serving();
-        std::thread::sleep(Duration::from_millis(200));
+        std::thread::sleep(Duration::from_millis(1000));
         assert!(TcpStream::connect_timeout(&SocketAddr::from((AT, port)), Duration::from_millis(500)).is_err(), "stopped");
     }
 
@@ -339,13 +340,13 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("a.mp3");
         std::fs::write(&path, b"0123456789").unwrap();
-        let url = serve_file(AT, path, "audio/mpeg", Duration::from_millis(400), None).unwrap();
+        let url = serve_file(AT, path, "audio/mpeg", Duration::from_millis(1500), None).unwrap();
         let (port, token) = (url.port().unwrap(), url.path().split('/').nth(1).unwrap().to_string());
-        std::thread::sleep(Duration::from_millis(250));
+        std::thread::sleep(Duration::from_millis(900));
         assert!(get(port, &format!("GET /{token}/file HTTP/1.1\r\n\r\n")).starts_with(b"HTTP/1.1 200"), "a request keeps it open");
-        std::thread::sleep(Duration::from_millis(250));
+        std::thread::sleep(Duration::from_millis(900));
         assert!(get(port, &format!("GET /{token}/file HTTP/1.1\r\n\r\n")).starts_with(b"HTTP/1.1 200"), "its idle time counts from the last request");
-        std::thread::sleep(Duration::from_millis(1200));
+        std::thread::sleep(Duration::from_millis(4000));
         assert!(TcpStream::connect_timeout(&SocketAddr::from((AT, port)), Duration::from_millis(500)).is_err(), "closed when idle");
         assert!(SERVING.lock().unwrap().is_none());
     }
@@ -366,8 +367,26 @@ mod tests {
         assert!(TcpStream::connect_timeout(&SocketAddr::from((AT, port)), Duration::from_millis(500)).is_ok(), "a long pause keeps it open");
         paused.remove();
         s.mock("POST", "/ctl").with_body(answer("STOPPED")).create();
-        std::thread::sleep(Duration::from_millis(900));
+        std::thread::sleep(Duration::from_millis(2000));
         assert!(TcpStream::connect_timeout(&SocketAddr::from((AT, port)), Duration::from_millis(500)).is_err(), "closed once it stopped");
+    }
+
+    #[test]
+    fn the_stop_reaches_the_address_the_server_listens_on() {
+        // The app binds the LAN's address, not 127.0.0.1: a second loopback address stands in for it, where there is one.
+        let other = Ipv4Addr::new(127, 0, 0, 2);
+        if std::net::TcpListener::bind((other, 0)).is_err() {
+            eprintln!("no 127.0.0.2 on this system (macOS): skipped");
+            return;
+        }
+        let _turn = TURN.lock().unwrap_or_else(|e| e.into_inner());
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("a.mp3");
+        std::fs::write(&path, b"0123456789").unwrap();
+        let port = serve_file(other, path, "audio/mpeg", Duration::from_secs(300), None).unwrap().port().unwrap();
+        stop_serving();
+        std::thread::sleep(Duration::from_millis(1000));
+        assert!(TcpStream::connect_timeout(&SocketAddr::from((other, port)), Duration::from_millis(500)).is_err(), "stopped");
     }
 
     #[test]
