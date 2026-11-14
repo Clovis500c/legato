@@ -895,16 +895,18 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     }
     if (i !== null) return void get().playAt(i, undefined, { auto })
     if (delta <= 0) return
-    // Next on the last song (Repeat off): it stops and waits at its start, like Stop. It used to only mark itself
-    // paused while the sound went on.
-    if (!auto) {
+    // Up next ran out, by the song's end or by Next: similar songs when the setting says so (autoplay.ts; false = none to add).
+    // Next used to restart the last song before it ever asked (a queue of one song, a .lmix, replayed itself).
+    const stopped = () => {
+      if (auto) return void set({ playing: false })
+      // Next on the last song (Repeat off): it stops and waits at its start, like Stop. It used to only mark itself
+      // paused while the sound went on.
       if (get().playing) get().toggle()
       // A radio station is live: no start to go back to (the engine refuses the seek with an error).
-      return void (list[index]?.ids.server?.startsWith('radio:') || get().seek(0))
+      if (!list[index]?.ids.server?.startsWith('radio:')) get().seek(0)
     }
-    // Up next ran out: similar songs when the setting says so (autoplay.ts), else stop.
-    if (auto && queueEnd) return void queueEnd().then((added) => (added ? get().step(1, true) : set({ playing: false })), () => set({ playing: false }))
-    set({ playing: false })
+    if (queueEnd) return void queueEnd().then((added) => (added ? get().step(1, auto) : stopped()), stopped)
+    stopped()
   },
 
   setVolume(volume) {

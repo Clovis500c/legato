@@ -4,7 +4,7 @@ import { api, type LibraryTrack } from '../../shared/api'
 import { rememberEnd } from './ends'
 import { NO_FADE } from './fade'
 import { useSponsor } from './sponsor'
-import { bindFrame, tailVolume, usePlayer } from './store'
+import { bindFrame, onQueueEnd, tailVolume, usePlayer } from './store'
 
 const song = (id: number): LibraryTrack => ({ id, added: 0, addedAt: null, title: `Song ${id}`, artist: 'Artist', album: null, durationMs: null, isrc: null, ids: { youtube: `video${id}` } })
 // No Tauri here: IPC calls fail, other uploads come back empty. A macrotask lets their awaits settle.
@@ -501,5 +501,43 @@ describe('radio stations in the queue', () => {
     await settle()
     spy.mockRestore()
     expect(sent).toEqual([['server:radio:https://r2.example/live']])
+  })
+})
+
+describe('Next on the last song with "Then, similar songs" on', () => {
+  // autoplay.ts's hook, stood in for: it adds one similar song and says so.
+  const similar = vi.fn(async () => {
+    usePlayer.getState().enqueue([song(902)], false, false)
+    return true
+  })
+  beforeEach(() => {
+    similar.mockClear()
+    onQueueEnd(similar)
+    usePlayer.setState({ repeat: 'off' })
+  })
+  afterEach(() => onQueueEnd(async () => false))
+
+  it('a queue of one song (a .lmix): Next plays a similar song, not the same one again', async () => {
+    usePlayer.getState().playTracks([song(901)], 0)
+    usePlayer.getState().step(1)
+    await settle()
+    expect(similar).toHaveBeenCalledTimes(1)
+    expect(usePlayer.getState().now?.youtubeId).toBe('video902')
+    expect(usePlayer.getState().playing).toBe(true)
+  })
+
+  it('the natural end does the same', async () => {
+    usePlayer.getState().playTracks([song(903)], 0)
+    usePlayer.getState().step(1, true)
+    await settle()
+    expect(usePlayer.getState().now?.youtubeId).toBe('video902')
+  })
+
+  it('with no similar song to add, Next still restarts the last one like Stop', async () => {
+    onQueueEnd(async () => false)
+    usePlayer.getState().playTracks([song(904)], 0)
+    usePlayer.getState().step(1)
+    await settle()
+    expect(usePlayer.getState().now?.youtubeId).toBe('video904')
   })
 })
