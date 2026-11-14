@@ -12,7 +12,7 @@ rusty-chromaprint = "0.3.0"
 chacha20poly1305 = "0.11.0"
 md-5 = "0.11.0"
 mdns-sd = "0.21.5"
-music-core = { version = "1.1.0", path = "../core" }
+music-core = { version = "1.2.0", path = "../core" }
 rand = "0.10.3"
 regex = "1.13.1"
 serde = { version = "1.0.229", features = ["derive"] }

@@ -11,6 +11,9 @@ versions are in git (`git log -p -- docs/notes/handoff.md`). Updated 2026-11-14 
   this handoff's commit included). Not pushed at the time of this handoff: the push of this batch follows, by the
   orchestrator (the owner allowed it). Check `git log origin/master..platforms` to see whether it has happened. Opus has
   reread everything, up to `5c1dd96b`.
+- **Version 1.2** from this batch: the patch counts the commits since the bump (`BASES` in `scripts/release.mjs`), so
+  the first push is Beta 1.2.<commits after `f8379a93`>, above 1.1.994 for semver and Android's versionCode
+  (CONTRIBUTING.md › Version). 1.1 stops at 1.1.994: its next patch would have outrun 1.2.0's versionCode.
 - **The rename is done** (Beta 1.1.932): Music App → Legato in every format (QR prefix `LG1:`, `_legato._tcp`,
   `.legatosync`, `legato://` links). The one catch-up for data on disk is `src-tauri/src/rename.rs` (plus the old Run
   entry in `autostart.rs`, the old-install cleanup in `src-tauri/windows/hooks.nsh`): the plan line « Remove the rename

@@ -18,11 +18,11 @@ anyhow = "1.0.104"
 # Already in the build (mdns-sd's): the phone remote's address when the default route has none.
 if-addrs = "0.15.0"
 keyring = "4.2.0"
-music-connectors = { version = "1.1.0", path = "../crates/connectors" }
-music-core = { version = "1.1.0", path = "../crates/core" }
-music-dsp = { version = "1.1.0", path = "../crates/dsp" }
-music-player = { version = "1.1.0", path = "../crates/player" }
-music-shield = { version = "1.1.0", path = "../crates/shield" }
+music-connectors = { version = "1.2.0", path = "../crates/connectors" }
+music-core = { version = "1.2.0", path = "../crates/core" }
+music-dsp = { version = "1.2.0", path = "../crates/dsp" }
+music-player = { version = "1.2.0", path = "../crates/player" }
+music-shield = { version = "1.2.0", path = "../crates/shield" }
 percent-encoding = "2.3.2"
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.154"
@@ -44,7 +44,7 @@ tauri-plugin-window-state = "2.5.0"
 tauri-plugin-global-shortcut = "2"
 tauri-plugin-single-instance = "2"
 # Third-party plugins: QuickJS, whose rquickjs ships no Android bindings (its bindgen feature needs libclang).
-music-plugins = { version = "1.1.0", path = "../crates/plugins" }
+music-plugins = { version = "1.2.0", path = "../crates/plugins" }
 
 # The phone's name in your devices' list: Android's system properties.
 [target.'cfg(target_os = "android")'.dependencies]

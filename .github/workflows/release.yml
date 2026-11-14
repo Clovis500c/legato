@@ -2,7 +2,7 @@ name: release
 
 # Every push to master that passes `check` is released as a BETA: signed Windows installer + latest.json, and beside it
 # the signed Android APK (its own job, attached to the same prerelease once both are done). Version = MAJOR.MINOR from
-# tauri.conf.json + patch = commits on master (scripts/release.mjs): 1.1.0 in the file, 1.1.<commits> released.
+# tauri.conf.json + patch = commits since its bump (scripts/release.mjs BASES): 1.2.0 in the file, 1.2.<commits> released.
 # "[skip release]" in the commit's first line: no release for that push. Run by hand: Actions › release › Run workflow.
 # Two channels (Settings › General › Updates), two files (src-tauri/src/update.rs):
 # - Beta reads releases/download/beta/latest.json: the rolling `beta` release, whose latest.json is copied here from

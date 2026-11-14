@@ -91,10 +91,17 @@ Updates (the `updateChannel` setting, kept per PC, not synced):
 - **Phones** follow Beta: each Beta's APK is what the Android app offers (Settings › About, a toast), downloaded when
   the user taps Update and installed by Android's installer. Stable carries no APK yet.
 
-- **Version**: `MAJOR.MINOR` comes from `src-tauri/tauri.conf.json`, the patch number is the number of commits on
-  `master` (`scripts/release.mjs`). The files say `1.1.0`; the release says `1.1.` plus that count. For a bigger step,
-  change `MAJOR.MINOR` in `tauri.conf.json` (and `package.json`, the workspace `Cargo.toml` and the `music-*` path
-  dependencies to match). 1.0: the front-end redesign (docs/design.md), after the 0.1 releases. 1.1: the first Stable of the v2 plan (2026-10-31).
+- **Version**: `MAJOR.MINOR` comes from `src-tauri/tauri.conf.json`; n is the number of commits since that
+  `MAJOR.MINOR`'s base, the last commit before its bump (`BASES` in `scripts/release.mjs`). The patch is n % 1000 and the
+  minor goes up by one each 1000 commits: with the files at `1.2.0`, n=1 is 1.2.1, n=999 1.2.999, n=1000 1.3.0, n=2500
+  1.4.500. Every push gets a higher version and a higher Android versionCode (major·1 000 000 + minor·1 000 + patch, so
+  the patch never passes 999). **A bump** (when the owner decides; n starts again from 0): pick a `MAJOR.MINOR` above
+  the last release's (released 1.3.200 from base 1.2: the file goes to 1.4, not 1.3), then in one commit change `MAJOR.MINOR` in `tauri.conf.json`, `package.json`, the workspace `Cargo.toml` and the
+  `music-*` path dependencies (then `cargo update -w`), `src-tauri/gen/android/app/tauri.properties`, and add the new
+  `MAJOR.MINOR` to `BASES` with the hash of the commit just before it (the release fails clearly without it). 1.0: the
+  front-end redesign (docs/design.md), after the 0.1 releases. 1.1: the first Stable of the v2 plan (2026-10-31), its
+  patch every commit on master (1.1.994 the last Beta). 1.2: n counted from the bump (2026-11-14), before 1.1 reached a
+  versionCode above 1.2.0's.
 - **No release for a push**: put `[skip release]` in the commit's first line (no beta either).
 - **By hand**: Actions › release › Run workflow (releases `master` as it is, as a beta).
 - **Try a promote**: `node scripts/promote.mjs --dry-run` prints which version would become Stable and its notes; it
