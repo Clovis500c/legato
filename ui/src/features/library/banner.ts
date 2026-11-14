@@ -8,7 +8,15 @@ import { trackArt } from '../../shared/art'
 export const WALL = 48
 
 /** Songs looked at for covers: a playlist of thousands with none stops early. */
-export const LOOK_AT = 200
+export const LOOK_AT = 1000
+
+/** A number from a playlist's id: the same playlist always gets the same wall (no `Math.random` in a render). */
+export function seedOf(id: string | number): number {
+  id = String(id)
+  let h = 2166136261
+  for (let i = 0; i < id.length; i++) h = Math.imul(h ^ id.charCodeAt(i), 16777619)
+  return h >>> 0
+}
 
 const maps = new WeakMap<LibraryTrack[], Map<number, LibraryTrack>>()
 
@@ -19,12 +27,27 @@ export function byIdOf(tracks: LibraryTrack[]): Map<number, LibraryTrack> {
   return m
 }
 
-/** The songs whose covers make the collage: in the playlist's order, one per distinct picture, up to `n`. */
-export function bannerCovers(ids: number[] | undefined, byId: Map<number, LibraryTrack>, n = WALL): LibraryTrack[] {
+/**
+ * The songs whose covers make the collage: one per distinct picture, up to `n`, taken evenly along the WHOLE playlist (a
+ * 1 400-song one shows its end as much as its start; the first songs are often one album), the start of the even steps
+ * moved by `seed`, then the songs in between in order, `LOOK_AT` looked at in all.
+ */
+export function bannerCovers(ids: number[] | undefined, byId: Map<number, LibraryTrack>, n = WALL, seed = 0): LibraryTrack[] {
+  const all = ids ?? []
+  const order: number[] = []
+  const used = new Set<number>()
+  // `n` evenly spaced songs first (all distinct covers: the whole list is shown), then 4n if some share a cover.
+  for (const take of [Math.min(all.length, n), Math.min(all.length, 4 * n)])
+    for (let i = 0; i < take; i++) {
+      const at = Math.floor(((i + (seed % 97) / 97) * all.length) / take)
+      if (!used.has(at)) order.push(at)
+      used.add(at)
+    }
+  for (let i = 0; i < all.length && order.length < LOOK_AT; i++) if (!used.has(i)) order.push(i)
   const out: LibraryTrack[] = []
   const seen = new Set<string>()
-  for (const id of (ids ?? []).slice(0, LOOK_AT)) {
-    const t = byId.get(id)
+  for (const at of order.slice(0, LOOK_AT)) {
+    const t = byId.get(all[at])
     const art = t && trackArt(t)[0]
     if (!t || !art || seen.has(art)) continue
     seen.add(art)
@@ -56,15 +79,58 @@ export function washOf(rgb: [number, number, number] | null, name: string, dark:
 }
 
 /**
- * The wall's cells: `rows` rows of `cols` covers, each an index into `n` covers. A cell differs from its left neighbour and, with
- * three covers or more, from the two above it (odd rows, offset by half a cell to the start, sit between cells c-1 and c; even rows between c and c+1). Fewer covers than cells: they repeat,
- * shifted so that two neighbours are never the same one. No covers: no cells.
+ * The wall's cells: `rows` rows of `cols` covers, each an index into `n` covers; odd rows sit half a cell to the start.
+ * Few covers (under 4): a fixed pattern, a cell differing from its left neighbour and, with three, from the two above it.
+ * Four or more: each cell takes the cover whose nearest copy is the farthest away (never-used ones first), so no cover comes
+ * back within a few cells in any direction, diagonals included, and a repeat is as far off as the covers allow. `seed` only
+ * decides the ties: one playlist, one wall. No covers: no cells.
  */
-export function wallGrid(n: number, rows: number, cols: number): number[][] {
+export function wallGrid(n: number, rows: number, cols: number, seed = 0): number[][] {
   if (n <= 0) return []
-  // An odd row (shifted to the start) touches cells c-1 and c above: +1 avoids both; an even row touches c and c+1: +2 more.
-  const shift = (r: number) => (n > 2 ? Math.floor(r / 2) * 3 + (r % 2) : r)
-  return Array.from({ length: rows }, (_, r) => Array.from({ length: cols }, (_, c) => (c + shift(r)) % n))
+  if (n < 4) {
+    // An odd row (shifted to the start) touches cells c-1 and c above: +1 avoids both; an even row touches c and c+1: +2 more.
+    const shift = (r: number) => (n > 2 ? Math.floor(r / 2) * 3 + (r % 2) : r)
+    return Array.from({ length: rows }, (_, r) => Array.from({ length: cols }, (_, c) => (c + shift(r)) % n))
+  }
+  const grid: number[][] = []
+  const near = new Float64Array(n)
+  for (let r = 0; r < rows; r++) {
+    const row: number[] = []
+    for (let c = 0; c < cols; c++) {
+      const x = c - (r % 2 ? 0.5 : 0)
+      near.fill(Infinity)
+      // Rows more than 3 above are too far to matter.
+      for (let pr = Math.max(0, r - 3); pr <= r; pr++) {
+        const prow = pr === r ? row : grid[pr]
+        for (let pc = 0; pc < prow.length; pc++) {
+          const d = Math.hypot(x - (pc - (pr % 2 ? 0.5 : 0)), r - pr)
+          if (d < near[prow[pc]]) near[prow[pc]] = d
+        }
+      }
+      let best = seed % n
+      for (let k = 0; k < n; k++) {
+        const i = (seed + k) % n
+        if (near[i] > near[best]) best = i
+      }
+      row.push(best)
+    }
+    grid.push(row)
+  }
+  return grid
+}
+
+/** The tilt of a wall, degrees (`rotate`; mirrored in right-to-left), its `rotateX` and the perspective's distance, as the Wall draws them. */
+export const TILT = { turn: 9, lean: 8, depth: 900 }
+
+/**
+ * The size a tilted wall needs to cover a box of `w` x `h` at every corner: the box's bounding rectangle in the wall's turned
+ * frame (w·cos + h·sin by w·sin + h·cos), grown for the lean (the top edge goes away and shrinks) and a little margin.
+ */
+export function wallSize(w: number, h: number): { w: number; h: number } {
+  const t = (TILT.turn * Math.PI) / 180
+  const need = { w: w * Math.cos(t) + h * Math.sin(t), h: w * Math.sin(t) + h * Math.cos(t) }
+  const far = 1 + (need.h / 2) * Math.sin((TILT.lean * Math.PI) / 180) / TILT.depth
+  return { w: Math.ceil(need.w * far * 1.04), h: Math.ceil((need.h * far * 1.04) / Math.cos((TILT.lean * Math.PI) / 180)) }
 }
 
 /** The page a scroller is on, from its position: `left` is `scrollLeft` (negative or inverted in right-to-left, the sign is dropped). Always within 0..pages-1. */

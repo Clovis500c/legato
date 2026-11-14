@@ -9,7 +9,7 @@ import { onMenu } from '../../shared/ui/ContextMenu'
 import { RoundButton } from '../../shared/ui/controls'
 import { playlistMenu } from '../menus'
 import { averageColor } from '../player/ambient'
-import { bannerCovers, byIdOf, initialOf, pageOf, wallGrid, washOf } from './banner'
+import { bannerCovers, byIdOf, initialOf, pageOf, seedOf, wallGrid, wallSize, washOf } from './banner'
 
 /** Playlists as banners, always (loaded with the playlist page and Home, not at launch): a wall of the playlist's covers under a colour taken from them. Covers come through the `art` scheme, nothing from the network. */
 
@@ -21,8 +21,8 @@ function useBanner(p: LibraryPlaylist, to: 'bottom' | 'start' = 'bottom') {
   useSettings((s) => s.systemDark)
   const dark = useSettings.getState().current().dark
   const arts = useMemo(() => {
-    return bannerCovers(ids, byIdOf(tracks)).map((t) => trackArt(t)[0])
-  }, [ids, tracks])
+    return bannerCovers(ids, byIdOf(tracks), undefined, seedOf(p.id)).map((t) => trackArt(t)[0])
+  }, [ids, tracks, p.id])
   const first = arts[0]
   const [rgb, setRgb] = useState<[number, number, number] | null>(null)
   useEffect(() => {
@@ -33,7 +33,7 @@ function useBanner(p: LibraryPlaylist, to: 'bottom' | 'start' = 'bottom') {
       live = false
     }
   }, [first])
-  return { arts, wash: washOf(rgb, p.name, dark, to) }
+  return { arts, seed: seedOf(p.id), wash: washOf(rgb, p.name, dark, to) }
 }
 
 /**
@@ -42,7 +42,7 @@ function useBanner(p: LibraryPlaylist, to: 'bottom' | 'start' = 'bottom') {
  * of columns follows the box's size. Covers repeat, shifted, when the playlist has fewer than the cells (banner.ts `wallGrid`).
  * Decorative: the name is the label. Still: nothing moves, so reduced motion has nothing to turn off.
  */
-function Wall({ arts, rows, fixed }: { arts: string[]; rows: number; fixed?: { w: number; h: number } }) {
+function Wall({ arts, rows, seed, fixed }: { arts: string[]; rows: number; seed: number; fixed?: { w: number; h: number } }) {
   const box = useRef<HTMLSpanElement>(null)
   const [measured, setSize] = useState({ w: 1200, h: 230 })
   const size = fixed ?? measured
@@ -56,11 +56,11 @@ function Wall({ arts, rows, fixed }: { arts: string[]; rows: number; fixed?: { w
     watch.observe(e)
     return () => watch.disconnect()
   }, [fixed])
-  // Rows tall enough to cover the tilt's corners: a row more than the box shows on each side.
-  const cell = Math.max(36, Math.ceil(size.h / rows))
-  const shown = rows + 2
-  const cols = Math.min(90, Math.ceil((size.w * 1.4) / cell) + 3)
-  const grid = wallGrid(arts.length, shown, cols)
+  // The wall is as big as the tilt needs to cover the box's four corners (banner.ts `wallSize`); a cell is `rows` to the box's height, bigger on a very wide box so the wall stays a few hundred covers.
+  const need = wallSize(size.w, size.h)
+  const cell = Math.max(36, Math.ceil(size.h / rows), Math.ceil(Math.sqrt((need.w * need.h) / 300)))
+  const cols = Math.ceil(need.w / cell) + 2
+  const grid = useMemo(() => wallGrid(arts.length, Math.ceil(need.h / cell) + 1, cols, seed), [arts.length, need.h, cell, cols, seed])
   const dpr = typeof window === 'undefined' ? 1 : window.devicePixelRatio || 1
   return (
     <span ref={box} aria-hidden className="absolute inset-0 overflow-hidden [perspective:900px]">
@@ -82,10 +82,10 @@ const TILE = { w: 280, h: 140 }
 
 /** One tile: the wall (or, without covers, the plain wash and the name's first letter), the wash, the name in white capitals. */
 function Face({ p }: { p: LibraryPlaylist }) {
-  const { arts, wash } = useBanner(p)
+  const { arts, seed, wash } = useBanner(p)
   return (
     <>
-      <Wall arts={arts} rows={3} fixed={TILE} />
+      <Wall arts={arts} rows={3} seed={seed} fixed={TILE} />
       <span aria-hidden className="absolute inset-0" style={{ background: wash }} />
       {!arts.length && (
         <span aria-hidden className="absolute inset-0 grid place-items-center text-7xl font-black text-white/20">
@@ -157,11 +157,15 @@ export function BannerCarousel({ playlists, open }: { playlists: LibraryPlaylist
  * text's side, mirrored in right-to-left. The header keeps its own height and content; its text goes white over this.
  */
 export function PlaylistBackdrop({ p }: { p: LibraryPlaylist }) {
-  const { arts, wash } = useBanner(p, 'start')
+  const { arts, seed, wash } = useBanner(p, 'start')
+  // The far side fades into the page's colour: the right edge, and more in its bottom corner where a light blur softens the covers (on the phone, where the title spans the width, no fade). Mirrored in right-to-left.
   return (
-    <>
-      <Wall arts={arts} rows={4} />
+    <span
+      className="absolute inset-0 [mask-composite:intersect] [mask-image:linear-gradient(to_right,#000_72%,transparent),radial-gradient(ellipse_60%_100%_at_100%_100%,transparent,#000_90%)] [-webkit-mask-composite:source-in] phone:[mask-image:none] rtl:[mask-image:linear-gradient(to_left,#000_72%,transparent),radial-gradient(ellipse_60%_100%_at_0%_100%,transparent,#000_90%)] phone:rtl:[mask-image:none]"
+    >
+      <Wall arts={arts} rows={4} seed={seed} />
       <span aria-hidden className="absolute inset-0 rtl:-scale-x-100" style={{ background: wash }} />
-    </>
+      <span aria-hidden className="absolute inset-y-0 end-0 w-2/5 backdrop-blur-sm [mask-image:radial-gradient(ellipse_at_100%_100%,#000,transparent_75%)] phone:hidden rtl:[mask-image:radial-gradient(ellipse_at_0%_100%,#000,transparent_75%)]" />
+    </span>
   )
 }

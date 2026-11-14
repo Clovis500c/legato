@@ -11,7 +11,7 @@ export function PageHeader({ kicker, title, sub, actions, side, art, tint, backd
       // The page's px-6 / pt-5 undone (main pane's edges); a page that scrolls around it gives it the same room.
       <div className="-mx-6 -mt-5 flex shrink-0 flex-col phone:-mx-4 phone:-mt-3">
         {/* `backdrop`: drawn behind the header at its own size (a playlist's wall of covers); the text goes white over it. */}
-        <header onContextMenu={onContextMenu} style={backdrop ? undefined : tint} className={`relative flex min-w-0 items-end gap-7 px-6 py-5 transition-colors duration-500 phone:flex-col phone:items-stretch phone:gap-3 phone:px-4 phone:pt-4 phone:pb-4 ${backdrop ? 'isolate overflow-hidden bg-neutral-800 text-white [&_.kicker]:text-white/85! [&_.text-ink-2]:text-white/90!' : 'bg-bg'}`}>
+        <header onContextMenu={onContextMenu} style={backdrop ? undefined : tint} className={`relative flex min-w-0 items-end gap-7 px-6 py-5 transition-colors duration-500 phone:flex-col phone:items-stretch phone:gap-3 phone:px-4 phone:pt-4 phone:pb-4 ${backdrop ? 'isolate overflow-hidden bg-bg text-white [&_.kicker]:text-white/85! [&_.text-ink-2]:text-white/90!' : 'bg-bg'}`}>
           {backdrop && (
             <div aria-hidden className="absolute inset-0 -z-10">
               {backdrop}
@@ -19,7 +19,7 @@ export function PageHeader({ kicker, title, sub, actions, side, art, tint, backd
           )}
           {/* The phone: the cover centered over the title, as phone players do. */}
           <div className="shrink-0 phone:self-center phone:*:size-40!">{art}</div>
-          <div className="flex min-w-0 flex-col gap-2">
+          <div className={`flex min-w-0 flex-col gap-2 ${backdrop ? 'max-w-[70%] phone:max-w-none' : ''}`}>
             {kicker && <p className="kicker">{kicker}</p>}
             {/* Display L (docs/design.md): Roboto Black, 56 / 60. Phone layout: 28, two lines, the cover above. */}
             <h1 className="truncate pb-1 text-[3.5rem] leading-[1.07] font-black tracking-[-0.015em] phone:line-clamp-2 phone:text-[1.75rem] phone:whitespace-normal">{title}</h1>

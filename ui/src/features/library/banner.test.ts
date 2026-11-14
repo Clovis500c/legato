@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { LibraryTrack } from '../../shared/api'
-import { bannerCovers, byIdOf, deepOf, hueOf, initialOf, LOOK_AT, pageOf, wallGrid, washOf } from './banner'
+import { bannerCovers, byIdOf, deepOf, hueOf, initialOf, LOOK_AT, pageOf, seedOf, TILT, wallGrid, wallSize, washOf } from './banner'
 
 vi.mock('@tauri-apps/api/core', () => ({ convertFileSrc: (p: string, s: string) => `http://${s}.localhost/${encodeURIComponent(p)}`, invoke: vi.fn() }))
 
@@ -78,5 +78,70 @@ describe('banner sources', () => {
     // Two covers repeat but still alternate; one cover is one cover.
     expect(wallGrid(2, 1, 4)).toEqual([[0, 1, 0, 1]])
     expect(new Set(wallGrid(1, 3, 3).flat())).toEqual(new Set([0]))
+  })
+})
+
+describe('the wall of a big playlist', () => {
+  // x of a cell: odd rows sit half a cell to the start.
+  const near = (g: number[][], rr: number, cc: number, dc: number, dr: number) => {
+    const out: number[] = []
+    const x = cc - (rr % 2 ? 0.5 : 0)
+    for (let r = Math.max(0, rr - dr); r <= Math.min(g.length - 1, rr + dr); r++)
+      for (let c = 0; c < g[r].length; c++) if ((r !== rr || c !== cc) && Math.abs(c - (r % 2 ? 0.5 : 0) - x) <= dc) out.push(g[r][c])
+    return out
+  }
+
+  it('covers come from the whole playlist, the same ones for the same playlist', () => {
+    const tracks = Array.from({ length: 1403 }, (_, i) => song(i + 1, `https://i.scdn.co/${i}`))
+    const map = new Map(tracks.map((t) => [t.id, t]))
+    const ids = tracks.map((t) => t.id)
+    const covers = bannerCovers(ids, map, 48, seedOf('pl-1'))
+    expect(covers).toHaveLength(48)
+    expect(covers.map((t) => t.id)).toEqual(bannerCovers(ids, map, 48, seedOf('pl-1')).map((t) => t.id))
+    // Taken along the whole list: some from its last third, not the first 200 alone.
+    expect(Math.max(...covers.map((t) => t.id))).toBeGreaterThan(1000)
+    expect(covers.filter((t) => t.id > 700).length).toBeGreaterThan(15)
+  })
+
+  it('a cover never comes back within 5 columns x 3 rows, diagonals included; 3 covers keep their neighbours apart', () => {
+    for (const n of [20, 48]) for (const seed of [0, 7, seedOf('Music')]) {
+      const g = wallGrid(n, 14, 40, seed)
+      for (let r = 0; r < g.length; r++) for (let c = 0; c < g[r].length; c++) expect(near(g, r, c, 2, 1)).not.toContain(g[r][c])
+      expect(new Set(g.flat()).size).toBe(n)
+    }
+    // Same seed, same wall; another seed, another one.
+    expect(wallGrid(48, 6, 20, 3)).toEqual(wallGrid(48, 6, 20, 3))
+    expect(wallGrid(48, 6, 20, 3)).not.toEqual(wallGrid(48, 6, 20, 4))
+    // A small playlist still never puts equal covers side by side (4 to 7 covers).
+    for (const n of [4, 5, 6, 7, 10]) {
+      const g = wallGrid(n, 8, 20, 5)
+      for (let r = 0; r < g.length; r++) for (let c = 0; c < 20; c++) expect(near(g, r, c, 1, 1)).not.toContain(g[r][c])
+    }
+  })
+
+  it('the tilted wall covers all four corners of its box, at any size, also mirrored', () => {
+    const rad = (d: number) => (d * Math.PI) / 180
+    // A point of the box (centre origin) onto the wall's plane: the transform undone is hard, so the wall's corners go forward instead.
+    const project = (x: number, y: number, turn: number) => {
+      const t = rad(turn)
+      const rx = x * Math.cos(t) - y * Math.sin(t)
+      const ry = x * Math.sin(t) + y * Math.cos(t)
+      const l = rad(TILT.lean)
+      const z = ry * Math.sin(l)
+      const k = TILT.depth / (TILT.depth - z)
+      return [rx * k, ry * Math.cos(l) * k]
+    }
+    const inside = (p: number[], quad: number[][]) => {
+      const sign = quad.map((a, i) => {
+        const b = quad[(i + 1) % 4]
+        return Math.sign((b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0]))
+      })
+      return sign.every((v) => v >= 0) || sign.every((v) => v <= 0)
+    }
+    for (const turn of [-TILT.turn, TILT.turn]) for (const [w, h] of [[1630, 230], [375, 200], [2560, 260], [1000, 230], [800, 150], [3840, 300], [280, 140], [240, 140], [1200, 600]]) {
+      const need = wallSize(w, h)
+      const quad = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([sx, sy]) => project((sx * need.w) / 2, (sy * need.h) / 2, turn))
+      for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) expect(inside([(sx * w) / 2, (sy * h) / 2], quad), `${w}x${h} corner ${sx},${sy} turn ${turn}`).toBe(true)
+    }
   })
 })
