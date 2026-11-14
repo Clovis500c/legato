@@ -9,12 +9,12 @@ import { onMenu } from '../../shared/ui/ContextMenu'
 import { RoundButton } from '../../shared/ui/controls'
 import { playlistMenu } from '../menus'
 import { averageColor } from '../player/ambient'
-import { bannerCovers, byIdOf, initialOf, pageOf, washOf } from './banner'
+import { bannerCovers, byIdOf, initialOf, pageOf, wallGrid, washOf } from './banner'
 
-/** Playlists as banners (Settings › Appearance › Lists and navigation › Playlists as banners; loaded when used, not at launch): a tile of tilted strips of the playlist's covers under a colour taken from them, its name over it. Covers come through the `art` scheme, nothing from the network. */
+/** Playlists as banners, always (loaded with the playlist page and Home, not at launch): a wall of the playlist's covers under a colour taken from them. Covers come through the `art` scheme, nothing from the network. */
 
 /** The covers of a playlist and the wash over them (the first cover's colour; the name's hue until it is read, or without a cover). */
-function useBanner(p: LibraryPlaylist) {
+function useBanner(p: LibraryPlaylist, to: 'bottom' | 'start' = 'bottom') {
   const ids = useStore((s) => s.orders[p.id])
   const tracks = useStore((s) => s.tracks)
   useSettings((s) => s.settings.theme)
@@ -33,17 +33,41 @@ function useBanner(p: LibraryPlaylist) {
       live = false
     }
   }, [first])
-  return { arts, wash: washOf(rgb, p.name, dark) }
+  return { arts, wash: washOf(rgb, p.name, dark, to) }
 }
 
-/** The strips: slanted bars side by side, each holding a cover the other way round so the picture stays upright, the whole set tilted with a little perspective (mirrored in right-to-left). Decorative: the name is the label. */
-function Collage({ arts, size }: { arts: string[]; size: number }) {
+/**
+ * The wall: rows of square covers side by side, every other row shifted by half a cover, the whole wall tilted with a little
+ * perspective (mirrored in right-to-left) and made big enough to fill its box whatever the width (2 560 px included): the number
+ * of columns follows the box's size. Covers repeat, shifted, when the playlist has fewer than the cells (banner.ts `wallGrid`).
+ * Decorative: the name is the label. Still: nothing moves, so reduced motion has nothing to turn off.
+ */
+function Wall({ arts, rows }: { arts: string[]; rows: number }) {
+  const box = useRef<HTMLSpanElement>(null)
+  const [size, setSize] = useState({ w: 1200, h: 230 })
+  useEffect(() => {
+    const e = box.current
+    if (!e) return
+    const measure = () => setSize({ w: e.clientWidth || 1200, h: e.clientHeight || 230 })
+    measure()
+    const watch = new ResizeObserver(measure)
+    watch.observe(e)
+    return () => watch.disconnect()
+  }, [])
+  // Rows tall enough to cover the tilt's corners: a row more than the box shows on each side.
+  const cell = Math.max(36, Math.ceil(size.h / rows))
+  const shown = rows + 2
+  const cols = Math.min(90, Math.ceil((size.w * 1.4) / cell) + 3)
+  const grid = wallGrid(arts.length, shown, cols)
+  const dpr = typeof window === 'undefined' ? 1 : window.devicePixelRatio || 1
   return (
-    <span aria-hidden className="absolute inset-0 overflow-hidden [perspective:700px]">
-      <span className="absolute -inset-x-[18%] -inset-y-[45%] flex [transform:rotateX(10deg)_rotate(-16deg)] rtl:[transform:rotateX(10deg)_rotate(16deg)] motion-safe:transition-transform motion-safe:duration-500 motion-safe:group-hover:scale-105">
-        {arts.map((a) => (
-          <span key={a} className="mx-px flex-1 skew-x-[-16deg] overflow-hidden">
-            <img src={sizedArt(a, size / 2, window.devicePixelRatio || 1)} alt="" draggable={false} loading="lazy" decoding="async" className="size-full skew-x-[16deg] scale-150 object-cover" onError={(e) => (e.currentTarget.style.visibility = 'hidden')} />
+    <span ref={box} aria-hidden className="absolute inset-0 overflow-hidden [perspective:900px]">
+      <span className="absolute start-1/2 top-1/2 flex flex-col [transform-origin:center] [transform:translate(-50%,-50%)_rotateX(8deg)_rotate(-9deg)] rtl:[transform:translate(50%,-50%)_rotateX(8deg)_rotate(9deg)]" style={{ width: cols * cell }}>
+        {grid.map((row, r) => (
+          <span key={r} className="flex shrink-0" style={{ height: cell, marginInlineStart: r % 2 ? -cell / 2 : 0 }}>
+            {row.map((i, c) => (
+              <img key={c} src={sizedArt(arts[i], cell, dpr)} alt="" draggable={false} loading="lazy" decoding="async" width={cell} height={cell} className="shrink-0 object-cover" onError={(e) => (e.currentTarget.style.visibility = 'hidden')} />
+            ))}
           </span>
         ))}
       </span>
@@ -51,12 +75,12 @@ function Collage({ arts, size }: { arts: string[]; size: number }) {
   )
 }
 
-/** One banner: the collage (or, without covers, the plain wash and the name's first letter), the wash, the name in white capitals. */
-function Face({ p, tall }: { p: LibraryPlaylist; tall?: boolean }) {
+/** One tile: the wall (or, without covers, the plain wash and the name's first letter), the wash, the name in white capitals. */
+function Face({ p }: { p: LibraryPlaylist }) {
   const { arts, wash } = useBanner(p)
   return (
     <>
-      <Collage arts={arts} size={tall ? 700 : 320} />
+      <Wall arts={arts} rows={3} />
       <span aria-hidden className="absolute inset-0" style={{ background: wash }} />
       {!arts.length && (
         <span aria-hidden className="absolute inset-0 grid place-items-center text-7xl font-black text-white/20">
@@ -123,11 +147,16 @@ export function BannerCarousel({ playlists, open }: { playlists: LibraryPlaylist
   )
 }
 
-/** The band above a playlist page's title: the same banner, wide. Decorative (the page's own title names the playlist). */
-export function BannerHeader({ p }: { p: LibraryPlaylist }) {
+/**
+ * What a playlist page's header is drawn on (PageHeader `backdrop`): the wall of its covers under a wash that is deepest on the
+ * text's side, mirrored in right-to-left. The header keeps its own height and content; its text goes white over this.
+ */
+export function PlaylistBackdrop({ p }: { p: LibraryPlaylist }) {
+  const { arts, wash } = useBanner(p, 'start')
   return (
-    <div aria-hidden className="group relative mb-4 h-36 overflow-hidden rounded-2xl bg-raised">
-      <Face p={p} tall />
-    </div>
+    <>
+      <Wall arts={arts} rows={4} />
+      <span aria-hidden className="absolute inset-0 rtl:-scale-x-100" style={{ background: wash }} />
+    </>
   )
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { LibraryTrack } from '../../shared/api'
-import { bannerCovers, byIdOf, deepOf, hueOf, initialOf, LOOK_AT, pageOf, washOf } from './banner'
+import { bannerCovers, byIdOf, deepOf, hueOf, initialOf, LOOK_AT, pageOf, wallGrid, washOf } from './banner'
 
 vi.mock('@tauri-apps/api/core', () => ({ convertFileSrc: (p: string, s: string) => `http://${s}.localhost/${encodeURIComponent(p)}`, invoke: vi.fn() }))
 
@@ -55,5 +55,26 @@ describe('banner sources', () => {
     spy.get = (id: number) => (seen.push(id), undefined)
     expect(bannerCovers(none, spy)).toEqual([])
     expect(seen.length).toBe(LOOK_AT)
+  })
+
+  it('a header wash is deepest on the text side, a tile wash at the bottom', () => {
+    expect(washOf([10, 20, 30], 'x', false, 'start')).toMatch(/^linear-gradient\(to right, rgb\(4 8 12\) 0%, rgb\(4 8 12\) 38%, rgb\(10 20 30 \/ 0\.3\) 100%\)$/)
+    expect(washOf(null, 'x', true, 'bottom')).toMatch(/^linear-gradient\(to bottom, hsl\(/)
+  })
+
+  it('the wall: no cells without covers, neighbours never the same cover, every cover used when the cells allow', () => {
+    expect(wallGrid(0, 4, 10)).toEqual([])
+    const g = wallGrid(6, 5, 12)
+    expect(g).toHaveLength(5)
+    expect(g.every((r) => r.length === 12)).toBe(true)
+    for (let r = 0; r < g.length; r++) for (let c = 0; c < 12; c++) {
+      if (c) expect(g[r][c]).not.toBe(g[r][c - 1])
+      // A row shifted by half a cell sits between two of the row above: never the same cover as either.
+      if (r) expect([g[r - 1][c], g[r - 1][c - 1]]).not.toContain(g[r][c])
+    }
+    expect(new Set(g.flat()).size).toBe(6)
+    // Two covers repeat but still alternate; one cover is one cover.
+    expect(wallGrid(2, 1, 4)).toEqual([[0, 1, 0, 1]])
+    expect(new Set(wallGrid(1, 3, 3).flat())).toEqual(new Set([0]))
   })
 })

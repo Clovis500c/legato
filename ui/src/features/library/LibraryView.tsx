@@ -34,8 +34,8 @@ import { ColumnBrowser, SharePanel } from '../../app/pages'
 import { browserEntry, useBrowse } from './browserPicks'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
 
-// Playlists as banners: loaded only when the setting is on.
-const BannerHeader = lazy(() => import('./PlaylistBanner').then((m) => ({ default: m.BannerHeader })))
+// The playlist page's header is drawn on a wall of its covers (loaded with the page, not at launch).
+const PlaylistBackdrop = lazy(() => import('./PlaylistBanner').then((m) => ({ default: m.PlaylistBackdrop })))
 
 /** YouTube-like sort list, in groups. Manual only on playlists. */
 const sortGroups: { id: Sort; label: string }[][] = [
@@ -371,7 +371,6 @@ export function PlaylistView({ id }: { id: number }) {
   const closeShare = useCallback(() => useStore.setState({ sharing: null }), [])
   // Band in the tint of the first song's cover (the playlist's own picture aside).
   const tint = useCoverTint(playlistTracks[0] && trackArt(playlistTracks[0])[0])
-  const banners = useSettings((s) => s.settings.playlistBanners)
   if (!playlist) return null
   // Add songs: to the panel under the list, its field ready.
   const addSongs = () => {
@@ -381,15 +380,15 @@ export function PlaylistView({ id }: { id: number }) {
   }
   return (
     <>
-      {banners && (
-        <Suspense fallback={null}>
-          <BannerHeader p={playlist} />
-        </Suspense>
-      )}
       <PageHeader
         onContextMenu={onMenu(() => playlistMenu(playlist))}
         art={<PlaylistCover p={playlist} size={184} big />}
         tint={tint}
+        backdrop={
+          <Suspense fallback={null}>
+            <PlaylistBackdrop p={playlist} />
+          </Suspense>
+        }
         kicker={playlist.custom ? tr('Your playlist') : tr('Playlist · {source} · imported', { source: tr(sourceLabel[playlist.source]) })}
         title={playlist.custom ? <EditableTitle key={playlist.name} id={id} name={playlist.name} /> : playlist.name}
         sub={`${trn(playlist.trackCount, '{n} song', '{n} songs')} · ${totalTime(playlistTracks)}`}

@@ -20,7 +20,7 @@ import { moveHome, placeHome, type HomeFilter, type HomeSectionId } from '../../
 import { dragSource, useDrag, useDropTarget } from '../../shared/ui/drag'
 import { primaryArtist, type Sort } from '../library/filter'
 import { PlaylistCover } from '../library/PlaylistCover'
-import { playlistMenu, trackMenu, tracksMenu } from '../menus'
+import { trackMenu, tracksMenu } from '../menus'
 import { MixCard, mixSongs } from '../mixes/MixesView'
 import { useMixes } from '../mixes/useMixes'
 import { mixTitle } from '../mixes/words'
@@ -34,7 +34,7 @@ import { phoneApp } from '../../shared/platform'
 
 const ROW = 12
 
-// Playlists as banners: loaded only when the setting is on.
+// Your playlists as a carousel of banners (loaded with Home's section, not at launch).
 const BannerCarousel = lazy(() => import('../library/PlaylistBanner').then((m) => ({ default: m.BannerCarousel })))
 
 /** YouTube Music's mood chips come in English (requests use hl=en): the interface's language here. */
@@ -449,7 +449,7 @@ function CustomizeHome({ onClose }: { onClose: () => void }) {
  */
 export function HomeView() {
   const { tracks, playlists, stats, go, status } = useStore(useShallow(({ tracks, playlists, stats, go, status }) => ({ tracks, playlists, stats, go, status })))
-  const { hiddenPlaylists: hidden, homeSections: sections, homeFilter, playlistBanners } = useSettings((s) => s.settings)
+  const { hiddenPlaylists: hidden, homeSections: sections, homeFilter } = useSettings((s) => s.settings)
   const update = useSettings((s) => s.update)
   const [customizing, setCustomizing] = useState(false)
   const [mood, setMood] = useState<string | null>(null)
@@ -522,18 +522,10 @@ export function HomeView() {
       ),
     playlists: () =>
       shown.length > 0 && (
-        <Section title={playlistBanners ? tr('Browse your playlists') : tr('Your playlists')} sub={tr(sectionHints.playlists)} menu={menuFor('playlists')}>
-          {playlistBanners ? (
+        <Section title={tr('Browse your playlists')} sub={tr(sectionHints.playlists)} menu={menuFor('playlists')}>
             <Suspense fallback={null}>
               <BannerCarousel playlists={shown} open={(p) => go({ name: 'playlist', id: p.id })} />
             </Suspense>
-          ) : (
-          <CardRow>
-            {shown.map((p) => (
-              <MediaCard key={p.id} title={p.name} sub={trn(p.trackCount, '{n} song', '{n} songs')} art={<PlaylistCover p={p} size={176} big />} onOpen={() => go({ name: 'playlist', id: p.id })} onPlay={() => void playlistSongs(p.id).then((t) => usePlayer.getState().playTracks(t, 0))} menu={() => playlistMenu(p)} />
-            ))}
-          </CardRow>
-          )}
         </Section>
       ),
     // A card looks the release up in the search (YouTube plays it): no search of ours until the user asks.

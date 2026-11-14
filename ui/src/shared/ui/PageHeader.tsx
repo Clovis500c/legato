@@ -5,12 +5,18 @@ import type { ReactNode } from 'react'
  * band in the cover's tint (`tint`: palette variables from useCoverTint; the page's own colors until it's known), the
  * pane's full width from its top as in the mockups, then a row with the actions and `side` (sort, columns) on the right.
  */
-export function PageHeader({ kicker, title, sub, actions, side, art, tint, onContextMenu }: { kicker?: string; title: ReactNode; sub?: ReactNode; actions?: ReactNode; side?: ReactNode; art?: ReactNode; tint?: Record<string, string>; onContextMenu?: (e: React.MouseEvent) => void }) {
+export function PageHeader({ kicker, title, sub, actions, side, art, tint, backdrop, onContextMenu }: { kicker?: string; title: ReactNode; sub?: ReactNode; actions?: ReactNode; side?: ReactNode; art?: ReactNode; tint?: Record<string, string>; backdrop?: ReactNode; onContextMenu?: (e: React.MouseEvent) => void }) {
   if (art)
     return (
       // The page's px-6 / pt-5 undone (main pane's edges); a page that scrolls around it gives it the same room.
       <div className="-mx-6 -mt-5 flex shrink-0 flex-col phone:-mx-4 phone:-mt-3">
-        <header onContextMenu={onContextMenu} style={tint} className="flex min-w-0 items-end gap-7 bg-bg px-6 py-5 transition-colors duration-500 phone:flex-col phone:items-stretch phone:gap-3 phone:px-4 phone:pt-4 phone:pb-4">
+        {/* `backdrop`: drawn behind the header at its own size (a playlist's wall of covers); the text goes white over it. */}
+        <header onContextMenu={onContextMenu} style={backdrop ? undefined : tint} className={`relative flex min-w-0 items-end gap-7 px-6 py-5 transition-colors duration-500 phone:flex-col phone:items-stretch phone:gap-3 phone:px-4 phone:pt-4 phone:pb-4 ${backdrop ? 'isolate overflow-hidden bg-neutral-800 text-white [&_.kicker]:text-white/85! [&_.text-ink-2]:text-white/90!' : 'bg-bg'}`}>
+          {backdrop && (
+            <div aria-hidden className="absolute inset-0 -z-10">
+              {backdrop}
+            </div>
+          )}
           {/* The phone: the cover centered over the title, as phone players do. */}
           <div className="shrink-0 phone:self-center phone:*:size-40!">{art}</div>
           <div className="flex min-w-0 flex-col gap-2">
