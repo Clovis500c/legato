@@ -165,7 +165,7 @@ function Part({ p }: { p: Part }): ReactNode {
     )
   if ('code' in p)
     return (
-      <pre tabIndex={0} dir="ltr" className="overflow-x-auto rounded-xl border border-line bg-panel p-4 text-[13px] leading-relaxed text-ink">
+      <pre tabIndex={0} dir="ltr" className="overflow-x-auto rounded-xl border border-line-soft bg-[#131313] p-5 font-mono text-[13px] leading-relaxed text-[#f1f1f1]">
         <code>{p.code}</code>
       </pre>
     )
@@ -197,10 +197,20 @@ function Part({ p }: { p: Part }): ReactNode {
 function Group({ label, docs }: { label: string; docs: Doc[] }) {
   return (
     <>
-      <h2 className="mt-14 mb-2 text-xs font-medium tracking-wide text-ink-3 uppercase first:mt-0">{label}</h2>
+      <h2 className="mt-20 mb-2 flex items-center gap-2 text-[13px] font-semibold tracking-[0.08em] text-ink-2 uppercase first:mt-0">
+        <span aria-hidden className="size-1.5 rounded-full bg-accent" />
+        {label}
+      </h2>
       {docs.map((d) => (
         <section key={d.id} id={d.id} className="scroll-mt-24 border-t border-line py-9">
-          <h3 className="mb-4 text-[26px] leading-tight font-black tracking-[-0.01em]">{d.title}</h3>
+          <h3 className="group mb-4 text-[clamp(24px,2.2vw,30px)] leading-tight font-black tracking-[-0.015em]">
+            <a href={`#${d.id}`} className="hover:underline hover:decoration-line hover:underline-offset-8">
+              {d.title}
+              <span aria-hidden className="ms-2 text-accent-ink opacity-0 transition-opacity group-hover:opacity-100">
+                #
+              </span>
+            </a>
+          </h3>
           <div className="flex max-w-[720px] flex-col gap-4">
             {d.parts.map((p, i) => (
               <Part key={i} p={p} />
@@ -222,15 +232,34 @@ function Group({ label, docs }: { label: string; docs: Doc[] }) {
   )
 }
 
+/** The two ways in, as cards: their sections, one click away. */
+function Door({ label, lead, docs }: { label: string; lead: string; docs: Doc[] }) {
+  return (
+    <div className="rounded-2xl border border-line-soft bg-panel p-7">
+      <h2 className="text-xl font-bold">{label}</h2>
+      <p className="mt-2 text-[15px] text-ink-2">{lead}</p>
+      <ul className="mt-5 flex flex-wrap gap-2">
+        {docs.map((d) => (
+          <li key={d.id}>
+            <a href={`#${d.id}`} className="block rounded-full border border-line bg-bg px-3.5 py-1.5 text-sm font-medium hover:border-ink-3">
+              {d.title}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 /** The page's body: a sticky table of contents beside the sections, for users then developers. */
 export function DocsBody() {
   const nav = (label: string, docs: Doc[]) => (
     <div>
-      <p className="mb-2 text-xs font-medium tracking-wide text-ink-3 uppercase">{label}</p>
-      <ul className="flex flex-col gap-1 text-sm">
+      <p className="mb-3 text-[13px] font-semibold tracking-[0.08em] uppercase">{label}</p>
+      <ul className="flex flex-col border-s border-line text-sm">
         {docs.map((d) => (
           <li key={d.id}>
-            <a href={`#${d.id}`} className="block rounded-lg px-2.5 py-1 text-ink-2 hover:bg-panel hover:text-ink">
+            <a href={`#${d.id}`} className="-ms-px block border-s border-line px-3 py-1 text-ink-2 hover:border-accent hover:text-ink">
               {d.title}
             </a>
           </li>
@@ -239,15 +268,24 @@ export function DocsBody() {
     </div>
   )
   return (
-    <main id="main" className="mx-auto grid max-w-[1440px] grid-cols-1 gap-x-16 px-(--pad) py-[clamp(40px,6vw,80px)] min-[901px]:grid-cols-[220px_minmax(0,1fr)]">
-      <aside aria-label="Documentation sections" className="flex flex-col gap-6 max-[900px]:mb-10 min-[901px]:sticky min-[901px]:top-28 min-[901px]:self-start">
-        <h1 className="text-[clamp(34px,4vw,48px)] leading-none font-black tracking-[-0.02em]">Docs</h1>
+    <main id="main" className="mx-auto max-w-[1440px] px-(--pad) py-[clamp(40px,6vw,80px)]">
+      <header className="mb-[clamp(48px,6vw,88px)]">
+        <h1 className="text-[clamp(44px,6vw,80px)] leading-none font-black tracking-[-0.03em]">Docs</h1>
+        <p className="mt-5 max-w-[640px] text-[clamp(16px,1.3vw,18px)] leading-relaxed text-ink-2">Install, import, sync and share with Legato; the architecture, plugins, themes and how to build and contribute.</p>
+        <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-2">
+          <Door label="Using Legato" lead="From the installer to your PCs in sync." docs={USERS} />
+          <Door label="For developers" lead="How it is built, and how to add to it." docs={DEVS} />
+        </div>
+      </header>
+      <div className="grid grid-cols-1 gap-x-16 min-[901px]:grid-cols-[220px_minmax(0,1fr)]">
+      <aside aria-label="Documentation sections" className="flex flex-col gap-6 max-[900px]:hidden min-[901px]:sticky min-[901px]:top-28 min-[901px]:self-start">
         {nav('Using Legato', USERS)}
         {nav('For developers', DEVS)}
       </aside>
       <div>
         <Group label="Using Legato" docs={USERS} />
         <Group label="For developers" docs={DEVS} />
+      </div>
       </div>
     </main>
   )
