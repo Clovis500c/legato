@@ -293,6 +293,9 @@ struct Caches {
     /// Mixes' discoveries: radios of their leading songs, asked a few times a day.
     radios: Ttl<Vec<Track>>,
     artists: Ttl<Option<Artist>>,
+    /// The Rich Presence's artist pages, found by name with no song to check them against (the first of that name, unchecked): NEVER
+    /// read by `artist_picture` / `ytm_artist`, or a wrong same-named artist would be served as theirs (lot 51).
+    presence_artists: Ttl<Option<Artist>>,
     /// Album pages from the Apple catalog (None = not in the store): change rarely.
     albums: Ttl<Option<music_connectors::itunes::Album>>,
     /// Video → may it play in an embed (oEmbed).
@@ -314,6 +317,7 @@ impl Default for Caches {
             lists: Ttl::new(Duration::from_secs(15 * 60), 30),
             radios: Ttl::new(Duration::from_secs(12 * 3600), 16),
             artists: Ttl::new(Duration::from_secs(30 * 60), 32),
+            presence_artists: Ttl::new(Duration::from_secs(30 * 60), 32),
             albums: Ttl::new(Duration::from_secs(24 * 3600), 64),
             embeds: Ttl::new(Duration::from_secs(24 * 3600), 2000),
         }
@@ -555,7 +559,7 @@ fn discord_status(state: State<'_, AppState>) -> discord::Status {
     state.discord.status()
 }
 
-/// The artist's picture for Discord's small image, square: the artist page's own (`ytm_artist`'s cache). Nobody waits
+/// The artist's picture for Discord's small image, square: the artist page's own (`ytm_artist`'s cache when it has it, else its own). Nobody waits
 /// for it, so YouTube Music is asked only for a song it plays (`ask`), never during an import, once a minute at most,
 /// not for 15 minutes after a refusal (the owner's choice, 2026-11-06). None: not known, or not now.
 #[tauri::command]
@@ -565,14 +569,15 @@ async fn discord_artist_art(state: State<'_, AppState>, name: String, ask: bool)
         return Err("Invalid artist".into());
     }
     let key = name.to_lowercase();
-    let page = match state.cache.artists.get(&key) {
+    // A page the checked lookups kept is the better one; only the unchecked ones go to the presence's own cache.
+    let page = match state.cache.artists.get(&key).or_else(|| state.cache.presence_artists.get(&key)) {
         Some(hit) => hit,
         None => {
             if !ask || links::importing() || !discord::LOOKS.lock().unwrap().take(std::time::Instant::now()) {
                 return Ok(None);
             }
             match public_ytm().artist(&name, &[]).await {
-                Ok(page) => state.cache.artists.put(&key, page),
+                Ok(page) => state.cache.presence_artists.put(&key, page),
                 Err(e) => {
                     if music_connectors::refused(&err(e)) {
                         discord::LOOKS.lock().unwrap().refused(std::time::Instant::now());
@@ -928,6 +933,22 @@ pub fn run() {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Lot 51: the Rich Presence looks an artist up by name with no songs to check it, so its page must never be what `artist_picture`
+    /// and `ytm_artist` read (a wrong same-named artist's picture and songs).
+    #[test]
+    fn an_unchecked_presence_page_is_invisible_to_the_checked_lookups() {
+        let c = Caches::default();
+        let page = Artist { name: "Strano".into(), art: Some("https://x/y".into()), songs: vec![], all_songs: None, shelves: vec![], about: None };
+        for key in ["strano", "", "a|b", "STRANO".to_lowercase().as_str()] {
+            c.presence_artists.put(key, Some(page.clone()));
+            assert!(c.artists.get(key).is_none(), "{key:?}");
+            assert!(c.presence_artists.get(key).is_some());
+        }
+        // The other way round is allowed: a checked page may serve the presence.
+        c.artists.put("other", Some(page));
+        assert!(c.presence_artists.get("other").is_none() && c.artists.get("other").is_some());
+    }
     use crate::versions::checked_hit;
 
     /// CLAUDE.md: a sync command runs on the window's thread, so one that locks the library freezes the app (a sync
