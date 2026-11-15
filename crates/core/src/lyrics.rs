@@ -257,8 +257,8 @@ pub fn queries(artist: &str, title: &str) -> Vec<(String, String)> {
 /// First artist of a credit list ("Princess Chelsea, Videoclub, Mattyeux" → "Princess Chelsea").
 pub fn main_artist(artist: &str) -> &str {
     let a = artist.trim();
-    // ASCII lowercase keeps byte offsets.
-    let lower = a.to_ascii_lowercase();
+    // ASCII lowercase keeps byte offsets; a protected name's separators ("Tyler, The Creator") are masked, byte for byte.
+    let lower = crate::matching::shield(a).to_ascii_lowercase();
     let cut = [",", " & ", " x ", " feat", " ft.", " with "].iter().filter_map(|w| lower.find(w)).filter(|&i| i > 0).min();
     cut.map(|i| a[..i].trim()).unwrap_or(a)
 }
@@ -606,6 +606,11 @@ mod tests {
         assert_eq!(queries("Daft Punk", "Daft Punk - One More Time (Official Video)")[0], ("Daft Punk".into(), "One More Time".into()));
         assert_eq!(queries("Princess Chelsea, Videoclub, Mattyeux", "Sometimes")[1], ("Princess Chelsea".into(), "Sometimes".into()));
         assert_eq!(main_artist("Mattyeux & Princess Chelsea"), "Mattyeux");
+        // A name with a comma is one artist (matching::COMMA_NAMES).
+        assert_eq!(main_artist("Tyler, The Creator"), "Tyler, The Creator");
+        assert_eq!(main_artist("Tyler, The Creator, Teezo Touchdown"), "Tyler, The Creator");
+        assert_eq!(main_artist("Earth, Wind & Fire feat. X"), "Earth, Wind & Fire");
+        assert_eq!(main_artist("Teezo Touchdown & Tyler, The Creator"), "Teezo Touchdown");
         assert_eq!(main_artist("Xavier"), "Xavier");
     }
 

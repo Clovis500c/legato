@@ -27,9 +27,41 @@ pub fn normalize(s: &str) -> String {
     s.split(|c: char| !c.is_alphanumeric()).filter(|w| !w.is_empty()).collect::<Vec<_>>().join(" ")
 }
 
-/// First credited artist as written ("A, B & C feat. D" → "A").
+/// Artist names that contain a comma (or an "&" the split would also cut) and are ONE artist: kept whole when a credit is cut. Matched
+/// whole, in any case and spacing, in any place of a credit; only names that are real artists' names, since a comma between two artists
+/// ("Daft Punk, The Weeknd") must still split. Longest first. The front end keeps the same list (`COMMA_NAMES` in
+/// ui/src/features/library/filter.ts, whose test reads this one): add a name to both. Report others as they turn up.
+pub const COMMA_NAMES: &[&str] = &["Crosby, Stills, Nash & Young", "Emerson, Lake & Palmer", "Crosby, Stills & Nash", "Earth, Wind & Fire", "Tyler, The Creator"];
+
+static PROTECTED: LazyLock<Regex> = LazyLock::new(|| {
+    let loose = |n: &str| n.split(',').map(|part| part.trim().split(' ').map(regex::escape).collect::<Vec<_>>().join(r"\s+")).collect::<Vec<_>>().join(r",\s*");
+    Regex::new(&format!(r"(?i)\b(?:{})\b", COMMA_NAMES.iter().map(|n| loose(n)).collect::<Vec<_>>().join("|"))).unwrap()
+});
+
+/// The credit with the separators inside a protected name ("," and "&") turned into "_", byte for byte (same length, same offsets), so
+/// a split looking for them passes over the name. Borrowed when there is none.
+pub fn shield(artist: &str) -> std::borrow::Cow<'_, str> {
+    let spans: Vec<std::ops::Range<usize>> = PROTECTED.find_iter(artist).map(|m| m.range()).collect();
+    if spans.is_empty() {
+        return artist.into();
+    }
+    let mut bytes = artist.as_bytes().to_vec();
+    for span in spans {
+        for b in &mut bytes[span] {
+            if *b == b',' || *b == b'&' {
+                *b = b'_';
+            }
+        }
+    }
+    // Only ASCII bytes were replaced by ASCII ones: still UTF-8.
+    String::from_utf8(bytes).unwrap_or_else(|_| artist.to_string()).into()
+}
+
+/// First credited artist as written ("A, B & C feat. D" → "A"; "Tyler, The Creator, X" → "Tyler, The Creator").
 pub fn first_artist(artist: &str) -> &str {
-    ARTIST_SPLIT.split(artist).next().unwrap_or("").trim()
+    let shielded = shield(artist);
+    let end = ARTIST_SPLIT.find(&shielded).map_or(artist.len(), |m| m.start());
+    artist[..end].trim()
 }
 
 /// First credited artist, normalized ("A, B & C feat. D" → "a").
@@ -183,6 +215,40 @@ mod tests {
         ] {
             assert_eq!(normalize(input), out, "{input}");
         }
+    }
+
+    #[test]
+    fn artist_names_with_a_comma_stay_one_artist() {
+        // The same cases as the front end's filter.test.ts.
+        assert_eq!(first_artist("Tyler, The Creator"), "Tyler, The Creator");
+        assert_eq!(primary_artist("Tyler, The Creator"), "tyler the creator");
+        assert_eq!(first_artist("Tyler, The Creator, Teezo Touchdown"), "Tyler, The Creator");
+        assert_eq!(first_artist("Tyler, The Creator feat. Teezo Touchdown"), "Tyler, The Creator");
+        assert_eq!(first_artist("Teezo Touchdown, Tyler, The Creator"), "Teezo Touchdown");
+        assert_eq!(first_artist("tyler, the creator"), "tyler, the creator");
+        assert_eq!(first_artist("TYLER,THE CREATOR, X"), "TYLER,THE CREATOR");
+        assert_eq!(first_artist("Earth, Wind & Fire"), "Earth, Wind & Fire");
+        assert_eq!(first_artist("Crosby, Stills, Nash & Young"), "Crosby, Stills, Nash & Young");
+        assert_eq!(first_artist("Crosby, Stills & Nash"), "Crosby, Stills & Nash");
+        assert_eq!(first_artist("Emerson, Lake & Palmer, Someone"), "Emerson, Lake & Palmer");
+        // A comma between two real artists still splits, whatever follows it; only a whole name is protected.
+        assert_eq!(first_artist("Daft Punk, The Weeknd"), "Daft Punk");
+        assert_eq!(first_artist("Tyler, The Weeknd"), "Tyler");
+        assert_eq!(first_artist("Tyler, The Creators"), "Tyler");
+        assert_eq!(first_artist("Tylers, The Creator"), "Tylers");
+        assert_eq!(first_artist("Crosby, Stills"), "Crosby");
+        // The song is the same song whichever way it is credited.
+        assert_eq!(match_key("Darling, I", "Tyler, The Creator"), match_key("Darling, I", "Tyler, The Creator, Teezo Touchdown"));
+        // Non-ASCII around a protected name keeps its offsets.
+        assert_eq!(first_artist("Beyoncé, Tyler, The Creator"), "Beyoncé");
+        assert_eq!(first_artist("Tyler, The Creator, Beyoncé"), "Tyler, The Creator");
+    }
+
+    /// The front end keeps the same list (ui/src/features/library/filter.ts COMMA_NAMES): its test reads this file.
+    #[test]
+    fn the_comma_names_are_real_names_with_a_comma() {
+        assert!(COMMA_NAMES.iter().all(|n| n.contains(',')));
+        assert!(COMMA_NAMES.windows(2).all(|w| w[0].len() >= w[1].len()), "longest first");
     }
 
     #[test]

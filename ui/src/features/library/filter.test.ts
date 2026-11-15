@@ -1,7 +1,8 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import type { LibraryTrack } from '../../shared/api'
 import { formatDuration, timeAgo } from '../../shared/format'
-import { allArtists, filterTracks, groupAlbums, groupArtists, libraryStats, musicOnly, primaryArtist, withoutExplicit, splitExplicit, sortGroups, sortTracks } from './filter'
+import { allArtists, COMMA_NAMES, filterTracks, groupAlbums, groupArtists, libraryStats, musicOnly, primaryArtist, withoutExplicit, splitExplicit, sortGroups, sortTracks } from './filter'
 
 const t = (id: number, title: string, artist: string, ids: LibraryTrack['ids']): LibraryTrack => ({
   id,
@@ -193,5 +194,46 @@ describe('sorting by tempo', () => {
     const list = [t(1), t(2, 140), t(3, 90)]
     expect(sortTracks(list, 'bpm', { stats: {}, seed: 1 }).map((x: { id: number }) => x.id)).toEqual([3, 2, 1])
     expect(sortTracks(list, 'bpm-fast', { stats: {}, seed: 1 }).map((x: { id: number }) => x.id)).toEqual([2, 3, 1])
+  })
+})
+
+describe('artist names that contain a comma stay one artist', () => {
+  it('Tyler, The Creator is one, alone, with a feature, and in a list in any position', () => {
+    expect(primaryArtist('Tyler, The Creator')).toBe('Tyler, The Creator')
+    expect(allArtists('Tyler, The Creator')).toEqual(['Tyler, The Creator'])
+    expect(allArtists('Tyler, The Creator, Teezo Touchdown')).toEqual(['Tyler, The Creator', 'Teezo Touchdown'])
+    expect(primaryArtist('Tyler, The Creator, Teezo Touchdown')).toBe('Tyler, The Creator')
+    expect(allArtists('Tyler, The Creator feat. Teezo Touchdown')).toEqual(['Tyler, The Creator', 'Teezo Touchdown'])
+    expect(allArtists('Teezo Touchdown, Tyler, The Creator')).toEqual(['Teezo Touchdown', 'Tyler, The Creator'])
+    expect(allArtists('Daft Punk, Tyler, The Creator feat. Pharrell Williams')).toEqual(['Daft Punk', 'Tyler, The Creator', 'Pharrell Williams'])
+    expect(primaryArtist('Teezo Touchdown, Tyler, The Creator')).toBe('Teezo Touchdown')
+  })
+
+  it('matches without caring for case or spacing, and only a whole name', () => {
+    expect(allArtists('tyler, the creator')).toEqual(['tyler, the creator'])
+    expect(allArtists('TYLER,THE CREATOR, X')).toEqual(['TYLER, THE CREATOR', 'X'])
+    expect(allArtists('Tyler, The Creators')).toEqual(['Tyler', 'The Creators'])
+    expect(allArtists('Tylers, The Creator')).toEqual(['Tylers', 'The Creator'])
+  })
+
+  it('the other band names with commas', () => {
+    expect(allArtists('Earth, Wind & Fire')).toEqual(['Earth, Wind & Fire'])
+    expect(allArtists('Crosby, Stills, Nash & Young')).toEqual(['Crosby, Stills, Nash & Young'])
+    expect(allArtists('Crosby, Stills & Nash')).toEqual(['Crosby, Stills & Nash'])
+    expect(allArtists('Emerson, Lake & Palmer, Someone')).toEqual(['Emerson, Lake & Palmer', 'Someone'])
+  })
+
+  it('a comma between two real artists still splits, whatever follows it', () => {
+    expect(allArtists('Daft Punk, The Weeknd')).toEqual(['Daft Punk', 'The Weeknd'])
+    expect(allArtists('Daft Punk, Pharrell Williams')).toEqual(['Daft Punk', 'Pharrell Williams'])
+    expect(allArtists('Tyler, The Weeknd')).toEqual(['Tyler', 'The Weeknd'])
+    expect(allArtists('Crosby, Stills')).toEqual(['Crosby', 'Stills'])
+  })
+
+  it('the list is the Rust one (crates/core/src/matching.rs COMMA_NAMES), name for name', () => {
+    const rust = readFileSync(new URL('../../../../crates/core/src/matching.rs', import.meta.url), 'utf8')
+    const block = /COMMA_NAMES: &\[&str\] = &\[([^\]]*)\]/.exec(rust)![1]
+    const names = [...block.matchAll(/"([^"]+)"/g)].map((m) => m[1])
+    expect(names).toEqual([...COMMA_NAMES])
   })
 })

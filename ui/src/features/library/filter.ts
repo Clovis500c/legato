@@ -80,14 +80,34 @@ export function sortTracks(
  * channel names lose what isn't the artist's name: "A - Topic" (auto-generated channels), "AVEVO".
  */
 const ARTIST_SPLIT = /\s*(?:,|\bfeat\.?|\bft\.?|\bfeaturing)\s+|\s+x\s+/i
+
+/**
+ * Artist names that contain a comma and are ONE artist ("Tyler, The Creator"): kept whole before the split cuts at commas. Matched
+ * whole, in any case and spacing, in any place of a credit. Only names that are real artists' names: a comma between two artists
+ * ("Daft Punk, The Weeknd") must still split, so there is no rule by shape, only this list. The Rust copy is `COMMA_NAMES` in
+ * `crates/core/src/matching.rs` (a test keeps the two alike): add a name to both. Report others as they turn up.
+ */
+export const COMMA_NAMES = ['Crosby, Stills, Nash & Young', 'Emerson, Lake & Palmer', 'Crosby, Stills & Nash', 'Earth, Wind & Fire', 'Tyler, The Creator'] as const
+const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+// A name's commas and spaces match loosely ("Tyler,The  Creator"); longer names first ("Crosby, Stills, Nash & Young" before "Crosby, Stills & Nash").
+const loose = (name: string) => name.split(/,\s*/).map((part) => part.split(' ').map(escape).join(String.raw`\s+`)).join(String.raw`,\s*`)
+const PROTECTED = new RegExp(String.raw`(?<![\p{L}\p{N}])(?:` + [...COMMA_NAMES].sort((a, b) => b.length - a.length).map(loose).join('|') + String.raw`)(?![\p{L}\p{N}])`, 'giu')
+/** A mark that stands for a protected comma while the credit is split (never in a real name). */
+const KEEP = '\u0001'
+const COMMA_KEPT = new RegExp(KEEP, 'g')
+/** A credit cut into its artists, the protected names whole. */
+const splitArtists = (artist: string): string[] =>
+  artist
+    .replace(PROTECTED, (name) => name.replace(/,\s*/g, KEEP))
+    .split(ARTIST_SPLIT)
+    .map((n) => n.replace(COMMA_KEPT, ', '))
 const channelless = (name: string) => name.replace(/\s+-\s+Topic$/i, '').replace(/(?<=\S)VEVO$/, '').trim() || name
-export const primaryArtist = (artist: string) => channelless(artist.split(ARTIST_SPLIT)[0].trim() || artist)
+export const primaryArtist = (artist: string) => channelless(splitArtists(artist)[0].trim() || artist)
 
 /** Every artist of a song, the primary one first, cut where `primaryArtist` cuts; no name twice. */
 export const allArtists = (artist: string) => {
   const seen = new Set<string>()
-  const names = artist
-    .split(ARTIST_SPLIT)
+  const names = splitArtists(artist)
     .map((n) => channelless(n.replace(/[()]/g, '').trim()))
     .filter((n) => n && !seen.has(n.toLowerCase()) && seen.add(n.toLowerCase()))
   return names.length ? names : [artist]
