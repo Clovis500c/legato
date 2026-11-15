@@ -85,7 +85,9 @@ Updates (the `updateChannel` setting, kept per PC, not synced):
   (`.github/workflows/promote.yml`, `scripts/promote.mjs`) with a version like `1.0.375`, or empty for the newest beta.
   It refuses a version that is not newer than the current Stable, writes the notes of everything since the previous
   Stable (`feat` / `fix` / `perf`) into that release's `latest.json` and page, then makes it a normal release, marked
-  Latest. Stable PCs read `releases/latest/download/latest.json` and GitHub's "latest" skips prereleases, so a push
+  Latest, and its title loses the word `beta` (a Beta is "Legato vX.Y.Z beta": the Discord bot MonitoRSS filters the releases
+  feed on that word, the Beta title sends an embed with the Beta News Ping role and the new Stable title is announced with the
+  Updates Ping; Betas released before 2026-11-15 have no "beta" in their title and are not re-announced). Stable PCs read `releases/latest/download/latest.json` and GitHub's "latest" skips prereleases, so a push
   never reaches them. **That URL is the one every installed version has always read (`tauri.conf.json`): keep it.**
 - Back from Beta to Stable the app never downgrades: it waits for a Stable newer than the version it runs.
 - **Phones** follow Beta: each Beta's APK is what the Android app offers (Settings › About, a toast), downloaded when

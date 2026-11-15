@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { notesFrom } from './notes.mjs'
-import { compareTags, currentStable, newestBeta, parseTag, refusal, toTag, withNotes } from './promote.mjs'
+import { betaTitle, compareTags, currentStable, newestBeta, parseTag, promoteArgs, refusal, stableTitle, toTag, withNotes } from './promote.mjs'
 
 const rel = (tagName: string, isPrerelease = true, isDraft = false) => ({ tagName, isPrerelease, isDraft })
 
@@ -74,5 +74,25 @@ describe('promote', () => {
     const many = Array.from({ length: 60 }, (_, i) => `fix: n${i}`)
     expect(notesFrom(many).split('\n')).toHaveLength(61)
     expect(notesFrom(many).split('\n').at(-1)).toBe('- N59')
+  })
+})
+
+describe('release titles (MonitoRSS filters the releases feed on the word "beta")', () => {
+  it('a Beta carries "beta" in its title, a Stable does not', () => {
+    expect(betaTitle('1.2.37')).toBe('Legato v1.2.37 beta')
+    expect(stableTitle('1.2.37')).toBe('Legato v1.2.37')
+    expect(betaTitle('1.2.37')).toMatch(/\bbeta\b/)
+    expect(stableTitle('1.2.37')).not.toMatch(/beta/i)
+    expect(betaTitle(' v1.2.37 ')).toBe('Legato v1.2.37 beta')
+  })
+
+  it('the last edit of a promotion sets the Stable title together with the Stable flip', () => {
+    expect(promoteArgs('v1.2.37')).toEqual(['release', 'edit', 'v1.2.37', '--title', 'Legato v1.2.37', '--prerelease=false', '--latest'])
+  })
+
+  it('release.yml names a Beta with the same words', async () => {
+    const { readFileSync } = await import('node:fs')
+    const yml = readFileSync(new URL('../.github/workflows/release.yml', import.meta.url), 'utf8')
+    expect(yml).toContain('releaseName: Legato v${{ steps.release.outputs.version }} beta')
   })
 })

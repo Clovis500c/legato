@@ -23,6 +23,17 @@ export function compareTags(a, b) {
   return x[0] - y[0] || x[1] - y[1] || x[2] - y[2]
 }
 
+/**
+ * Release titles. The Discord bot (MonitoRSS) reads the releases feed and splits it on the word "beta" in the title: a Beta's title
+ * has it (embed with the Beta News Ping role), a Stable's has not (Updates Ping). release.yml names a Beta `betaTitle`; promoting it
+ * sets `stableTitle`, and that change of title is what re-announces it as Stable.
+ */
+export const betaTitle = (version) => `Legato ${toTag(version)} beta`
+export const stableTitle = (version) => `Legato ${toTag(version)}`
+
+/** The last `gh` call of a promotion: the Stable title and the Stable flip land together. */
+export const promoteArgs = (tag) => ['release', 'edit', tag, '--title', stableTitle(tag), '--prerelease=false', '--latest']
+
 /** "1.0.375" or "v1.0.375" → "v1.0.375". */
 export function toTag(version) {
   const v = version.trim()
@@ -95,8 +106,8 @@ function main(argv) {
   writeFileSync(notesFile, notes)
   run('gh', 'release', 'upload', tag, file, '--clobber')
   run('gh', 'release', 'edit', tag, '--notes-file', notesFile)
-  // Last: until here it is still a prerelease and nobody's update changes.
-  run('gh', 'release', 'edit', tag, '--prerelease=false', '--latest')
+  // Last: until here it is still a prerelease and nobody's update changes. The title goes back to the Stable one in the same call.
+  run('gh', ...promoteArgs(tag))
   console.log(`${tag} is Stable`)
 }
 

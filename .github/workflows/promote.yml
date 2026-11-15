@@ -4,7 +4,8 @@ name: promote
 # newest beta. The release (a prerelease so far, from release.yml) gets the notes of everything since the previous Stable
 # in its latest.json and on its page, then becomes a normal, Latest release: releases/latest/download/latest.json, the
 # file every installed version reads, is now this one's. Refuses a version that is not newer than the current Stable, and
-# a release whose latest.json is incomplete (scripts/promote.mjs). The installer and its signature are not touched.
+# a release whose latest.json is incomplete (scripts/promote.mjs). It also renames the release "Legato vX.Y.Z" (a Beta's title ends
+# with "beta"): the Discord bot filters the releases feed on that word, and the new title is what announces the Stable. The installer and its signature are not touched.
 on:
   workflow_dispatch:
     inputs:

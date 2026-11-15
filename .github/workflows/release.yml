@@ -122,7 +122,9 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: v${{ steps.release.outputs.version }}
-          releaseName: Legato v${{ steps.release.outputs.version }}
+          # "beta" in the title: the Discord bot (MonitoRSS) filters the releases feed on it (embed with the Beta News Ping role in
+          # #updates); promote.yml renames the release without it, which is what pings Stable. scripts/promote.mjs `betaTitle`.
+          releaseName: Legato v${{ steps.release.outputs.version }} beta
           releaseCommitish: ${{ env.SHA }}
           releaseBody: ${{ steps.release.outputs.notes }}
           releaseDraft: false
