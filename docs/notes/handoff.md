@@ -2,19 +2,19 @@
 
 Where the work stands, for a session with no history here. Read this first, then only the parts of
 [plan-v2.md](plan-v2.md) you need. Rewrite it, short, when a branch, a release or the next step changes; its older
-versions are in git (`git log -p -- docs/notes/handoff.md`). Updated 2026-11-15 (closure 15).
+versions are in git (`git log -p -- docs/notes/handoff.md`). Updated 2026-11-15 (closure 16).
 
 ## Where things stand
-- **master** = `22fe3c83`: Beta 1.2.32 published (2026-11-14 23:06 UTC, per the owner's run; its tag is not fetched here).
-  **platforms** = master + 4 commits, **not pushed** (`git log --oneline origin/master..HEAD`): Lot 47 channel picture
-  (`91a7b86c`, fix `ab016e43`); Lot 48 From label (`8cb3e92e`); this handoff. Only the owner's word pushes. A push starts
-  a Beta release: `release.mjs --dry-run` says v1.2.36 at this closure, not confirmed published here.
+- **master** = `fbf8154d` = Beta 1.2.36, published 2026-11-15 00:06 UTC (`gh release list`); Beta 1.2.32 before it, with the
+  channel picture and the From label. **platforms** = master + 2 commits, **not pushed** (`git log --oneline
+  origin/master..HEAD`): Lot 49 comma names (`d2c7a10e`) and this handoff. Only the owner's word pushes. A push starts a
+  Beta release: `release.mjs --dry-run` says v1.2.38 at this closure, not confirmed published here.
 - **Stable 1.2.10** (tag `v1.2.10`, since 2026-11-14, promoted on the owner's word): Windows installer, `latest.json`, the
   Android APK. winget has an older Stable pending (see below).
 - **Version rule** (`CONTRIBUTING.md` › Version): `MAJOR.MINOR` is in `src-tauri/tauri.conf.json` (`1.2`). The patch is n,
   the number of commits since the base of that `MAJOR.MINOR` (`BASES` in `scripts/release.mjs`: `'1.2'` → `f8379a93`), with
   `n % 1000`. The patch is n, not a counter of your own. `node scripts/release.mjs --dry-run` prints the next Beta pushed
-  from here (v1.2.36 at this closure). A bump of `MAJOR.MINOR` is the owner's decision: a new base goes in
+  from here (v1.2.38 at this closure). A bump of `MAJOR.MINOR` is the owner's decision: a new base goes in
   `BASES` first.
 - **Before any push**: `pnpm check` green; `node scripts/budget.mjs` (JS 332 of 340 kB gzip: little room, lazy-load new
   features); `cargo clippy --workspace --all-targets -- -D warnings`; `pnpm build` in `site/`; a clean tree; **`pnpm e2e`
@@ -46,6 +46,9 @@ z-scores, explore dose by Variety, diversity re-rank) used by Shuffle (`shuffle.
 
 ## Try first (the owner)
 Most of what is new is behind a setting that is **off**, unless noted below.
+- **Comma names** (`d2c7a10e`): « Tyler, The Creator » should be one artist (one « TT » tile); so should « Earth, Wind &
+  Fire », « Crosby, Stills, Nash & Young », « Crosby, Stills & Nash », « Emerson, Lake & Palmer ». Not tried on a real
+  library; report other comma names you see. Old « Never in mixes » keys for those artists must be set again.
 - **New since 1.2.32**: play one song by the YouTube channel « prodphanda », wait about 10 s: its picture shows beside the
   title, and its artist page opens. **From** label: Now Playing says « From », the playlist's picture, the name in bold.
 - **New since 1.2.10**: a Discord picture on a share link and on the share web page; **Adaptive Sound** icons under the
