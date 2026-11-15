@@ -2,77 +2,56 @@
 
 Where the work stands, for a session with no history here. Read this first, then only the parts of
 [plan-v2.md](plan-v2.md) you need. Rewrite it, short, when a branch, a release or the next step changes; its older
-versions are in git (`git log -p -- docs/notes/handoff.md`). Updated 2026-11-15 (closure 16).
+versions are in git (`git log -p -- docs/notes/handoff.md`). Updated 2026-11-15 (clean-up of the plan and the docs).
 
 ## Where things stand
-- **master** = `fbf8154d` = Beta 1.2.36, published 2026-11-15 00:06 UTC (`gh release list`); Beta 1.2.32 before it, with the
-  channel picture and the From label. **platforms** = master + 2 commits, **not pushed** (`git log --oneline
-  origin/master..HEAD`): Lot 49 comma names (`d2c7a10e`) and this handoff. Only the owner's word pushes. A push starts a
-  Beta release: `release.mjs --dry-run` says v1.2.38 at this closure, not confirmed published here.
-- **Stable 1.2.10** (tag `v1.2.10`, since 2026-11-14, promoted on the owner's word): Windows installer, `latest.json`, the
-  Android APK. winget has an older Stable pending (see below).
-- **Version rule** (`CONTRIBUTING.md` › Version): `MAJOR.MINOR` is in `src-tauri/tauri.conf.json` (`1.2`). The patch is n,
-  the number of commits since the base of that `MAJOR.MINOR` (`BASES` in `scripts/release.mjs`: `'1.2'` → `f8379a93`), with
-  `n % 1000`. The patch is n, not a counter of your own. `node scripts/release.mjs --dry-run` prints the next Beta pushed
-  from here (v1.2.38 at this closure). A bump of `MAJOR.MINOR` is the owner's decision: a new base goes in
-  `BASES` first.
+- **master** = `9ad1e6f7` (the Discord ping titles, lot 50, are in it). Stable **1.2.10** (tag `v1.2.10`), unchanged.
+- **platforms** = master + the clean-up commit that adds this line's version of the handoff and plan (`git log --oneline
+  origin/master..HEAD`). Nothing else is waiting. Only the owner's word pushes.
+- **Next Beta**: the push of the clean-up releases it. It is the first Beta to test the Discord pings (lot 50), and it
+  carries the plan's clean-up. `node scripts/release.mjs --dry-run` says v1.2.40 once this commit is on master.
+- **Version rule** (`CONTRIBUTING.md` › Version): `MAJOR.MINOR` is in `src-tauri/tauri.conf.json` (`1.2`); the patch is
+  the number of commits since the base in `BASES` (`scripts/release.mjs`), with `n % 1000`. A bump of `MAJOR.MINOR` is
+  the owner's decision.
 - **Before any push**: `pnpm check` green; `node scripts/budget.mjs` (JS 332 of 340 kB gzip: little room, lazy-load new
-  features); `cargo clippy --workspace --all-targets -- -D warnings`; `pnpm build` in `site/`; a clean tree; **`pnpm e2e`
-  when the push touches startup** (`setup` in `src-tauri/src/lib.rs`, anything that reads `AppState`); and
+  features); `cargo clippy --workspace --all-targets -- -D warnings`; `pnpm build` in `site/`; a clean tree; **`pnpm e2e`**
+  when the push touches startup (`setup` in `src-tauri/src/lib.rs`, anything that reads `AppState`); and
   `git log --name-only --format= origin/master..HEAD | grep -i notes/report` must print nothing. A push to master is a
   Beta release.
 - **Stable**: only on the owner's word, never on a Beta's green CI.
 - **Reports** (`docs/notes/report*.md`, the owner's French reports) are git-ignored and never committed.
-- **The rename is done** (Music App → Legato in every format). The one catch-up for data on disk is
-  `src-tauri/src/rename.rs` (plus the old Run entry in `autostart.rs`, the old-install cleanup in
-  `src-tauri/windows/hooks.nsh`): the plan line « Remove the rename catch-up » lists what to delete.
-- **Android**: the release job compiles the whole crate; anything desktop-only sits behind `#[cfg(desktop)]` or
+- **The rename is done.** The one catch-up for data on disk is `src-tauri/src/rename.rs` (plus the old Run entry in
+  `autostart.rs` and the old-install cleanup in `src-tauri/windows/hooks.nsh`): the plan line « Remove the rename
+  catch-up » lists what to delete.
+- **Android**: the release job compiles the whole crate; desktop-only code sits behind `#[cfg(desktop)]` or
   `#[cfg(windows)]`. The Android target and the Kotlin toolchain are not usable on this PC: CI's android job is the check.
-  The widgets never ran on a phone.
 - **Website** https://clovis500c.github.io/legato/, deployed from master: 18 languages, not yet Arabic or Hebrew.
 - **winget**: microsoft/winget-pkgs#474341 (Stable 1.1.681) waits for a moderator; each new Stable needs a new manifest
   (`packaging/README.md`).
-- **Never tried for real**: plan-v2 › Check live in the real app. Most features of the last windows were never run on a
-  screen, an ear, a real feed, a TV, a pad, a phone, a speaker, a webcam, a Stream Deck, a Subsonic server, or with the real
-  translation, YouTube or AcoustID services.
-- **Untracked, never committed**: `docs/notes/report*.md`, the old transcript `2026-10-30-001238-…txt` at the root.
+- **Discord pings** (lot 50, `CONTRIBUTING.md` › Releasing): MonitoRSS reads the releases feed. A Beta's title ends with
+  "beta" and gets an embed with the Beta News Ping role; the promotion renames it, and the new Stable title gets the
+  Updates Ping. Betas released before 2026-11-15 have no "beta" in their title and are not re-announced.
 
 ## The algorithm
 `docs/recommendation.md` is where it lives: the design, the weights (all first guesses, never heard by ear), the measured
 numbers. In short: `taste_signals` (Rust, one pass) → `player/taste.ts` (store) → `player/score.ts` (pure: profiles,
-z-scores, explore dose by Variety, diversity re-rank) used by Shuffle (`shuffle.ts`, weighted order), the end of Up next
-(`radio.ts`, `autoplay.ts`) and « Start a mix from this song » (`songMix.ts`, a chunk loaded at the click); the Mixes page's
-« Like <title> » mixes are built in Rust (`mixes()`). Variety (Alike / Balanced / Adventurous) is the one control.
+z-scores, explore dose by Variety, diversity re-rank) used by Shuffle, the end of Up next and « Start a mix from this
+song »; the Mixes page's « Like <title> » mixes are built in Rust (`mixes()`). Variety is the one control.
 
 ## Try first (the owner)
-Most of what is new is behind a setting that is **off**, unless noted below.
-- **Comma names** (`d2c7a10e`): « Tyler, The Creator » should be one artist (one « TT » tile); so should « Earth, Wind &
-  Fire », « Crosby, Stills, Nash & Young », « Crosby, Stills & Nash », « Emerson, Lake & Palmer ». Not tried on a real
-  library; report other comma names you see. Old « Never in mixes » keys for those artists must be set again.
-- **New since 1.2.32**: play one song by the YouTube channel « prodphanda », wait about 10 s: its picture shows beside the
-  title, and its artist page opens. **From** label: Now Playing says « From », the playlist's picture, the name in bold.
-- **New since 1.2.10**: a Discord picture on a share link and on the share web page; **Adaptive Sound** icons under the
-  volume; **Back** on the phone from several pages, also after a reopen; the Home **flowing background** (Appearance, off by
+Only what is new or still untried. Most of the rest is behind a setting that is **off** by default.
+- **Lot 49, comma names**: « Tyler, The Creator » should be one artist (one « TT » tile). So should « Earth, Wind & Fire »,
+  « Crosby, Stills, Nash & Young », « Crosby, Stills & Nash » and « Emerson, Lake & Palmer ». Tell us any other comma name
+  you see. A « Never in mixes » you set on those artists must be set again.
+- **Lot 47, channel picture**: play a song by « prodphanda », wait about 10 s: its picture shows beside the title, and its
+  artist page opens.
+- **Lot 48, From label**: Now Playing says « From », then the playlist's picture and the name in bold (desktop and phone).
+- **Not reported yet**: a Discord picture on a share link and on the share web page; the Adaptive Sound icons under the
+  volume; Back on the phone from several pages and after a reopen; the Home flowing background (Appearance, off by
   default; it stops under Windows' reduce-motion).
-- **Shuffle**: your loved and often played songs come sooner, nothing is ever out, never the same artist twice in a row.
-  Judge Alike (sticks to your favourites), Balanced, Adventurous by ear. **The end of Up next**: 15 songs added, a bounded
-  dose of the new (10 / 20 / 35 %), at most 2 per artist in 10; there is no « Then, similar songs » switch any more.
-- **« Start a mix from this song »** (right-click a song): 30 songs of its style, the song first, tempo within 12 bpm a step,
-  a favourite every third. **The Mixes page**: « Made from songs you love », « Like <title> » (the seed turns daily).
-  Songs without genre or year make a looser « style ». **Variety**: Settings › Playback and the Up next panel.
-- **Playlist banners** (always on): the wall of the playlist's covers, real variety, four corners covered, a soft fade on
-  the right (no blur: removed at the owner's word). The Home carousel « Your playlists » is on by default.
-- **Settings reorganised** (Features, Devices, Library and storage; « Advanced » at the bottom); **right-click menus** (three
-  levels, « Personalise the menus »); **themes** (eight presets); **similar songs weigh skips and Never**.
-- **Free song recognition** (SMTC, Chromaprint + AcoustID: the AcoustID key still has to be registered); **YouTube chapters**;
-  **sweet fades**; **lyrics translation** (asks each time); **guessed key**; **cast to a speaker or TV** (DLNA); **equalizer
-  and volume per output device**; **Stream Deck**; **webcam QR scan**; **Subsonic playlists**; **living-room mode**,
-  **podcasts**, **audiobooks**, **practice speed**, **Discord sign-in**, **Android widgets**.
-- **Right to left** (Arabic, Hebrew): never looked at on a screen; machine translations to review. Every new text of lots
-  39-42 is a machine translation too (the French one says `vous`).
-- **Frozen or blurred window** (the owner's other PC, Beta 1.1.973): if it comes back, look for a `webview` line in the
-  diagnostics log. Cause not proven. **Diagnostics**: Settings › About › Copy diagnostics says « the last run ended without
-  closing » after a kill.
+- **Lot 50, next Beta**: the Beta embed should appear with the Beta News Ping role, and the Stable promotion should ping
+  the Updates Ping. Nothing was tested for real.
+- **Right to left** (Arabic, Hebrew): never looked at on a screen; machine translations to review.
 
 ## Open
 - **Channel picture never tried for real** (`91a7b86c`, `ab016e43`): no real YouTube call yet; the `browse` shape of an
@@ -80,7 +59,10 @@ Most of what is new is behind a setting that is **off**, unless noted below.
 - **Not run on a device**: Android Back (`b9d175f6`: reasoned from the Kotlin, never run on Android 16 / targetSdk 37); the
   Discord picture from the real CDN; a real QR scan.
 - **GPU resets on the owner's PC under full builds**: cause not found; not the flowing background (believed, not measured).
-  Until it is known: cap jobs at 4 and run one heavy command at a time.
+  Until it is known: cap jobs at 4, and run one heavy command at a time.
+- **Frozen or blurred window** (the owner's other PC, Beta 1.1.973): if it comes back, look for a `webview` line in the
+  diagnostics log (Settings › About › Copy diagnostics). Cause not proven.
+- **Never run for real**: plan-v2 › Check live in the real app.
 - **For Opus**: a Subsonic playlist half-made if adding its tail fails after creation; the cast server stays open after the
   song ends (the token protects it); a public podcast name that resolves to a private address (DNS rebinding) still passes;
   the gamepad is polled every frame in living-room mode even with no pad; the Stream Deck inspector accepts more addresses
@@ -89,19 +71,19 @@ Most of what is new is behind a setting that is **off**, unless noted below.
   here.
 - **Left, for a run that can check it**: MPRIS and macOS Now Playing (CI skips the legato crate there); WASAPI exclusive;
   « Up next » per chapter; the website in Arabic and Hebrew; plural forms beyond one / other in ar and he; faster CI; reused
-  YouTube embeds; the full `pnpm bench` (it now prints a « shuffle 10000 » line; the rest was not run for lot 42).
+  YouTube embeds; the full `pnpm bench`.
 - **For the owner**: a share link with a Discord picture (version 4) is unreadable for older installed versions (they say
   « update the app »); Quiet at -20 LUFS against Spotify's -19; the Adaptive Sound icons; the flowing background's static
-  look when `homeFlow` is off; the algorithm's weights by ear; a YouTube channel identifier stored with each song; preloading the next
-  song's artist (a privacy decision); Last.fm / ListenBrainz as a source; the site redesign's taste; the theme and plugin
-  gallery; profiles on a PC; the Discord bot and its signature; the Arabic and Hebrew review; the lines that need an account
-  or a real network (Spotify and SoundCloud sends, concerts, TIDAL / Qobuz links, watch-page autoplay).
+  look when `homeFlow` is off; the algorithm's weights by ear; a YouTube channel identifier stored with each song;
+  preloading the next song's artist (a privacy decision); Last.fm / ListenBrainz as a source; the site redesign's taste;
+  the theme and plugin gallery; profiles on a PC; the Discord bot and its signature; the Arabic and Hebrew review; the
+  lines that need an account or a real network (Spotify and SoundCloud sends, concerts, TIDAL / Qobuz links, watch-page
+  autoplay).
 
 ## Next
 The remaining plan lines need a real account or network, an owner's choice, a Linux or macOS machine, or a device. A later
 run takes what needs nobody, one line at a time, in plan-v2's order. One step = `graphify query` first, code and tests,
-`pnpm check` green, one local commit on `platforms`, its plan-v2 line ticked with what wasn't tried for real,
-`graphify update .`.
+`pnpm check` green, one local commit on `platforms`, its plan-v2 line ticked, `graphify update .`.
 
 Releasing, only on the owner's word (`CONTRIBUTING.md` › Releasing). A Beta: `/release-check`, then
 `git push origin platforms:master`. Stable: `git fetch --tags`, `node scripts/promote.mjs --dry-run <version>`, then
@@ -113,19 +95,18 @@ For a new orchestrating session with an empty context:
 1. Read `CLAUDE.md`, this handoff, then only the useful parts of `docs/notes/plan-v2.md`. The owner's private notes
    (`docs/notes/report-asks.md`, `report-2026-11-12.md`, `report-orchestrator-prompt.md`) are untracked: read them for what
    was asked and decided, never copy them into tracked files.
-2. **Sessions**: one per model, reused (send a message) rather than restarted: one Sonnet (builds, `claude-sonnet-5-5`), one
-   Opus (reviews and designs, `claude-opus-5-5`; `start_session` ignores a model dearer than the orchestrator's), one Haiku
-   (docs, handoff, reports, checks). The builder works in small slices, the reviewer rereads each batch and does the
+2. **Sessions**: one per model, reused (send a message) rather than restarted: one Sonnet (builds, `claude-sonnet-5-5`),
+   one Opus (reviews and designs, `claude-opus-5-5`; `start_session` ignores a model dearer than the orchestrator's), one
+   Haiku (docs, handoff, reports, checks). The builder works in small slices; the reviewer rereads each batch and does the
    delicate parts (startup, security, the release).
-3. One writer at a time on the checkout. Stage by name (`git add <file>`), never `git add -A` or `.`. Commit only what the
+3. **Briefs**: verify each fact against the code or git before writing it, and give file and doc references.
+4. One writer at a time on the checkout. Stage by name (`git add <file>`), never `git add -A` or `.`. Commit only what the
    task names. No push without the owner's word.
-4. **Heavy checks** (`pnpm check`, `cargo clippy`, `cargo test`, `pnpm vite build`, `pnpm build`, `pnpm e2e`): in the
-   foreground with a 10-minute timeout, with `CARGO_BUILD_JOBS=6` and below-normal priority (PowerShell:
-   `$env:CARGO_BUILD_JOBS='6'; $p = Start-Process -FilePath pnpm.cmd -ArgumentList 'check' -NoNewWindow -PassThru;
-   $p.PriorityClass = 'BelowNormal'; $p.WaitForExit()`), so the owner's PC and his apps stay responsive. A `pnpm check` run
-   in the background ends a worker's turn early and stalls the chain.
-5. End markers go in `docs/notes/report-inbox.md` (`Clôture N finie : <hash>`); the orchestrator merges them into the private
-   report and empties the inbox. The weekly usage cap is 75 %: plan the work to fit under it.
+5. **Heavy checks** (`pnpm check`, `cargo clippy`, `cargo test`, `pnpm vite build`, `pnpm build`, `pnpm e2e`): one at a time,
+   in the foreground with a 10-minute timeout, at most 4 jobs (`CARGO_BUILD_JOBS=4`) and below-normal priority, so the
+   owner's PC stays responsive. Never a `pnpm check` in the background: it stalls the chain.
+6. End markers go in `docs/notes/report-inbox.md` (`Clôture N finie : <hash>`); the orchestrator merges them into the
+   private report and empties the inbox. The weekly usage cap is 75 %: plan the work to fit under it.
 
 ## Two PCs
 The owner works on two Windows PCs, each with `C:\dev\music-app`, kept alike through GitHub. The first holds the signing keys
@@ -160,11 +141,7 @@ and the Android tools (`C:\dev\android`). Each PC's own setup is in Claude Code'
   that writes JS or TS becomes a real newline: write those with the edit tool.
 
 ## History
-The 0.1 releases, 1.0 (the redesign), the rename to Legato (2026-10-29, finished 2026-11-13), 1.1 and the v2 plan (Stable
-1.1.479, 2026-10-31); then imports, lyrics, the phone, device sync, the visualizer's v2, listening rooms, personal servers,
-the website in 18 languages; Stable 1.1.681 (2026-11-05), Betas up to 1.1.994, Beta 1.2.1 (the first on the 1.2 line),
-Beta and Stable 1.2.10 (2026-11-14, `1215f5b4`). Since 1.1.932: podcasts, the output device, living-room mode, audiobooks,
-Discord sign-in, YouTube chapters, sweet fades, lyrics translation, DLNA cast, right-to-left, the Stream Deck plugin, the
-settings reorganisation, right-click levels, themes, playlist banners, free song recognition, and the recommendation
-algorithm (on master since `22cc704d`). Reviews 23 to 25 were run by Sonnet in the Opus session; that session was switched
-to Opus 5.5 only afterwards. The rest: `git log`, the release notes.
+Releases 0.1 to 1.0 (the redesign), the rename to Legato (2026-10-29, finished 2026-11-13), 1.1 and the v2 plan (Stable
+1.1.479, 2026-10-31), Stable 1.1.681 (2026-11-05), Beta 1.2.1 (the first on the 1.2 line), Stable 1.2.10 (2026-11-14). The
+recommendation algorithm, the lots 39 to 50 and the Discord pings are in the release notes and in `git log`. Reviews 23 to
+25 were run by Sonnet in the Opus session; that session was switched to Opus 5.5 only afterwards.

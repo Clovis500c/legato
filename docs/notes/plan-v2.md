@@ -4,7 +4,7 @@ Open work only. Tick a line when it lands; drop ticked lines once a release ship
 (phases 1 to 8, the big update, the redesign, the product pass, roadmap milestones 0 to 2, the user's choices along the
 way) is in git: `git log -p docs/notes/plan-v2.md`, and in the release notes.
 
-Stable: v1.1.681 (2026-11-05). Next: the lines the owner chose on 2026-11-07 (their answers: Waiting on the user),
+Stable: 1.2.10 (2026-11-14). Next: the lines the owner chose on 2026-11-07 (their answers: Waiting on the user),
 then milestone 3, Platforms; Against Liner 6 with the owner at the PC. Where the work stands: [handoff.md](handoff.md).
 
 Every idea here stays: the user wants them all built in the end, just later (user's choice 2026-10-31). The roadmap sets
@@ -17,101 +17,16 @@ the order; a line leaves only when it ships or the user drops it.
       2.5.3) shows no sure cause; a Java crash now lands in the diagnostics (`MainActivity.kt` `keepCrashes`, never built
       here: no Android toolchain on this PC), so the next Beta's Copy diagnostics names it. Faster: the phone on USB with
       debugging on, `adb logcat -b crash -d` on a PC with the SDK.
-- [x] `S-M` Settings › Visualizer style: a dropdown instead of the 16 pills, each style shown with a preview of its look.
-      2026-11-08: `LookPicker.tsx`, still previews by the visualizer's own painter (`VizThumb.tsx`, an invented sound).
-      Checked in the site demo only (1400 px dark, 375 px light): not in the installed app, WebView2 or on a phone.
-- [x] `M` The big title screen (the song's huge title over the backdrop, the artists under it): each artist's round
-      profile picture right of their name, good-looking, several artists handled.
-      2026-11-11: `ArtistLine.tsx`, each artist its own link to their page, the picture (32 px) once known. Decided
-      alone (2026-11-11): no new lookup rule, Discord's (`discord_artist_art`: the artist page's kept picture, else
-      YouTube Music asked for a song YouTube plays, 10 s in, one a minute), so a featured artist's picture can come a
-      song later; no setting. Never seen on a screen (the preview server was declined in the unattended run): tests
-      and types only. To judge: the size, the gap, a name cut by `allArtists` at a comma ("Tyler, The Creator").
-      The owner's choice 2026-11-11: one search per artist, cached, refreshed when the song changes (open line below).
-- [x] `M` Up next: a better-looking list, redone the way the lyrics were (on the backdrop, Against Liner U2's glow and
-      simplicity).
-      2026-11-11: Now Playing's panel only (`UpNext`'s `bare`; the main window's side panel keeps its card): no card,
-      the list's edges fading, covers lifted by a shadow, the playing song by its bigger title and its mark's glow
-      instead of a grey box. Decided alone (2026-11-11): a light pass, rows and their size kept (drag, the virtual
-      list), easy to push further once seen. Never seen on a screen: types, lint and Vitest only (no Rust touched,
-      so no cargo run for this commit).
 
 ## The owner's answers of 2026-11-11 (still to build)
 Also settled: no push yet (they try with `pnpm dev` first); the flowing background, the new-releases section and the
 classic mini player stay off by default; the web share link stays the default; permissions ahead for the next runs: yes.
-- [x] `M` Artist pictures: one lookup per artist (not one a minute), kept in a cache, refreshed when the song changes
-      (the owner's choice 2026-11-11). Replaces the Discord rule used by the big title's round pictures.
-      2026-11-11: `artist_picture` (replaces `discord_artist_art` for the big title; Discord's keeps its one-a-minute rule):
-      the kept artist page's picture, else YouTube Music asked once per artist, one at a time (an async mutex), none during an
-      import or 15 minutes after a refusal, a miss not asked again for 6 hours (`searchpace::Looked`); still only for a song
-      YouTube plays, 10 s in (a local file's artist is not sent). "Refreshed when the song changes" = the next song's new
-      artists are asked at once; a kept page follows the cache's own expiry. Untried against the real YouTube Music.
-- [x] `S` Flowing background behind Home, as a setting, off by default (the owner's choice 2026-11-11).
-      2026-11-11: Settings › Appearance › Flowing background behind Home (`homeFlow`, off; needs Animations): `HomeFlow` in
-      `HomeView` draws `Backdrop` (moved to `player/Backdrop.tsx`, a `flowing` prop) with `bc90071`'s shader, which pauses with
-      the song and a hidden window; dimmed at 72 % to read the cards. Never seen on a screen: the dim and the stacking
-      (`isolate` wrapper around Home) are unjudged.
-- [x] `S` `legato://` registered with Windows from the installed app only (`identity::installed()`), for a real
-      "Open in Legato" button on the share page, AND the page's "Copy the link for Legato" kept (the owner's choice
-      2026-11-11; the web link stays the default).
-- [x] `S` Cover Art Archive covers for "New from your artists", as an option off by default, with its website privacy
-      row (one more host; the owner's choice 2026-11-11).
-- [x] `S` The classic mini player keeps its place after a restart (a setting; `pipMode.ts` keeps it for the run only,
-      checked in the code: `classicPlace` is a module variable, `f5528ba` does not save it).
-      2026-11-11: `f5528ba` kept it for the run only; now settings `pipClassicPlace` (per PC, in `LOCAL_SETTINGS`, saved on
-      close like `pipPlace`, refit to a screen by `pip.rs`). Never seen on a screen: Vitest on the sanitizer only.
-      2026-11-11: Settings › Appearance › Covers for new releases (`releaseCovers`, off); on, a card's cover is
-      `coverartarchive.org/release-group/<id>/front-250` through the `art` scheme (allowlist: that path, then archive.org's
-      `/mbid-` files it redirects to), the website's "New from your artists" row says so; Settings › Privacy lists the hosts
-      on its own (`Noted`). A release group without a cover shows the letter cover. Untried against the real archive:
-      the redirect's hosts and file names are from its docs / memory, mock-free (the allowlist is tested on shapes only).
-      2026-11-11: `src-tauri/src/protocol.rs`: the installed release app writes HKCU\Software\Classes\legato at launch
-      (no admin; a command naming a gone exe is replaced, a working other one left), the NSIS uninstall hook removes it. A
-      launch's `legato://` argument (this one or a second, single instance) waits in Rust; `startOpenedLinks` takes it, keeps
-      it only if `isShareCode` (a pasted link's test) and opens the same import dialog. The share page has "Open in
-      Legato" beside "Copy the link for Legato". Untried: the registry write, Windows starting the exe with the link, the
-      uninstall hook, a browser's "open this app?" prompt (needs the installed app: a dev build never registers).
-- [x] `S-M` Explicit songs hidden everywhere (own playlists, album, artist and search pages), only hidden: a way for
-      the user to bring one back when the flag is wrong (the owner's choice 2026-11-11).
 
 ## The owner's asks of 2026-11-11, night
 
 Noted from their message, nothing built or checked yet. After the answers above, or later, by the plan's priorities.
 Where a line says "reading", the owner hasn't confirmed it.
 
-- [x] `S` FIRST (the owner's word): a song can't be removed from a playlist from the player. Seen in Now Playing's
-      right-click menu while playing from a playlist ("Lecture depuis Music"): Add to a playlist lists the
-      playlists, nothing removes. Reading of the fix: "Remove from {playlist}" for the playlist it plays from, and a
-      check on each playlist that already holds the song, a click on it removing it; the same in every menu of a
-      playing song (player bar, Up next, mini player). Find the cause first: other lists have Remove from playlist.
-      2026-11-11: cause: `playerMenu` (Now Playing, player bar, mini player, side panel) offered `addTo` but never
-      `removeFrom`, and "Add to playlist" didn't know which playlists held the song. Now one song's "Add to playlist"
-      checks the own playlists holding it (a click removes, with Undo), in `trackMenu` too (Up next, rows), and the player's
-      menu has "Remove from {playlist}" for the playlist the queue plays from (`library/holding.ts`, matched by the name the
-      queue keeps). Not done: YouTube Music / server playlists in that check (they stay in "Remove from ›"). Never seen on a
-      screen: Vitest on the helpers only (`menus.tsx` can't be imported by a test: it touches `window`).
-- [x] `S-M` Bug, second in priority (the owner's report, 2026-11-11 night, Beta 1.1.807, YouTube signed in, crossfade 2 s,
-      autoplay on, liveYoutube on): the same song played twice at the same time. The only clue in their diagnostics, at
-      the moment it happened: `playback youtube: the embed refused the video, playing it from its watch page`, then 0.6 s
-      later a normal `time to sound, after a song` line. No other error line. Lead to check first: the refused embed (or
-      the crossfade's other player) still starts or is never stopped once the watch page takes over, so both sound.
-      2026-11-12, cause in the code: the store opens the watch page (and pauses the embed) as it sets the song, then
-      React hands the embed that video with `loadVideoById` (in a crossfade, a new embed with autoplay, the pause sent
-      to no frame); a video blocked after a stall plays fine there. Fixed: the embed only cues a video its watch page
-      plays (`embedStarts`), and one that starts anyway is paused. Not tried for real (needs a refused video).
-      2026-11-11: with the setting on, hidden in Songs, every playlist (own ones too: while some are hidden the playlist is
-      not editable by position, like with a search typed), albums, artist pages, search, mixes, and radios / autoplay
-      (`similarTo`); each list that is shortened shows "N explicit songs hidden · Show" (`HiddenExplicit`) whose rows
-      have "Not explicit" (also in the song menu of a flagged song, with Undo). The word is kept in the library (`explicit`
-      = 2, a source saying explicit again can't undo it; `Library::set_explicit_ok`, no schema change). Not covered: Home's
-      shelves and cards, the Up next queue already built, a playlist's play-all from a sidebar menu (they use the same
-      lists, but only the pages above were filtered). Never seen on a screen.
-- [x] `S-M` The share page (`/l`, since `867cc53`) as a good-looking preview of a playlist without the app, from the
-      compact links: a preview only, no player on the web (the owner's word).
-      2026-11-11: the page has a header card in a colour drawn from the playlist's name (`hueOf`), its songs, known time and
-      where they play (`summary`, from the link alone), numbered tiles in the same colours, "Open in Legato" first. Still no
-      covers (they would load from YouTube's host for the visitor) and no player. Never seen in a browser: `next build` and
-      Vitest only; the colours' contrast on the light theme is unjudged.
 - [ ] `M` Remixes shared outside the app: a small file of ours, `.lmix` (or close, the owner's call), and its compact
       link. It holds the song's YouTube link and the mix's Live Editor presets, never the audio (no mp3: Fixed
       limits, no download). Dropped on Legato, the song plays with the Live Editor open on those presets.
@@ -145,232 +60,29 @@ Where a line says "reading", the owner hasn't confirmed it.
       Left: the bot's signature, a song card's profile.
       2026-11-13 (lot 25): the profile counts only while the keychain still holds the sign-in (`discord_login::current`: links and Settings use it, a stale one is forgotten on the way; `standing` tested).
       2026-11-13 (lot 29): Settings › Accounts shows the account as a profile card (`DiscordAccount.tsx`: the banner, else the `accent_color`, the round avatar over it, the name, Sign out; no avatar: the initial). `users/@me` also gives `avatar`, `banner`, `accent_color`; `DiscordCard` (never in a link: `Profile` is unchanged, still unverified, no e-mail) keeps the two cdn.discordapp.com addresses, built in Rust from the id and a checked hash, shown through the `art` scheme (`art.rs`: only `/avatars/` and `/banners/` on that host). Settings › Privacy has a Discord reason (discord.com, discordapp.com), the website's privacy row says it. Untried for real: a signed-in account (animated avatars show their still PNG), the card in RTL and in the dark theme on screen.
-- [x] `M` Free music recognition in layers (the owner, 2026-11-13: AudD is paid after its trial). Each layer is its own setting, off by default (Settings › General next to Music Detector); the first that answers wins, AudD (the owner's token) stays last.
-      - [x] `S` Layer 1, the OS media session (Windows SMTC, `src-tauri/src/session.rs`, `#[cfg(windows)]`, nothing elsewhere; `music_core::session::pick`, tested): on the This PC input, before any recording, what the playing apps say they play (title, artist, album: no sound, no cover, nothing sent); the app's own session and a session with no artist (a page title) are never taken. Setting `detectorSession`, per PC (`LOCAL_SETTINGS`). Untried for real: the Windows API on a real PC (written from the docs), a browser's or Spotify's session.
-      - [x] `S` Layer 2, Chromaprint + AcoustID + MusicBrainz (`crates/connectors/src/acoustid.rs`): the fingerprint is made here from the clip already captured (`rusty-chromaprint` 0.3.0, MIT, pure Rust: the original Chromaprint is LGPL, this port is not; its dependencies are rubato and rustfft), only it goes to api.acoustid.org (POST `/v2/lookup`, score 0.6 and up), MusicBrainz adds the ISRC, the cover is Cover Art Archive's. Setting `detectorAcoustid`. **The application key is an empty slot**: `acoustid::APPLICATION_KEY` is empty until the owner registers Legato at acoustid.org/new-application (no account was created here); empty, the Detector says so before recording and the setting can be turned off. Honest limits: AcoustID holds whole studio tracks fingerprinted from their start, so a 10-second clip taken mid-song, live, noisy or through the microphone is often not found; no free service equals Shazam. Untried for real: any lookup (no key), a real clip against the real database.
-      - [x] `S` Layer 3, AudD, unchanged, last. The consent texts still say the sound goes once to AudD (the largest case; with the free layers on, AudD may never be reached). The website's Music Detector row names the two free steps.
 - [ ] `L` Settings reorganised (the owner, 2026-11-13: "messy").
-      - [x] `M` Structure 1: one table, `ui/src/features/settings/catalog.ts` (categories = pages, groups with their page, rank and `advanced` fold, every setting with its group, keywords and `was`, the group it sat in before). The page draws a group where the table puts it, whatever section function holds its JSX (`PageOf` context + CSS `order`); advanced groups fold at the page's foot under one heading (desktop and phone). New pages: Features, Devices, Library and storage. "Up next" and "Starting and closing" emptied of what wasn't theirs. `searchSettings` reads the table; a setting opened by name lands on its page whatever section the caller named. `catalog.test.ts`: every setting the search knew before is still placed and found, every group drawn is in the table, one place per setting, the old group names find the moved ones.
-      - [x] `S` Structure 2: a setting's shown text apart from its id. `label` (and `toTranslate`) in `catalog.ts` GROUPS / SETTINGS, `labelOf(id)` (the id by default) drawn by `Row`, `Group` and the search results; the id stays the `data-setting`, the locale key and the search key, so renaming a row is a `label` line plus its 19 translations, the old name still found. `i18n.test.ts`: a label every language lacks fails unless marked `toTranslate`.
-      - [x] `M` Labels rewritten (short, consistent), in the 19 languages (lot 33): 25 of the 143 rows, the ones over four words or the wordiest four (`label:` in `catalog.ts`, ids untouched: `Close to tray`, `Webcam QR scan`, `Gapless albums`, `Fade after skip`, `Sidebar counts`, `Ad blocking`, `Resume on launch`…), two commits. The other rows were already one to four words and keep their id as their text. The descriptions were not rewritten: none contradicted its new label, and each one costs 19 translations. Page order revisited once: Playback opens with Volume and output; Appearance puts Lists and navigation before Immersive player and Hi-Fi extras. Left: the JSX moved into one component per group (optional), a review of the descriptions' length, the labels read in the app in every language (checked in tests, in the demo for English only).
       - [ ] `M` The remaining JSX moved into one component per group (optional).
 - [ ] `L` Right-click menus customised (the owner, 2026-11-13: "it fills the screen").
-      - [x] `M` Structure 1: `ui/src/shared/ui/menuShape.ts` (`MENU_ITEMS` registry: stable id, group, level per kind of menu; presets Essentials / Standard / Full detail; `shapeMenu`: hidden, order, the rest under More…, `MAX_INLINE`; `readLayout`), setting `menuLayout` (default Standard, synced), the preset in Settings › Appearance › Lists and navigation. The song menu is the first wired (`tag` / `shaped` in menus.tsx). Menus already scroll past 80 % of the screen (ContextMenu).
       - [ ] `M` Every other menu wired (its items in `MENU_ITEMS`, `shaped(kind, …)`), then the customising screen (per kind: tick, reorder, Reset).
-- [x] `M` Right-click menus customisable (the owner, 2026-11-13, request 6; lot 30): every builder of `menus.tsx` (songs, lists of songs, playlists, folders, the player, the sidebar, the app) and the queue's (`UpNext.tsx`) go through `shaped(kind, …)` with each item tagged by an id of `MENU_ITEMS` (`menuShape.ts`, levels Essentials / Standard / Full detail); two tests keep the table and the builders in step (`menuItems.test.ts`: no id outside the table, no table id nobody gives). Album and artist pages have no menu of their own (the songs' menu plus Go to artist, tagged), so their two kinds stay empty. Settings › Appearance › Right-click menus › Customize… (`MenuCustomize.tsx`, loaded when opened: the launch JS stays 323/340 kB gzip): the preset live, per kind a checkbox and up / down buttons (the keyboard reaches them) per item, Reset per kind; pure moves tested (`moveItem`, `toggleItem`, `resetKind`). Untried for real: the phone's bottom sheet (it draws the same shaped entries, nothing phone-specific was written or rendered), the screen in RTL, a very long menu on a small window.
-- [x] `S` Settings › Advanced: the fold's title at a page's foot is "Advanced" (was "More settings"), 19 languages. Left: the short consistent labels of every row (each label is the row's `data-setting` id AND the key of the 19 locale files and the search: renaming ~150 needs a display text apart from the id, a change of `Row` and the search), and the ranks / `advanced` review of `GROUPS`.
-- [x] `M` Playlist banners, Steam's "Browse by category" look (the owner, 2026-11-13, request 3; lot 31): Settings › Appearance › Lists and navigation › Playlists as banners, OFF by default (`playlistBanners`: the usual cards otherwise). A tile = five tilted strips of the playlist's distinct covers (CSS `rotateX` perspective + `rotate` + counter-skewed images, mirrored in right-to-left, no WebGL), a wash of the covers' average colour deep enough for white text (5.7:1 on the brightest, tested), the name in white capitals; no covers: the wash from the name's hue and its first letter. Home's Your playlists becomes "Browse your playlists" (a snapping row, arrows at both ends, a dot per page, real buttons with labels) and a playlist's page gets the same banner, wide, above its title. Covers through the `art` scheme only; `motion-safe:` for the hover; the code is `PlaylistBanner.tsx`, loaded when the setting is on (launch JS 325/340 kB gzip: the strings only), the pure part `banner.ts` tested (`bannerCovers`, `hueOf`, `initialOf`, `washOf`, `pageOf`). Seen in the website's demo (dark theme, 800 px): the page band and the Home carousel. Untried for real: light theme, right-to-left, the phone width, a playlist of hundreds of covers, keyboard and screen reader (labels written, not driven), reduced motion.
-- [x] `M` Theme section, the presets and the preview (the owner, 2026-11-13, request 5; lot 31): eight new complete presets in `PRESETS`, each with its own palette, corners, font, glow and the look it was drawn with (cover shape, density), all under the contrast test: Terminal (sharp, monospace through the theme's own CSS, compact), Pastel (round, airy), High contrast and High contrast light (sharp, 8:1 and more, no glow), Midnight, Sepia (serif through the theme's CSS), Glass (round, airy), Neon (vinyl covers). No default changed (new ids only: no `DEFAULTS_VERSION` bump), `BRAND_GUARD` untouched. Settings › Appearance › Theme: a large live preview of the tile under the pointer or the keyboard before it is applied (else the applied theme), a Mode switch (Auto, Light, Dark), the themes split into Light and Dark tiles, custom themes apart; the editor, the .theme import / export and the paste stay. Seen in the website's demo: the tiles, and Terminal applied (green, monospace, sharp). Lot 32: Duplicate to edit (one gesture copies the previewed or applied theme into the custom ones and opens the editor), the editor under an Advanced fold, Corners in the quick row (on a preset it makes the copy first; density stays in its own group). Left: the preview is the mini window (not the real interface), Glass has no picture behind (a background needs a file), the new presets' look in the light themes and at phone width.
-- [x] `S` Share import by webcam (lot 32): Add music › Import a shared playlist has a camera button, only with Scan QR codes with the webcam on (off by default, desktop): the same lazy jsQR window, the camera asked at the click, the text read goes to the import dialog (its preview refuses what is not a share code). The setting's own sentence still lists the two other places. Not tried for real: a real camera and a real code.
-- [x] `S` Artists' pictures: a default picture and a faster arrival (the owner, 2026-11-14, request 7; lot 34). (a) `Cover` has an `artist` mode: the tile is the initials on a gradient of the name's own hue (`shared/hue.ts`, the same hue every time, white text readable on both themes), its size reserved, and the real picture fades in over it once decoded (300 ms, none with reduced motion; a picture already in memory shows at once); used by the big title's artists (`ArtistLine`, which showed nothing and moved the line until the picture came), the artist page, the artists of the library, search, Home. (b) Where the time goes, read in the code: the picture URL comes from YouTube Music only for a song YouTube plays, 10 s in, one artist at a time and a miss waits 6 hours (`artist_picture`: the pacing that keeps Google from refusing us, kept as it is on purpose: no preloading by network); the small round pictures were already asked at their drawn size (`sizedArt`, 64 px, cut once and kept on disk by Rust) and lazy. What changed: the same artist asked from the title, the page and a card within one frame is now one request to Rust (`fetchPicture` dedupes in flight, tested), and a picture is downloaded and decoded as soon as its URL is known (`warm`), so the next card or Now Playing shows it at once. Not changed, and why: no earlier lookup for the next song's artist (a new request to YouTube's web API per song is a privacy and refusal decision for the owner, the site's rows say "a song YouTube plays"). Not measured before / after: no bench (the wait is YouTube's own and a mock would measure nothing); the placeholder is the visible gain. Seen in the website's demo (the title's artist tile, gradient under the picture). Not tried for real: a real artist whose picture arrives late, right-to-left, the dark theme.
-- [x] `M` Next with "Then, similar songs" on (the owner, 2026-11-14, request 8, a bug; lot 35). Root cause: `step` asked for similar songs only when a song ran out by itself (`auto`); a manual Next on the last song went to the "stops and waits at its start" branch first, so a queue of one song (an imported .lmix) restarted itself. Now both ways ask first (`queueEnd`), and only when it adds nothing does Next restart the last song like Stop, a radio station excepted. Three tests, the first failing before the fix (`store.test.ts`: a queue of one, the natural end, nothing to add). Not covered, not seen: a .lmix that plays as the engine's own entry with no library track (`now.trackId` empty: Next is then sent to the engine, not to the queue), Spotify and local sources (the same `step`, no test of their own).
-- [x] `M` Similar songs ranked by the whole queue (the owner, request 9; lot 35): `player/similarRank.ts`, pure and tested on fixtures. A taste profile from the whole queue around the current song (the last ones played weigh most, 0.8 less each step back; queued ones half; a rating of 8 and up doubles a song's weight, 1-2 nearly drops it), the candidates (the library, plus YouTube Music's radio of the last song when signed in, the one request it always made) scored on shared main artist, album, genre, decade, tempo and key, your plays, your ratings (8 and up +6, 1-2 out), the radio's own order; then picked one by one with diversity: never one artist three times running, the album of the last one penalised, and every third (Balanced) or second (Adventurous) pick taken from the middle of the ranking instead of its top. Setting `similarVariety` Alike / Balanced / Adventurous, default Balanced (a new key: no `DEFAULTS_VERSION` bump), under the Then, similar songs switch of the Up next panel. Reused from the mixes: the library as the pool and the ratings; NOT reused: `music_core::mixes` (Rust, built for daily mixes over the months, it has no entry for a live queue; the live queue is in the front). Not done: skips as a negative signal (the front has no skip history, only ratings), "Never in mixes" (the front does not hold it; mixes already leave those out, the library pool does not), Last.fm / ListenBrainz, a "why this song" line. Not tried for real: a real queue and library by ear, the weights (a first guess), a large library's cost (10 000 songs are scored in one pass, not timed).
-      - [x] `S` Review 20: one ask per run-out (a double Next waits, an answer with nothing playable stops, no loop); rated 1-2 filtered out before scoring and a third song in a row by one artist excluded, not just penalised; `similarRank` loaded on demand.
-      - [x] `M` Skips and Never in mixes in the ranking: an async command `similar_signals(ids: Vec<i64>) -> Vec<SimilarSignal { id, skips_recent: u32, never_in_mixes: bool }>` in `src-tauri` over what `music_core::mixes` already reads (skip history, the never flag), ts-rs type through `pnpm types`, `api.similarSignals`; `radio.ts` asks it once for the candidates' library ids (negative remote ids skipped) and passes it in `Taste` (`skips(t)`, `never(t)`); `similarRank.ts`: never → filtered out like 1-2, skips → minus 1.5 per recent skip, capped at 6. Tests: Rust (a skipped and a never song in a test library), TS (a never song never comes, a skipped one sinks below its twin). No default changed. Done 2026-11-14: `Library::similar_signals` in `history.rs` (skips = plays under 30 s not finished, in the last 30 days; never = `Pref::Never`), command `similar_signals`, `api.similarSignals`, `Taste.skips/never`. NOT tried for real: the weights (-1.5 per skip, cap 6, 30 days) are a first guess, never heard by ear. Decided alone (2026-11-14): "recent" = 30 days (the mixes' half-life), `Less` is not counted as never.
-        - Review 23: SQL matches `mixes` skips, no IN clause, remote ids skipped, types in step, no Android gate needed; ok.
-      - [x] `S` Playlist banner (owner 2026-11-14, a 1 403-song playlist at 1630 px): the same covers in diagonals, the wall's bottom right not reaching the bottom, no fade on the right. Done 2026-11-14: covers taken evenly along the whole list, seeded by the playlist id (`bannerCovers`, `seedOf`); `wallGrid` for 4+ covers gives each cell the cover whose nearest copy is farthest (none inside 5 columns x 3 rows, tested); `wallSize` sizes the tilted wall from the box so the four corners are covered (tested by projecting the wall, both tilt directions; one ResizeObserver per header, tiles keep their known size); the header's right side and bottom-right corner fade into the page colour (a mask; none on the phone; mirrored in right-to-left), the header's text column capped at 70 % so a long title stays off the fade. Seen by eye in the website demo at 1630, 1000, 2560 and 375 px, dark and light: corners covered, no diagonals. NOT seen: the real app, a real 1 400-song library (the demo has 12 distinct covers), right-to-left, the fade on a very bright cover, the Home carousel tiles (code shared, not looked at); the fade's look is a first guess. Decided by the owner (2026-11-14): the corner blur removed, the fade kept.
-        - Review 23: wall, memoised cover pick, one observer per header, 0-3 covers, mask and blur checked in the code; ok (the fade's look is the owner's).
-- [x] `M` The wrong artist (the owner, 2026-11-14, request 10, a bug; lot 36). Cause found: `YouTubeMusic::artist(name)` searched the artists by NAME and took the first result with that very name, the most popular of the catalogue: a song from the YouTube channel "Rust" (a rapper, not in the catalogue as an artist) got the picture and the "Top songs" of the band called Rust that tops the search; "Your most played" was right because it comes from the library. Fix, in Rust (`ytmusic/home.rs`): of the artists with that very name the first two are looked at (`artist_ids`, at most one more request than before, only when the first does not confirm), and a page is kept only if its top songs or one card of its shelves is one of the songs the app knows of that artist (`confirms`, titles compared without "(feat. …)", "[Live]", " - Remaster", `loose` / `same_song`); otherwise None: no picture (the default one of lot 34) and no "Top songs" of a stranger. The interface sends the titles: the big title the song playing and up to 12 of the artist's songs in the library, the artist page its 12 most played (`artist_picture` and `ytm_artist` take `titles`, trimmed to 20 of 200 characters in Rust). Presence's artwork (Discord) keeps the unchecked first result (no titles there). Tests: two artists of one name told apart by the song, no page rather than the band's, the credits and versions of a title, a short title not a prefix (`home.rs`). The pacing is untouched: one search and one page per artist, the 6-hour miss, the refusal's quarter hour. The cache correction (d): the pages are kept 30 minutes in memory (`Ttl`), so a wrong one from before is gone after that or at the next launch, nothing is written to disk and `SCHEMA_VERSION` did not change; the picture the interface already holds stays for the session. Not done: an id kept with the song (a channel's `UC…` is not stored with a video: it would be one more request per song, or a library column and a migration), a "Wrong artist?" button, two artists of one name in the library (both share its songs under one name, the check passes for either), mockito for the whole search-and-page flow (`YouTubeMusic` has no injectable address: only the pure part is tested). A legit artist none of whose known songs is on their page now has no picture until one is: the price of not guessing. Not tried for real: the rapper's channel, the band's page, any real answer of YouTube Music.
-- [x] `S` Banners: always on, the header replaces the blue panel (the owner, 2026-11-14; lot 37): no setting any more (`playlistBanners` removed from the settings, the page, the catalog, the bug report's list and the 19 locales; a saved value is ignored, `DEFAULTS_VERSION` untouched). A playlist page's header (`PageHeader` `backdrop`) is drawn on a WALL of its covers: 4 rows of square covers side by side, every other row shifted half a cover, the whole wall tilted (`rotateX(8deg) rotate(-9deg)`, mirrored in right-to-left) and sized to its box by a ResizeObserver, enough columns to fill any width (up to 90), the header keeping its height and its content, its text white over a wash of the covers' colour (deepest on the text's side, 38 % opaque-deep then clear; the deep end is the covers' average at 40 %, so white text keeps 4.5:1 or more, tested); the separate band and its centred label are gone. Up to 48 distinct covers, repeated shifted when fewer (`wallGrid`: two neighbours never the same cover from three covers up, tested; the first 200 songs are looked at, one Map per library list). Without a cover: the wash of the name's hue. Home's Your playlists section is now always the Browse your playlists carousel (the section itself is still off until turned on in Customize Home); its tiles are the same wall, 3 rows. Static: nothing moves, so reduced motion has nothing to switch off. Seen in the website's demo: 1 440 px dark, 2 560 px light (the wall fills the whole width), 375 px light. Not seen: a playlist of 1 400 songs (only the demo's 9-13), a playlist with no cover, the dark theme at phone width, right-to-left, the carousel after this change; no blur was added (the wash keeps the text readable and the covers recognisable).
-- [x] `S` Lot 44: Adaptive Sound on the spot (the owner, 2026-11-14: "l'adaptive sound on puisse le changer en direct, avec des icônes, en dessous de la barre de volume, sans aller dans les settings"). What the app calls Adaptive Sound is the setting `adaptiveSound` (on/off) with `adaptiveLevel` (Quiet -20 / Normal -14 / Loud -11 LUFS), Settings › Playback › Sound processing, the live loudness normaliser of `player/live.ts`; it is the only thing named that, so it is the one done. Done 2026-11-14: `AdaptiveSwitch.tsx` under the volume (the bar and the knob, and Now Playing's big volume): four icon buttons (Off, Quiet, Normal, Loud) in the house `Segmented` (radio group, real buttons, name and tooltip "Adaptive Sound: <mode>", keyboard reachable), reading and writing the same two stored settings through `adaptiveMode.ts` (pure: mode list, mode from settings, patch, next / previous; Off writes only the switch so Settings keeps its level). No new setting, no new text (the names reuse "Adaptive Sound: {why}", Off / Quiet / Normal / Loud, already in the 19 locales). Launch JS 333 of 340 kB gzip. Seen in the website's demo (1440 dark, 760 light): the four icons sit under the volume bar, nothing overflows (page width = viewport), clicking Loud selects it and Settings › Playback shows Loud selected. NOT done / NOT seen: the phone (its player has no volume area: the system volume owns it, so no switch there), the icons' look at 375 px, a real song with the real sound chain, the bar's extra height on a real display. Decided alone (2026-11-14): Quiet / Normal / Loud icons are a speaker, a waveform and a megaphone (first guess, the owner's taste); the group is scaled to 90 % to keep the bar calm. References (read 2026-11-14): `ui/src/features/settings/catalog.ts:193-195` and `SettingsView.tsx:546-565` (Adaptive Sound and Adaptive Sound level are the settings; Volume levelling, ReplayGain / R128, is a different one, untouched), `theme.ts` (`ADAPTIVE_LEVELS` -20 / -14 / -11), `player/AdaptiveBar.tsx`, `player/live.ts`, `player/vizLoud.ts` (momentary loudness, K-weighted over 400 ms, true peak). Numbers checked against Spotify's artist page "Loudness normalization on Spotify" (support.spotify.com/artists/article/loudness-normalization: Normal -14, Quiet -19, Loud -11 LUFS, Loud for Premium) and EBU R 128 / ITU-R BS.1770 (-23 LUFS is the broadcast target, K-weighted gated measurement, 400 ms momentary window; read through search summaries and the EBU Tech 3341 listing, not the PDFs): the app's Normal -14 and Loud -11 match Spotify's, its Quiet -20 is 1 LU quieter than Spotify's -19 (left as is: a saved value; the owner's call), and -23 is not offered (broadcast, much quieter than music players use). Apple's Sound Check not read (no public numbers found). UX compared, no code copied (the Liner licence rule stands).
-- [x] `M` Lot 45: Back on the phone goes back a page like a browser (the owner, 2026-11-14: "sur mobile, quand on fait retour, ça ne sort pas de l'appli mais ça fait retour à la dernière page, comme sur un navigateur"). Traced, not guessed. What was already right: every in-app navigation (pages, album, artist, playlist, search, the Settings sections, the phone tabs) goes through `store.go`, which stacks the page left (50 kept); Back (`androidBack.ts` → `backStep`) closes a menu, a dialog (`shared/ui/layers.ts`), the viz / cover / karaoke screens, Now Playing (its queue and lyrics are inside it), then pops a page, and only with nothing left does `MainActivity.kt`'s `PageBack` move the task behind the other apps (it never closes the app and the music). What was wrong: (1) after the app is reopened, `restoreScreen` threw the stack away (`back: []`), so the first Back left; (2) a page tapped twice (a tab, a link) stacked itself, so Back seemed to do nothing; (3) the page came back scrolled to the top, not as left; (4) the Blind test (a full-window cover) was no layer, so Back went to the page behind it. Done 2026-11-14: `app/navHistory.ts` (pure: `pushView` skips the page you are on and keeps the last 50, `sameView` ignores a settings search highlight, `scrollKey`), the stack saved with the screen and read back checked (`validBack` in `screen.ts`, used when "Reopen where you left off" is on: that setting is off by default, so a plain relaunch still starts fresh, as a browser's new tab), `app/scrollMemory.ts` (the biggest scrolling box of `main` is remembered as a page is left and put back on Back / Forward once its content is tall enough, up to about a second of frames), the Blind test joins the layers. Tests: navigate A, B, C then Back = B, A, then nothing left (the app goes behind); same page adds no entry; 50 kept; a stored stack read back with a deleted playlist and junk dropped; scroll memory inert without a page. Checked in the website's demo (the real UI): scrolled Songs to 400, opened a playlist, the title bar's Back returned to Songs scrolled to 400. NOT checked: anything on Android (the emulator `legato36` is not driven from here, the aarch64 and Kotlin tools are not usable on this PC, CI's android job only compiles), the Kotlin `PageBack` / AppPlugin callback order on a real Back press or gesture (read, unchanged), the reopen restore end to end (off by default, so the demo did not run it), the scroll of a list that loads later than a second, the tab chips and filters of a page (not restored). `shared/files.ts` untouched. Decided alone (2026-11-14): Kotlin left as is (nothing wrong found by reading it); the stack is saved always, restored only when the screen is. References (read 2026-11-14): `MainActivity.kt:158-184` (`PageBack`, `onBackPressed` override), `ui/src/app/androidBack.ts`, `backStep.ts`, `backStep.test.ts`, `store.ts` (`go` / `goBack` / `goForward`; `PhoneTabs.tsx`, `SettingsView.tsx:1214`, `layers.ts`), `app/build.gradle.kts` (`compileSdk` 37, `targetSdk` 37, `androidx.activity:activity-ktx:1.10.1`), `AndroidManifest.xml` (no `enableOnBackInvokedCallback`, so the default applies), the sources of tauri 2.12.5 `mobile/android/.../AppPlugin.kt` and wry 0.57.0 `WryActivity.kt` (in `~/.cargo/registry`), and the docs: developer.android.com/about/versions/16/behavior-changes-16 and /guide/navigation/custom-back/predictive-back-gesture (for apps targeting API 36 predictive back is on by default, `onBackPressed()` and `KEYCODE_BACK` are no longer dispatched, `OnBackPressedCallback` keeps working), developer.android.com/reference/androidx/activity/OnBackPressedDispatcher (callbacks are invoked in reverse order of addition, the newest enabled first). Verified by reading, NOT run: the lead about targetSdk 36+ is real but harmless here. The system no longer calls `onBackPressed()`, yet the chain never needed it from the system: AppPlugin's callback (newest, so asked first) finds no JS "back-button" listener and `webView.canGoBack()` false (the app is one page: its history is the store's `back`, not the WebView's), disables itself and calls `activity.onBackPressed()` directly, which reaches `PageBack` through the dispatcher (`hasEnabledCallbacks()` true, the top enabled one is now PageBack), which asks `window.legatoBack()` and only then, with nothing to close or go back to, `behind()` (both callbacks off, `moveTaskToBack`). A direct call is a plain method call, unaffected by the dispatch change. Only OnBackPressedCallbacks are involved, which the AndroidX activity bridges to the platform's OnBackInvokedCallback, so the gesture and the button reach the same chain. What I could only reason about, not run: that order of registration on the real activity (AppPlugin's `init` after `onWebViewCreate`, as the comment at `MainActivity.kt:177` says), the system's behaviour on API 36 (emulator `legato36`, not driven from here), the toggling of `isEnabled` inside the callbacks against the platform registration. Kotlin left unchanged.
-- [x] `M` Lot 46: Home with the player's backdrop looks like one surface (the owner, 2026-11-14, with a screenshot of Home: "le background du player soit aussi dans le home, parce que là c'est vraiment pas esthétique"). NO new setting: it exists, `homeFlow` ("Flowing background behind Home", labelled "Home background", Settings › Appearance › Immersive player, default off, only with `motion`): `HomeFlow` draws the flowing `Backdrop` (WebGL shader on the blurred playing cover, `useBackdrop`, no network, covers through `shared/art.ts`) behind Home. The screenshot shows it on. What was not aesthetic: the list was cut off by a hard line under the chips bar (the week card and the first rows end abruptly), the week card and the song rows were opaque panels pasted on the wash, and the veil was one fixed 72 % whatever the cover. Done 2026-11-14, same id and saved value (no migration, no `DEFAULTS_VERSION` bump, defaults unchanged): with the setting on, (1) the sections' scroll box fades out over 20 px at its top and bottom (a static `mask-image`, no per-frame work; 20 px of room above the first section replace the chips' bottom padding, so the layout is as tall as before), (2) the week card and the song rows are translucent (`bg-panel/55`, `bg-raised/60` through `group-data-[flow=on]/home`: one static layer, no `backdrop-filter` anywhere), (3) the veil follows the cover: `home/homeVeil.ts` (pure) takes the base 72 % for a dark cover and up to 92 % for a bright one (on a light theme, a dark one) so the secondary text keeps 4.5:1 over the cover's average pushed 25 % toward the worst case; the theme's own `--bg` / `--ink-2` are read at the time; unreadable colours or no cover = today's 72 %. Nothing playing: no cover, no backdrop, today's plain background (unchanged). Tests: the contrast (ink and ink-2 over white, black, yellow, cyan, red, mauve, grey covers, light and dark themes), the base veil for a dark cover, the fallbacks, the colour parser. Seen in the website's demo (Songs-sized dark, light at 1440, dark at 375): the wash shows through the week card, no hard line under the chips, text legible; compared with the old look by switching the new classes off live. Launch JS 334 of 340 kB gzip. The flowing shader and the GPU resets (the owner's RTX 3060 Ti, bursts of driver resets with every core busy during builds): `flow.ts` already draws a quarter-size canvas, 30 frames a second at most, only while a song plays (a pause stops the loop; a fade under way finishes), skips the draw while the document is hidden, asks for a `low-power` context and loses it on leaving; that is a very light load, so a plausible cause is NOT the shader but the builds (all cores at 100 %); I did not change it and do not claim either way (a WebGL context made and lost at each Home visit is the one thing I would watch). NOT tried: the real app with a real cover library and the real WebView2, a cover that is bright only in places, the static (no shader) backdrop when `homeFlow` is off (not added: it would change today's look for everyone; a choice for the owner, `appTint` / `backdropFlow` could be reused), a screen reader on the faded edges. In the screenshot but NOT touched: the Daily Mix row and its text cut at the right edge ("Aphex Twin, Machine Gir…"): it is a sideways-scrolling row clipped at the page's edge, the usual hint that it scrolls, not a bug; a soft fade there would be a small follow-up. Decided alone (2026-11-14): fade 20 px, panels 55 / 60 % translucent, veil up to 92 %, first guesses by eye. References (read 2026-11-14): `HomeView.tsx` (`HomeFlow`, `homeFlow && motion`, the sections' scroll box), `player/Backdrop.tsx`, `player/flow.ts`, `player/immersive.ts` (`useBackdrop`), `player/ambient.ts` (`averageColor`), `app/settings.ts` (the `.still` class, `prefers-reduced-motion`), `shared/theme/theme.ts` (`homeFlow`, `motion`), `settings/catalog.ts`, `styles.css` tokens (`--bg`, `--ink`, `--ink-2` of Modern and Modern Dark, used by the contrast test); WCAG 2.2 1.4.3 (4.5:1, the rule the banner test already uses) and 2.2.2 (pause, stop, hide) with `prefers-reduced-motion`. Found while reading: `homeFlow && settings.motion` and `Backdrop` honoured Settings › Animations but NOT Windows' own "reduce motion" (it only stopped CSS animations through the `.still` class), so the flowing shader and the drift kept moving under it. Fixed 2026-11-14: `shared/motion.ts` `allowsMotion` / `useSystemReduced`, used by `Backdrop` (a test of the rule); under reduced motion Home keeps the still blurred cover instead of the shader. NOT read: the WCAG texts themselves (rules recalled, not re-fetched).
-- [x] `S` Lot 48: Now Playing says "From <icon> <name in bold>" (the owner, 2026-11-15, with a screenshot: "au lieu de 'Play from ...' mets l'icône de la playlist, son nom en gras, avec un truc en mode 'From :' icône + nom gras"). Done 2026-11-15: `player/FromTag.tsx` replaces the two sentences "Playing from {list}" of `NowPlaying.tsx` (the phone header and the desktop kicker): the word From, the list's own small cover when it is a playlist (`PlaylistCover` at 16 px) else the house icon of its kind (`@phosphor-icons`: Playlist, Disc, MicrophoneStage, MusicNotesSimple, Radio, Sparkle, Path, Shuffle), then the name in bold; one accessible name "From <name>" for the whole (the pieces are aria-hidden), a long name truncated with the whole in the tooltip, `min-w-0` and flex so right-to-left mirrors. The kind travels with the name: `from` stays the string Up next's "Then from …" reads, with `fromKind` and `fromId` added to the player state and set where `from` is set (`playTracks` through `contextName` over the pure `contextOf` in `fromLabel.ts`: playlist, album, artist, Songs; `radio.ts`: radio and mix; `autoDj.ts`; `artistWalk.ts`); `resume` clears them. NOT touched: `PlayerBar.tsx` "Playing from your music server / YouTube / Spotify" (the source, a different thing) and its hint. Text: new key "From" in the 19 locales (short machine translations), "Playing from {list}" removed from them (unused now; `i18n.test.ts` green). Tests: `fromLabel.test.ts` (the page to its name and kind, none for other pages, a deleted or nameless playlist, every kind has an icon, the accessible name). Seen in the website's demo: desktop dark (From, the cover, "Sunday Morning" in bold, the name as the tooltip, aria-label "From Sunday Morning") and 375 px light (centred in the header). NOT seen: a long name truncating, right-to-left, a radio / mix / DJ label on screen, an album or artist page start. References read: `NowPlaying.tsx:218,297,355`, `store.ts` (`contextName`, `from` setters), `radio.ts`, `autoDj.ts`, `artistWalk.ts`, `library/PlaylistCover.tsx`, `i18n.test.ts`.
-- [x] `M` Lot 47: the picture and page of a YouTube CHANNEL that is no catalogue artist ("prodphanda": an uploader, 1.76k subscribers, its own photo; the owner, 2026-11-15, two screenshots: "ça charge pas la pdp et le profil non plus"). Why it showed only the violet initial: `YouTubeMusic::artist` finds a page by NAME in the artists search and (lot 36) keeps it only if its top songs confirm it; an uploader channel is not in that search, so None, and lot 34's default tile showed. Decided by the owner (2026-11-15): the channel identifier is to be recorded (the handoff's open item "a YouTube channel identifier stored with each song"). Done 2026-11-15: `ytmusic/home.rs`: `valid_channel`, `channel_in` (the linked run of a `next` response's byline, `MUSIC_PAGE_TYPE_USER_CHANNEL` or `ARTIST`, whose text is the artist's name, id `UC…` checked), `channel_page` (the artist page's own parse, whose `musicVisualHeaderRenderer` is the channel header, with its first carousel of videos as the top songs when no "Top songs" shelf, a channel with no video keeps its picture and name), `channel(id)` (one `browse`), `channel_of(video, name)` (one `next`), and `artist_or_channel(name, titles, kept, video)`: the kept channel first (one request), else today's name search checked against titles (unchanged), else, given a song's video, its byline's channel then its page; a refusal is an error that ends it (no other endpoint, no retry; tested with a 429). `ytm_artist` and `artist_picture` take an optional `video` (`api.ytmArtist`, `api.artistPicture`, `fetchPicture`, `ArtistLine`, `ArtistView` pass one of the artist's YouTube songs: the one playing, else one in the library), through `ytm_browse::artist_page_for`, which keeps a channel found this way in the library setting `ytChannels` (`music_core::channels`: lower-case name to `UC…`, validated, 2 000 at most). Same pacing as before: the call is the caller's (`artist_picture`'s one-at-a-time turn, 10 s into the song, its 6-hour miss, 15 minutes after a refusal); a first look for an uploader costs at most the search, two page browses, one `next` and one `browse` instead of the search and two browses, and the next looks cost one `browse`. The avatar loads through the `art` scheme as before: `yt3.googleusercontent.com` is already allowed (`*.googleusercontent.com`, and `yt3.ggpht.com`): NO new host is reached (music.youtube.com is the existing one, and a song's video id already goes to it for radios), so Settings › Privacy's list and the website's `PRIVACY` rows stay true (no row names artist pictures; none changed). Tests (mockito and fixtures only, no real network): `valid_channel`, `channel_in` (name match, accents and case, wrong name, unlinked run, bad id), a channel page's picture and videos, the end-to-end flow (search empty, `next`, `browse`, the id returned, then the kept way asks one `browse` and neither search nor `next`, call counts asserted), the 429 refusal; `channels` (key, refusal of non-ids, bound). Decided alone (2026-11-15): the id is kept PER ARTIST NAME in a setting, not per song in a column (no `SCHEMA_VERSION` bump, no sync or share format touched, the owner's 1 403 songs have none anyway; a per-song column can come later), and `confirms` is not applied to a channel found through the song's own byline (the id comes from that very song). References read: `crates/connectors/src/ytmusic/home.rs` (`artist_ids`, `confirms`, `artist_page`, the fixtures with `UC…` ids), `ytmusic.rs` (`call`, `with_api`, `page_type`), `src-tauri/src/ytm_browse.rs`, `lib.rs` (`artist_picture`, `discord_artist_art`), `crates/connectors/src/art.rs` (host allowlist), `ui/src/features/library/artistPicture.ts`, `player/ArtistLine.tsx`, `AlbumArtist.tsx`, CLAUDE.md's rules (refusals, no bulk, pacing), and ytmusicapi's `get_user` documentation and Debian-packaged `browsing.py` listing seen through search results (browse with the channel id, the visual header, videos and playlists in the tabs; the key `MUSIC_PAGE_TYPE_USER_CHANNEL` itself came from the repo's own `artist_of`, not from ytmusicapi; no code copied). NOT tried for real: any real YouTube Music call (the owner will try prodphanda himself, one manual look: open its song, play it 10 s, then its artist page), the real shape of a channel's `browse` response and of `next`'s byline for it (the fixtures follow the repo's own and ytmusicapi's description and may differ), whether prodphanda's songs expose a linked channel in their byline at all, whether the channel's videos read as songs.
-- [x] `S` Lot 49: "Tyler, The Creator" is ONE artist (the owner, 2026-11-15, Now Playing for "Darling, I (feat. Teezo Touchdown)": "Tyler" and "The Creator" each with its own initial tile). Cause, verified: `ARTIST_SPLIT` in `ui/src/features/library/filter.ts` cut at every comma, and `primaryArtist` / `allArtists` (19 front-end files) and `ArtistLine` draw one name and picture per piece; the same cut lives in Rust (`matching.rs` `ARTIST_SPLIT`, `first_artist`, `primary_artist`, and `lyrics.rs` `main_artist`). Done 2026-11-15: a short list of protected names, `COMMA_NAMES`, applied BEFORE the split on both sides, signatures unchanged: "Tyler, The Creator", "Earth, Wind & Fire", "Crosby, Stills, Nash & Young", "Crosby, Stills & Nash" (also in the repo's own fixture `songlist.rs`), "Emerson, Lake & Palmer", longest first. Matched whole, in any case and spacing ("TYLER,THE CREATOR"), at the start, in the middle or at the end of a credit, so "Tyler, The Creator, Teezo Touchdown", "Tyler, The Creator feat. X" and "X, Tyler, The Creator" give the protected name and the others; NO rule by shape, so "Daft Punk, The Weeknd", "Tyler, The Weeknd", "Crosby, Stills" and "Tylers, The Creator" still split. TS: `splitArtists` in `filter.ts` (the name's commas shielded by a mark, restored after the split); Rust: `matching::COMMA_NAMES`, `shield` (the credit with the separators inside a protected name, "," and "&", turned into "_" byte for byte, so offsets and slices stay those of the original, non-ASCII around it included), used by `first_artist` and `lyrics::main_artist`. The two lists are kept alike by a test (`filter.test.ts` reads `COMMA_NAMES` out of `matching.rs`); the same cases are tested on both sides (`filter.test.ts`; `matching.rs`, `lyrics.rs`), the old ones unchanged and green. Stored data: nothing stored groups by the split name: library rows keep the full credit string, Albums, Artists, stats and mixes are computed on the fly (mixes and their cache key off the credit, no stored artist key), play counts are by song id, the old in-memory pictures and artist pages of "Tyler" and "The Creator" are gone at the next launch, `ytChannels` (lot 47) is new and keyed by the name drawn. One edge: a "Never in mixes" block kept for a DISCOVERED song (`blockedFinds`, a `match_key` of title and primary artist) whose credit holds a protected name has a different key now, so that one block is not matched until it is made again. Seen in the website's demo (a temporary invented credit "Tyler, The Creator, Halden Marsh", removed again): the player's artist line shows two artists, "Tyler, The Creator" with one tile "TT" and "Halden Marsh". NOT tried: the owner's real library and the real YouTube credit of "Darling, I", the artist page of "Tyler, The Creator" (not asked here), the other screens that group by artist with a real library. Other artist names with a comma exist, and only those listed are protected: the owner can report them and they go in the list on both sides. References read: `filter.ts:78-100`, `filter.test.ts:60-85`, `matching.rs:10-60`, `lyrics.rs:245-265`, `ArtistLine.tsx`, `songlist.rs` (fixture), the callers of `first_artist` / `primary_artist` / `main_artist`.
-- [x] `S` Lot 50: Discord pings by release kind (the owner, 2026-11-15: ping Updates only for Stable, only an embed for a Beta, or two roles). What was found by the orchestrator (the MonitoRSS dashboard and the repo): the bot reads `releases.atom` with two connections to #updates, "Legato releases" (filter: `title` does NOT contain `beta`, mentions "Updates Ping") and "Legato beta releases" (`title` contains `beta`, mentions "Beta News Ping"), plus a "passing comparison" on `title` so a title that CHANGES is delivered again as new. It never worked because every title was `Legato vX.Y.Z`. Done 2026-11-15: `release.yml` names a Beta `Legato vX.Y.Z beta` (a comment says why); `scripts/promote.mjs` has `betaTitle`, `stableTitle` and `promoteArgs`, and the LAST `gh release edit` of a promotion (the one that flips `--prerelease=false --latest`) now carries `--title "Legato vX.Y.Z"`, so the rename and the Stable flip land together and MonitoRSS announces the Stable (nothing else of the promotion changed); `promote.yml` and CONTRIBUTING.md › Releasing say why the title carries "beta". Tests in `scripts/promote.test.ts`: the two titles (the Beta one matches the word, the Stable one has none), the promotion's final call with the Stable title, and that `release.yml` uses the same words. The rolling release named `beta` ("Legato Beta") is untouched. Grep found nothing else reading the release title (the updater reads `latest.json`; `release.mjs`, the site and `docs/` do not). NOT tried for real: any release; the next Beta pushed is the first test (expect an embed with the Beta News Ping role in #updates, MonitoRSS refreshes every 20 minutes); Betas already published (1.2.36 and before) have no "beta" in their title, so promoting one of THEM does not re-announce: promote a Beta published after this change; the real MonitoRSS delivery on a changed title. References read: `scripts/promote.mjs`, `promote.test.ts`, `.github/workflows/release.yml` (:118-135) and `promote.yml`, `CONTRIBUTING.md` › Releasing, the orchestrator's findings on the MonitoRSS connections (not re-checked here: no access to the dashboard).
-- [x] `M` Lot 43: the sharer's Discord picture beside their name on a share (the owner, 2026-11-14: "la pp Discord avec le pseudo si on est connecté à Discord avec le truc activé quand on share"). Done 2026-11-14: under the same Discord sign-in setting (no new one), `Profile` carries `avatar`, the picture's hash only (32 hex digits, `a_` first when animated), in a version 4 share code written ONLY when the sharer has a valid one (every other link stays version 3; a link with a picture asks an older app to update, it does not read as one without; new apps read versions 1-3 as before). The QR code carries neither name nor picture (`compact()` drops the profile: names do not fit a QR code), its text is identical with or without. In a web link the picture costs about 45 characters. Validation, Rust and TS alike: hash `(a_)?[0-9a-f]{32}`, id 17 to 20 digits for a picture, else refused on reading and dropped on writing; the address is built in one place only (`Profile::avatar_url`, `avatarUrl` on the site): `https://cdn.discordapp.com/avatars/<id>/<hash>.png?size=64`. App: the import dialog shows a 24 px round picture (or the name's initial) beside "Shared by {name}", through the `art` scheme (`shared/ui/Picture.tsx`, moved out of `DiscordAccount.tsx`; `cdn.discordapp.com/avatars/` was already on the allowlist and in Settings › Privacy as Discord), its text says "name and picture not verified" when there is a picture (19 locales, machine translations). A profile saved before this had no hash: it is read from the card's address, no new ask of Discord. Site: the share page shows the round picture (initial tile as fallback) with `referrerPolicy=no-referrer`, `loading=lazy`, `decoding=async`, empty `alt`; the notice says "name and picture"; the page's footer line and the Discord row of `PRIVACY` now say the visitor's browser asks cdn.discordapp.com for that one image (the site has no CSP, no `SERVICES` list: PRIVACY is English only). Tests: Rust (round trip with and without, an old link, forged ids and hashes, the URL builder, QR text unchanged, the extra length), the site's reader and URL builder (a link written by Rust), `Picture` through the art scheme. Seen in the site's dev server at 375 and 1000 px (light, dark): the round tile with the initial and the new notice and footer. NOT tried for real: a real Discord CDN image (the made-up hash only gave the fallback tile), a real QR scan, a real share between two PCs, the import dialog on screen. Decided alone (2026-11-14): version 4 rather than a trailing field in version 3 (an older reader refuses trailing data, and a failed older read says "update the app" instead of misreading); `SharePreview.avatarUrl` is built in Rust so the front end never builds an address.
 - [ ] Lot 42, recommendation (the owner, 2026-11-14: Shuffle really shaped by the algorithm, no "Then, similar songs" switch, the best music for the user but a bounded dose of the new, many real mixes from a song they love). Design: `docs/recommendation.md` (read it first). Build in this order, one commit each, `pnpm check` green:
-  - [x] `M` 1 Signals: `Library::taste_signals(now) -> Vec<TasteSignal { id, plays_decayed, last_played, skips_recent, liked, less, never }>` for the whole library in one SQL pass (no IN list; same definitions as `mixes::play_weight` / `decay` / `SKIP_MS`), async command `taste_signals`, ts-rs type, `api.tasteSignals`, a small store (`player/taste.ts`) loading it at start and again every 20 plays; `similar_signals` and its type are removed once `radio.ts` reads the store. Acceptance: Rust tests (decay, skip window, never/less, empty library, unknown id), `pnpm types` no diff, the store test with a fake api. Done 2026-11-14 (lot 42A): `Library::taste_signals` (one pass over the plays joined to the tracks, then prefs and Liked Music; a song with no signal is absent), command `taste_signals`, `api.tasteSignals`, `player/taste.ts` (loaded when idle, again every 20 listens), `similar_signals` removed, `radio.ts` reads the store. Decided alone (2026-11-14): the type also carries `plays_long` (the 180-day sum the design's long profile needs) and `liked` is a bool (Liked Music keeps no like date). Not tried for real: the app with a real history.
-  - [x] `M` 2 The shared score: `player/score.ts`, pure (profile from decayed plays with saturation, session profile from a queue, `scoreOf` z-scored, explore dose by variety, greedy MMR with the caps of the design, injected `rand`); `similarRank.ts` becomes a thin caller; every constant in one table. Acceptance: tests on fixtures (a liked artist ranks first but one artist never exceeds 2 in 10; the dose is never 0 at Alike; a skipped or Never song never appears; one liked song moves the profile by at most its cap; same input and seed = same list), and a 10 000-song fixture under 50 ms. Done 2026-11-14 (lot 42A): `player/score.ts` (table `K`; session and long profiles with tanh saturation and a per-song cap; `scoreAll` z-scores; `exploreSlots` dose 10 / 20 / 35 %, floor 1 from 5 slots; greedy MMR; caps 2 per artist and 2 per album in 10; `rand` injected), `similarRank.ts` is a thin caller, `radio.ts` passes the store's signals and the library. 10 000 songs: about 30 ms here (the test asserts 50). Decided alone (2026-11-14): affinity is scaled to 0..8 so the design's +6 / +2.5 / -1.5 stay meaningful beside it; MMR uses the SUM of the similarities to the last 4; only the best 300 by score and 300 explore candidates are walked at each pick; `featuresOf` is cached per track object; the time-of-day term waits for slice 5. Not tried for real: any of it by ear or with a real library; the weights are first guesses.
-  - [x] `S` 3 Shuffle uses it: `weightedOrder(scores, beta, rand)` (key `ln(u)/w`, `w = clamp(exp(beta*z), 0.1, 30)`, Alike 1.2 / Balanced 0.9 / Adventurous 0.5), then the existing artist-spread and last-24-h passes; `shuffleOrder` in `store.ts` reads the taste store (a cold store = today's order, never an await in `toggleShuffle`). Acceptance: with a seeded `rand` the top decile of a 1 000-song list lands in the first third much more often than the bottom decile (over 200 runs), every song still has a nonzero chance (weights > 0), no artist twice in a row, rated 1-2 songs last, the current song stays first. Done 2026-11-14 (lot 42A): `weightedOrder` / `shapedOrder` / `BETA` / `weightOf` in `shuffle.ts`, `libraryScores` in `score.ts`, `tasteFor` in `taste.ts`; `shuffleOrder` reads the taste store (cold = the old smart order, nothing awaited) and Variety reaches the player as `shuffleVariety`. Decided alone (2026-11-14): rated 1-2 songs go last with the ones heard in the last day (the acceptance's word; the design's x0.05 weight would not put them last), they stay in the queue; Never in mixes does not touch Shuffle; Shuffle's scores have no session profile (no queue yet), only the long one; the same-artist pass also swaps backwards at the end of a list. Not tried for real: by ear, with a real library; the betas are first guesses.
-  - [x] `S` 4 "Then, similar songs" removed everywhere (add-setting recipe, backwards): the switch in `UpNext.tsx`, `autoplay` in `theme.ts` (a saved value ignored, `DEFAULTS_VERSION` untouched: no default changes for anyone), Sync Mode's settings list and `diag.rs`, the search labels, the 19 locale keys, `docs/` and the website copy that name it (`grep -rn "Then, similar"`); `autoplay.ts` always continues (radio, Auto-DJ unchanged). The Alike / Balanced / Adventurous segmented control is always visible in the Up next panel, labelled "Variety". Acceptance: `i18n.test.ts` green, a store test where an old saved `autoplay: false` still adds songs at the end of the queue, the Settings test no longer finds the switch. Done 2026-11-14 (lot 42A): the switch is gone from `UpNext.tsx` (the segmented control, now labelled "Variety", shows whenever the Auto-DJ is off), `autoplay` is out of `theme.ts` (a saved value is dropped by `sanitize`; no default changes, `DEFAULTS_VERSION` untouched) and of `diag.rs`'s list, `autoplay.ts` always continues, the 19 locales lost 'Then, similar songs' / 'When Up next runs out' and 'Similar songs' became 'Variety'. Tests: `autoplay.test.ts` (an old `autoplay: false` still adds songs at the end of the queue, the value is dropped), `i18n.test.ts` green. The setting was never a Settings page row, so there was no catalog or search label to remove; Sync Mode carries settings as a whole, no per-key list named it; the website never stated the switch (nothing touched there). Translations of 'Variety' are machine translations, to review. Not tried for real: the Up next panel on screen.
-  - [x] `M` 5 After Up next runs out, by the design: `radio.ts` / `autoplay.ts` call `score.ts` with the session and long profiles (candidates: library, the YouTube Music radio when signed in), the dose, the MMR caps, 15 at a time, time of day after 100 plays. Acceptance: a test with a fake taste store (the picks are never all the top affinity; the caps hold; a stop on purpose adds nothing). Done 2026-11-14 (lot 42B): the library and YouTube Music candidates, the session + long profiles, the dose, the MMR caps and 15 at a time already came with slices 2-4; what was missing is in: the time-of-day signal (`TasteSignal.hours`, a 24-bit mask of the local hours a song was played at in the last 90 days, so `taste_signals` now takes the UI's UTC offset; +10 % affinity at most for hours within 2 h of now, only past 100 plays of history, wraps midnight), `playsDecayed` wired (the long profile reads 70 % of the 30-day sum and 30 % of the 180-day one, as the design says for mixes), and the `Math.max(0, ...aff)` spread replaced by a loop (150 000 candidates tested). Tests: Rust (hours mask), time of day, no stack overflow, the picks are never all the top affinity, a pause adds nothing. Decided alone (2026-11-14): the timing test now allows 150 ms (50 ms is slice 8's bench on a quiet PC; a busy machine failed it). Not tried for real: the time-of-day bonus on a real history, by ear.
-  - [x] `M` 6 "Start a mix from this song": `mixFromSong(seed)` in `score.ts` (30 songs, the seed first, same-style neighbourhood, the arc: three parts, at most 12 bpm a step where tempo is known, a favourite every third, the dose of the new), a Songs-menu item next to Start radio (`features/menus.tsx`, customisable menus: add it to the table, English key in 19 locales), named "<Title> mix", playable and "Save as playlist". Acceptance: tests for the arc (tempo steps, no clashing key, 30 songs, seed first, none rated 1-2 / Never / recently skipped, a library under 30 songs gives fewer, none crashes on 0 or 1 song). Done 2026-11-14 (lot 42B): `player/songMix.ts` (`mixFromSong`, a chunk of its own loaded at the click; `score.ts` got a per-artist cap override: 3 in 10, the seed's artist 4), the Songs-menu item `startMix` (in `MENU_ITEMS`, Standard level, after Start radio) and `startMix` in `radio.ts` (shares `around()` with the end-of-Up-next pick), named "<Title> mix", playable and savable with the queue's own "Save the queue as a playlist"; 2 texts in the 19 locales (machine translations). Tests: 30 songs, seed first, at most 12 bpm a step and no clashing key (10 seeds), unknown tempo or key no obstacle, a favourite on every third slot (at least 7 in 10), none rated 1-2 / Never / recently skipped, fewer than 30 in a small library, 0 or 1 song no crash, same seed same mix. Seen in the website's demo: the item sits after Start radio, the click plays Kettle Song and queues 30 songs of several artists. Decided alone (2026-11-14): the co-listening candidates of the design are NOT in (they need the Rust graph; slice 7 covers that ground); the demo's songs have no genre or year, so a thin neighbourhood (under 60 songs of its artist, genre or decade) is widened to the whole library, the score still favouring the seed's features; the arc's parts are by place in the ranking (settle = best, widen = the 16th best on, return = best again) laid out with a greedy tempo and key chain. Not tried for real: by ear, with a real library's tempos and keys, the Save as playlist button after a mix.
-  - [x] `M` 7 Mixes page, more real mixes: `music_core::mixes::song_mixes(input)` (up to 8 "Like <song>" mixes from the most loved songs, one per style cluster, rotating seeds by day, 20 to 30 songs, at least 8 or the mix is dropped, same input and seed = same mixes), shown on the Mixes page and in Home's mixes row under "Made from songs you love"; they use the signals already in `Input`, no new network. Acceptance: Rust tests (deterministic, clusters differ, a small library gives none, never/less honoured, per-artist cap), a UI test for the section, the website's demo data untouched. Done 2026-11-14 (lot 42B): the section is built inside `mixes()` (it needs the private taste, the artist groups and `score_of` there) rather than a separate public `song_mixes`: up to 8 `like-N` mixes ("Like <title>", kind `loved`, new in the ts type), one per style (genre + decade where tagged, else the artists listened to together), seeded by one of that style's 3 most loved songs, the seed turning with the local day, the seed first, 8 to 25 songs (a style with fewer than 8 gives none), Never never seeds or appears, Less never seeds, an artist capped by the existing `diversify`, overlap checked among the like mixes only. UI: a "Made from songs you love" section on the Mixes page, title and reason worded through `words.ts`, 4 texts in the 19 locales (machine translations; the French one says `vous`). Tests: Rust (one per style, deterministic and day rotation, Never / Less / a small library, caps), `words.test.ts`. Decided alone (2026-11-14): 25 songs (the existing `MIX_LEN`), not 30; Home's mixes row is unchanged (it shows the first mixes; the new ones sit after the favourites); the website demo's data untouched, so the section was NOT seen on screen. Not tried for real: with the owner's library, by ear.
-  - [x] `S` 8 Measure and tune: `pnpm bench` gets a "shuffle 10 000" line (taste store load + `weightedOrder`, target under 50 ms; over it, move the scoring pass to `music_core` behind one command and say so in `docs/recommendation.md`); Settings › Playback shows Variety next to Smart shuffle with a sub-line that says it also shapes Shuffle and mixes. Acceptance: the bench line printed, the Settings search finds "Variety", `docs/recommendation.md` lists the measured numbers. Done 2026-11-14 (lot 42B): `pnpm bench` measures and prints a "shuffle 10000" line (`ui/src/features/player/shuffleBench.test.ts`, run in Node with LEGATO_BENCH=1, best of 5; it goes in the row's notes; `shuffleLine` tested): 27 ms here (store 0.3, scores 14, order 12), under 50, so the scoring stays in the front end (numbers in `docs/recommendation.md`). Settings › Playback › Up next has a Variety row (Alike / Balanced / Adventurous) next to Smart shuffle, its sub-line says it also shapes Shuffle and mixes from a song; the search finds "Variety" (catalog entry, search test, 19 locales for the sub-line and the keywords, machine translations). Not run: the full `pnpm bench` (build + 20 minutes: the owner's PC), the Settings row on screen. Decided alone (2026-11-14): the Smart shuffle sub-line was left as it was (still true; changing it would mean 19 new translations).
   - Decided alone (2026-11-14): the scoring stays in the front end (Up next and Shuffle live there) and moves to Rust only if slice 8 measures it slow; Variety is the one control (it was the user's only handle already); Shuffle is shaped whenever Smart shuffle is on (a "Smart shuffle" off keeps the plain random order, easiest undo: set `beta` to 0); explore dose 10 / 20 / 35 % with a floor above 0; every number is a first guess, never heard by ear.
-- [x] `S` Home's Your playlists section (the banners carousel) is on by default (the owner, 2026-11-14; lot 38): `HOME_OFF` is now only `releases`; `DEFAULTS_VERSION` 11 turns the section on once for settings saved before. The project cannot tell an explicit "off" from the default (v6 forced it off for everyone, then a saved off is the same value), so those who had turned it off get it on once and keep any later choice. The section keeps its saved place (5th, after Recently played; a saved order is untouched, the default order is unchanged). Tests: the default, the migration from v5, v10 and v11, releases still off. Checked: `pnpm check`, `pnpm e2e`, the site's `pnpm build`. Not seen on screen after this change.
-  - Review 23: migration checked (v5, v10, v11, order kept, releases still off), no stale doc; ok.
 - [ ] `M` Android home-screen widgets (the owner, 2026-11-13, like YouTube Music's): three, from `MediaState` only (no network, the page's cover, no secret), buttons = the notification's actions through `PlaybackService`; `Widgets.kt`, res `widget_*`.
-      - [x] `S` Rectangle: cover left, title and artist, previous / play / next (4x1, resizable wide). Landed 2026-11-13. Resources linked with aapt2 alone; the Kotlin was never compiled here (no Gradle cache on this PC) and never ran on a phone or an emulator.
-      - [x] `S` Disc: the cover as a vinyl, play and next (2x2, `Widgets.record` draws the label round on a black record; a JVM test of the crop was written, never run: no Gradle here).
-      - [x] `M` Playlist: the queue as a scrollable list (`QueueService`, a RemoteViewsService; 4x3, resizable): the page sends the current song and the 29 after it in play order (`phoneQueue`, tested), a tap sends `play:<index>` back (the first row, the song playing: play or pause), "Nothing playing" with an empty queue. Not tried: the launcher's scrolling, the template's mutable intent on Android 12+. Android widgets: no Gradle cache on this PC, so none of the Kotlin was compiled and nothing ran on a phone or an emulator; the resources were linked with aapt2. 2026-11-13 (lot 25): names and descriptions in the app's 16 other languages (`res/values-xx/strings.xml`), colours by resources (light and dark following the phone, Material You's system colours on Android 12+ with `values-v31`, the fixed greys before), buttons tinted to the text colour; linked with aapt2, never seen on a phone. Decided alone (2026-11-13): English only was the first cut (the Android shell had no translated strings), a widget button when the app is not running starts the service like the notification's does and does nothing more.
 
 - [ ] `M` Discord bot (the owner, 2026-11-13: to make later, for social features; optional, an exception to serverless that the owner validates; the application « Legato Manager » already exists, public client + loopback redirect set)
-- [x] `M` Drag and drop of every file type that is Legato's own into the app: the remix file, and the others (list
-      them first: shared playlists, backups, themes, playlist files; a plugin folder never installs without its
-      permission review). Today a drop takes folders, songs and a QR picture.
-      2026-11-12: listed: the remix (`.lmix`), a backup (`.legato`), a theme (`.theme`), a song list (`.m3u`, `.m3u8`, `.xspf`,
-      `.csv`, `.tsv`, `.txt`). Dropped, each opens as its page opens it (`library/dropKinds.ts` picks by type, `dropFiles.ts`):
-      a list becomes a playlist, a theme joins the themes and is picked, a backup asks before replacing the library; Rust
-      checks size and shape as before. Not dropped on purpose: a plugin folder (it is read as a music folder; plugins install
-      only through their review), `.musicsync` files, share-code text files. Never tried with a real drop.
-- [x] `M` Share as a picture, dropped on the app, brings its music back: from the picture's metadata first, and from
-      the picture itself when the metadata is gone (Discord strips it): a code the app can read in the pixels (the QR
-      path exists: check what the card carries today).
-      2026-11-11: the card carried no code. Now ("Share as a picture", a toggle "Code to bring the song back", on): a small QR of the
-      song (`song_code`: the YouTube id alone, else the names) in the card's bottom right corner, and the song's web link hidden in the
-      saved PNG as a `tEXt` chunk "Legato" (`core::pngmeta`; a JPEG keeps the QR only). Dropped on the app, `read_picture` reads
-      the chunk first (only text that parses as a share counts), else the QR in the pixels; tested end to end on a drawn card
-      in both forms. Not done: the stats recap cards carry no code, the card from the web page. Untried: the QR's look and size
-      on the real card (190 px, bottom right, unjudged), a card through Discord's own re-encoding.
-- [x] `M-L` Security, the drop first, before the remix file and the picture lines above (agreed 2026-11-11): every dropped or opened file is untrusted (size limits, strict parsers, no path
-      taken from a file, nothing run, fuzz or property tests on each parser). Then a security pass of the whole app
-      (IPC commands, deep links, the `art` scheme, the CSP, plugins, the phone remote and the overlay), findings fixed
-      with tests.
-      2026-11-11, the drop's half: `crates/core/src/fuzz.rs` hammers each parser a dropped or opened file reaches (share codes and
-      links, theme files, M3U / XSPF / CSV lists, song lists, iTunes XML, lyrics files, Sync Mode files, audio tags, QR pictures)
-      with thousands of damaged inputs (fixed seed, no new dependency): none panics, outputs stay bounded, a path in a playlist
-      file only ever finds a song the library already holds, a plain sync file brings no secrets. Fixed on the way: a dropped
-      QR picture had no size or dimension limit (`share::read_qr`: 25 MB, 12 000 px a side, 256 MB), Exportify's file was read
-      whole before its size was checked. Not covered: `cargo-fuzz` depth (decoders of lofty / symphonia / image are theirs),
-      backups and plugin folders (not dropped), the whole-app pass (still open, for Opus).
-      2026-11-13, the whole-app pass begun: fixed, the plugin gateway took an address written out (`https://192.168.1.1/`,
-      `https://127.0.0.1/`) past its public-only DNS (`plugins/net.rs`, now refused). Read, nothing found: `legato://` links
-      (scheme, length, control characters, then only what a pasted code may be; a remix link's settings clamped), the CSP (no
-      inline or eval script, frames YouTube only), IPC capabilities (window `main`, no remote origin), the phone remote and the
-      overlay (secret on every route, compared in constant time, private addresses only, strict headers). Fixed after: the `art`
-      scheme answered the third-party pages the app opens too (YouTube's watch page, Exportify, Apple Music, Google's sign-in)
-      with `Access-Control-Allow-Origin: *`; now any webview but `main` gets a 403 (`art::ours`). Decided alone: by webview
-      label, not by `Origin` (an `<img>` sends none). IPC arguments read: every path comes from a file dialog of our own
-      window (no path taken from a file: theme pictures and covers by checked name, `valid_cover_name`), URLs opened only
-      through the opener's default scope (https, mailto, tel) or fixed `ms-settings:` pages, network frames bounded (rooms,
-      nearby, devices: 256 B to 64 MB), plugin calls checked against granted permissions in Rust. Nothing else found.
 - [ ] `L` The website made beautiful (the owner: too basic today) and given documentation sections for developers
       (plugins' API, themes, the link and file formats, contributing). The design is a piece Fable may do itself (the
       owner's word).
       2026-11-13 (lot 32), looked at before touching anything: the hero at 1440 px (dark) and 375 px (light), through the built-in browser on `next dev`. It is already a product page (the headline as the picture, the real interface tilted in 3D from the demo, one download button, the privacy link, the platforms line) and holds at phone width in the light theme; no redesign was made, because a taste change nobody could judge here would only risk what works. The plan's "too basic" predates the Story and the demo. Left for the owner's eyes: the chapters below the hero, the Features block, the 18 languages' longest lines.
-      - [x] `M` Site 1: sections after the scroll story as cards (fixes, measures plate, bento of features, a card per source, privacy as three promises + the services + every PRIVACY row opening in place, numbered start with the download, roadmap as a line, community card), a footer in columns shared with the docs, a lighter header (Discord and GitHub as icons), hero chips and the playback blue's light; the docs open on two doors. Left: the chapters' own look, a real phone, the 16 other languages read by eye.
 
 ## The owner's asks of 2026-11-13
 
-- [x] `S` The site's title was too long (the owner's screenshot, "Legato : un seul lecteur pour You…" cut off). 2026-11-13: found in the
-      WEBSITE's `<title>` (`title` of each language's copy, `site/components/content.tsx` and `i18n/*.ts`, read by `metadataOf` in
-      `Shell.tsx`), not in the app (its window title is "Legato" already). The title is now "Legato" in the 18 languages; the long
-      sentence was the page's description too (`hero.lead`), which stays as the meta and Open Graph description. Decided alone
-      (2026-11-13): the bare name rather than "Legato : tous tes lecteurs" (nothing to cut again, easy to give a tagline back in the
-      18 files). Checked: `pnpm build` of the site, the built pages' `<title>`.
-- [x] `S` The search bar no longer slides when Now Playing opens or closes (the owner): the bar recentres on the window (`useSearchCentered`),
-      and swapping Back / Forward for Close player moves its box, which a 300 ms `translate` transition turned into a slide.
-      2026-11-13: the transition is off for 400 ms after the player opens or closes (`TopBar`, `snap`), so the bar jumps; focus and window
-      resizes still glide. Reduced motion is untouched (the transition was the only motion). Decided alone (2026-11-13): off for a moment
-      rather than for good, so the bar's own growth on focus keeps its easing. Not testable here: it is a CSS transition on a measured
-      layout (Vitest has neither); never seen on a screen.
-- [x] `M` Erase every trace of "Music App" (the owner's QCM, 2026-11-13: almost nobody used that version, so the formats are renamed too and
-      only ONE catch-up for data on disk stays, in `src-tauri/src/rename.rs`, behind `identity::installed()`). Steps, one commit each:
-      - [x] share codes: the QR prefix `MA1:` → `LG1:`, `musicapp://` links no longer read (`share.rs`, `shareCode.ts`, fuzz, tests).
-      - [x] local network: `_musicapp._tcp` / `_musicappsync._tcp` and their handshake words.
-      - [x] sync files: `.musicsync` → `.legatosync`, the `Music App Sync` folder, caught up once by `rename.rs`.
-      - [x] the pages' messages (`musicapp-ytwatch:`, `musicApp`, `__musicApp*`), the plugin user agent, the site's package name.
-      - [x] texts and docs: `CLAUDE.md` (no more "Names kept"), architecture, sync-mode, plugins, the 17 + 18 languages.
-      - [x] final `grep`, what stays and why (2026-11-13): the catch-up (`rename.rs`, the old Run entry in `autostart.rs`, `hooks.nsh`,
-        the old identifier in `identity.rs`, `e2e/e2e.test.ts`, `scripts/bench.test.ts`: all listed in the next line), the tests
-        that say the old share links and QR prefix are refused (`share.rs`, `shareCode.test.ts`), the sync `check` label
-        `music-app-sync` (sealed inside existing protected folders, not resealable without the password), `C:\dev\music-app` and
-        the `music-app` URL in `CLAUDE.md` (the GitHub redirect), and the generic "music apps" in two docs. `cargo fmt` not run:
-        the repository has never been rustfmt-formatted (2900 diffs), a reformat is a commit of its own.
 - [ ] `S` Remove the rename catch-up (when every PC of the owner runs the new name): delete `src-tauri/src/rename.rs` and its call in
       `lib.rs`, the old Run entry handling in `autostart.rs` (`OLD_NAME`, `music-app.exe`), the old-install cleanup in
       `src-tauri/windows/hooks.nsh`, the old identifier in `identity.rs` (guest list), `e2e/e2e.test.ts` and `scripts/bench.test.ts`, the
       `Music App Sync` note in `CLAUDE.md` › Names; the `music-app-sync` sync label stays (see above).
 
-- [x] `S` A shared song plays instead of opening "Import a shared playlist" (the owner): a link, a nearby send or the picture of "Share as
-      a picture" that holds ONE song now plays it (`share_song`, `share/playShared.ts`); several songs open the same box as before.
-      2026-11-13: the library's own row when it has the song, else the song as the sender gave it (YouTube video with its names, an
-      Apple id looked up, a bare video named by oEmbed), a title alone found on YouTube like any search hit (one search). A song
-      not found says so and plays nothing. Decided alone (2026-11-13): it is played, not added to the library (the easiest to
-      undo; Add to library stays in the player's menu), and its sources travel with it so each plays on its platform. Tests: the
-      library's song, a song outside it, a song not found (the choice of one or several is the preview's count). The Rust half
-      (the lookup of an Apple id, a bare video, a title) is compiled and reviewed, not run against a service. Never seen on a screen.
-- [x] `S` Signed out of Google, searching YouTube (and so listening to what is found) did not work (the owner). 2026-11-13: found by
-      reading, not reproduced against Google: the signed-out path itself is right (visitor requests, tested with a fake server and
-      by the smoke test), but a session whose cookies had gone stale (cookies still in the webview, Google answering 401) was
-      still sent, so the search answered "signed you out" and returned nothing, the public catalog included. The two searches
-      (`YouTubeMusic::search_rows`, `YouTubeWeb::search`) now repeat once as a visitor on a 401 only; a 429 or a "Sorry" page is
-      Google's answer for the address and stays final (no other way, no quicker retry). Every other user of the songs search
-      (imports, Find a version, the play of a hit with no YouTube version) goes through it. Tests: stale session then visitor,
-      and a 429 asked once. Decided alone (2026-11-13): the fix is in the connectors, not the shell, so every caller gets it.
-      Not checked for real: a signed-out search on the owner's PC; if it still fails there, the error under the search ("YouTube: ... 429" or a
-      "Sorry" page) says Google refused: then it is YouTube's limit for a visitor, not a bug of ours.
-
 ## The owner's asks of 2026-11-12
 
-- [x] `S` Lyrics line by line, no more word by word (the owner: more precise, fewer false word timings). 2026-11-12: the line
-      being sung is lit as a whole everywhere (the panel, Karaoke, the mini and picture-in-picture lines already showed lines);
-      the per-word fill, its estimated timing and the `Word` data are gone. A source that times words (enhanced LRC, LRCLIB's
-      Lyricsfile) gives its line the time of its first word, nothing more guessed; plain lyrics stay unlit. No setting existed
-      for it, so none removed. Cached lyrics stay valid with no migration (an old row's `words` is ignored when read; its line
-      times are the same), and a song's own file written by the editor holds plain line stamps. Decided alone (2026-11-12): keep
-      LRCLIB's word-synced Lyricsfile as a source (its first-word times are good line times) rather than ignore it; easy to
-      change in `lyrics.rs` `build`. Never seen on a screen.
-
-- [x] `S` Next on the last song of the queue did nothing (it marked the player paused while the sound went on). 2026-11-12:
-      with Repeat off it now stops and waits at the song's start, like Stop; with Repeat all it already went back to the
-      first song (unchanged). Decided alone (2026-11-12): stop rather than ask the autoplay for similar songs on a manual
-      Next (the autoplay setting still decides when a song ends by itself); easy to change in `store.ts` `step`. Not tried
-      on a screen: Vitest only (the sound itself is the engine's).
-
-- [x] `S` "Add to playlist" for a song that is not in the library: the full-screen player's menu (and the player bar, the mini player, Up next,
-      a search result's) had "Add to library" but no "Add to playlist"; the signed-in YouTube song playing, a recommendation or a
-      result had to be added first. 2026-11-12: every one of those menus (`remoteMenu`, `playerMenu`, `hitMenu`) now has it: a playlist
-      holds library rows, so the song is added to the library as it goes in, in one step, and the notice says so. Decided alone
-      (2026-11-12): the library gets the row (a playlist can't hold a song the library lacks: the schema); a radio station gets
-      neither. Not tried on a screen.
-
-- [x] `S` Next and Previous on a radio station (the owner, trying the Radio page): a station was queued alone, so Next had no
-      neighbour and, at the end of that queue, only paused it. 2026-11-12: a station now starts its whole list (the search
-      results, or Your stations) from its place, so Next / Previous reach the neighbours; each station goes to the engine alone
-      (a live stream never hands over, a second one would only hold a stream open). With no list: as before. Decided alone
-      (2026-11-12): the last station of a list still only pauses (Opus's `569969cf`), no wrap-around. Not tried by ear.
-- [x] `S` Station icons: the directory gives a favicon per station; shown in the lists, Your stations, the player, Up next and the mini
-      player, the initials staying as the fallback; safe (the `art` scheme only, nothing from the front end).
-      2026-11-12: `Station.favicon` (kept only when https on a public name: no IP number, port, user or `.local`-like name), shown in the
-      lists, Your stations and, as the track's cover, the player, Up next and the mini player; initials as the fallback. Safety: the
-      `art` scheme serves only the favicon addresses Rust itself handed out (search results, kept stations, registered at launch),
-      its redirects may go to another public https host within three hops, the usual 5 MB and type checks apply (an .ico is
-      served as an icon). Not covered: a public name that resolves to a private address (the answer is only read as a picture); the
-      website's "Internet radio" row says the icons come from the stations' own sites. Decided alone (2026-11-12): any public
-      host rather than a list (stations' icons sit anywhere). Never seen on a screen.
-- [x] `S-M` Starter stations when Your stations is empty: by the user's region (Windows' / the interface's language, never an IP
-      lookup) and tastes (genres in their library and history, local only), from Radio Browser; the heart keeps one.
-
-- [x] `S` Hide sidebar sections (the owner): Home, Mixes, Radio, Stats and Add music. 2026-11-12: right-click an entry › "Hide from the
-      sidebar"; back with Settings › Appearance › "Sidebar entries" (a tick list; Settings is not in the sidebar, so the way back can't
-      be hidden). A hidden page stays reachable (search, links, shortcuts); hiding the page you are on goes to Home. Setting
-      `hiddenNav`, per PC (in `LOCAL_SETTINGS`, not carried by Sync Mode), settings search entry, everything visible by default, no
-      `DEFAULTS_VERSION` bump. Decided alone (2026-11-12): the tick list rather than a menu entry "Sections…" (the settings search finds
-      it); only the five entries, not the playlists list. Never seen on a screen.
-
-- [x] `S` CI on master was red (run 43275083597). (1) macOS: `lmix::tests::only_an_absolute_lmix_path` used a `C:\` path, not absolute
-      off Windows. 2026-11-12: the test builds its absolute path per system (`cfg!(windows)`); the rule is unchanged. Other `C:\`
-      paths in tests only feed string logic (`is_audio`, `path_key`), checked passing on macOS. Not run on macOS here: the log's only
-      failure; a later one past `-p legato` would show in the next run.
-      (2) Windows: the launch JS was 344 kB gzip against the 340 budget. 2026-11-12: made lazy what a launch does not need: the settings
-      index behind the search bar's command list (loaded the first time the list is wanted), the column browser's panes and the share
-      panel (`pages.ts`; the browser's state and menu entry stay in `browserPicks.ts`). Measured with `pnpm vite build` and
-      `node scripts/budget.mjs`: 344 → 336 kB gzip (1066 → 1041 kB raw); `BUDGET` unchanged. Not seen on a screen: the first search
-      list now waits one chunk load.
-
-- [x] `S` Share a version of a mix (the owner): right-click a saved version in the Live Editor's "Versions of this song" now also has "Share this mix as
-      a file…" and "Copy this mix's link", for the clicked version's own settings (`presetEffects`), not the ones in the editor now; the
-      "Original" pseudo-version has none to share. They were missing from the full-screen player's menu because they lived only in the Live
-      Editor panel's menu (no bug: never added to `playerMenu`); `playerMenu` has both now for a YouTube song. Not tried on a screen.
-
-- [x] `S` The artist's page photo is the big title's round picture (the owner: a one-song artist's page showed another picture). Cause: the page took
-      the first song's cover (or YouTube Music's raw art), while the big title shows `artist_picture`. 2026-11-12: one store
-      (`library/artistPicture.ts`) feeds both; the page asks Rust only for what it already keeps (no request, again when its own data
-      arrives). Decided alone (2026-11-12): with no kept picture the page keeps what it had (first song's cover, else YouTube Music's art).
-      Not seen on a screen.
-
-- [x] `S` "Join the community" on the website (the owner): the public Discord invitation https://discord.gg/WsqAuCSxQU. 2026-11-12: in the header's links,
-      in a Community block after the FAQ (a Join the Discord button beside GitHub Discussions) and in the footer, in the site's 18
-      languages (`content.tsx`, `i18n/*.ts`). A link out: the visitor clicks, nothing is sent from the site or the app, so no `PRIVACY` /
-      `SERVICES` row (decided alone, 2026-11-12). Also added to the FAQ what only the README said (SmartScreen's warning, which file to
-      download, Stable or Beta) and "Simple Icons (CC0)" to the footer's credits. `pnpm build` in `site/` passes.
-      README: cut to what it is, the one-line install, the website, the Discord / Discussions, CONTRIBUTING and the licence. What it dropped is
-      on the site: the features and the FAQ (already), the install steps by file, SmartScreen, Stable / Beta (added), the numbers
-      (already, Performance), the trademark notice and the icons' credit (the footer); build from source is in CONTRIBUTING.md.
 - [ ] `M` Sign in with Discord, to show who shared (the owner's wish; only a note, nothing to build now): the version WITHOUT a bot first, an OAuth
       sign-in without a secret, the profile carried in the link; later, optionally, the link signed by the owner's bot, an exception to
       "serverless" that the owner must validate. Application id received 2026-11-13 and the first part done (above); the signature is left.
@@ -430,25 +142,6 @@ copies, downloads for offline), their accounts, limits and paid plan.
       Left by the autonomous run (2026-11-11): WebView2's own child windows cover the title bar, so the hit test has
       to be answered there and the button's hover and click redone by hand; a mistake breaks the window's buttons for
       everyone, and it can't be tried without a screen. With the owner at the PC.
-- [x] 11. `S-M` Share links that open in any browser: a static page on the website reads the playlist from the link's
-      fragment, Open in Legato, Listen on YouTube, Get Legato.
-      2026-11-11: Share's Copy gives `https://clovis500c.github.io/legato/l/#<code>` (`share::WEB_LINK`), read back
-      by the app like its own links; the page (`site/app/(share)/l`, `sharelink.ts`) lists the songs with Listen on
-      YouTube / Apple Music, Get Legato, and reads the bytes Rust wrote (a test on both sides). Fixed on the way:
-      Ctrl+V anywhere didn't know `legato://playlist/` links, only `musicapp://` (`isShareCode`). Decided alone
-      (2026-11-11): no "Open in Legato" button, the `legato://` link type isn't registered with Windows (Features >
-      Low's deep links), so the page copies the app link to paste instead; no covers (they would load from YouTube's
-      host); the page in English only. A link copied before the website is deployed with this page opens a 404
-      until the push. Not tried: the page in a real browser (only `next build`'s export and the decoder's tests), a
-      10 000-song link's length in a chat app.
-- [x] 12. `S-M` A moving cover background (our own WebGL shader): Now Playing, Karaoke, the Cover display, behind Home
-      as an option; under 3 % CPU.
-      2026-11-11: Settings > Appearance > Flowing background (`backdropFlow`, off: Decided alone, it needs the owner's
-      eye), `flow.ts`: the blurred cover warped by two slow sine rounds, a quarter of the size, 30 fps at most, still
-      when paused or hidden, off with animations off, the still backdrop when WebGL is missing; on every screen with
-      a backdrop (Now Playing, Karaoke, Cover display, full-screen visualizer, picture in picture). Not built: behind
-      Home. Not tried: the shaders compile in Chromium, nothing more; never seen moving, its CPU never measured
-      (the 3 % is unproven), a cover change's fade unseen.
 - [ ] 15. `M` SoundCloud sets and likes: set aside (the owner's word, 2026-11-07). Its API terms (§01, §03, §10.4)
       forbid rebuilding its sets on YouTube without a registered app of theirs. Today's way, untried: Tune My Music's
       CSV export through Add music › song list.
@@ -504,88 +197,6 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - **Low**: niche or fun, for later.
 
 **High**
-- [x] `S-M` Same loudness across sources: YouTube vs local vs Spotify levelled by the Adaptive Sound meter.
-      2026-11-11: Volume levelling (Song / Album) now covers YouTube: each video's loudness heard on a play of 30 s or
-      more is kept (this PC), its next plays raised toward -14 LUFS in live.js (`docs/playback.md`). Decided alone
-      (2026-11-11): boosts only, since YouTube's normalisation turns loud videos down after our measure; the first play
-      of a video as it is. Spotify plays in its own app: out of reach. Untried for real (the ±1 LU of a mixed queue
-      not measured; whether the embed's element volume carries YouTube's normalisation is from memory).
-- [x] `M` Accessibility pass: full keyboard, screen reader labels, contrast AA everywhere, reduced motion.
-      2026-11-11, what the sources prove: `ui/src/app/a11y.test.ts` fails on a `<button>` without a name (its text,
-      `aria-label` or `title`: none was missing) and on a control shown on hover only (`hidden group-hover:grid` is
-      out of Tab's reach: the album and artist pages' Play buttons were, now `sr-only` and shown on keyboard focus
-      too). Contrast AA was already tested on every theme and every accent's palette (`theme.test.ts`); dialogs already
-      kept and gave back the focus. Windows' "Animation effects" off now stops every CSS animation and transition, as
-      Settings › Animations does. Untried: a screen reader (Narrator, NVDA) on the real app, Tab through every page,
-      the JS-driven motion (Now Playing's drift, the flowing background, the visualizers) under Windows' setting (they
-      follow Settings › Animations only), the user's own themes' contrast (the theme editor warns, nothing enforces).
-- [x] `L` Personal servers: Jellyfin, Navidrome / Subsonic, Plex (the user's own music, streamed legally, keychain login).
-      The three kinds in (2026-11-06), untried on a real server of any kind.
-      Spec: [ideas/lead.md](ideas/lead.md) › Personal servers; how it plays: [playback.md](../playback.md) › Your music
-      server.
-      - [ ] `S` Plex's Sign out ends nothing at Plex: the account's token is dropped at the pick, and an owned server's
-        token can be the account's own; Legato stays in plex.tv › Authorized Devices until the user removes it there
-        (the privacy row says so). Revoking it needs the account token kept, or a documented device-removal call.
-        Skipped 2026-11-11 (decided alone): the repo knows no documented removal call (developer.plex.tv's API reference has
-        none for a device; the one clients use, `DELETE plex.tv/devices/<id>.xml`, is the legacy undocumented one), and
-        it needs the account token, which is dropped at the pick on purpose (only the server's own token is kept). Keeping
-        the account token longer widens what a keychain leak gives: not for a call we can't check. The privacy row already
-        tells the user to remove the device at plex.tv.
-      - [x] `S` Plex's covers keep the address in use at the sync: away from home on its plain http LAN address (when
-        its plex.direct https one didn't answer), a cover asked before the next sync goes with the token to whatever
-        answers at that LAN address. Store covers by machine id (`plex:<id>/…`) and sign them at the address in use.
-        2026-11-11: covers kept as `plex:<account key>/photo/…` and signed at the address in use (`Plex::sign`, `Conn::cover_base`);
-        rows synced before keep their old http cover until the next sync rewrites them. Decided alone (2026-11-11): the
-        account's key (machine id + user) rather than the bare machine id (two users of one server have two tokens). Untried
-        on a real Plex server: mock tests only.
-      - [ ] `S` Plex's JWT sign-in (clients.plex.tv, a device key pair, the token refreshed each week) if Plex retires
-        the legacy PIN's long-lived tokens.
-      - [x] `S` Plex's transcoder (`music/:/transcode/universal`) for formats the engine can't read.
-        2026-11-11: the player's second try (transcode) asks `music/:/transcode/universal/start.mp3` (`protocol=http`,
-        `directPlay=0`, `musicBitrate=320`), no Range (a seek reads again from 0 and skips). Decided alone (2026-11-11):
-        MP3 at 320 like the other two kinds, not Plex's HLS. Untried on a real Plex server: mock tests only, so the
-        parameter set (`directStream=0`, `.mp3` suffix) is from memory of Plex's clients, not checked on a transcoder.
-      - [x] `S` Trust a self-signed server: its certificate's SHA-256 fingerprint shown at sign-in and pinned (rustls's
-        own verifier on every platform, so a pinned one is checked, not just accepted).
-        The owner's choice 2026-11-11: yes, built by Opus with tests (a wrong fingerprint refused, an expired certificate
-        refused), as its own branch.
-        Skipped 2026-11-11 (far bigger than `S`, not provable here): desktop clients use native-tls (SChannel), so "rustls's
-        own verifier" means a second TLS stack for servers; a pin must reach every client that talks to a server (the shared
-        `servers::http()`, Plex, the player's streams, the art cache), per account instead of one `LazyLock`; and a pinned
-        self-signed leaf with CA:TRUE (openssl's default) fails rustls's end-entity check, so the verifier needs its own
-        pin-then-validate rules. Tests need a TLS test server and generated certs (no `rcgen` / `tokio-rustls` dev
-        dependency yet) to show a wrong fingerprint, an expired and a mismatched certificate refused. Do it as its own
-        branch with the owner.
-        Built 2026-11-12 (on `platforms`, not its own branch): a pinned host's requests go to one rustls client
-        (`connectors::pin`), the rest stay on the system's TLS; the pin is checked by webpki with the certificate as its
-        only root (dates, handshake), name and CA flag excused. Tests with rcgen certificates and a real TLS handshake on
-        127.0.0.1. Not tried for real: a real NAS's certificate, the sign-in screen, Android; Plex not offered (its
-        sign-in is plex.tv's).
-      - [x] `S` Server songs levelled: OpenSubsonic's `replayGain` (track / album) into Volume levelling.
-        2026-11-11: asked with `getSong` as a song is about to play (once per song and run of the app), used like a
-        file's ReplayGain tags. Not done: Jellyfin's `NormalizationGain` and Plex's loudness (other scales), a gain
-        kept in the library (asked again after a restart). Untried on a real server: mock tests only.
-      - [ ] `S` Your music server in the app's search (`Conn::search` built for the three kinds, not wired). Decided alone
-        (2026-11-06): left for later; the library mirrors the whole server at each sync, so its songs already come
-        up in the library's own search; the server's search would only add what came since the last sync.
-        Skipped 2026-11-11 (decided alone): nothing a user would see beyond that gap (songs added in the last 30 minutes),
-        while wiring costs a server request per search on every account and a "not in your library" result kind that
-        plays without being in the library. Revisit if a sync gets slower than 30 minutes.
-      - [ ] `S` Playlist edits sent back to the server (`updatePlaylist`, `createPlaylist`) when its direction sends.
-        2026-11-11: a Subsonic server's playlists take songs (Add to playlist, a drop on the sidebar) and lose them
-        (Remove from) from here, sent with `updatePlaylist` in the background and undone here when refused; a
-        removal reads the server's list first (it removes by position). 2026-11-13: `createPlaylist` too (a playlist made
-        here: menu "Send to <server>", every song must be that server's, then it is mirrored from that server and the
-        next sync finds it by its id). Left: renames and order, Jellyfin and Plex (read-only, said in words). Untried on a real
-        server: mock tests only.
-      - [x] `S` Servers that refuse token auth (Subsonic code 41: LDAP users, some Ampache / Nextcloud Music setups): the
-        password sent hex-encoded (`p=enc:`) after a warning, https only. Today the sign-in says "doesn't take this kind
-        of sign-in" (translated since part 2, with the three other messages the 2026-11-06 review found in English).
-        2026-11-11: code 41 now says the server only takes the password as it is; on an https address the form shows the
-        warning and a "Send my password as it is" button, the account kept with `plain_password` (`p=enc:<hex>`, refused on
-        http everywhere). Code 42 keeps its old message. Decided alone (2026-11-11): a button after the first failed
-        sign-in rather than a checkbox up front (nothing sent as it is unless the server asked). Untried on a real server:
-        mock tests only.
 - [ ] `L` macOS and Linux builds (media panel, detector, tray per OS).
 - [ ] `L+` Mobile version, well optimised, the Rust code reused (the owner's ask 2026-11-02): Tauri 2's Android target
       with the same crates and `ui/`, Android first, iPhone after. Spec, seven phases, what stays desktop-only and the
@@ -602,17 +213,6 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       showcase of themes on the website.
       2026-11-11: Settings > About > Community opens the Discussions. Left: the website's showcase of themes (it
       needs themes to show: the owner's or the first shared ones).
-- [x] `S-M` Discovery: new releases of your artists from MusicBrainz only (the owner's choice 2026-11-07, no Reddit),
-      shown as cards to play from YouTube; its host in the website's privacy rows.
-      2026-11-11: Home's section "New from your artists" (`releases`), off until turned on in Customize Home
-      (Decided alone: it sends artists' names to a new host). The ten artists listened to most, one request each a
-      second apart, once a day, the last 60 days, kept in this PC's library (`connectors/musicbrainz.rs`,
-      `core/discover.rs`, `src-tauri/discover.rs`); a card opens the app's search on "artist title". The privacy row
-      The owner's choice 2026-11-11: stays off by default; covers from Cover Art Archive as an option (open line below).
-      Is on the website. Not done: covers (Cover Art Archive is one more host), a purpose of its own in Settings >
-      Privacy (musicbrainz.org shows under Other), artists told apart by id (same names: the credit's name must
-      match, no more). Never tried against the real service: the answer's shape and the date range in the query come
-      from their docs (mock tests only).
 - [ ] `S-M` Watch-page player: hide YouTube's own playlist panel (its RDMM "My Mix") and stop its autoplay into a Mix
       (`crates/shield/src/watch.js`).
       Left by the autopilot (2026-11-05): `watch.js` already hides the column the panel sits in (`#secondary`, `#below`)
@@ -628,71 +228,10 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       few songs a day, so a user's own DeepL key or a LibreTranslate server stays a possible later swap (one file). Tested with
       mockito only (chunks, quota, refusal, shape), never against the real service. Left: the translation under the lines
       inside the panel itself (it shows in the box), a language other than the interface's.
-- [x] `M` MusicBrainz lookup that fills Edit song info (album, year, numbers from a release): a new host, the website's
-      privacy row first.
-      2026-11-11: Edit song info (one song) › Look up on MusicBrainz: one recording search by title and artist
-      (`musicbrainz::song_releases`), up to 8 releases (official, plain albums, the album typed, the earliest first;
-      takes over 10 s longer or shorter left out) to pick from; a pick fills album, album artist, year, track, disc, and
-      Save writes as before. Website: a "Song info lookup" privacy row. Decided alone (2026-11-11): one song only (a
-      whole album's numbers would need the release's track list, a second request); no genre (not in the search).
-      Untried against the real MusicBrainz: the answer's shape is from their docs.
 - [ ] `M` Equalizer presets per output device (headphones vs speakers) and AutoEQ profiles for known headphones.
       Skipped 2026-11-12 (not for this run): the engine only knows the default output device (`output.rs`), no name and no change event,
       so per-device presets need platform code (a device-change watch on WASAPI, then the same on the other systems); AutoEQ profiles
       are parametric filters from a large dataset to map onto the 10-band graphic EQ, a data and licence choice. For Opus and the owner.
-- [x] `M` BPM / key tags; genre / year of streamed songs (Spotify's export has a release date; iTunes a genre);
-      smart playlist rules on them (mixes, DJ-like transitions by BPM).
-      2026-11-12, local files' half: schema v22 (`bpm`, `key`, filled by the next scan from TBPM / tmpo and TKEY / initialkey;
-      a tempo outside 30-400 or a key over 12 characters is dropped), Songs' BPM and Key columns (off by default, Settings
-      › Columns) and Tempo sorts. Not done: streamed songs' genre / year / tempo (no source gives them without a new host),
-      tempo-matched transitions. 2026-11-12: Edit song info edits them (BPM 30-400 or emptied, key 12 characters at most;
-      written to the file's TBPM / tmpo and TKEY / initialkey, the library row following). 2026-11-12, smart playlists: rules on Genre (contains / is /
-      doesn't contain), Year and Tempo (BPM) (at least / at most; a song with no tag fails a number test, as unrated songs do for
-      ratings): `rules.ts`, the rule editor. Never seen on a screen. Never seen on a screen.
-- [x] `M` Mixes: genre / year tags (stored for local files only), Last.fm "Discoveries" (user's key); "Never in mixes"
-      on a discovered song (not in the library: no row to hold the choice).
-      2026-11-12, the genre / year half: "Your {genre} songs" (up to 2) and "Your songs of the {decade}" (up to 2) mixes from the
-      tags of local files (8 songs at least, left out when they repeat another mix; `mixes.rs`, titles in `words.ts`). Left open:
-      Last.fm "Discoveries" (the user's key). Never seen on a screen. 2026-11-12: "Never in mixes" on a discovered song: the menu of a
-      song that is not in the library has it; its title and artist are remembered (`blockedFinds`, as `match_key`s, 2000 at most) and
-      the mixes are made again without it (`mixes::without_blocked`). Left for the owner: Last.fm "Discoveries" (its public API has no
-      recommendations call any more: what it should mean is a call).
-      2026-11-13 (night, no owner to ask), Last.fm "Discoveries": Settings › Playback › Last.fm suggestions (off by default; named
-      "suggestions" because "discoveries" contains "cover" in the settings search) puts a "Last.fm suggestions" button on Mixes. Decided
-      alone (2026-11-13): the meaning is the public calls that still exist: the artists Last.fm finds close (`artist.getSimilar`) to
-      the three you play most, minus the ones in the library, ranked by how many of the three name them, two top songs each
-      (`artist.getTopTracks`): 13 requests with the owner's own key (Settings › Accounts), once a day, kept in the library; the
-      favourites' names go to Last.fm (the website's scrobbling row says so). Clicking plays them: they carry no ids, YouTube
-      finds each as it comes up in the queue. Tests: the two calls against a fake server (list, lone entry, error), the
-      ranking. Never run against Last.fm; not in the Mixes list itself (a button, not a mix).
-- [x] `M` Internet radio stations (Radio Browser's open directory).
-      Skipped by the autonomous run (2026-11-11): bigger than `M` once looked at. The engine plays HTTP only as a
-      server song (`server:` paths through the shell's server fetcher, `crates/player/src/http.rs`), and a live stream
-      has no length; a station would be a new `Source` (14 interface files and 25 Rust sites branch on `server`), and
-      rodio is built without ADTS AAC (`crates/player/Cargo.toml`: many stations stream AAC, an added decoder and
-      licence check). Split into: (1) `S` connector `radio_browser.rs` (`all.api.radio-browser.info`
-      `/json/stations/search`, `hidebroken`, codec MP3 / OGG first; a User-Agent naming the app) with the website's
-      privacy row; [x] 2026-11-11: `radio_browser.rs` (`RadioBrowser::search`, `Station`; HLS, dead and non-http streams dropped, MP3 / OGG
-      first) and the website's "Internet radio" row; nothing calls it yet (the row is written for step 3), its error words
-      aren't in `errors.ts` yet. Untried on the real directory: mock tests only. Decided alone: `all.api` name (the
-      directory's round-robin) rather than its DNS server list; (2) `S` the engine's endless stream (a plain GET fetcher, no ICY metadata asked, no seek, no
-      length); [x] 2026-11-11: `server:radio:<address>` paths (`http::RADIO`), `Stream::open_live` (a plain 200, no length, a
-      cut or an ended stream reconnects and carries on, a seek outside the buffer refused), `radio_browser::open` (plain GET,
-      http / https only, no `Icy-MetaData`) behind the shell's fetcher. Nothing in the interface starts one yet (step 3);
-      untried on a real station (mock and local-server tests only). Decided alone: a station is not forced to MP3 / OGG
-      here (the decoder's error says so for AAC, step 4); the station's address is not checked against private ranges. (3) `M` a `radio` source and a Radio page (search, play, keep a station), Up next and history skip it; [x] 2026-11-11: no new `Source`: a station
-      is a recommendation-like track (not in the library) whose `ids.server` is `radio:<address>` (`features/radio/station.ts`),
-      played by `server:radio:<address>` (step 2); Radio page in the sidebar (`RadioView`: search, play, keep with a heart; kept
-      stations in the library's settings, `radio.rs`), history already skips remote tracks, a station is never starred or
-      scrobbled to a server (guards in `like.ts`, `servers.ts`). Not done: a phone tab, the station's own metadata (no ICY),
-      "live" instead of a progress bar in Now Playing, favicons, the directory's other searches (country, tag). Never seen
-      on a screen nor against a real station.
-      (4) `S` AAC streams (symphonia's AAC + ADTS, `cargo deny`). The owner's choice 2026-11-11: AAC too.
-      [x] 2026-11-11: nothing to add: `rodio`'s `mp4` feature already compiles symphonia's AAC codec and its ADTS reader, so no
-      new dependency (`cargo deny` unchanged); a test plays made-up silent AAC-LC ADTS frames as a station (garbage fails).
-      Untried on a real AAC station; HE-AAC (SBR) and LATM streams are not read (said in docs/playback.md).
-- [x] `M` Release radar: new releases from artists in the library (YouTube Music / MusicBrainz). Done 2026-11-11 as Discovery's
-      "New from your artists" (MusicBrainz only; see above); this line was a duplicate, ticked 2026-11-12.
 - [ ] `M` Credits and artist pages: who wrote / produced (MusicBrainz), a short bio (Wikipedia), links out.
       2026-11-12, the links out only: an artist's page has "Find links on MusicBrainz" (a click, two requests a second apart, the
       name only; `MusicBrainz::artist_links`: the artist by exact name with a score of 90, then its url relations, http(s) of 8
@@ -722,18 +261,6 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       (Left by the autopilot (2026-11-05): a song's end is only known measured (local files, Skip silence on) or
       heard once (a video, `ends.ts`), its tempo not at all; the overlap is the player's most fixed code, and a
       length picked per pair needs an ear to tune: with the roadmap's Sonic analysis, or with the owner listening.)
-- [x] `M` Classic skins: a compact "mini" layout (Winamp-like) with the user's theme; a YouTube song keeps its video at
-      200 px beside it (the owner's choice 2026-11-07: YouTube's 200 × 200 rule).
-      2026-11-11: Settings › General › Classic mini player (off) turns picture in picture (P) into a 656 × 200 strip:
-      the video (or the cover) at 356 × 200 on the left, then the time, a scrolling "artist – title" (still with
-      Animations off or reduced motion), the seek bar, the whole transport, the mini visualizer. Decided alone
-      (2026-11-11): built on picture in picture (same window, above the others) rather than a third layout; the strip's
-      place kept for the run only. Never seen on a screen: the strip's fit at 200 px, the marquee's speed.
-- [x] `S` Lyrics: `SONG ENDS`, `NEXT SONG`, `PREVIEW` in normal case (the owner's choice 2026-11-07; keys in all 17
-      languages).
-      2026-11-11: they are the fade editor's two marks and the song lists' 30-second badge, not the lyrics. "Song
-      ends", "Next song"; the badge says "Sample" (Decided alone: "Preview" is already the key of the settings'
-      visual preview, with other translations). Not seen on a screen.
 - [ ] `M` Long YouTube mixes and DJ sets split by their chapters (or timestamps in the description / pinned comment):
       each part a song in Up next, skip within the video; Music Detector names unlabelled parts on request.
       2026-11-13, the chapters: Settings › Playback › Chapters of long YouTube videos (off by default; a video of 15 minutes or
@@ -796,52 +323,7 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       spread) were set on made-up chords. Left: energy, brightness, mood, and the similarity feeds.
 
 **Low**
-- [x] `S` Focus / workout sessions: a timer, no-lyrics or high-BPM mix, a summary after. (Left by the autopilot
-      (2026-11-05): no tempo or energy data yet, so no high-BPM mix: the roadmap's "Smarter listening" analysis first;
-      the plain timer is the sleep timer.)
-      2026-11-12, the tempo half: with the tempo tags of local files, the Mixes page has "Up tempo" (120 BPM and above) and "Slow
-      down" (90 and below), 8 songs at least (`mixes.rs`). Left: the session itself (timer, no-lyrics filter, summary), a taste
-      call about what a session is. Never seen on a screen.
-      2026-11-13 (night, no owner to ask): Settings › Playback › Focus and workout sessions (off by default) adds "Focus session…" and
-      "Workout session…" to the player's menu. Decided alone (2026-11-13): a session is a length (5 to 240 minutes, asked), a mix and
-      an end: the mix is your most played songs (focus) or your local files tagged 120 BPM and up (workout), never over 10 minutes, none
-      explicit when those are hidden, 8 songs at least; the sleep timer takes the end (the music fades out over the last three
-      minutes, then pauses); a notice then counts the songs. No lyrics filter (no data: the sonic-analysis line) and no summary
-      page. The simplest session, easy to grow. Never tried by ear or on a screen.
-- [x] `S` Hide explicit songs (a filter, YouTube Music's flag when there is one). (Left by the autopilot (2026-11-05):
-      no explicit flag is stored. The sources give it (YouTube Music's E badge, Exportify's Explicit column, iTunes'
-      `trackExplicitness`): a `Track` field, a schema step and three parsers, an `M`.)
-      2026-11-11: `Track::explicit` (schema v21, kept once any source says so), read from YouTube Music's
-      `MUSIC_EXPLICIT_BADGE` (rows, Home cards, radio queues), Exportify's column 14, iTunes' `trackExplicitness`;
-      Settings › Appearance › Hide explicit songs (`hideExplicit`, off) leaves them out of Songs, imported playlists and
-      mixes. Decided alone (2026-11-11): your own playlists keep them (their rows are edited by position, like the
-      non-music fold); album, artist and search pages not filtered yet; Apple Music's playlist pages and Spotify's own
-      page rows give no flag. Songs already in the library are marked at their next sync. Untried on real answers: the
-      badge's name and the column are from memory of their formats, mock tests only.
-      The owner's choice 2026-11-11: filtered everywhere, but only hidden, with a way back for the user if the flag is
-      wrong: see the open line under "The owner's answers of 2026-11-11".
-- [x] `S-M` Volume: per-source volume memory (its own setting and a switch rule, a taste: the owner's call). The
-      curve stays as it is (the owner's word, 2026-11-07).
-      2026-11-13 (night, no owner to ask): Settings › Playback › Volume per source (off by default, synced like the others). On, the volume
-      set while a source plays (files, a personal server, YouTube, Spotify) is kept for it and comes back when a song from it starts after
-      one from another; a source not heard yet takes the volume it arrives at; a mute is not remembered (`volumePerSource.ts`, this PC's
-      storage). Decided alone (2026-11-13): the switch rule is "the source changes", per source of the playing song, not per
-      song; the curve is untouched. Never tried by ear or on a screen.
 - [ ] `M` Concerts near the user from followed artists (a public API with no account; privacy row).
-- [x] `M` A path between two artists (Plexamp's "Sonic Adventure"): a mix that walks from one to the other.
-      2026-11-12: an artist page's menu (the ⋯ button and a right-click on the header) has "Walk to another artist…": you type a
-      library artist (a part of the name is enough) and the list plays a few songs of each artist on the strongest chain of
-      artists you listen to together (same session, same playlist: `walk::artist_path`, a Dijkstra on those links), at most 12
-      artists, no chain = a notice. Decided alone (2026-11-12): the links are the listening graph the mixes already use, not a
-      sound analysis (that line is still open), so a library with little history finds few walks. Never seen on a screen.
-- [x] `M` Describe a playlist in words ("calm rainy Sunday, no lyrics"): matched against the library's tags and sonic
-      features locally; an LLM only with the user's own key (like Last.fm's), privacy row first.
-      2026-11-12, the local half: the sidebar's New playlist menu has "Describe a playlist…": a few English words become a smart
-      playlist, opened to edit (`smart/describe.ts`): decades and years, fast or slow (the tempo tag of local files), new,
-      favorites, forgotten, unplayed, and the genres and artists the library has; the words that meant nothing are said in a
-      notice. Left: the LLM half with the user's own key (a service and a privacy row to decide), "no lyrics" and moods (no
-      data to match yet: the sonic-analysis line), other languages than English. Decided alone (2026-11-12): rules over a
-      model (nothing leaves the PC), English words only. Never seen on a screen.
 - [ ] `M` Audiobooks from local files (m4b chapters, resume per book, speed, sleep at chapter end), apart from music.
       2026-11-12, one half, resume per book (the line stays open): a song of 20 minutes or more, a file of this PC or of a personal
       server, is picked up where it was left: its place is kept every 10 s and when paused (this PC's storage, not synced), the
@@ -870,14 +352,6 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
   2026-11-13: Stream Deck done as `integrations/streamdeck` (`docs/streamdeck.md`): play / pause, next, previous, now
   playing, over the phone remote's local routes; logic tested, never loaded by a real Stream Deck. Left: its like key (the
   remote has no like route), the Xbox Game Bar widget (a UWP package, nothing here could build or load it).
-- [x] `M` Blind test game: snippets from the library or a playlist, guess title / artist, scores, local multiplayer
-      on one screen or over the LAN code.
-      2026-11-13 (night, no owner to ask): Settings › Playback › Blind test (off by default) puts "Blind test…" in the app menu. Decided
-      alone (2026-11-13): a game is ten songs of the library (a minute at least, one version each, playable), a 20 s snippet of each
-      from 30 % in, four answers (the right one and three other library songs), a score at the end, "Play again". The title cannot
-      leak because the game is a full-window cover over the player (`features/blind`, a lazy page), the sound plays underneath. Left
-      out: guessing the artist alone, a timer on the answer, several players (local multiplayer or over the LAN), a game from one
-      playlist. Never played by ear or on a screen; the snippet seek waits for the song's length and may land a moment late.
 - [ ] `M` Theme and plugin gallery without a server: an index file in a GitHub repo, browsed from Add-ons, installed after
       2026-11-13 (wider mandate), still not built: the index has to live in a repository that does not exist yet (and the project never creates
       one on its own); a gallery that can list nothing would be a fake button. When the owner makes it: one `index.json` (name, kind, url, sha256, size), fetched through `Noted`, a download refused when its hash differs, themes through the existing theme import, plugins through `plugin_inspect` and its permission review.
@@ -959,24 +433,6 @@ Most useful first; the tag is the effort.
       2026-11-13, skipped (can't be run here): skipping macOS needs a changed-files step in the matrix, and `release.yml`
       waits for `check` to succeed, so a skipped job must still count as green; nextest leaves doctests out of `pnpm check`
       (a second `cargo test --doc` step); sccache with rust-cache can cache twice. Each wants one try on a branch's CI.
-- [x] `S` Trim CLAUDE.md to rules + pointers (structure details move to `docs/architecture.md`): cheaper sessions. 2026-11-11: only the Layout section had descriptive text; its crate one-liners moved to `docs/architecture.md` › Layout details, every rule line unchanged (the diff removes lines of Layout only). A small saving (about 10 lines): the other sections are rules. Decided alone (2026-11-11): the per-crate rules (SCHEMA_VERSION, plugins' limits, Android's) stay in CLAUDE.md rather than becoming pointers.
-- [x] `M` Split `src-tauri/src/lib.rs` by feature (library, player, accounts, sources) like `detector.rs` / `editor.rs`;
-      same for `crates/core/src/library.rs` (queries per table). 2026-11-13: lib.rs 2754 → 953 lines (14 modules, helpers
-      re-imported at the root under their old names), library.rs 2882 → 636 (`library/{tracks,playlists,extras,tests}.rs`,
-      private methods `pub(super)`); the code moved as it was, the same tests listed before and after.
-- [x] `M` Typed `invoke` wrappers: the types are generated, the wrappers in `api.ts` stay by hand (no `tauri-specta`), so a
-      command's name and arguments are still checked by eye.
-      2026-11-11: the names are checked (`api.test.ts` reads `generate_handler!`: a wrapper calling a command the
-      shell doesn't have fails). Left: the arguments' names and types.
-      2026-11-12: the arguments' names too: `api.test.ts` reads every `#[tauri::command]` of `src-tauri/src` and fails when a wrapper
-      passes a key the command doesn't take or leaves out one it requires (a non-`Option` parameter, snake_case read as
-      camelCase); a typo made on purpose fails it, and today's wrappers pass. Left: the argument types (the generated ones are
-      only checked by `tsc` on the result side).
-- [x] `M` Diagnostics: a crash that ends the process without a Rust panic (a native fault, a kill) leaves no line; Windows'
-      event log and minidumps are not read. 2026-11-13: `diagnostics.running` in the app data folder while the app runs,
-      gone at each clean exit (quit, restart, restore, update); left at the next start = a WARN line with the version that
-      never closed (desktop only). Decided alone: no minidump or event log reading. Can't tell a crash from Windows
-      shutting down or a failed update install (the marker is dropped before the installer runs).
 - [ ] `S` `graphify hook install` (the user's go) so the graph stays fresh without asking; then drop the `.gitattributes`
       line it adds (the graph isn't tracked).
 
@@ -984,22 +440,6 @@ Most useful first; the tag is the effort.
 
 Most useful first; the tag is the effort.
 
-- [x] `S` Free room in the first screen's JS (it sat at 340 kB gzip of 340, every menu entry cost): 2026-11-13, the release build drops
-      the thin, light and duotone weights from every Phosphor icon (each icon carried six, the app draws regular, bold and fill):
-      340 kB → 305 kB gzip at launch, 1050 → 891 kB raw (`vite.phosphor.ts`; a test reads the real icon files and fails if the
-      app asks for a dropped weight). Decided alone (2026-11-13): this over making `menus` lazy (a menu built on demand would
-      open late), and `DeviceIcon` went from light to regular; the budget stays at 340 kB so the room is the next features'.
-      Not done: other weights back is one line in `KEEP`. Only the Windows build was measured.
-
-- [x] `M` Library at scale, the rest: search with FTS5, scans in the background with progress.
-      Skipped 2026-11-11 (measured, not needed): the library's search runs in the interface over the songs it already
-      holds (`search/match.ts`, each song's folded names made once): 50 000 songs answer in about 7 ms a keystroke
-      (Vitest, this PC), 240 ms once to build the forms. FTS5 would add an IPC round trip and can't keep its rules
-      (inside a word, "acdc" for AC/DC: substrings, not tokens). Scans already run off the window's thread
-      (`rescan`, `spawn_blocking`); left: their progress, a small `M` with its own Channel, not started.
-      2026-11-12: the progress half: `local::scan_with` reports files read of those new or changed, `rescan` tells the
-      interface (event `scan-progress`, at most 5 a second), Songs' subtitle reads "Reading your files… 120 of 4,300" while a
-      folder is read (`scanProgress.ts`). FTS5 stays skipped (measured). Never seen on a screen or on a 10 000-song folder.
 - [ ] `S-M` YouTube embeds: one player reused instead of one per song where the crossfade allows; unload the hidden one.
       2026-11-13, not started (decided alone): it changes the YouTube player's lifecycle, which only the running app with
       sound can check (the e2e walk leaves the embed out).
@@ -1201,3 +641,49 @@ video ahead, no Spotify previews, Android as the APK with its own updates (no Pl
 - Never download or extract YouTube or Spotify audio. Hidden player: only Now Playing's Cover mode, the user's choice
   (2026-10-16) against YouTube's terms; everywhere else the video stays visible (minimum 200×200).
 - No circumventing Premium or DRM. Quotas respected, no server of ours.
+
+## Left open (what the ticked lines still leave)
+- [ ] `S` Visualizer style previews: they use the visualizer's own painter (`VizThumb.tsx`), not the real sound.
+- [ ] `S` Remove from a playlist: check it on YouTube Music and server playlists too (only local ones were checked).
+- [ ] `S` Crossfade: check that a refused embed (or the crossfade's other player) never keeps sounding once the watch page takes over.
+- [ ] `S` Share page: no covers and no player yet (covers would load from YouTube's host for the visitor).
+- [ ] `S` Stats recap cards: no code yet, nor the card from the web page; check the QR's look and size.
+- [ ] `M` Whole-app security pass (for Opus).
+- [ ] `S` Signed-out YouTube search: check it on the owner's PC; if it still fails, read the error under the search.
+- [ ] `S` Settings labels: review the descriptions' length and read the labels in the app in every language; the JSX per group is optional.
+- [ ] `S` Server songs levelled: Jellyfin's `NormalizationGain` and Plex's loudness are not read yet (other scales).
+- [ ] `S` Discovery: covers from the Cover Art Archive (one more host) are not done.
+- [ ] `S` Streamed songs: genre, year and tempo are not filled (no source gives them without a new host).
+- [ ] `S` Last.fm "Discoveries": left for the owner (its public API has changed).
+- [ ] `S` Internet radio: a phone tab, and the station's own metadata (no ICY).
+- [ ] `S` Focus / workout sessions: the session itself (timer, no-lyrics filter, summary) is left.
+- [ ] `S` Smart playlists from words: the LLM half, with the user's own key, is left for the owner (a service and a privacy row to decide).
+- [ ] `M` Blind test: left out, the artist-only guess, the answer timer, several players (local or LAN), a game from one playlist.
+- [ ] `S` Typed `invoke` wrappers: the argument names and types are not checked by a test yet.
+- [ ] `S` Library scan progress: a small `M` with its own Channel, not started.
+- [ ] `S` Hide explicit songs: untried on real answers (YouTube Music's page rows give no flag).
+
+### Personal servers (what is left)
+- [ ] `S` Plex's Sign out ends nothing at Plex: the account's token is dropped at the pick, and an owned server's
+  token can be the account's own; Legato stays in plex.tv › Authorized Devices until the user removes it there
+  (the privacy row says so). Revoking it needs the account token kept, or a documented device-removal call.
+  Skipped 2026-11-11 (decided alone): the repo knows no documented removal call (developer.plex.tv's API reference has
+  none for a device; the one clients use, `DELETE plex.tv/devices/<id>.xml`, is the legacy undocumented one), and
+  it needs the account token, which is dropped at the pick on purpose (only the server's own token is kept). Keeping
+  the account token longer widens what a keychain leak gives: not for a call we can't check. The privacy row already
+  tells the user to remove the device at plex.tv.
+- [ ] `S` Plex's JWT sign-in (clients.plex.tv, a device key pair, the token refreshed each week) if Plex retires
+  the legacy PIN's long-lived tokens.
+- [ ] `S` Your music server in the app's search (`Conn::search` built for the three kinds, not wired). Decided alone
+  (2026-11-06): left for later; the library mirrors the whole server at each sync, so its songs already come
+  up in the library's own search; the server's search would only add what came since the last sync.
+  Skipped 2026-11-11 (decided alone): nothing a user would see beyond that gap (songs added in the last 30 minutes),
+  while wiring costs a server request per search on every account and a "not in your library" result kind that
+  plays without being in the library. Revisit if a sync gets slower than 30 minutes.
+- [ ] `S` Playlist edits sent back to the server (`updatePlaylist`, `createPlaylist`) when its direction sends.
+  2026-11-11: a Subsonic server's playlists take songs (Add to playlist, a drop on the sidebar) and lose them
+  (Remove from) from here, sent with `updatePlaylist` in the background and undone here when refused; a
+  removal reads the server's list first (it removes by position). 2026-11-13: `createPlaylist` too (a playlist made
+  here: menu "Send to <server>", every song must be that server's, then it is mirrored from that server and the
+  next sync finds it by its id). Left: renames and order, Jellyfin and Plex (read-only, said in words). Untried on a real
+  server: mock tests only.

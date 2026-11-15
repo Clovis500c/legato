@@ -378,7 +378,7 @@ visualizer and the media panel apply.
   boosts only (0..+9 dB, the limiter on): YouTube's own normalisation already turns loud videos down through the
   element's volume, which comes after the measure. Levelling on puts YouTube's sound through processing (needs
   "Process YouTube's sound"); Adaptive Sound, when on, levels instead (`level` ignored). Spotify: out of reach.
-- Not yet: Skip silence (local files only), the server's own search in the app's search (each connector has it: `Conn::search`), playlist edits sent
+- Not yet: the server's own search in the app's search (each connector has it: `Conn::search`), playlist edits sent
   back to Jellyfin and Plex (a Subsonic server takes adds and removals since 2026-11-11: `server_playlist_add`,
   `server_playlist_remove`, `updatePlaylist` in the background like YouTube Music's, undone here when refused). Tested with a local HTTP server in the
   tests (play, seek by range, a server without ranges, a dropped connection, transcoding asked again); never against a
