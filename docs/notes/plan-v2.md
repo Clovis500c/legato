@@ -15,10 +15,14 @@ the order; a line leaves only when it ships or the user drops it.
 - [ ] `M` A picture dragged from Discord (the owner, 2026-11-18; only noted, nothing built): Discord drops a link to its
       CDN (`cdn.discordapp.com`, `media.discordapp.net`; signed links that expire), not a file. Take it like a dropped
       picture, fetched in Rust, never by the page; what each kind is for (a shared card's code, a cover…) to settle when
-      it is built. To make it safe (the owner: "well secured"): https only, those exact hosts, no redirect off them, a
-      size cap and a timeout, the bytes checked as an image before any decoding, the `Noted` resolver, nothing sent but
-      the request itself; a new host, so the website's privacy rows first (`PRIVACY`, `SERVICES` in
-      `site/components/content.tsx`).
+      it is built. Also Legato's own files sent on Discord (the owner, same day): a `.lmix` (`music_dsp::lmix`), a
+      `.legatosync` (`music_core::syncmode`) and any later kind, each then opened as the same file dropped from disk is,
+      through the same checks (the `.lmix` reader's size cap, unknown fields refused, settings clamped); one that writes
+      to the library (a sync file) asks first, and a stranger's never brings secrets. To make it safe (the owner: "well
+      secured"): https only, those exact hosts, no redirect off them, a size cap per kind and a timeout, the kind taken
+      from the content (image bytes, the file's own format), never from the name alone, nothing decoded before that
+      check, the `Noted` resolver, nothing sent but the request itself; a new host, so the website's privacy rows first
+      (`PRIVACY`, `SERVICES` in `site/components/content.tsx`).
 
 - [ ] `M` Android: the sound sometimes crackles or sounds saturated (the owner, 2026-11-18, cause unknown to them, "maybe
       the connection"). Their answers: a YouTube song, Bluetooth earphones, the screen off or the app in the background, no
