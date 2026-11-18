@@ -95,6 +95,7 @@ const WHY: &[(&str, Why)] = &[
     ("acoustid.org", Why::Detector),
     ("discord.com", Why::Discord),
     ("discordapp.com", Why::Discord),
+    ("discordapp.net", Why::Discord),
     ("github.com", Why::Updates),
     ("githubusercontent.com", Why::Updates),
     ("easylist.to", Why::AdLists),

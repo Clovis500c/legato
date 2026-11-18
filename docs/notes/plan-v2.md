@@ -22,7 +22,7 @@ the order; a line leaves only when it ships or the user drops it.
       lyrics, light theme, 375 px, reduced motion on; word-by-word fill NOT built (the app keeps lines only, `Timed`).
       Decided alone (2026-11-18): no word fill, no new setting, no blur.
 
-- [ ] `M` A picture dragged from Discord (the owner, 2026-11-18; only noted, nothing built): Discord drops a link to its
+- [x] `M` A picture dragged from Discord (the owner, 2026-11-18; only noted, nothing built): Discord drops a link to its
       CDN (`cdn.discordapp.com`, `media.discordapp.net`; signed links that expire), not a file. Take it like a dropped
       picture, fetched in Rust, never by the page; what each kind is for (a shared card's code, a cover…) to settle when
       it is built. Also Legato's own files sent on Discord (the owner, same day): a `.lmix` (`music_dsp::lmix`), a
@@ -33,6 +33,21 @@ the order; a line leaves only when it ships or the user drops it.
       from the content (image bytes, the file's own format), never from the name alone, nothing decoded before that
       check, the `Noted` resolver, nothing sent but the request itself; a new host, so the website's privacy rows first
       (`PRIVACY`, `SERVICES` in `site/components/content.tsx`).
+      Done 2026-11-18: `crates/connectors/src/discord_file.rs` (check, fetch, kind from bytes), `src-tauri/src/discord_drop.rs`
+      (`discord_take`: saves the file in the cache folder), `ui/src/features/library/discordDrop.ts`, a paste / drop listener
+      in `PlayerBar.tsx`; the `discordapp.net` host in `netlog.rs` (Settings › Privacy), a "Files from Discord" row in `PRIVACY`.
+      NOT tried: a real Discord drag, a real expiring link, a real `.lmix` posted on Discord; the website build (it stops on
+      Next's own registry call, as before: only its tests and `tsc` ran).
+      The drag may never reach the page: wry (0.57, `webview2/drag_drop.rs`) accepts file drags only and ignores a dragged
+      text on Windows while Tauri's file drop is on, so a PASTE (Ctrl+V of the copied link) is the route that surely works; the
+      `drop` listener is there for platforms that pass the text through. A real drag tells; if it fails, the fix is a native
+      drop target in Rust (a bigger change), or an explicit "Paste a Discord link" button.
+      Decided alone (2026-11-18): (1) no `.legatosync` kind: there is no drop route for one today (a sync file is one PC's file
+      inside the shared folder, read by Sync Mode), so building one that writes to the library was out of scope: refused as
+      "not a picture or a Legato file". (2) Attachment paths only (`/attachments/`), not avatars or emoji. (3) An explicit
+      `:443` is accepted (the URL parser drops a default port), any other port refused. (4) No setting: nothing runs unless
+      the user pastes or drops an exact Discord link, so no off-by-default switch; easiest to undo = delete the listener
+      in `PlayerBar.tsx`. (5) A picture is only read for a share card's link (`share_read_image`), never kept as a cover.
 
 - [ ] `M` Android: the sound sometimes crackles or sounds saturated (the owner, 2026-11-18, cause unknown to them, "maybe
       the connection"). Their answers: a YouTube song, Bluetooth earphones, the screen off or the app in the background, no
@@ -54,6 +69,8 @@ the order; a line leaves only when it ships or the user drops it.
       the default device's parameters, 155+ paces it), the old constructor as fallback; the processing context is unchanged.
       On Android only: analysis every other tick through 4096-point analysers (half the reads, no gap). Not done: suspending
       the context when paused (`tick` detaches a context that is not running, a resume needs a gesture: too risky blind).
+      Plainly: `on` in `liveSync.ts` is `process || coverPulse || viz || meter`, so `ends` alone never turns the live
+      context on: the phone's listening-only context only exists with cover pulse, the visualizer or the meter on.
       To try on the phone, in order: (1) YouTube song, Bluetooth earphones, screen off, as before: no crackle = the second
       stream was it. (2) Still crackles: Settings › Sound, early song ends off (and cover pulse off), same test: no
       crackle now = the listening alone still hurts (look at the analysis next); still crackles = not the listening.

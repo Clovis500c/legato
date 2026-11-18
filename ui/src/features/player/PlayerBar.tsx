@@ -36,6 +36,7 @@ import { toggleLike, useLiked } from './like'
 import { tr } from '../../shared/i18n/i18n'
 import { phoneApp } from '../../shared/platform'
 import { takeDrop } from './drop'
+import { discordText, takeLink } from '../library/discordDrop'
 import { ownFile, type DropKind } from '../library/dropKinds'
 import { pickUp, usePickup } from '../syncmode/pickup'
 import { usePip } from './pipMode'
@@ -374,6 +375,26 @@ export function PlayerBar() {
       })
     })
     return () => void off.then((f) => f())
+  }, [])
+
+  // A Discord link pasted, or dragged where the WebView gives the page its text (Windows may hand a drag to Tauri's file drop
+  // only: then a paste does it). Rust checks and fetches it. Text fields keep their own paste.
+  useEffect(() => {
+    const take = (e: ClipboardEvent | DragEvent) => {
+      const text = discordText(e instanceof ClipboardEvent ? e.clipboardData : e.dataTransfer)
+      if (!text || (e instanceof ClipboardEvent && (e.target as HTMLElement | null)?.closest?.('input, textarea, [contenteditable]'))) return
+      e.preventDefault()
+      void takeLink(text)
+    }
+    const over = (e: DragEvent) => e.dataTransfer?.types.includes('text/uri-list') && e.preventDefault()
+    window.addEventListener('paste', take)
+    window.addEventListener('drop', take)
+    window.addEventListener('dragover', over)
+    return () => {
+      window.removeEventListener('paste', take)
+      window.removeEventListener('drop', take)
+      window.removeEventListener('dragover', over)
+    }
   }, [])
 
   // shortcut: polls engine at 4 Hz. Switch to Tauri events if it shows in profiles.

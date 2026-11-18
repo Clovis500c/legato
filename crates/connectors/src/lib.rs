@@ -6,6 +6,7 @@ pub mod audd;
 pub mod deezer;
 pub mod devices;
 pub mod discord;
+pub mod discord_file;
 pub mod discord_login;
 pub mod itunes;
 pub mod jellyfin;
