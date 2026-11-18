@@ -100,6 +100,10 @@ counted by song, and the last verdict by song (skipped early, heard to the end).
 the signals:
 - Shuffle: an early skip moves that artist's songs out of the next 10 (`steered`, the moved ones right after); a second skip of
   the same artist this session sends all of theirs to the end. Songs you queued yourself stay put.
+- The app's own picks, Shuffle off (2026-11-18, lot 64): the songs added when Up next runs out, a mix from a song's songs and the
+  Auto-DJ's are marked as picks (`store.ts` `markPicks`, by id, forgotten when a new queue plays). An early skip of one moves that
+  artist's OTHER picks out of the next 10 and a second skip sends them to the end (the same `steered`). Never moved: what you
+  queued, a playlist's own songs (not picks), the parts of a split video.
 - The taste: the session's skips count as recent skips (the larger of the two, so a reload does not count them twice).
 - After Up next and in a mix: a queue song skipped early no longer shapes the queue's profile and cuts its artist's songs (x0.3
   each, two at most); one heard to the end counts 1.5 times.

@@ -305,20 +305,30 @@ function songOrder(p: PlayerState, list: LibraryTrack[], current: number, shuffl
   return shapedOrder(artists, current, (i) => recent(i) || lowRated(taste.rating(list[i])), weights)
 }
 
+// The songs the app chose itself (the run-out's, a mix from a song's, the Auto-DJ's), by id: an early skip of one steers the others
+// of its artist even with Shuffle off. Songs you queued and a playlist's own never are. Emptied when a new queue is played.
+const picks = new Set<number>()
+/** Songs the app picked (not the user): kept for the skip steering below. `[]` forgets them. */
+export function markPicks(ids: readonly number[]) {
+  if (!ids.length) picks.clear()
+  for (const id of ids) picks.add(id)
+}
+
 // An early skip steers Shuffle at once (docs/recommendation.md › In the session): that artist leaves the next songs; skipped twice this
-// session, all of theirs go to the end. Songs you queued stay put.
+// session, all of theirs go to the end. Songs you queued stay put. Shuffle off: the same for the app's own picks, by that artist only.
 onListenEnd((play) => {
   if (play.completed || play.listenedMs >= SKIP_MS) return
   const { shuffle, smartShuffle, list, order, index, added } = usePlayer.getState()
   const key = (t: LibraryTrack) => fold(primaryArtist(t.artist))
   const skipped = list.find((t) => t.id === play.trackId)
   const artist = skipped && key(skipped)
-  if (!shuffle || !smartShuffle || !artist) return
+  const shaped = shuffle && smartShuffle
+  if (!artist || !(shaped || (!shuffle && picks.has(skipped.id)))) return
   const theirs = new Set(list.filter((t) => key(t) === artist).map((t) => t.id))
   let skips = 0
   for (const [id, n] of session.skips) if (theirs.has(id)) skips += n
   // The parts of a split video stay with it (a skip of its first seconds is a jump to a part).
-  usePlayer.setState({ order: steered(order, order.indexOf(index), (i) => key(list[i]) === artist && !partOf(list[i]), new Set(added), skips >= 2) })
+  usePlayer.setState({ order: steered(order, order.indexOf(index), (i) => key(list[i]) === artist && !partOf(list[i]) && (shaped || picks.has(list[i].id)), new Set(added), skips >= 2) })
 })
 
 // Last volume sent to the playing source (fades send many).
@@ -656,6 +666,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     if (held) return held()
     const i = list.findIndex((t, j) => j >= index && canPlay(t))
     if (i < 0) return
+    markPicks([])
     set({ list, order: shuffleOrder(get(), list, i, get().shuffle), added: [], ...contextName(), radio: false, dj: undefined })
     void get().playAt(i, i === index ? via : undefined)
   },
@@ -665,6 +676,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const { list, order, index, now, added } = get()
     if (!now?.trackId) return get().playTracks(tracks, 0)
     const fresh = tracks.map((_, k) => list.length + k)
+    if (!mine) markPicks(tracks.map((t) => t.id))
     set({ list: [...list, ...tracks], order: queued(order, index, fresh, next, mine ? added : undefined), added: mine ? [...added, ...fresh] : added })
   },
 

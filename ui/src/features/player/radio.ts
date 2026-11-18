@@ -6,7 +6,7 @@ import { songsThatFit } from '../library/fit'
 import { radioName, radioQueue, radioSeeds, shuffled } from './radioMix'
 import { K } from './score'
 import type { Candidate } from './similarRank'
-import { remoteTrack, usePlayer } from './store'
+import { markPicks, remoteTrack, usePlayer } from './store'
 import { crowdOf, seedsOf } from './crowd'
 import { loadTaste, tasteFor, useTaste } from './taste'
 
@@ -98,5 +98,7 @@ export async function startMix(seed: LibraryTrack) {
   const list = mixFromSong({ seed, candidates, taste, variety, rand: Math.random, library, hour })
   if (list.length < 2) return useStore.getState().notify(tr('No similar songs found'))
   usePlayer.getState().playTracks(list, 0)
+  // Its songs after the seed are the app's picks: an early skip steers the rest of its artist (store.ts).
+  markPicks(list.slice(1).map((t) => t.id))
   if (usePlayer.getState().list === list) usePlayer.setState({ from: tr('{title} mix', { title: seed.title }), fromKind: 'mix', fromId: undefined })
 }

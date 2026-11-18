@@ -6,7 +6,7 @@ import { endListen, progress, startListen } from './listens'
 import type { Candidate, Taste } from './score'
 import { pickSimilar } from './similarRank'
 import { mixFromSong } from './songMix'
-import { usePlayer } from './store'
+import { markPicks, usePlayer } from './store'
 import { tasteFor, useTaste } from './taste'
 
 vi.mock('@tauri-apps/api/core', () => ({ convertFileSrc: (p: string) => p, invoke: vi.fn(async () => undefined) }))
@@ -184,5 +184,83 @@ describe('several radios, merged', () => {
       const out = pickSimilar(candidates, queue, 2, tasteFor(stat, sig), 'balanced', 15, seeded(s), library)
       expect(ids(out)[0], `seed ${s}`).not.toBe('s0')
     }
+  })
+})
+
+// An early skip of the algorithm's own picks steers what is queued, outside Shuffle too (docs/recommendation.md › In the session).
+describe('an early skip of a pick, shuffle off', () => {
+  const by = (artist: string, from: number, n: number) => range(n).map((i) => ({ ...song(from + i, artist), ids: { youtube: `p${from + i}` } }))
+  const playlist = [...by('Own', 500, 10)]
+  const aPicks = by('Artist A', 600, 6)
+  const others = by('Other', 700, 12)
+  // What a run-out adds: A's songs spread among others', 18 in all.
+  const picks = range(18).map((i) => (i % 3 === 0 ? aPicks[i / 3] : others[i - 1 - Math.floor(i / 3)]))
+  const pos = (id: number) => usePlayer.getState().order.map((i) => usePlayer.getState().list[i].id).indexOf(id)
+  const start = (extra: LibraryTrack[] = []) => {
+    markPicks([])
+    usePlayer.setState({ list: playlist, index: 0, order: playlist.map((_, i) => i), added: [], shuffle: false, now: { title: 't', artist: 'a', trackId: playlist[0].id, via: 'youtube' } as never })
+    for (const t of extra) usePlayer.getState().enqueue([t], false, true)
+    usePlayer.getState().enqueue(picks, false, false)
+  }
+  /** `t` is heard for 4 s and skipped. */
+  const skip = (t: LibraryTrack) => {
+    const { list } = usePlayer.getState()
+    usePlayer.setState({ index: list.findIndex((x) => x.id === t.id), now: { title: 't', artist: 'a', trackId: t.id, via: 'youtube' } as never })
+    startListen(t.id, 200_000)
+    progress(1000)
+    progress(4000)
+    endListen(false)
+  }
+  const nextTen = () => {
+    const { list, order, index } = usePlayer.getState()
+    return order.slice(order.indexOf(index) + 1, order.indexOf(index) + 11).map((i) => list[i])
+  }
+  beforeEach(() => {
+    vi.spyOn(Date, 'now').mockReturnValue(NOW * 1000)
+    useStore.setState({ tracks: library, stats })
+    useTaste.setState({ signals, loaded: true })
+  })
+  afterEach(() => vi.restoreAllMocks())
+
+  it('the other picks of that artist leave the next 10; a song you queued and the playlist keep their places', () => {
+    const mineA = { ...song(650, 'Artist A'), ids: { youtube: 'p650' } }
+    const ownA = playlist[7]
+    start([mineA])
+    const before = (id: number) => pos(id)
+    const [mineAt, ownAt] = [before(mineA.id), before(ownA.id)]
+    const playlistAt = playlist.map((t) => pos(t.id))
+    skip(aPicks[0])
+    expect(nextTen().filter((t) => t.artist === 'Artist A' && t.id !== mineA.id)).toEqual([])
+    expect(pos(mineA.id)).toBe(mineAt)
+    expect(pos(ownA.id)).toBe(ownAt)
+    expect(new Set(usePlayer.getState().order).size).toBe(usePlayer.getState().list.length)
+    expect(playlist.map((t) => pos(t.id))).toEqual(playlistAt)
+  })
+
+  it('skipped twice, all of that artist’s picks go to the end', () => {
+    start()
+    skip(aPicks[0])
+    skip(aPicks[1])
+    const { list, order, index } = usePlayer.getState()
+    const after = order.slice(order.indexOf(index) + 1).map((i) => list[i])
+    const firstA = after.findIndex((t) => t.artist === 'Artist A')
+    expect(firstA).toBeGreaterThanOrEqual(0)
+    expect(after.slice(firstA).every((t) => t.artist === 'Artist A')).toBe(true)
+  })
+
+  it('a mix from a song: its songs are picks, the seed and others by the same artist are steered the same way', () => {
+    const mix = [aPicks[0], ...picks]
+    markPicks([])
+    usePlayer.setState({ list: mix, index: 0, order: mix.map((_, i) => i), added: [], shuffle: false, now: { title: 't', artist: 'a', trackId: mix[0].id, via: 'youtube' } as never })
+    markPicks(mix.slice(1).map((t) => t.id))
+    skip(picks[0])
+    expect(nextTen().some((t) => t.artist === 'Artist A')).toBe(false)
+  })
+
+  it('a song that is not a pick moves nothing', () => {
+    start()
+    const before = usePlayer.getState().order
+    skip(playlist[0])
+    expect(usePlayer.getState().order).toEqual(before)
   })
 })
