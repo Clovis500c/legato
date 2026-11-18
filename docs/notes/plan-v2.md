@@ -75,6 +75,24 @@ the order; a line leaves only when it ships or the user drops it.
       stream was it. (2) Still crackles: Settings › Sound, early song ends off (and cover pulse off), same test: no
       crackle now = the listening alone still hurts (look at the analysis next); still crackles = not the listening.
       (3) The YouTube Music app on the same earphones: crackles there too = Bluetooth alone. Not tried: `process` mode.
+- [ ] `M` The devices sync heard sooner on the network (the owner, 2026-11-18, from the phone: "que ça se détecte plus
+      rapidement sur le réseau"). Today (`src-tauri/src/devices.rs`): listening starts 20 s after launch (`FIRST`), the
+      automatic round runs every 60 s (`EVERY`) and wakes early only when a trusted device is heard for the first time
+      (`heard`, the `fresh` check), not when its stamp changes; a device mDNS doesn't hear is tried at its last addresses
+      every 10 minutes at most (`dv::PULL_EVERY`). Done = a change on one device reaches the other within seconds while
+      both are open on the same Wi-Fi, without a flood of syncs; the wake rules tested in `crates/core` `devices.rs`.
+- [ ] `L` Android: the devices sync also runs while Legato is in the background (the owner, 2026-11-18: "même quand
+      l'app mobile est en background et non ouverte en grand"). Today the multicast lock lives from `onCreate` to
+      `onDestroy` (`MainActivity.kt`) and only playback keeps a foreground service (`PlaybackService.kt`, its Wi-Fi lock),
+      so a phone in the background that plays nothing is likely frozen by Android (cached apps, Doze) and its round
+      stops. Find what Android allows (a round as the app leaves the screen, a periodic job, the playback service's
+      lifetime) without a permanent notification nobody asked for; tried on the emulator with the app in the background.
+- [ ] `M` The devices sync needs no visit to the Sync screen (the owner, 2026-11-18: "qu'il ne faille pas aller exprès
+      sur le truc sync, que ça se fasse automatiquement"). "Sync automatically" is on by default, but when both devices
+      sync automatically only the smaller id starts (`dv::starts`), so a sleeping device (the phone in the background)
+      can hold the other back; the Sync screen only refreshes the status (`Devices.tsx`, every 10 s) and "Sync now" is
+      a button. Find why the owner had to go there, then fix it (for instance: the other side starts after a grace
+      delay, a round as soon as the phone comes back to the screen).
 
 ## The owner's asks of 2026-11-07, evening
 
