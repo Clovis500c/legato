@@ -150,67 +150,66 @@ public catalog, and the Mixes page already asks anonymous radios of its seeds (`
 The artist page parser drops "Fans might also like" (`home.rs` `artist_page`, "artists-only shelf dropped"). Last.fm
 `artist.getSimilar` and `artist.getTopTracks` are used once a day for Discoveries only, with the user's own key, opt-in.
 
-**The levers** (host / what leaves the PC / privacy cost / effort / offline measure):
-1. **YouTube Music's own radios as the candidate pool, several seeds, signed out too.** The radios of the last 3 queue
-   songs (or of the mix seed and 2 of its neighbours), merged. A song in 2 or 3 radios counts as a crowd vote, which adds
-   to its rank term in `fit`. Then the existing score, dose and MMR. Host: music.youtube.com, already a row. Leaves the PC:
-   video ids of songs being played, which the embed already sends to YouTube anyway. Privacy cost: none new when signed
-   in. Signed out, the same anonymous requests the Mixes page makes. Pace: at most 3 requests per run-out, through the
-   `radios` cache, never a search. Effort S. Measure: `feel.test.ts` with 3 radio fixtures; a song in all three outranks
-   one in one; off-style favourites stay at most 2 in 15.
-2. **Session signals we own but use thinly.** Completion ratio is in `play_weight`. Not used yet:
-   - a replay (the same song again within a day: a strong like);
-   - a skip of the next song as a verdict on the transition, not only on the song (`near` should lose that pair);
-   - energy/mood from `crates/dsp` loudness and tempo on local files.
-   Host: none; nothing leaves. Privacy cost: none. Effort S (replay, transitions), M (energy). Measure: `feel.test.ts`
-   cases: a replayed song rises; a pair skipped twice is no longer a neighbour.
-3. **Related artists from YouTube Music's artist page.** Keep the "Fans might also like" shelf; it is a crowd signal for
-   artists, so their top songs join the candidates of a mix from a song. Host: music.youtube.com, already a row. Leaves:
-   the artist's channel id, already sent when the artist page opens. Privacy cost: none new. Effort S-M; the page's shape
-   is unofficial, so it may break and must fail empty. Measure: a parser fixture plus a `feel` case.
-4. **Last.fm `track.getSimilar` / `artist.getSimilar`** ("based on listening data", the docs say), only for users who
-   connected Last.fm with their own key. Host: ws.audioscrobbler.com, already a row, but for more than "three artists
-   once a day". Leaves: the artist and title of songs being played, and those already go there as scrobbles. Privacy
-   cost: low, but the row's wording changes. Effort M: a key-gated path and a daily cap; Last.fm's names then need
-   matching to a playable version (`findAhead`'s pace). Measure: a mockito fixture, then a `feel` case.
-5. **ListenBrainz similarity** (labs.api.listenbrainz.org `similar-artists`, from session data, artist MBIDs, no key).
-   It adds an open crowd for users with no YouTube sign-in and no Last.fm. Host: new (labs.api.listenbrainz.org), plus
-   MusicBrainz to resolve MBIDs. Leaves: artist names or MBIDs. Privacy cost: a new host for everyone who turns it on.
-   Effort M-L: MBID lookup at 1 request/s, and staff call the labs API experimental, with some endpoints already removed.
-   Measure: fixtures only.
-6. **Exploration as a bandit.** Each explore pick is an arm; a full listen rewards it, an early skip punishes it; Thompson
-   sampling over the explore slots (genre or decade buckets) instead of a fixed dose. Nothing leaves. Effort M. Keep the
-   hard floor (Anderson 2020: the stream must not learn exploration away). Measure: a simulated user in a test, where the
-   share of explore picks heard to the end rises over 200 picks.
-7. **"Why this song".** A line per pick ("In 3 radios of what you played", "Played after Band X", "New to you, same
-   decade"), as `words.ts` does for mixes and `autoDj` for its picks. It builds trust and makes bad weights visible to the
-   owner. Nothing leaves. Effort S. Measure: each pick of `feel.test.ts` carries the reason that scored it most.
-8. **Two stages, made explicit.** Stage 1 = the crowd pool (1, then 3, 4 or 5 when on) plus library neighbours. Stage 2 =
-   today's score with diversity. This is the frame 1 and 3–5 plug into, not a separate piece of work.
-
-**Recommended order.**
-1. Lever 1 first: the best gain per privacy cost, no new host, the requests already allowed.
-2. Then 7: cheap, and it lets the owner say which reason was wrong.
-3. Then 2 and 3.
-4. Then 6.
-5. Last, 4 and 5: only on the owner's yes.
-
-**First slice (lever 1).** `around()` asks the radios of the last 3 distinct YouTube songs of the queue, through a Rust
-command that reuses `listening::radios` (cache, signed-out fallback). The candidates carry `votes` (how many radios hold
-them) next to `rank`, and `fit`'s radio term becomes 0.9 x (1 + 0.5 x (votes - 1)) / (1 + 0.04 x the best place).
-Acceptance with no network: `feel.test.ts` gets 3 radio fixtures with overlaps; the tests are written first and fail:
-- a song in all 3 radios lands in the first 5 picks;
-- a song in 1 radio only and of another style ranks below the overlapping ones;
-- the existing caps (2 in 15 off-style favourites, artist spacing) still hold;
-- signed out, the same picks come from the same fixtures.
-
-**Questions for the owner** (recommended default first):
-- Signed out, may Up next and "Start a mix" ask YouTube Music's public radios, as the Mixes page already does? **Yes**:
-  same host, same requests, at most 3 per run-out.
-- With Last.fm connected, may the songs being played also go to Last.fm to ask for similar ones (the privacy row
-  reworded)? **No by default**, an opt-in next to "Last.fm suggestions".
-- May a new host, labs.api.listenbrainz.org (plus musicbrainz.org), be added for similar artists? **Not now**: experimental
-  per its staff; revisit if 1 to 3 are not enough.
+**Decided by the owner (2026-11-18).** All four surfaces fall short: Shuffle, the end of Up next, mixes from a song (and
+"Like <title>"), and discovery. Crowd data from YouTube Music only: its radios, related artists and Home shelves,
+ranked by our score. No new host; no ListenBrainz, no Last.fm.
+**The design: YouTube Music finds, we rank.**
+- Stage 1, candidates, from YouTube Music: the radios (`RDAMVM<id>`) of up to 3 seeds, merged. A song in several radios
+  gets `votes`, the crowd's "played together", and its best place is kept. Signed in, the Home shelves ("Quick picks",
+  "Mixed for you") feed discovery. A mix from a song also gets the seed artist's "Fans might also like" (top songs of
+  2 of them). The library's own neighbours join (`near`, same style).
+- Stage 2, our score, unchanged in shape: fit x preference (`score.ts`). The radio term becomes 0.9 x (1 + 0.5 x (votes - 1))
+  / (1 + 0.04 x best place), so the crowd decides what fits, and our taste decides among what fits.
+- Stage 3, diversity last: dose of the new, MMR, the artist caps, all as they are.
+- Session signals we own, the second lever, with no network:
+  - a replay within a day counts as a strong like;
+  - skipping the next song marks the pair: twice, and `near` drops it;
+  - for local files only, energy from `crates/dsp` loudness and tempo.
+**Signed out.** Only YouTube Music's public catalog: the anonymous radios, which the Mixes page already asks
+(`listening::radios`, `state.ytm_or_public()`), and the public artist page. No Home shelves (they are an account's). Same
+ids sent, no account.
+**Pacing and refusals, unchanged.** Every list goes through the existing cache (radios kept for hours, `cache.lists`). A
+run-out of Up next asks at most 3 radios (fewer when cached); a mix asks 1 radio and 1 artist page; never a search to fill
+the pool. Songs of the pool play by their video id, so no lookup is needed. A refusal (429, a "Sorry" page) ends the
+crowd pool for that pick: it falls back to the library, it is never retried sooner or elsewhere, and the `searchpace`
+rules still hold for every lookup. No script ever runs real requests in bulk; tests use fixtures.
+**What it will and will not fix, per surface.**
+- *Up next's end*: the biggest gain. Today it uses one radio, and only signed in. Three merged radios give a crowd-ranked
+  pool of about 100 songs, and our score picks within it. Close to YouTube's own "up next", with the user's taste on top.
+- *Mix from a song / "Like <title>"*: a real gain where the seed is on YouTube. Several radios plus related artists, the
+  arc kept. A local file with no YouTube match stays library-only.
+- *Discovery*: a partial gain. New songs come only from what YouTube Music shows (radios, related artists, Home
+  signed in), filtered by our taste. Signed out there is no personal Home, so the gain is smaller. We never see what
+  YouTube knows about the user beyond those lists.
+- *Shuffle of the user's own playlist*: it cannot discover anything; it is the user's pick, and adding songs would
+  break that. It can only order better: the session signals (replays, skipped transitions) and the `near` flow. A modest
+  gain; the 2026-11-18 rebuild already removed the worst of it.
+- *Never*: the crowd at YouTube's own depth (watch time across users, embeddings). We see ranked lists, not their
+  model, and InnerTube is unofficial: it may change or break, and the pool then falls back to the library.
+**Slices** (each one tested first, from fixtures, with no real network):
+1. *Up next and "Start a mix" use several radios, signed in or out.* A Rust command over `listening::radios` (cache,
+   public fallback) takes the last 3 distinct YouTube songs; candidates carry `votes`; the `fit` term above.
+   Acceptance: `feel.test.ts` gets 3 radio fixtures that overlap:
+   - a song in all 3 is in the first 5 picks;
+   - a song in 1 radio and of another style ranks below the overlapping ones;
+   - the caps still hold (at most 2 off-style favourites in 15; the artist spacing);
+   - the signed-out fixtures give the same picks;
+   - a refused radio (fixture error) gives library picks, with one request only (a mockito test).
+2. *"Why this song"*, from the reason that scored the pick most, as `words.ts` and `autoDj` do already ("In 3 radios of
+   what you played", "Played after <artist>"). Measure: each `feel` pick carries one reason.
+3. *Session signals*: replays and skipped transitions (`taste_signals`, `listens.ts`). Measure: in `feel` cases, a
+   replayed song rises, and a pair skipped twice is no longer a neighbour.
+4. *Related artists*: keep "Fans might also like" in `artist_page` (it must fail empty), used by mixes. Measure: a
+   parser fixture plus a `feel` case.
+5. *Discovery from Home* (signed in): the shelves' songs, ranked by our score with the explore dose, in a "New for you"
+   mix. Measure: a Home fixture where an off-style song stays out of the first 10.
+6. Later, if 1 to 5 fall short: exploration as a bandit over the explore slots (Thompson sampling; the floor kept,
+   Anderson 2020).
+**Not chosen** (the owner, 2026-11-18), with what each would add:
+- Last.fm `track.getSimilar` / `artist.getSimilar`: similar songs "based on listening data", for users with their own key.
+  It would send the titles being played beyond the scrobbles, and the privacy row would change.
+- ListenBrainz labs `similar-artists`: an open crowd from listening sessions, keyed by MusicBrainz ids. It means a new host
+  (plus MusicBrainz at 1 request a second), and its staff call it experimental.
 
 Sources read for this section: the code above; Last.fm `track.getSimilar` / `artist.getSimilar` pages
 (https://www.last.fm/api/show/track.getSimilar, https://www.last.fm/api/show/artist.getSimilar: search excerpts only);
