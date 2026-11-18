@@ -32,7 +32,7 @@ jobs:
       - uses: actions/checkout@v7
 
       # macOS is the costly runner and only a Rust change can break it there (the front end's tests run the same on Windows): on
-      # a push or a pull request that touches none of the Rust, the shell or this workflow, its job stays green and skips the
+      # a push or a pull request that touches none of the Rust, the shell, the files their tests read or a workflow, its job stays green and skips the
       # rest. Anything unclear (no base commit, a failed fetch, another system) runs everything.
       - id: scope
         shell: bash
@@ -41,8 +41,10 @@ jobs:
           if [ "$RUNNER_OS" = macOS ]; then
             base="${{ github.event.pull_request.base.sha || github.event.before }}"
             case "$base" in 0000000*) base="" ;; esac
-            if [ -n "$base" ] && git fetch --no-tags --depth=1 origin "$base" 2>/dev/null; then
-              git diff --name-only "$base" HEAD | grep -qE '^(crates/|src-tauri/|Cargo\.(toml|lock)$|rust-toolchain|\.github/workflows/check\.yml$)' || run=false
+            # No pipe into grep -q: under bash's pipefail a match cut early (SIGPIPE) or a failed diff would read as "no Rust".
+            # The Rust tests also read e2e/fixtures, examples/ and release.yml (include_str!).
+            if [ -n "$base" ] && git fetch --no-tags --depth=1 origin "$base" 2>/dev/null && files=$(git diff --name-only "$base" HEAD); then
+              grep -qE '^(crates/|src-tauri/|Cargo\.(toml|lock)$|rust-toolchain|e2e/fixtures/|examples/|\.github/workflows/)' <<<"$files" || run=false
             fi
           fi
           echo "run=$run" >> "$GITHUB_OUTPUT"
