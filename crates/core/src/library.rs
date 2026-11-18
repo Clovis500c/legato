@@ -560,6 +560,10 @@ impl Library {
             "INSERT INTO settings (key, value) VALUES (?1, ?2) ON CONFLICT (key) DO UPDATE SET value = excluded.value",
             params![key, value.to_string()],
         )?;
+        // The session is saved every few seconds while a song plays: no reason for a devices sync.
+        if key != "session" {
+            self.versions.setting_written();
+        }
         Ok(())
     }
 

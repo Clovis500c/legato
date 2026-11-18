@@ -35,6 +35,8 @@ pub fn data_of(table: &str) -> Data {
 pub struct Versions {
     library: AtomicU64,
     history: AtomicU64,
+    /// Settings written (`Library::set_setting`), the playback session left out.
+    settings: AtomicU64,
 }
 
 impl Versions {
@@ -52,6 +54,15 @@ impl Versions {
 
     pub fn history(&self) -> u64 {
         self.history.load(Ordering::Relaxed)
+    }
+
+    pub fn setting_written(&self) {
+        self.settings.fetch_add(1, Ordering::Relaxed);
+    }
+
+    /// Moves when anything the devices sync sends may have changed (a cheap look, no snapshot built).
+    pub fn changes(&self) -> u64 {
+        self.library() + self.history() + self.settings.load(Ordering::Relaxed)
     }
 }
 

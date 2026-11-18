@@ -1366,3 +1366,14 @@ fn a_guessed_tempo_fills_a_gap_and_never_replaces_a_tag() -> Result<()> {
     assert!(lib.tracks()?.iter().any(|t| t.key.as_deref() == Some("F#m")));
     Ok(())
 }
+
+#[test]
+fn a_setting_written_moves_the_devices_sync_but_the_playback_session_never() -> Result<()> {
+    let lib = Library::in_memory()?;
+    let before = lib.versions.changes();
+    lib.set_setting("session", &serde_json::json!({ "positionMs": 61_000 }))?;
+    assert_eq!(lib.versions.changes(), before, "saved every few seconds while a song plays");
+    lib.set_setting("settings", &serde_json::json!({ "theme": "dark" }))?;
+    assert!(lib.versions.changes() > before);
+    Ok(())
+}

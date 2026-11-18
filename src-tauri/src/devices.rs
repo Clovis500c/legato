@@ -24,7 +24,8 @@ const KEY: &str = "sync_peer_";
 const OFFER_TTL: i64 = 10 * 60_000;
 const MAX_TRIES: u8 = 5;
 const FIRST: Duration = Duration::from_secs(20);
-const EVERY: Duration = Duration::from_secs(60);
+/// How often the loop looks for a change here (a counter read, no snapshot): `dv::round_now` decides.
+const TICK: Duration = Duration::from_secs(2);
 /// mDNS needs a moment to hear the others once started.
 const HEAR: Duration = Duration::from_secs(3);
 /// Connections answered at once.
@@ -328,8 +329,10 @@ fn heard(app: &AppHandle, ev: Event) {
                 return;
             }
             let id = h.card.id.clone();
-            let fresh = inner.heard.insert(id.clone(), (h, addrs)).is_none();
-            if fresh && c.peers.iter().any(|p| p.card.id == id) {
+            let wakes = h.wakes(inner.heard.get(&id).map(|(old, _)| old));
+            inner.heard.insert(id.clone(), (h, addrs));
+            // A trusted device new here, or whose library moved: the round runs now, not in a minute.
+            if wakes && c.peers.iter().any(|p| p.card.id == id) {
                 devices.wake.notify_one();
             }
         }
@@ -600,8 +603,8 @@ pub async fn device_forget(app: AppHandle, state: State<'_, AppState>, id: Strin
     Ok(())
 }
 
-/// At start (network on: listening and heard), then the automatic round every minute, or when a trusted device shows
-/// up.
+/// At start (network on: listening and heard), then the automatic round every minute, or seconds after a change here
+/// or on a trusted device (`dv::round_now`).
 pub fn spawn(app: AppHandle) {
     tauri::async_runtime::spawn(async move {
         tokio::time::sleep(FIRST).await;
@@ -610,9 +613,22 @@ pub fn spawn(app: AppHandle) {
         {
             crate::diag::warn("devices", "listening failed", &e);
         }
+        // Taken again after each round: a restored library is a new one.
+        let versions = |a: &AppHandle| a.state::<AppState>().lib().versions.clone();
+        let mut v = versions(&app);
+        let (mut seen, mut changed, mut woke, mut last) = (v.changes(), None, false, i64::MIN);
         loop {
-            auto_round(&app).await;
-            let _ = tokio::time::timeout(EVERY, dev(&app).wake.notified()).await;
+            if dv::round_now(now_ms(), last, changed, woke) {
+                auto_round(&app).await;
+                v = versions(&app);
+                // What the round itself wrote (a merge) is no change to send back.
+                (seen, changed, woke, last) = (v.changes(), None, false, now_ms());
+            }
+            woke |= tokio::time::timeout(TICK, dev(&app).wake.notified()).await.is_ok();
+            let now = v.changes();
+            if now != seen {
+                (seen, changed) = (now, Some(now_ms()));
+            }
         }
     });
 }

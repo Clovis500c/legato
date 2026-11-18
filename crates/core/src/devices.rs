@@ -16,6 +16,12 @@ pub const ADDRS_MAX: usize = 4;
 pub const HERE_FOR: i64 = 3 * 60_000;
 /// No stamp heard: an automatic sync anyway after this (ms).
 pub const PULL_EVERY: i64 = 10 * 60_000;
+/// The automatic round: at least this often (ms).
+pub const ROUND_EVERY: i64 = 60_000;
+/// A change here or on a trusted device: a round this soon after the last at the earliest (ms)...
+pub const ROUND_SOON: i64 = 5_000;
+/// ...once the changes here have settled this long (a slider dragged is one change, not twenty).
+pub const SETTLE: i64 = 2_000;
 pub const PAIR_LINK: &str = "legato://pair?";
 /// mDNS words' version: another one is not ours to read.
 const VERSION: &str = "2";
@@ -125,6 +131,20 @@ pub struct Heard {
     pub auto: bool,
     /// Its snapshot's stamp, when it says.
     pub stamp: Option<String>,
+}
+
+impl Heard {
+    /// Heard again after `old`: a round now is worth it (new on the network, its stamp or its automatic flag moved).
+    pub fn wakes(&self, old: Option<&Heard>) -> bool {
+        old.is_none_or(|o| o.stamp != self.stamp || o.auto != self.auto)
+    }
+}
+
+/// The automatic round runs now: `ROUND_EVERY` after the last, or `ROUND_SOON` after it when a trusted device woke it or a
+/// change here (the last one at `changed`) has settled. Times in ms.
+pub fn round_now(now: i64, last: i64, changed: Option<i64>, woke: bool) -> bool {
+    let since = now.saturating_sub(last);
+    since >= ROUND_EVERY || (since >= ROUND_SOON && (woke || changed.is_some_and(|at| now - at >= SETTLE)))
 }
 
 /// This device's mDNS TXT words.
@@ -360,6 +380,28 @@ mod tests {
         ] {
             assert_eq!(PairLink::parse(&bad), None, "{bad}");
         }
+    }
+
+    #[test]
+    fn a_change_wakes_the_round_once_settled_never_in_a_loop() {
+        let last = 1_000_000;
+        assert!(!round_now(last + 59_999, last, None, false) && round_now(last + ROUND_EVERY, last, None, false), "nothing new: every minute");
+        assert!(round_now(last + ROUND_SOON, last, None, true), "a trusted device moved: soon");
+        assert!(!round_now(last + ROUND_SOON - 1, last, None, true), "never two rounds closer than ROUND_SOON");
+        assert!(!round_now(last + 10_000, last, Some(last + 9_000), false), "still changing here: wait");
+        assert!(round_now(last + 10_000, last, Some(last + 10_000 - SETTLE), false), "settled: now");
+        assert!(round_now(0, i64::MIN, None, false), "the first round");
+    }
+
+    #[test]
+    fn a_device_heard_again_wakes_only_when_it_moved() {
+        let card = Card { id: A.into(), name: "PC".into(), os: Os::Windows, form: Form::Tower };
+        let h = Heard { card, offering: false, auto: true, stamp: Some("aaaaaaaaaaaa".into()) };
+        assert!(h.wakes(None), "new on the network");
+        assert!(!h.wakes(Some(&h)), "the same words announced again");
+        assert!(h.wakes(Some(&Heard { stamp: Some("bbbbbbbbbbbb".into()), ..h.clone() })), "its stamp moved");
+        assert!(h.wakes(Some(&Heard { auto: false, ..h.clone() })), "it turned automatic");
+        assert!(!h.wakes(Some(&Heard { offering: true, ..h.clone() })), "a code shown is no sync");
     }
 
     #[test]

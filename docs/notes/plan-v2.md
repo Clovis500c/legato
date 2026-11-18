@@ -75,12 +75,17 @@ the order; a line leaves only when it ships or the user drops it.
       stream was it. (2) Still crackles: Settings › Sound, early song ends off (and cover pulse off), same test: no
       crackle now = the listening alone still hurts (look at the analysis next); still crackles = not the listening.
       (3) The YouTube Music app on the same earphones: crackles there too = Bluetooth alone. Not tried: `process` mode.
-- [ ] `M` The devices sync heard sooner on the network (the owner, 2026-11-18, from the phone: "que ça se détecte plus
+- [x] `M` The devices sync heard sooner on the network (the owner, 2026-11-18, from the phone: "que ça se détecte plus
       rapidement sur le réseau"). Today (`src-tauri/src/devices.rs`): listening starts 20 s after launch (`FIRST`), the
       automatic round runs every 60 s (`EVERY`) and wakes early only when a trusted device is heard for the first time
       (`heard`, the `fresh` check), not when its stamp changes; a device mDNS doesn't hear is tried at its last addresses
       every 10 minutes at most (`dv::PULL_EVERY`). Done = a change on one device reaches the other within seconds while
       both are open on the same Wi-Fi, without a flood of syncs; the wake rules tested in `crates/core` `devices.rs`.
+      Done 2026-11-18: a change here wakes the round once settled (`dv::round_now`: 2 s quiet, 5 s between rounds at
+      least, still every minute), the counter `Versions::changes` read every 2 s (no snapshot built for it); a trusted
+      device heard with a new stamp or flag wakes it too (`Heard::wakes`). No wire or TXT change. Decided alone
+      (2026-11-18): `FIRST` stays 20 s (the start is kept light), the 2/2/5 s figures are guesses. Tests: the rules and
+      the counter (`cargo test -p music-core`), clippy; never tried between two real devices.
 - [ ] `L` Android: the devices sync also runs while Legato is in the background (the owner, 2026-11-18: "même quand
       l'app mobile est en background et non ouverte en grand"). Today the multicast lock lives from `onCreate` to
       `onDestroy` (`MainActivity.kt`) and only playback keeps a foreground service (`PlaybackService.kt`, its Wi-Fi lock),
