@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { centerShift, nudged, nudgeOf, plainShift, seatOf } from './karaokeLines'
+import { centerShift, glideFrom, nudged, nudgeOf, plainShift, seatOf } from './karaokeLines'
 import { fixesWith, fixLabel, NO_FIX } from './lyricsAt'
 
 describe('seats', () => {
@@ -52,5 +52,17 @@ describe('saved fixes', () => {
   it('read as signed seconds', () => {
     expect(fixLabel({ offset: 500, rate: 1 })).toBe('+0.5 s')
     expect(fixLabel({ offset: -1500, rate: 0.95 })).toBe('−1.5 s · ×0.95')
+  })
+})
+
+describe('glide', () => {
+  it('a step of a line or two starts the content where it was', () => {
+    expect(glideFrom(300, 380, 600, false)).toBe(80)
+    expect(glideFrom(380, 300, 600, false)).toBe(-80)
+  })
+  it('no glide for no move, a seek across the song, or a calm screen', () => {
+    expect(glideFrom(300, 300, 600, false)).toBe(0)
+    expect(glideFrom(0, 5000, 600, false)).toBe(0)
+    expect(glideFrom(300, 380, 600, true)).toBe(0)
   })
 })

@@ -12,11 +12,15 @@ the order; a line leaves only when it ships or the user drops it.
 
 ## The owner's reports and asks of 2026-11-18
 
-- [ ] `M` Lyrics animations to improve (the owner, 2026-11-18; only noted, nothing built, no detail given yet): what to
+- [x] `M` Lyrics animations to improve (the owner, 2026-11-18; only noted, nothing built, no detail given yet): what to
       change is to ask them when it is taken (the line change, the word-by-word fill, the scroll between lines, the karaoke
       look, the backdrop under the lyrics?). Read first: the lyrics panel and `Karaoke.tsx` in `ui/src/features/player/`,
       their motion settings (`motion`, `backdropMotion`) and reduced motion; keep it cheap (no per-line filters, the owner's
       GPU driver has reset under load) and honour Windows' reduce-motion as the flowing backdrop does (`allowsMotion`).
+      Done 2026-11-18: the panel now glides on a transform (FLIP) with Karaoke's recipe (`LEAD_MS`, `GLIDE`, `glideFrom` in
+      `karaokeLines.ts`), both honour `allowsMotion`, a seek across the song jumps. NOT tried: a real song with real timed
+      lyrics, light theme, 375 px, reduced motion on; word-by-word fill NOT built (the app keeps lines only, `Timed`).
+      Decided alone (2026-11-18): no word fill, no new setting, no blur.
 
 - [ ] `M` A picture dragged from Discord (the owner, 2026-11-18; only noted, nothing built): Discord drops a link to its
       CDN (`cdn.discordapp.com`, `media.discordapp.net`; signed links that expire), not a file. Take it like a dropped

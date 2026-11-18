@@ -6,21 +6,20 @@ import { useStore } from '../../app/store'
 import { trackArt } from '../../shared/art'
 import { artistName } from '../../shared/artistName'
 import { tr } from '../../shared/i18n/i18n'
+import { allowsMotion, useSystemReduced } from '../../shared/motion'
 import { onMenu } from '../../shared/ui/ContextMenu'
 import { RoundButton } from '../../shared/ui/controls'
 import { karaokeMenu } from '../menus'
 import { songKey } from './effects'
 import { useBackdrop } from './immersive'
 import { closeKaraoke } from './karaokeMode'
-import { centerShift, plainShift, seatOf, type Seat } from './karaokeLines'
+import { centerShift, glideFrom, GLIDE, LEAD_MS, plainShift, seatOf, type Seat } from './karaokeLines'
 import { applyFix, fixLabel, lineAt, NO_FIX, withBreaks, type LyricsFix, type Timed } from './lyricsAt'
 import { useNowLyrics } from './LyricsPanel'
 import { Backdrop } from './Backdrop'
 import { SeekBar, TimeText, usePosition } from './Progress'
 import { useNowTrack, usePlayer } from './store'
 
-/** A line shows this early, as in the lyrics panel. */
-const LEAD_MS = 200
 /** The blurred cover is at least this blurred (screen px) and dimmed: the words come first. */
 const MIN_BLUR = 40
 const MIN_DIM = 55
@@ -76,9 +75,16 @@ function Lines({ lines: sung, durationMs, fix, calm }: { lines: Timed[]; duratio
   const col = useRef<HTMLDivElement>(null)
   const { w, h } = useBox(view)
   const [shift, setShift] = useState<number>()
+  // A seek across the song moves the column at once: its lines would fly past.
+  const last = useRef<number>(undefined)
+  const jump = useRef(false)
   useLayoutEffect(() => {
     const line = col.current?.children[focus] as HTMLElement | undefined
-    if (line && h) setShift(centerShift(h, line.offsetTop, line.offsetHeight))
+    if (!line || !h) return
+    const s = centerShift(h, line.offsetTop, line.offsetHeight)
+    jump.current = last.current !== undefined && glideFrom(last.current, s, h, false) === 0
+    last.current = s
+    setShift(s)
   }, [focus, w, h, lines])
   return (
     <div ref={view} className={`relative min-h-0 flex-1 overflow-hidden ${FADE_EDGES}`}>
@@ -86,7 +92,7 @@ function Lines({ lines: sung, durationMs, fix, calm }: { lines: Timed[]; duratio
         ref={col}
         className="absolute inset-x-0 top-0"
         // Placed before it is seen: no slide in from the top at the start of a song.
-        style={{ transform: `translate3d(0, ${shift ?? 0}px, 0)`, opacity: shift === undefined ? 0 : 1, transition: shift === undefined || calm ? undefined : 'transform 650ms cubic-bezier(0.22, 0.8, 0.2, 1)' }}
+        style={{ transform: `translate3d(0, ${shift ?? 0}px, 0)`, opacity: shift === undefined ? 0 : 1, transition: shift === undefined || calm || jump.current ? undefined : GLIDE }}
       >
         {lines.map((l, i) => {
           const seat = seatOf(i, at)
@@ -132,7 +138,7 @@ export function Karaoke() {
   const signedIn = useStore((s) => s.status.youtube.connected)
   const { mine, key, durationMs, retry } = useNowLyrics()
   const { backdropBlur, backdropDim, motion } = useSettings(useShallow((s) => ({ backdropBlur: s.settings.backdropBlur, backdropDim: s.settings.backdropDim, motion: s.settings.motion })))
-  const calm = !motion || matchMedia('(prefers-reduced-motion: reduce)').matches
+  const calm = !allowsMotion(motion, useSystemReduced())
   const backdrop = useBackdrop(track ? trackArt(track)[0] : undefined, Math.max(backdropBlur, MIN_BLUR))
   const song = songKey(now)
   const fix = useSettings((s) => (song && s.settings.lyricsSync[song]) || NO_FIX)

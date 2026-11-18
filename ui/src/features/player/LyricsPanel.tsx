@@ -9,16 +9,16 @@ import { Button } from '../../shared/ui/Button'
 import { RoundButton } from '../../shared/ui/controls'
 import { Dialog } from '../../shared/ui/Dialog'
 import { songKey } from './effects'
+import { glideFrom, GLIDE, LEAD_MS } from './karaokeLines'
 import { applyFix, fixesWith, fixFromTaps, fixLabel, lineAt, NO_FIX, toLrc, withBreaks, type LyricsFix } from './lyricsAt'
 import { toggleKaraoke } from './karaokeMode'
 import { positionNow, usePosition } from './Progress'
 import { useNowTrack, usePlayer } from './store'
 import { CARD } from './UpNext'
 import { locale, tr } from '../../shared/i18n/i18n'
+import { allowsMotion, useSystemReduced } from '../../shared/motion'
 import { TranslateLyrics } from './TranslateLyrics'
 
-/** Lines light up this much early: a line shows as it's sung, not after. */
-const LEAD_MS = 200
 /** A hand on the scroll wins for this long. */
 const HAND_MS = 4000
 
@@ -38,39 +38,53 @@ function Synced({ lines: sung, durationMs, fix, onTap }: { lines: Lyrics['lines'
   const seek = usePlayer((s) => s.seek)
   const at = lineAt(lines, pos + LEAD_MS)
   const box = useRef<HTMLDivElement>(null)
+  const col = useRef<HTMLDivElement>(null)
   const hand = useRef(0)
+  const calm = !allowsMotion(useSettings((s) => s.settings.motion), useSystemReduced())
   useEffect(() => {
     const el = box.current
     const line = el?.querySelector<HTMLElement>(`[data-line="${Math.max(0, at)}"]`)
     if (!el || !line || performance.now() - hand.current < HAND_MS) return
-    el.scrollTo({ top: line.offsetTop - el.clientHeight / 2 + line.clientHeight / 2, behavior: 'smooth' })
-  }, [at])
+    // The scroll lands at once; the column then glides from where it was on the compositor (a browser smooth scroll can't be tuned).
+    const prev = el.scrollTop
+    el.scrollTop = line.offsetTop - el.clientHeight / 2 + line.clientHeight / 2
+    const from = glideFrom(prev, el.scrollTop, el.clientHeight, calm)
+    const c = col.current
+    if (!from || !c) return
+    c.style.transition = 'none'
+    c.style.transform = `translate3d(0, ${from}px, 0)`
+    void c.offsetHeight
+    c.style.transition = GLIDE
+    c.style.transform = ''
+  }, [at, calm])
   const touched = () => void (hand.current = performance.now())
   return (
     <div ref={box} onWheel={touched} onPointerDown={touched} onKeyDown={touched} className="no-scrollbar relative min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-2 pt-6 pb-12 [mask-image:linear-gradient(to_bottom,transparent,#000_1.5rem,#000_calc(100%-3rem),transparent)]">
-      {lines.map((l, i) => (
-        <button
-          key={i}
-          data-line={i}
-          // The sung line full, the others fainter the further they are (Apple Music's way, our own words).
-          style={{ opacity: far(Math.abs(i - Math.max(at, 0))) }}
-          onClick={() => {
-            // ♪ breaks (added here) have no lyric time: nothing to tap.
-            const lyricMs = (l as { lyricMs?: number }).lyricMs
-            if (!onTap) seek(l.ms)
-            else if (l.text && lyricMs !== undefined) onTap(lyricMs)
-          }}
-          className={`block w-full origin-left py-2 text-left text-[1.625rem] leading-tight font-bold tracking-[-0.01em] text-ink transition-[transform,opacity] duration-500 hover:opacity-90! ${i === at ? 'scale-[1.04]' : ''}`}
-        >
-          {!l.text ? (
-            <MusicNotesSimple size={26} weight="bold" aria-label={tr('Instrumental')} className={i === at ? 'animate-pulse' : ''} />
-          ) : i === at ? (
-            <span className="glow-sung">{l.text}</span>
-          ) : (
-            l.text
-          )}
-        </button>
-      ))}
+      <div ref={col}>
+        {lines.map((l, i) => (
+          <button
+            key={i}
+            data-line={i}
+            // The sung line full, the others fainter the further they are (Apple Music's way, our own words).
+            style={{ opacity: far(Math.abs(i - Math.max(at, 0))) }}
+            onClick={() => {
+              // ♪ breaks (added here) have no lyric time: nothing to tap.
+              const lyricMs = (l as { lyricMs?: number }).lyricMs
+              if (!onTap) seek(l.ms)
+              else if (l.text && lyricMs !== undefined) onTap(lyricMs)
+            }}
+            className={`block w-full origin-left py-2 text-left text-[1.625rem] leading-tight font-bold tracking-[-0.01em] text-ink transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.22,0.8,0.2,1)] hover:opacity-90! ${i === at ? 'scale-[1.04]' : ''}`}
+          >
+            {!l.text ? (
+              <MusicNotesSimple size={26} weight="bold" aria-label={tr('Instrumental')} className={i === at ? 'animate-pulse' : ''} />
+            ) : i === at ? (
+              <span className="glow-sung">{l.text}</span>
+            ) : (
+              l.text
+            )}
+          </button>
+        ))}
+      </div>
     </div>
   )
 }

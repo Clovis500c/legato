@@ -29,3 +29,15 @@ export function nudgeOf(code: string): number | null {
 
 /** The fix moved by `ms`, the speed kept. */
 export const nudged = (fix: LyricsFix, ms: number): LyricsFix => ({ ...fix, offset: fix.offset + ms })
+
+/** Lines lead the audio by this much: a line moves just before it is sung, not after. One value for the panel and Karaoke. */
+export const LEAD_MS = 200
+/** How the lyrics column glides to the sung line (a transform on the compositor: the same recipe in the panel and Karaoke). */
+export const GLIDE = 'transform 650ms cubic-bezier(0.22, 0.8, 0.2, 1)'
+
+/**
+ * A scroller whose scrollTop jumped from `prev` to `next` looks as if it glided when its content starts at the returned
+ * offset (px) and eases to 0 (FLIP). 0 where it must not glide: no move, a seek across the song (more than 1.5 views,
+ * lines would fly past), a calm screen.
+ */
+export const glideFrom = (prev: number, next: number, viewH: number, calm: boolean) => (calm || Math.abs(next - prev) > viewH * 1.5 ? 0 : next - prev)
