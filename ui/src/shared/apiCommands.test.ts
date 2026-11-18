@@ -1,5 +1,6 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 /**
@@ -7,7 +8,8 @@ import { describe, expect, it } from 'vitest'
  * in `generate_handler!` and passes the keys its parameters take (camelCase here, snake_case there; `State`, `AppHandle` and the windows are
  * the shell's own, never passed). Names and keys only, not types (those come from ts-rs).
  */
-const ROOT = new URL('../../../', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')
+const rootOf = (url: string) => fileURLToPath(new URL('../../../', url))
+const ROOT = rootOf(import.meta.url)
 const rust = (dir: string): string[] => readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? rust(join(dir, e.name)) : e.name.endsWith('.rs') ? [join(dir, e.name)] : []))
 const files = rust(join(ROOT, 'src-tauri/src'))
 const src = files.map((f) => readFileSync(f, 'utf8').replace(/\r\n/g, '\n')).join('\n')
@@ -112,6 +114,12 @@ describe('the typed invoke wrappers match the Rust commands', () => {
     expect(cmds.get('server_scrobble')!.map((p) => p.name)).toContain('startedAtMs')
     expect(found.find((c) => c.cmd === 'connect')!.keys).toEqual(['source', 'credentials'])
     expect(found.find((c) => c.cmd === 'sources_status')!.keys).toBeNull()
+  })
+
+  it('finds the repo in a folder with a space or an accent in its name', () => {
+    const url = pathToFileURL(join(ROOT, 'My Clément', 'ui/src/shared/apiCommands.test.ts')).href
+    expect(url).toContain('My%20Cl%C3%A9ment')
+    expect(rootOf(url)).toBe(join(ROOT, 'My Clément', '/'))
   })
 
   it('a comment in a parameter list or in the handler list is not read as code', () => {
