@@ -10,6 +10,19 @@ then milestone 3, Platforms; Against Liner 6 with the owner at the PC. Where the
 Every idea here stays: the user wants them all built in the end, just later (user's choice 2026-10-31). The roadmap sets
 the order; a line leaves only when it ships or the user drops it.
 
+## The owner's reports of 2026-11-18
+
+- [ ] `M` Android: the sound sometimes crackles or sounds saturated (the owner, 2026-11-18, cause unknown to them, "maybe
+      the connection"). Their answers: a YouTube song, Bluetooth earphones, the screen off or the app in the background, no
+      effect on. Not reproduced. Suspect first (read in the code, not proven): by default every YouTube song is listened
+      to through Chromium's audio nodes, the phone too (`earlyEnds` on by default → `ends` in `player/liveSync.ts:55` →
+      `live.js` `attach()` in listen mode: `captureStream`, an `AudioContext`, four 2048-point analysers and the
+      K-weighting filters); the element keeps its own sound, but that extra rendering in a background WebView may starve
+      it, and Bluetooth (A2DP) wants steady buffers. To try on the phone, screen off, Bluetooth: the same song with
+      `earlyEnds` off (then `liveYoutube` off), and the YouTube Music app on the same earphones (Bluetooth itself). If
+      it is ours: on the phone, the listening-only work stops while the screen is off (early ends fall back to the song's
+      length). A connection drop stalls or stops a song rather than crackling it.
+
 ## The owner's asks of 2026-11-07, evening
 
 - [ ] `S` Android: scanning a sync QR code crashes the app right after the camera permission is accepted (Beta
