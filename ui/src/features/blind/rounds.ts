@@ -20,13 +20,23 @@ const key = (t: LibraryTrack) => `${t.title.trim().toLowerCase()}|${t.artist.tri
  * A game: `rounds` songs of the library that can play and last a minute at least, one version each, each with the right answer
  * among four. Fewer than MIN_POOL songs: no game (the answers would repeat).
  */
-export function pickRounds(tracks: LibraryTrack[], rounds = ROUNDS, random: () => number = Math.random): Round[] {
+export function pickRounds(tracks: LibraryTrack[], rounds = ROUNDS, random: () => number = Math.random, by: 'song' | 'artist' = 'song'): Round[] {
   const seen = new Set<string>()
   const pool = shuffled(
     tracks.filter((t) => t.musicness !== 'notMusic' && (t.durationMs ?? 0) >= 60_000 && (t.ids.youtube || t.ids.local || t.ids.server || t.ids.apple) && !seen.has(key(t)) && seen.add(key(t))),
     random,
   )
   if (pool.length < MIN_POOL) return []
+  if (by === 'artist') {
+    // Four different artists among the answers: the right one, then one song of each of three others.
+    const artist = (t: LibraryTrack) => t.artist.trim().toLowerCase()
+    if (new Set(pool.map(artist)).size < MIN_POOL) return []
+    return pool.slice(0, rounds).map((song) => {
+      const others = new Map<string, LibraryTrack>()
+      for (const t of shuffled(pool.filter((t) => artist(t) !== artist(song)), random)) if (!others.has(artist(t))) others.set(artist(t), t)
+      return { song, choices: shuffled([song, ...[...others.values()].slice(0, CHOICES - 1)], random) }
+    })
+  }
   return pool.slice(0, rounds).map((song) => ({ song, choices: shuffled([song, ...shuffled(pool.filter((t) => t !== song), random).slice(0, CHOICES - 1)], random) }))
 }
 

@@ -98,6 +98,7 @@ export const MENU_ITEMS: Record<MenuKind, ItemDef[]> = {
     def('pin', 'Pin to top', 'organise', 'standard'),
     def('moveToFolder', 'Move to folder', 'organise', 'standard'),
     def('findDuplicates', 'Find duplicates', 'tools', 'detail'),
+    def('blindTest', 'Blind test from this playlist…', 'tools', 'detail'),
     def('removeRepeated', 'Remove repeated songs', 'tools', 'detail'),
     def('copyList', 'Copy song list', 'tools', 'detail'),
     def('saveFile', 'Save as file…', 'share', 'detail'),

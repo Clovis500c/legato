@@ -48,3 +48,18 @@ it('a round is a point for the right answer only; time running out (no answer) i
   // Long enough to hear the whole snippet and think a little.
   expect(ANSWER_MS).toBeGreaterThan(SNIPPET_MS)
 })
+
+it('guessing the artist: four different artists among the answers, the right one in them; fewer than eight artists, no game', () => {
+  const tracks = Array.from({ length: 40 }, (_, i) => song(i + 1, { artist: `Artist ${i % 12}` }))
+  const game = pickRounds(tracks, 10, seq(), 'artist')
+  expect(game).toHaveLength(10)
+  for (const r of game) {
+    expect(r.choices).toHaveLength(4)
+    expect(r.choices).toContain(r.song)
+    expect(new Set(r.choices.map((c) => c.artist)).size).toBe(4)
+  }
+  // Thirty songs by 5 artists make a song game, not an artist one.
+  const few = Array.from({ length: 30 }, (_, i) => song(i + 1, { artist: `Artist ${i % 5}` }))
+  expect(pickRounds(few, 10, seq(), 'artist')).toEqual([])
+  expect(pickRounds(few, 10, seq())).toHaveLength(10)
+})

@@ -609,6 +609,7 @@ export function playlistMenu(p: LibraryPlaylist): MenuEntry[] {
     { id: 'addToQueue', label: tr('Add to queue'), icon: <ListPlus size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then((t) => player().enqueue(t, false), fail) },
     { id: 'startRadio', label: tr('Start radio'), icon: <Radio size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then((t) => startRadioFrom(t, p.name), fail) },
     { id: 'autoDj', label: tr('Auto-DJ'), icon: <VinylRecord size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then((t) => startAutoDj(t, p.name), fail) },
+    useSettings.getState().settings.blindTest && { id: 'blindTest', label: tr('Blind test from this playlist…'), icon: <Question size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then((t) => openBlind(t), fail) },
     '-',
     { id: 'open', label: tr('Open'), icon: <Playlist size={16} />, onSelect: () => go({ name: 'playlist', id: p.id }) },
     tag('pin', pinned ? { label: tr('Unpin'), icon: <PushPinSlash size={16} />, onSelect: () => togglePinned(key) } : { label: tr('Pin to top'), icon: <PushPin size={16} />, onSelect: () => togglePinned(key) }),

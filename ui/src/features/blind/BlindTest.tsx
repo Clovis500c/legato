@@ -2,11 +2,12 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from '../../app/store'
 import type { LibraryTrack } from '../../shared/api'
 import { Button } from '../../shared/ui/Button'
+import { LedChip } from '../../shared/ui/controls'
 import { tr, trn } from '../../shared/i18n/i18n'
 import { usePlayer } from '../player/store'
 import { ANSWER_MS, pickRounds, pointFor, SNIPPET_MS, snippetStart, TIMED_OUT } from './rounds'
 import { holdLayer } from '../../shared/ui/layers'
-import { closeBlind } from './blindOpen'
+import { closeBlind, useBlind } from './blindOpen'
 
 /** A round's song, started at its snippet (asked as the start: a seek sent with the play reaches the song before it). */
 export function startRound(song: LibraryTrack) {
@@ -19,7 +20,11 @@ export function startRound(song: LibraryTrack) {
  * the player (title, cover) gives the song away; the sound plays underneath and stops when a round is answered or the game ends.
  */
 export function BlindTest() {
-  const [game, setGame] = useState(() => pickRounds(useStore.getState().tracks))
+  // A game from one playlist (its menu) or the library; the songs or only their artists to guess.
+  const pool = useBlind((s) => s.pool)
+  const [artists, setArtists] = useState(false)
+  const make = (by: boolean) => pickRounds(pool ?? useStore.getState().tracks, undefined, undefined, by ? 'artist' : 'song')
+  const [game, setGame] = useState(() => make(false))
   const [round, setRound] = useState(0)
   const [answer, setAnswer] = useState<number | null>(null)
   const [score, setScore] = useState(0)
@@ -63,8 +68,8 @@ export function BlindTest() {
     setAnswer(i)
     setScore((n) => n + pointFor(i, right))
   }
-  const again = () => {
-    setGame(pickRounds(useStore.getState().tracks))
+  const again = (by = artists) => {
+    setGame(make(by))
     setRound(0)
     setAnswer(null)
     setScore(0)
@@ -81,7 +86,7 @@ export function BlindTest() {
         <>
           <h2 className="text-3xl font-black">{tr('Score: {score} of {total}', { score, total: game.length })}</h2>
           <div className="flex gap-2">
-            <Button onClick={again}>{tr('Play again')}</Button>
+            <Button onClick={() => again()}>{tr('Play again')}</Button>
             <Button variant="ghost" onClick={closeBlind}>
               {tr('Close')}
             </Button>
@@ -89,8 +94,19 @@ export function BlindTest() {
         </>
       ) : (
         <>
-          <p className="text-sm text-ink-3">{trn(game.length, 'Round {r} of {n} song', 'Round {r} of {n} songs', { r: round + 1 })}</p>
-          <h2 className="text-2xl font-black">{answer === null ? tr('Which song is playing?') : answer === right ? tr('Correct!') : tr('It was “{title}” by {artist}', { title: current.song.title, artist: current.song.artist })}</h2>
+          <div className="flex items-center gap-3">
+            <p className="text-sm text-ink-3">{trn(game.length, 'Round {r} of {n} song', 'Round {r} of {n} songs', { r: round + 1 })}</p>
+            {/* Switching starts a new game: the answers change kind. */}
+            <LedChip
+              on={artists}
+              label={tr('Guess the artist')}
+              onClick={() => {
+                setArtists(!artists)
+                again(!artists)
+              }}
+            />
+          </div>
+          <h2 className="text-2xl font-black">{answer === null ? (artists ? tr('Which artist is playing?') : tr('Which song is playing?')) : answer === right ? tr('Correct!') : tr('It was “{title}” by {artist}', { title: current.song.title, artist: current.song.artist })}</h2>
           {answer === null && <span aria-hidden key={round} className="h-0.5 w-full max-w-xl origin-left rounded-full bg-accent" style={{ animation: `blind-clock ${ANSWER_MS}ms linear forwards` }} />}
           <ul className="flex w-full max-w-xl flex-col gap-2">
             {current.choices.map((c, i) => (
@@ -101,7 +117,13 @@ export function BlindTest() {
                   onClick={() => pick(i)}
                   className={`w-full rounded-lg border px-4 py-3 text-start transition ${answer === null ? 'border-line bg-raised hover:border-ink-4' : i === right ? 'border-accent-ink bg-raised' : i === answer ? 'border-line bg-recess text-ink-3 line-through' : 'border-line bg-bg text-ink-3'}`}
                 >
-                  <span className="font-medium">{c.title}</span> <span className="text-ink-2">· {c.artist}</span>
+                  {artists ? (
+                    <span className="font-medium">{c.artist}</span>
+                  ) : (
+                    <>
+                      <span className="font-medium">{c.title}</span> <span className="text-ink-2">· {c.artist}</span>
+                    </>
+                  )}
                 </button>
               </li>
             ))}
