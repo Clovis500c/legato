@@ -1320,7 +1320,6 @@ const tr: Record<string, string> = {
   // Docked mini player
   'For every source. YouTube always shows one: its video must stay visible.': 'Tüm kaynaklar için. YouTube her zaman bir tane gösterir: videosunun görünür kalması gerekir.',
   'Mini player place': 'Mini oynatıcının yeri',
-  'In the sidebar': 'Kenar çubuğunda',
   'Floating': 'Yüzen',
   'sidebar docked floating video corner': 'kenar çubuğu sabit yüzen video köşe',
   // Text size
@@ -1673,7 +1672,6 @@ const tr: Record<string, string> = {
   'What do you want to play?': 'Ne dinlemek istersin?',
   'From': 'Kaynak',
   'In the right panel': 'Sağ panelde',
-  'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'Sağ panelde veya kenar çubuğunda sayfayı asla kapatmaz; yüzerken istediğin yere sürükle.',
   'Expand Your library': 'Kitaplığını genişlet',
   'Collapse Your library': 'Kitaplığını daralt',
   'Resize the sidebar': 'Kenar çubuğunu yeniden boyutlandır',

@@ -1320,7 +1320,6 @@ const es: Record<string, string> = {
   // Docked mini player
   'For every source. YouTube always shows one: its video must stay visible.': 'Para todas las fuentes. YouTube siempre muestra uno: su vídeo tiene que estar visible.',
   'Mini player place': 'Sitio del minirreproductor',
-  'In the sidebar': 'En la barra lateral',
   'Floating': 'Flotante',
   'sidebar docked floating video corner': 'barra lateral anclado flotante vídeo esquina',
   // Text size
@@ -1673,7 +1672,6 @@ const es: Record<string, string> = {
   'What do you want to play?': '¿Qué quieres escuchar?',
   'From': 'De',
   'In the right panel': 'En el panel derecho',
-  'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'En el panel derecho o en la barra lateral nunca tapa la página; flotante, arrástralo donde quieras.',
   'Expand Your library': 'Ampliar Tu biblioteca',
   'Collapse Your library': 'Reducir Tu biblioteca',
   'Resize the sidebar': 'Cambiar el tamaño de la barra lateral',

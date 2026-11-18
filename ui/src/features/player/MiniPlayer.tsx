@@ -41,7 +41,7 @@ export function MiniPlayer() {
   // A narrow window has no right panel (SidePanel): its mini player floats here.
   const narrow = useNarrow()
   const phone = usePhone()
-  const docked = place === 'sidebar' || (place === 'panel' && !narrow)
+  const docked = place === 'panel' && !narrow
   const spot = useSettings((s) => s.settings.miniSpot)
   const miniWidth = useSettings((s) => s.settings.miniWidth)
   const update = useSettings((s) => s.update)

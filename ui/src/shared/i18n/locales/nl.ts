@@ -1320,7 +1320,6 @@ const nl: Record<string, string> = {
   // Docked mini player
   'For every source. YouTube always shows one: its video must stay visible.': 'Voor elke bron. YouTube toont er altijd een: de video moet zichtbaar blijven.',
   'Mini player place': 'Plek van minispeler',
-  'In the sidebar': 'In de zijbalk',
   'Floating': 'Zwevend',
   'sidebar docked floating video corner': 'zijbalk vastgezet zwevend video hoek sidebar docked floating',
   // Text size
@@ -1673,7 +1672,6 @@ const nl: Record<string, string> = {
   'What do you want to play?': 'Wat wil je afspelen?',
   'From': 'Van',
   'In the right panel': 'In het rechterpaneel',
-  'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'In het rechterpaneel of de zijbalk bedekt hij nooit de pagina; zwevend kun je hem overal heen slepen.',
   'Expand Your library': 'Je bibliotheek vergroten',
   'Collapse Your library': 'Je bibliotheek verkleinen',
   'Resize the sidebar': 'Zijbalk van grootte veranderen',

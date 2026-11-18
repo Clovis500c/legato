@@ -1320,7 +1320,6 @@ const ja: Record<string, string> = {
   // Docked mini player
   'For every source. YouTube always shows one: its video must stay visible.': 'すべてのソースで。YouTubeでは常に表示されます：動画は見える状態にしておく必要があります。',
   'Mini player place': 'ミニプレーヤーの位置',
-  'In the sidebar': 'サイドバー内',
   'Floating': 'フローティング',
   'sidebar docked floating video corner': 'サイドバー ドッキング フローティング 動画 隅 sidebar docked floating video corner',
   // Text size
@@ -1673,7 +1672,6 @@ const ja: Record<string, string> = {
   'What do you want to play?': '何を再生しますか？',
   'From': '元',
   'In the right panel': '右パネル内',
-  'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': '右パネルやサイドバー内ならページを隠しません。フローティングならどこへでもドラッグできます。',
   'Expand Your library': 'ライブラリを広げる',
   'Collapse Your library': 'ライブラリを狭める',
   'Resize the sidebar': 'サイドバーのサイズを変更',

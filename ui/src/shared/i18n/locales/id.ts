@@ -1320,7 +1320,6 @@ const id: Record<string, string> = {
   // Docked mini player
   'For every source. YouTube always shows one: its video must stay visible.': 'Untuk semua sumber. YouTube selalu menampilkannya: videonya harus tetap terlihat.',
   'Mini player place': 'Posisi pemutar mini',
-  'In the sidebar': 'Di bilah samping',
   'Floating': 'Mengambang',
   'sidebar docked floating video corner': 'bilah samping tertambat mengambang video sudut',
   // Text size
@@ -1673,7 +1672,6 @@ const id: Record<string, string> = {
   'What do you want to play?': 'Mau putar apa?',
   'From': 'Dari',
   'In the right panel': 'Di panel kanan',
-  'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'Di panel kanan atau bilah samping, pemutar tidak pernah menutupi halaman; saat mengambang, seret ke mana saja.',
   'Expand Your library': 'Perbesar Koleksimu',
   'Collapse Your library': 'Perkecil Koleksimu',
   'Resize the sidebar': 'Ubah ukuran bilah samping',

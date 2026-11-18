@@ -1320,7 +1320,6 @@ const vi: Record<string, string> = {
   // Docked mini player
   'For every source. YouTube always shows one: its video must stay visible.': 'Cho mọi nguồn. YouTube luôn hiện trình phát mini: video của nó phải luôn hiển thị.',
   'Mini player place': 'Vị trí trình phát mini',
-  'In the sidebar': 'Ở thanh bên',
   'Floating': 'Nổi',
   'sidebar docked floating video corner': 'thanh bên ghim nổi video góc sidebar docked floating video corner',
   // Text size
@@ -1673,7 +1672,6 @@ const vi: Record<string, string> = {
   'What do you want to play?': 'Bạn muốn nghe gì?',
   'From': 'Từ',
   'In the right panel': 'Ở bảng bên phải',
-  'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'Ở bảng bên phải hoặc thanh bên thì không bao giờ che trang; khi nổi, kéo đi đâu cũng được.',
   'Expand Your library': 'Mở rộng Thư viện của bạn',
   'Collapse Your library': 'Thu gọn Thư viện của bạn',
   'Resize the sidebar': 'Đổi kích thước thanh bên',

@@ -1320,7 +1320,6 @@ const hi: Record<string, string> = {
   // Docked mini player
   'For every source. YouTube always shows one: its video must stay visible.': 'हर सोर्स के लिए। YouTube हमेशा एक दिखाता है: उसका वीडियो दिखते रहना चाहिए।',
   'Mini player place': 'मिनी प्लेयर की जगह',
-  'In the sidebar': 'साइडबार में',
   'Floating': 'फ़्लोटिंग',
   'sidebar docked floating video corner': 'साइडबार डॉक फ़्लोटिंग वीडियो कोना sidebar docked floating video corner',
   // Text size
@@ -1673,7 +1672,6 @@ const hi: Record<string, string> = {
   'What do you want to play?': 'आप क्या सुनना चाहते हैं?',
   'From': 'से',
   'In the right panel': 'दाएँ पैनल में',
-  'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'दाएँ पैनल या साइडबार में यह कभी पेज को नहीं ढकता; फ़्लोटिंग हो तो इसे कहीं भी खींचें।',
   'Expand Your library': 'आपकी लाइब्रेरी बड़ी करें',
   'Collapse Your library': 'आपकी लाइब्रेरी छोटी करें',
   'Resize the sidebar': 'साइडबार का आकार बदलें',

@@ -391,7 +391,7 @@ export interface Settings {
   stage: 'auto' | 'video' | 'cover'
   miniSpot: Spot
   /** Where the mini player sits: top of the right panel, bottom of the sidebar (neither over the content) or floating. */
-  miniPlace: 'panel' | 'sidebar' | 'float'
+  miniPlace: 'panel' | 'float'
   /** Seek bar's played part: a line, a wave moving while the song plays (`.wave-progress`, styles.css), or a local song's own shape (seekShape.ts; other songs show the wave). */
   progressStyle: 'line' | 'wave' | 'shape'
   /** Mini player width, px (video 16:9 below it, 200 px tall at least). */
@@ -771,7 +771,7 @@ function v8(r: Record<string, unknown>): Partial<Settings> {
 function v5(r: Record<string, unknown>): Partial<Settings> {
   const f = (r.fade ?? {}) as Record<string, unknown>
   const untouched = (r.crossfade ?? 5) === 5 && (f.out ?? 5) === 5 && (f.in ?? 5) === 5 && f.advanced !== true
-  return { miniPlace: 'sidebar', textSize: 'normal', ...(untouched && { crossfade: 2, fade: { ...sanitizeFade(r.fade), out: 2, in: 2 } }) }
+  return { miniPlace: 'panel', textSize: 'normal', ...(untouched && { crossfade: 2, fade: { ...sanitizeFade(r.fade), out: 2, in: 2 } }) }
 }
 
 const HEX = /^#[0-9a-f]{6}$/i
@@ -910,7 +910,7 @@ export function sanitize(raw: unknown): Settings {
     youtubeControls: typeof r.youtubeControls === 'boolean' ? r.youtubeControls : DEFAULTS.youtubeControls,
     stage: pick(r.stage, ['auto', 'video', 'cover'] as const, DEFAULTS.stage),
     miniSpot: pick(r.miniSpot, SPOTS, DEFAULTS.miniSpot),
-    miniPlace: pick(r.miniPlace, ['panel', 'sidebar', 'float'] as const, DEFAULTS.miniPlace),
+    miniPlace: pick(r.miniPlace, ['panel', 'float'] as const, DEFAULTS.miniPlace),
     progressStyle: pick(r.progressStyle, ['line', 'wave', 'shape'] as const, DEFAULTS.progressStyle),
     sidebarWidth: num(r.sidebarWidth, SIDEBAR_MIN, SIDEBAR_MAX, DEFAULTS.sidebarWidth),
     libraryWide: r.libraryWide === true,

@@ -24,13 +24,10 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
   screen at any window size. The background takes a flat tint from the cover (`ambient.ts`: canvas average weighted to
   colorful pixels; the tint is pushed darker or lighter until the theme's muted text keeps AA 4.5).
 - Mini player: on top of the right panel by default (`SidePanel.tsx`, user's pick 2026-10-29: the sidebar shows
-  the library only), docked at the bottom of the sidebar (`SidebarPlayer.tsx`) or a floating card above the bar
+  the library only; the docked card at the sidebar's foot was removed 2026-11-18, a stored "sidebar" reads as the panel) or a floating card above the bar
   (`MiniPlayer.tsx`), Settings › Appearance › Mini player place. For YouTube it is always shown (the video must stay
   visible), even with the right panel hidden: the video fills a 200 px tall slot, YouTube's minimum (the 16:9 frame is
   wider, its sides cut); our controls never sit on top. For other sources it's optional.
-  The sidebar one is a card tinted by the cover with the song's progress along its bottom; with vinyl covers (Settings ›
-  Appearance) a song from another source shows as a record, its cover the label, turning at 33⅓ rpm while it plays
-  (user's request 2026-10-22; `motion` off or reduced motion: still). YouTube keeps its video there.
 - In-app drag and drop is pointer-driven (`shared/ui/drag.ts`): the window's file drop (audio files, QR codes) takes
   OS drags on Windows, so HTML5 drops inside the page never fire.
 
@@ -514,7 +511,7 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
     `VizBackdrop` in `Visualizer.tsx`, a second canvas across the bottom half of Now Playing at 20 % behind everything
     (`-z-10`, no pointer events), the look picked (bars for Radial); quiet under a full screen like the strip.
   - **In the mini player** (Settings › Playback › Visualizer in the mini player, 2026-11-04, off by default): a 24 px
-    strip under the song, floating, in the right panel or in the sidebar (`MiniViz.tsx`, a shell file: it loads
+    strip under the song, floating or in the right panel (`MiniViz.tsx`, a shell file: it loads
     `MiniStrip` from Now Playing's chunk by `lazy` only once shown); no pointer events, quiet under Now Playing.
   - **On the streaming overlay** (Settings › Playback › Visualizer on the overlay, 2026-11-05, off by default, this
     PC's own): 31 bars (thirds of an octave, weighed as the visualizer, `overlayBars.ts`) under the song on the OBS

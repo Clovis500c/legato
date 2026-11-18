@@ -1320,7 +1320,6 @@ const zh: Record<string, string> = {
   // Docked mini player
   'For every source. YouTube always shows one: its video must stay visible.': '适用于所有来源。YouTube 始终显示迷你播放器：它的视频必须保持可见。',
   'Mini player place': '迷你播放器位置',
-  'In the sidebar': '在侧边栏中',
   'Floating': '悬浮',
   'sidebar docked floating video corner': '侧边栏 停靠 悬浮 视频 角落 sidebar docked floating video corner',
   // Text size
@@ -1673,7 +1672,6 @@ const zh: Record<string, string> = {
   'What do you want to play?': '想听什么？',
   'From': '来自',
   'In the right panel': '在右侧面板中',
-  'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': '在右侧面板或侧边栏中时不会遮挡页面；悬浮时可拖到任意位置。',
   'Expand Your library': '展开你的音乐库',
   'Collapse Your library': '收起你的音乐库',
   'Resize the sidebar': '调整侧边栏大小',

@@ -1320,7 +1320,6 @@ const ko: Record<string, string> = {
   // Docked mini player
   'For every source. YouTube always shows one: its video must stay visible.': '모든 소스에 적용. YouTube는 항상 표시됩니다: 동영상이 보이는 상태여야 합니다.',
   'Mini player place': '미니 플레이어 위치',
-  'In the sidebar': '사이드바에',
   'Floating': '플로팅',
   'sidebar docked floating video corner': '사이드바 고정 플로팅 동영상 모서리 sidebar docked floating video corner',
   // Text size
@@ -1673,7 +1672,6 @@ const ko: Record<string, string> = {
   'What do you want to play?': '무엇을 재생할까요?',
   'From': '출처',
   'In the right panel': '오른쪽 패널에',
-  'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': '오른쪽 패널이나 사이드바에서는 페이지를 가리지 않으며, 플로팅이면 어디로든 드래그할 수 있습니다.',
   'Expand Your library': '내 보관함 넓히기',
   'Collapse Your library': '내 보관함 좁히기',
   'Resize the sidebar': '사이드바 크기 조절',

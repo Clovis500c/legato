@@ -23,7 +23,6 @@ import { useDrag, useDropTarget } from '../../shared/ui/drag'
 import { usePlayer } from '../player/store'
 import { groupAlbums, groupArtists } from '../library/filter'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
-import { SidebarPlayer } from '../player/SidebarPlayer'
 import { newSmartList, smartTracks } from '../smart/rules'
 import { saveSmart, smartMenu } from '../smart/actions'
 
@@ -250,7 +249,6 @@ export function Sidebar() {
             {(e) => <LibItem e={e} />}
           </VirtualList>
         )}
-        <SidebarPlayer />
       </section>
       {/* Edge: drag (or arrows) to resize, double-click for the default width. */}
       {!wide && (

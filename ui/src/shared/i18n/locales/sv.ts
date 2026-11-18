@@ -1320,7 +1320,6 @@ const sv: Record<string, string> = {
   // Docked mini player
   'For every source. YouTube always shows one: its video must stay visible.': 'För alla källor. YouTube visar alltid en: dess video måste synas.',
   'Mini player place': 'Minispelarens plats',
-  'In the sidebar': 'I sidofältet',
   'Floating': 'Flytande',
   'sidebar docked floating video corner': 'sidofält dockad flytande video hörn',
   // Text size
@@ -1673,7 +1672,6 @@ const sv: Record<string, string> = {
   'What do you want to play?': 'Vad vill du lyssna på?',
   'From': 'Från',
   'In the right panel': 'I högerpanelen',
-  'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'I högerpanelen eller sidofältet täcker den aldrig sidan; flytande kan du dra den vart du vill.',
   'Expand Your library': 'Visa Ditt bibliotek större',
   'Collapse Your library': 'Visa Ditt bibliotek mindre',
   'Resize the sidebar': 'Ändra storlek på sidofältet',
