@@ -10,7 +10,15 @@ then milestone 3, Platforms; Against Liner 6 with the owner at the PC. Where the
 Every idea here stays: the user wants them all built in the end, just later (user's choice 2026-10-31). The roadmap sets
 the order; a line leaves only when it ships or the user drops it.
 
-## The owner's reports of 2026-11-18
+## The owner's reports and asks of 2026-11-18
+
+- [ ] `M` A picture dragged from Discord (the owner, 2026-11-18; only noted, nothing built): Discord drops a link to its
+      CDN (`cdn.discordapp.com`, `media.discordapp.net`; signed links that expire), not a file. Take it like a dropped
+      picture, fetched in Rust, never by the page; what each kind is for (a shared card's code, a cover…) to settle when
+      it is built. To make it safe (the owner: "well secured"): https only, those exact hosts, no redirect off them, a
+      size cap and a timeout, the bytes checked as an image before any decoding, the `Noted` resolver, nothing sent but
+      the request itself; a new host, so the website's privacy rows first (`PRIVACY`, `SERVICES` in
+      `site/components/content.tsx`).
 
 - [ ] `M` Android: the sound sometimes crackles or sounds saturated (the owner, 2026-11-18, cause unknown to them, "maybe
       the connection"). Their answers: a YouTube song, Bluetooth earphones, the screen off or the app in the background, no
