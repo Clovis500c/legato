@@ -1318,7 +1318,7 @@ const hi: Record<string, string> = {
   'Every setting on this page goes back to its default, except the theme and the language.': 'इस पेज की हर सेटिंग अपने डिफ़ॉल्ट पर लौट जाती है, थीम और भाषा को छोड़कर।',
   'Reset': 'रीसेट करें',
   // Docked mini player
-  'For every source. YouTube always shows one: its video must stay visible.': 'हर सोर्स के लिए। YouTube हमेशा एक दिखाता है: उसका वीडियो दिखते रहना चाहिए।',
+  'For every source. Off, a YouTube video plays out of sight; Now Playing shows it.': 'हर स्रोत के लिए। बंद होने पर YouTube वीडियो नज़र से दूर चलता है; «अभी चल रहा है» उसे दिखाता है।',
   'Mini player place': 'मिनी प्लेयर की जगह',
   'Floating': 'फ़्लोटिंग',
   'sidebar docked floating video corner': 'साइडबार डॉक फ़्लोटिंग वीडियो कोना sidebar docked floating video corner',

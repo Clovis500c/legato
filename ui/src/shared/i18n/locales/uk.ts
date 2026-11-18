@@ -1318,7 +1318,7 @@ const uk: Record<string, string> = {
   'Every setting on this page goes back to its default, except the theme and the language.': 'Усі налаштування на цій сторінці повернуться до значень за замовчуванням, крім теми й мови.',
   'Reset': 'Скинути',
   // Docked mini player
-  'For every source. YouTube always shows one: its video must stay visible.': 'Для всіх джерел. YouTube показує його завжди: його відео має лишатися видимим.',
+  'For every source. Off, a YouTube video plays out of sight; Now Playing shows it.': 'Для будь-якого джерела. Якщо вимкнено, відео YouTube грає поза видимістю; його показує «Зараз грає».',
   'Mini player place': 'Місце мініплеєра',
   'Floating': 'Плаваючий',
   'sidebar docked floating video corner': 'бічна панель закріплений плаваючий відео кут',

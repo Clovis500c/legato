@@ -756,6 +756,7 @@ video ahead, no Spotify previews, Android as the APK with its own updates (no Pl
 
 - Never download or extract YouTube or Spotify audio. Hidden player: only Now Playing's Cover mode, the user's choice
   (2026-10-16) against YouTube's terms; everywhere else the video stays visible (minimum 200×200).
+  2026-11-18, the owner's choice, also against those terms (the phone's since 2026-11-06): a YouTube video shows only in Now Playing, or in the mini player when that is on (off by default); no longer forced on screen elsewhere (`miniRule.ts`).
 - No circumventing Premium or DRM. Quotas respected, no server of ours.
 
 ## Left open (what the ticked lines still leave)

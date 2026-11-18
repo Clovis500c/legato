@@ -1279,7 +1279,7 @@ const he: Record<string, string> = {
   'Reset appearance?': 'לאפס את המראה?',
   'Every setting on this page goes back to its default, except the theme and the language.': 'כל הגדרה בעמוד הזה חוזרת לברירת המחדל, חוץ מערכת הנושא והשפה.',
   'Reset': 'איפוס',
-  'For every source. YouTube always shows one: its video must stay visible.': 'לכל מקור. YouTube תמיד מציג אחד: הסרטון שלו חייב להישאר גלוי.',
+  'For every source. Off, a YouTube video plays out of sight; Now Playing shows it.': 'לכל המקורות. כשהוא כבוי, סרטון YouTube מתנגן מחוץ לטווח הראייה; «מתנגן עכשיו» מציג אותו.',
   'Mini player place': 'מיקום הנגן המוקטן',
   'Floating': 'צף',
   'sidebar docked floating video corner': 'סרגל צד מעוגן צף וידאו פינה',

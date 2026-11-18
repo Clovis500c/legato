@@ -1279,7 +1279,7 @@ const ar: Record<string, string> = {
   'Reset appearance?': 'هل تريد إعادة ضبط المظهر؟',
   'Every setting on this page goes back to its default, except the theme and the language.': 'يعود كل إعداد في هذه الصفحة إلى افتراضيه، عدا السمة واللغة.',
   'Reset': 'إعادة ضبط',
-  'For every source. YouTube always shows one: its video must stay visible.': 'لكل مصدر. يعرض YouTube واحدًا دائمًا: يجب أن يبقى الفيديو مرئيًا.',
+  'For every source. Off, a YouTube video plays out of sight; Now Playing shows it.': 'لكل المصادر. عند الإيقاف يُشغَّل فيديو YouTube بعيدًا عن الأنظار، وتعرضه شاشة «قيد التشغيل».',
   'Mini player place': 'موضع المشغّل المصغّر',
   'Floating': 'عائم',
   'sidebar docked floating video corner': 'شريط جانبي مثبّت عائم فيديو زاوية',

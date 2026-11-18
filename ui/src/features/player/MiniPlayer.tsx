@@ -15,6 +15,7 @@ import { MiniViz } from './MiniViz'
 import { volumeWheelRef } from './volume'
 import { Transport } from './Transport'
 import { tr } from '../../shared/i18n/i18n'
+import { miniCard } from './miniRule'
 
 // Title bar (52) and player bar (100) stay clear, 12 px gap; 24 px from the sides.
 const INSETS = { top: 64, right: 24, bottom: 112, left: 24 }
@@ -86,10 +87,11 @@ export function MiniPlayer() {
   useEffect(() => settle(), [rest.x, rest.y, settle])
 
   const video = now?.via === 'youtube'
-  // The phone: no card over the lists (the owner's try, 2026-11-06), its bar below already says what plays. A YouTube
-  // song plays out of sight, as Now Playing's cover mode does; Now Playing shows its video.
-  if (phone && video && !full && !docked) return <VideoSlot hidden className="fixed top-0 left-0 size-0" />
-  if (!now || full || docked || !(video || on)) return null
+  // The phone never has a card over the lists (the owner's try, 2026-11-06), and on any device a YouTube video shows only in
+  // Now Playing or in this card when the mini player is on (the owner, 2026-11-18): else it plays out of sight (miniRule.ts).
+  const slot = miniCard({ video, on, phone, full, docked })
+  if (slot === 'hidden') return <VideoSlot hidden className="fixed top-0 left-0 size-0" />
+  if (!now || slot !== 'card') return null
 
   const pos = drag ?? rest
   const grip = gripCorner(spot)

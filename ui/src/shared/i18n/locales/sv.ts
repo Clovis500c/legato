@@ -1318,7 +1318,7 @@ const sv: Record<string, string> = {
   'Every setting on this page goes back to its default, except the theme and the language.': 'Alla inställningar på den här sidan återgår till standard, utom temat och språket.',
   'Reset': 'Återställ',
   // Docked mini player
-  'For every source. YouTube always shows one: its video must stay visible.': 'För alla källor. YouTube visar alltid en: dess video måste synas.',
+  'For every source. Off, a YouTube video plays out of sight; Now Playing shows it.': 'För alla källor. Av: en YouTube-video spelas utom synhåll; Spelas nu visar den.',
   'Mini player place': 'Minispelarens plats',
   'Floating': 'Flytande',
   'sidebar docked floating video corner': 'sidofält dockad flytande video hörn',

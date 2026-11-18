@@ -1318,7 +1318,7 @@ const tr: Record<string, string> = {
   'Every setting on this page goes back to its default, except the theme and the language.': 'Tema ve dil dışında bu sayfadaki tüm ayarlar varsayılana döner.',
   'Reset': 'Sıfırla',
   // Docked mini player
-  'For every source. YouTube always shows one: its video must stay visible.': 'Tüm kaynaklar için. YouTube her zaman bir tane gösterir: videosunun görünür kalması gerekir.',
+  'For every source. Off, a YouTube video plays out of sight; Now Playing shows it.': 'Her kaynak için. Kapalıyken YouTube videosu görünmeden çalar; Şimdi çalıyor onu gösterir.',
   'Mini player place': 'Mini oynatıcının yeri',
   'Floating': 'Yüzen',
   'sidebar docked floating video corner': 'kenar çubuğu sabit yüzen video köşe',

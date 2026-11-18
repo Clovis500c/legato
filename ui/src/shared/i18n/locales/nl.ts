@@ -1318,7 +1318,7 @@ const nl: Record<string, string> = {
   'Every setting on this page goes back to its default, except the theme and the language.': 'Elke instelling op deze pagina gaat terug naar de standaard, behalve het thema en de taal.',
   'Reset': 'Herstellen',
   // Docked mini player
-  'For every source. YouTube always shows one: its video must stay visible.': 'Voor elke bron. YouTube toont er altijd een: de video moet zichtbaar blijven.',
+  'For every source. Off, a YouTube video plays out of sight; Now Playing shows it.': 'Voor elke bron. Uit: een YouTube-video speelt buiten beeld; Nu afspelen toont hem.',
   'Mini player place': 'Plek van minispeler',
   'Floating': 'Zwevend',
   'sidebar docked floating video corner': 'zijbalk vastgezet zwevend video hoek sidebar docked floating',

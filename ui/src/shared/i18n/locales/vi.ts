@@ -1318,7 +1318,7 @@ const vi: Record<string, string> = {
   'Every setting on this page goes back to its default, except the theme and the language.': 'Mọi cài đặt trên trang này trở về mặc định, trừ chủ đề và ngôn ngữ.',
   'Reset': 'Đặt lại',
   // Docked mini player
-  'For every source. YouTube always shows one: its video must stay visible.': 'Cho mọi nguồn. YouTube luôn hiện trình phát mini: video của nó phải luôn hiển thị.',
+  'For every source. Off, a YouTube video plays out of sight; Now Playing shows it.': 'Cho mọi nguồn. Khi tắt, video YouTube phát ngoài tầm nhìn; Đang phát sẽ hiển thị nó.',
   'Mini player place': 'Vị trí trình phát mini',
   'Floating': 'Nổi',
   'sidebar docked floating video corner': 'thanh bên ghim nổi video góc sidebar docked floating video corner',

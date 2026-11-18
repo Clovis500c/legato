@@ -25,9 +25,11 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
   colorful pixels; the tint is pushed darker or lighter until the theme's muted text keeps AA 4.5).
 - Mini player: on top of the right panel by default (`SidePanel.tsx`, user's pick 2026-10-29: the sidebar shows
   the library only; the docked card at the sidebar's foot was removed 2026-11-18, a stored "sidebar" reads as the panel) or a floating card above the bar
-  (`MiniPlayer.tsx`), Settings › Appearance › Mini player place. For YouTube it is always shown (the video must stay
-  visible), even with the right panel hidden: the video fills a 200 px tall slot, YouTube's minimum (the 16:9 frame is
-  wider, its sides cut); our controls never sit on top. For other sources it's optional.
+  (`MiniPlayer.tsx`), Settings › Appearance › Mini player place. The mini player is optional for every source, YouTube
+  included (the owner's choice of 2026-11-18, against the embed's terms that its video stay visible, beside the phone's of
+  2026-11-06): with it off (the default) a YouTube video plays out of sight (a zero-size slot, `miniRule.ts`) and only Now
+  Playing shows it; with it on, the card shows the video in a 200 px tall slot, YouTube's minimum (the 16:9 frame is wider,
+  its sides cut), our controls never on top.
 - In-app drag and drop is pointer-driven (`shared/ui/drag.ts`): the window's file drop (audio files, QR codes) takes
   OS drags on Windows, so HTML5 drops inside the page never fire.
 

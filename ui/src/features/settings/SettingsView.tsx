@@ -264,7 +264,7 @@ function Appearance() {
           <Row setting="appTint" label={msg('Whole app in the cover’s color')} sub={tr('While a song plays, every page takes a soft color from its cover. Text stays readable')}>
             <Toggle label={tr(labelOf('Whole app in the cover’s color'))} checked={s.appTint} onChange={(appTint) => update({ appTint })} />
           </Row>
-          <Row setting="miniPlayer" label={msg('Mini player')} sub={tr('For every source. YouTube always shows one: its video must stay visible.')} preview={<MiniPlayerScene miniPlayer={s.miniPlayer} />}>
+          <Row setting="miniPlayer" label={msg('Mini player')} sub={tr('For every source. Off, a YouTube video plays out of sight; Now Playing shows it.')} preview={<MiniPlayerScene miniPlayer={s.miniPlayer} />}>
             <Toggle label={tr('Mini player')} checked={s.miniPlayer} onChange={(miniPlayer) => update({ miniPlayer })} />
           </Row>
           <Row label={msg('Mini player place')}>

@@ -1318,7 +1318,7 @@ const ko: Record<string, string> = {
   'Every setting on this page goes back to its default, except the theme and the language.': '테마와 언어를 제외한 이 페이지의 모든 설정이 기본값으로 돌아갑니다.',
   'Reset': '초기화',
   // Docked mini player
-  'For every source. YouTube always shows one: its video must stay visible.': '모든 소스에 적용. YouTube는 항상 표시됩니다: 동영상이 보이는 상태여야 합니다.',
+  'For every source. Off, a YouTube video plays out of sight; Now Playing shows it.': '모든 소스에 적용됩니다. 끄면 YouTube 동영상은 보이지 않게 재생되며, 지금 재생 중 화면에서 볼 수 있습니다.',
   'Mini player place': '미니 플레이어 위치',
   'Floating': '플로팅',
   'sidebar docked floating video corner': '사이드바 고정 플로팅 동영상 모서리 sidebar docked floating video corner',

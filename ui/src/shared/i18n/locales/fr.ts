@@ -1327,7 +1327,7 @@ const fr: Record<string, string> = {
   'Every setting on this page goes back to its default, except the theme and the language.': 'Chaque réglage de cette page revient à sa valeur par défaut, sauf le thème et la langue.',
   'Reset': 'Réinitialiser',
   // Docked mini player
-  'For every source. YouTube always shows one: its video must stay visible.': 'Pour toutes les sources. YouTube en affiche toujours un : sa vidéo doit rester visible.',
+  'For every source. Off, a YouTube video plays out of sight; Now Playing shows it.': 'Pour toutes les sources. Désactivé, une vidéo YouTube joue hors de vue ; « En lecture » l’affiche.',
   'Mini player place': 'Place du mini player',
   'Floating': 'Flottant',
   'sidebar docked floating video corner': 'barre latérale ancré flottant vidéo coin',

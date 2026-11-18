@@ -1318,7 +1318,7 @@ const ja: Record<string, string> = {
   'Every setting on this page goes back to its default, except the theme and the language.': 'このページのすべての設定がデフォルトに戻ります（テーマと言語を除く）。',
   'Reset': 'リセット',
   // Docked mini player
-  'For every source. YouTube always shows one: its video must stay visible.': 'すべてのソースで。YouTubeでは常に表示されます：動画は見える状態にしておく必要があります。',
+  'For every source. Off, a YouTube video plays out of sight; Now Playing shows it.': 'すべてのソース用。オフの場合、YouTube の動画は表示されずに再生され、「再生中」画面で表示されます。',
   'Mini player place': 'ミニプレーヤーの位置',
   'Floating': 'フローティング',
   'sidebar docked floating video corner': 'サイドバー ドッキング フローティング 動画 隅 sidebar docked floating video corner',

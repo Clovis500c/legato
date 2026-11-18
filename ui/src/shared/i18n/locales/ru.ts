@@ -1318,7 +1318,7 @@ const ru: Record<string, string> = {
   'Every setting on this page goes back to its default, except the theme and the language.': 'Все настройки на этой странице вернутся к значениям по умолчанию, кроме темы и языка.',
   'Reset': 'Сбросить',
   // Docked mini player
-  'For every source. YouTube always shows one: its video must stay visible.': 'Для всех источников. YouTube показывает его всегда: его видео должно оставаться видимым.',
+  'For every source. Off, a YouTube video plays out of sight; Now Playing shows it.': 'Для любого источника. Если выключено, видео YouTube играет вне поля зрения; его показывает «Сейчас играет».',
   'Mini player place': 'Место мини-плеера',
   'Floating': 'Плавающий',
   'sidebar docked floating video corner': 'боковая панель закреплённый плавающий видео угол',

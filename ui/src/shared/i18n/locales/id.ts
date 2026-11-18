@@ -1318,7 +1318,7 @@ const id: Record<string, string> = {
   'Every setting on this page goes back to its default, except the theme and the language.': 'Semua pengaturan di halaman ini kembali ke default, kecuali tema dan bahasa.',
   'Reset': 'Atur ulang',
   // Docked mini player
-  'For every source. YouTube always shows one: its video must stay visible.': 'Untuk semua sumber. YouTube selalu menampilkannya: videonya harus tetap terlihat.',
+  'For every source. Off, a YouTube video plays out of sight; Now Playing shows it.': 'Untuk semua sumber. Jika mati, video YouTube diputar tanpa terlihat; Sedang diputar menampilkannya.',
   'Mini player place': 'Posisi pemutar mini',
   'Floating': 'Mengambang',
   'sidebar docked floating video corner': 'bilah samping tertambat mengambang video sudut',

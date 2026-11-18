@@ -1318,7 +1318,7 @@ const zh: Record<string, string> = {
   'Every setting on this page goes back to its default, except the theme and the language.': '此页上的所有设置都将恢复为默认值，主题和语言除外。',
   'Reset': '重置',
   // Docked mini player
-  'For every source. YouTube always shows one: its video must stay visible.': '适用于所有来源。YouTube 始终显示迷你播放器：它的视频必须保持可见。',
+  'For every source. Off, a YouTube video plays out of sight; Now Playing shows it.': '适用于所有来源。关闭时，YouTube 视频在不可见处播放；“正在播放”会显示它。',
   'Mini player place': '迷你播放器位置',
   'Floating': '悬浮',
   'sidebar docked floating video corner': '侧边栏 停靠 悬浮 视频 角落 sidebar docked floating video corner',

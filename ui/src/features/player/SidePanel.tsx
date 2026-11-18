@@ -12,6 +12,7 @@ import { VideoSlot } from './VideoSlot'
 import { useNowTrack, usePlayer } from './store'
 import { MiniViz } from './MiniViz'
 import { UpNext } from './UpNext'
+import { panelCard } from './miniRule'
 
 const LOOK = 'rounded-lg bg-panel p-3'
 
@@ -56,9 +57,10 @@ export function SidePanel() {
   if (!now || narrow) return null
   // Not under Now Playing: its own video slot takes the video. Nothing playing (paused, restored): no player here
   // (user's pick 2026-10-30).
-  const stage = here && !full && playing && (now.via === 'youtube' || on)
-  // Paused video kept unseen (without a slot it shows as the floating card).
-  const parked = here && !full && !playing && now.via === 'youtube' && <VideoSlot hidden className="fixed top-0 left-0 size-0" />
+  const what = panelCard({ here, full, playing, video: now.via === 'youtube', on })
+  const stage = what === 'stage'
+  // A video not shown (mini player off, or paused) is kept unseen: without a slot it would show as the floating card.
+  const parked = what === 'parked' && <VideoSlot hidden className="fixed top-0 left-0 size-0" />
   if (!stage && panel === 'none') return parked || null
   const tabs = (
     <span role="tablist" aria-label={tr('Show')} className="flex flex-wrap gap-1.5">

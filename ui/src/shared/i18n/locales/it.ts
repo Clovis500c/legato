@@ -1318,7 +1318,7 @@ const it: Record<string, string> = {
   'Every setting on this page goes back to its default, except the theme and the language.': 'Tutte le impostazioni di questa pagina tornano al valore predefinito, tranne il tema e la lingua.',
   'Reset': 'Reimposta',
   // Docked mini player
-  'For every source. YouTube always shows one: its video must stay visible.': 'Per tutte le fonti. YouTube ne mostra sempre uno: il suo video deve restare visibile.',
+  'For every source. Off, a YouTube video plays out of sight; Now Playing shows it.': 'Per ogni sorgente. Disattivato, un video YouTube suona fuori vista; In riproduzione lo mostra.',
   'Mini player place': 'Posizione del mini player',
   'Floating': 'Mobile',
   'sidebar docked floating video corner': 'barra laterale ancorato mobile video angolo sidebar docked floating',
