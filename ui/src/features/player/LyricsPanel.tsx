@@ -45,7 +45,8 @@ function Synced({ lines: sung, durationMs, fix, onTap }: { lines: Lyrics['lines'
   // A translation the user asked for, in the interface's language: a smaller row under each line (memory only, this song's).
   const song = usePlayer((s) => songKey(s.now) ?? '')
   const done = useTranslated()
-  const under = useMemo(() => (done && done.song === song && done.code === translateTarget(lang()) ? alignTranslation(lines, done.from, done.to) : null), [done, song, lines])
+  const target = translateTarget(lang())
+  const under = useMemo(() => (done && done.song === song && done.code === target ? alignTranslation(lines, done.from, done.to) : null), [done, song, target, lines])
   const calm = !allowsMotion(useSettings((s) => s.settings.motion), useSystemReduced())
   useEffect(() => {
     const el = box.current

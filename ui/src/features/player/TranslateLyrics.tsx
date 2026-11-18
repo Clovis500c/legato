@@ -17,11 +17,13 @@ export function TranslateLyrics({ lyrics }: { lyrics: Lyrics }) {
   const language = new Intl.DisplayNames([lang()], { type: 'language' }).of(code) ?? code
   const send = () => {
     setState('busy')
+    // The song these words are from, taken now: the answer may come after the next song started.
+    const song = songKey(usePlayer.getState().now) ?? ''
     api.translateLyrics(words, code).then(
       (to) => {
         setState({ from: words, to })
         // Kept in memory for this song: the panel shows it under the lines (LyricsPanel).
-        useTranslated.setState({ song: songKey(usePlayer.getState().now) ?? '', code, from: words, to })
+        useTranslated.setState({ song, code, from: words, to })
       },
       (e) => setState({ error: explain(e).text }),
     )
