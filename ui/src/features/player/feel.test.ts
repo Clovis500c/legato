@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useStore } from '../../app/store'
 import type { LibraryTrack, TasteSignal } from '../../shared/api'
 import { fansOf, mergeRadios } from './crowd'
+import { discoveryCandidates } from './discovery'
 import type { PickWhy } from './pickWhy'
 import { endListen, progress, startListen } from './listens'
 import type { Candidate, Taste } from './score'
@@ -382,5 +383,29 @@ describe('a mix with related artists', () => {
       expect(new Set(out).size).toBe(out.length)
     }
     expect(seen).toBeGreaterThan(0)
+  })
+})
+
+// Discovery from Home (slice 5): what the shelves offer, ranked by our score; an off-style song stays out of the first 10.
+describe('New for you', () => {
+  beforeEach(() => {
+    vi.spyOn(Date, 'now').mockReturnValue(NOW * 1000)
+    useStore.setState({ tracks: library, stats })
+    useTaste.setState({ signals, loaded: true })
+  })
+  afterEach(() => vi.restoreAllMocks())
+  it('songs of your style come first, the off-style ones stay out of the first 10', () => {
+    const own = bands.slice(0, 3).map((t) => ({ ...t, genre: 'Rock' }))
+    const offer = (n: number, genre: string, artist: string) => ({ title: `H${n}`, subtitle: null, art: null, list: null, track: { ...song(-(8000 + n), artist), genre, ids: { youtube: `h${n}` } } })
+    const rock = range(14).map((i) => offer(i, 'Rock', `Rocker ${i}`))
+    const jazz = range(6).map((i) => offer(100 + i, 'Jazz', `Jazzer ${i}`))
+    // The shelves put the jazz first: the crowd's order alone would lead with it.
+    const shelves = [{ title: 'Mixed for you', items: [...jazz, ...rock] }] as never
+    const candidates = discoveryCandidates(shelves, [])
+    expect(candidates).toHaveLength(20)
+    for (let s = 1; s <= 8; s++) {
+      const out = pickSimilar(candidates, own, 2, mine, 'balanced', 15, seeded(s), library)
+      expect(out.slice(0, 10).filter((t) => t.genre === 'Jazz'), `seed ${s}`).toEqual([])
+    }
   })
 })

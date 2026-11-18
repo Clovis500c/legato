@@ -76,6 +76,7 @@ const vi: Record<string, string> = {
   'By an artist you play next to these songs': 'Của nghệ sĩ bạn hay nghe cùng các bài này',
   'Sounds like what is playing': 'Nghe giống bài đang phát',
   'Something new for you': 'Điều mới dành cho bạn',
+  'New for you': 'Mới cho bạn',
   'Mixes': 'Bản phối',
   'Add music': 'Thêm nhạc',
   'Songs': 'Bài hát',

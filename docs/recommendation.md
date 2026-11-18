@@ -205,7 +205,7 @@ rules still hold for every lookup. No script ever runs real requests in bulk; te
    replayed song rises, and a pair skipped twice is no longer a neighbour.
 4. *Related artists* Done 2026-11-19 (night run): `Artist.related` (the "Fans might also like" names, 6 at most, empty when absent, `home.rs`), `crowd.ts` `fansOf` (top 5 songs of the first 2, one request each, a refusal ends it), used by `startMix` when the seed is on YouTube; tests in `home.rs`, `crowd.test.ts`, `feel.test.ts`. Not for Up next's end. Original: keep "Fans might also like" in `artist_page` (it must fail empty), used by mixes. Measure: a
    parser fixture plus a `feel` case.
-5. *Discovery from Home* (signed in): the shelves' songs, ranked by our score with the explore dose, in a "New for you"
+5. *Discovery from Home* Done 2026-11-19 (night run): a "New for you" button above YouTube Music's shelves on Home (`HomeView.tsx` `NewForYou`) starts 20 songs from the shelves that the library does not hold (`discovery.ts`), ranked by `rankPicks` against the last 3 songs played, with the explore dose and the reasons; tests in `discovery.test.ts` and `feel.test.ts` (the off-style songs stay out of the first 10 even when the shelves lead with them). No new request. Original: (signed in): the shelves' songs, ranked by our score with the explore dose, in a "New for you"
    mix. Measure: a Home fixture where an off-style song stays out of the first 10.
 6. Later, if 1 to 5 fall short: exploration as a bandit over the explore slots (Thompson sampling; the floor kept,
    Anderson 2020).

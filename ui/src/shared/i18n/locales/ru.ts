@@ -76,6 +76,7 @@ const ru: Record<string, string> = {
   'By an artist you play next to these songs': 'Исполнитель, которого вы слушаете рядом с этими песнями',
   'Sounds like what is playing': 'Звучит как то, что играет',
   'Something new for you': 'Что-то новое для вас',
+  'New for you': 'Новое для вас',
   'Mixes': 'Миксы',
   'Add music': 'Добавить музыку',
   'Songs': 'Песни',

@@ -76,6 +76,7 @@ const ko: Record<string, string> = {
   'By an artist you play next to these songs': '이 곡들과 함께 자주 듣는 아티스트',
   'Sounds like what is playing': '재생 중인 곡과 비슷해요',
   'Something new for you': '새로운 곡',
+  'New for you': '회원님을 위한 새로운 곡',
   'Mixes': '믹스',
   'Add music': '음악 추가',
   'Songs': '노래',

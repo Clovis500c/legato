@@ -76,6 +76,7 @@ const hi: Record<string, string> = {
   'By an artist you play next to these songs': 'ऐसे कलाकार का जिसे आप इन गानों के साथ सुनते हैं',
   'Sounds like what is playing': 'जो चल रहा है उससे मिलता-जुलता',
   'Something new for you': 'आपके लिए कुछ नया',
+  'New for you': 'आपके लिए नया',
   'Mixes': 'मिक्स',
   'Add music': 'संगीत जोड़ें',
   'Songs': 'गाने',

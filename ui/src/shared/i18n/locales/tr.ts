@@ -76,6 +76,7 @@ const tr: Record<string, string> = {
   'By an artist you play next to these songs': 'Bu şarkıların yanında dinlediğin bir sanatçıdan',
   'Sounds like what is playing': 'Çalana benziyor',
   'Something new for you': 'Senin için yeni bir şey',
+  'New for you': 'Senin için yeni',
   'Mixes': 'Mix’ler',
   'Add music': 'Müzik ekle',
   'Songs': 'Şarkılar',

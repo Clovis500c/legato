@@ -76,6 +76,7 @@ const pt: Record<string, string> = {
   'By an artist you play next to these songs': 'De um artista que ouves junto destas músicas',
   'Sounds like what is playing': 'Soa como o que está a tocar',
   'Something new for you': 'Algo novo para ti',
+  'New for you': 'Novidades para ti',
   'Mixes': 'Mixes',
   'Add music': 'Adicionar música',
   'Songs': 'Músicas',

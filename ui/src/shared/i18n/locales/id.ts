@@ -76,6 +76,7 @@ const id: Record<string, string> = {
   'By an artist you play next to these songs': 'Dari artis yang kamu putar bersama lagu-lagu ini',
   'Sounds like what is playing': 'Mirip dengan yang sedang diputar',
   'Something new for you': 'Sesuatu yang baru untukmu',
+  'New for you': 'Baru untukmu',
   'Mixes': 'Mix',
   'Add music': 'Tambah musik',
   'Songs': 'Lagu',

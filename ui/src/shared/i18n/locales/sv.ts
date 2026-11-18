@@ -76,6 +76,7 @@ const sv: Record<string, string> = {
   'By an artist you play next to these songs': 'Av en artist du spelar bredvid de här låtarna',
   'Sounds like what is playing': 'Låter som det som spelas',
   'Something new for you': 'Något nytt för dig',
+  'New for you': 'Nytt för dig',
   'Mixes': 'Mixar',
   'Add music': 'Lägg till musik',
   'Songs': 'Låtar',

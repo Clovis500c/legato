@@ -68,6 +68,7 @@ const ar: Record<string, string> = {
   'By an artist you play next to these songs': 'لفنان تستمع له مع هذه الأغاني',
   'Sounds like what is playing': 'يشبه ما يُشغَّل الآن',
   'Something new for you': 'شيء جديد لك',
+  'New for you': 'جديد لك',
   'Mixes': 'المزيج',
   'Add music': 'إضافة موسيقى',
   'Songs': 'الأغاني',

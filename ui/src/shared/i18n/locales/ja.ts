@@ -76,6 +76,7 @@ const ja: Record<string, string> = {
   'By an artist you play next to these songs': 'これらの曲と一緒によく聴くアーティスト',
   'Sounds like what is playing': '再生中の曲に似ています',
   'Something new for you': 'あなたに新しい一曲',
+  'New for you': 'あなたへの新着',
   'Mixes': 'ミックス',
   'Add music': '音楽を追加',
   'Songs': '曲',

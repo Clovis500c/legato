@@ -25,6 +25,7 @@ import { MixCard, mixSongs } from '../mixes/MixesView'
 import { useMixes } from '../mixes/useMixes'
 import { mixTitle } from '../mixes/words'
 import { averageColor } from '../player/ambient'
+import { discoveryCandidates } from '../player/discovery'
 import { Backdrop } from '../player/Backdrop'
 import { useBackdrop } from '../player/immersive'
 import { remoteTrack, useNowTrack, usePlayer } from '../player/store'
@@ -375,7 +376,26 @@ function ServiceShelves({ home, error, menu }: { home?: YtmHome; error?: string;
         </div>
       </div>
     )
-  return home.shelves.map((s) => <YouTubeShelf key={s.title} shelf={s} menu={menu} />)
+  return (
+    <>
+      <NewForYou home={home} />
+      {home.shelves.map((s) => (
+        <YouTubeShelf key={s.title} shelf={s} menu={menu} />
+      ))}
+    </>
+  )
+}
+
+/** One button above YouTube Music's shelves: a mix of what they offer that you do not have, ranked by your taste (player/radio.ts `startDiscovery`). Only when they offer songs. */
+function NewForYou({ home }: { home: YtmHome }) {
+  const tracks = useStore((s) => s.tracks)
+  const some = useMemo(() => discoveryCandidates(home.shelves, tracks).length > 0, [home, tracks])
+  if (!some) return null
+  return (
+    <button type="button" onClick={() => void import('../player/radio').then((m) => m.startDiscovery(home))} className="flex w-fit items-center gap-1.5 rounded-full border border-line px-4 py-1.5 text-sm font-medium hover:bg-raised">
+      <Play size={14} weight="fill" /> {tr('New for you')}
+    </button>
+  )
 }
 
 const sectionLabels: Record<HomeSectionId, string> = {

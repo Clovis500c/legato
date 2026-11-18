@@ -76,6 +76,7 @@ const uk: Record<string, string> = {
   'By an artist you play next to these songs': 'Виконавець, якого ви слухаєте поруч із цими піснями',
   'Sounds like what is playing': 'Звучить як те, що грає',
   'Something new for you': 'Щось нове для вас',
+  'New for you': 'Нове для вас',
   'Mixes': 'Мікси',
   'Add music': 'Додати музику',
   'Songs': 'Пісні',

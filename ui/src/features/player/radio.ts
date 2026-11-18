@@ -1,6 +1,6 @@
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
-import { api, type LibraryTrack } from '../../shared/api'
+import { api, type LibraryTrack, type YtmHome } from '../../shared/api'
 import { tr } from '../../shared/i18n/i18n'
 import { songsThatFit } from '../library/fit'
 import { radioName, radioQueue, radioSeeds, shuffled } from './radioMix'
@@ -8,6 +8,7 @@ import { K } from './score'
 import type { Candidate } from './similarRank'
 import { markPicks, remoteTrack, usePlayer } from './store'
 import { crowdOf, fansOf, seedsOf } from './crowd'
+import { discoveryCandidates } from './discovery'
 import { primaryArtist } from '../library/filter'
 import type { PickWhy } from './pickWhy'
 import { usePickWhy } from './pickWhyStore'
@@ -116,4 +117,26 @@ export async function startMix(seed: LibraryTrack) {
   // Its songs after the seed are the app's picks: an early skip steers the rest of its artist (store.ts).
   markPicks(list.slice(1).map((t) => t.id))
   if (usePlayer.getState().list === list) usePlayer.setState({ from: tr('{title} mix', { title: seed.title }), fromKind: 'mix', fromId: undefined })
+}
+
+/**
+ * Home › New for you (signed in; slice 5 of docs/recommendation.md): 20 songs from what YouTube Music's Home shelves offer and the library does
+ * not hold, ranked by our score against the songs you played last, with the explore dose; named "New for you".
+ */
+export async function startDiscovery(home: YtmHome) {
+  const { settings } = useSettings.getState()
+  const { tracks, stats, notify } = useStore.getState()
+  const candidates = discoveryCandidates(home.shelves, tracks).filter((c) => !(settings.hideExplicit && c.track.explicit))
+  // The queue the picks are made against: the last songs you played, most recent last.
+  const recent = tracks.filter((t) => (stats[t.id]?.[1] ?? 0) > 0).sort((a, b) => (stats[a.id]?.[1] ?? 0) - (stats[b.id]?.[1] ?? 0)).slice(-3)
+  if (!candidates.length || !recent.length) return notify(tr('No similar songs found'))
+  if (!useTaste.getState().loaded) await loadTaste()
+  const why = new Map<number, PickWhy>()
+  const { pickSimilar } = await import('./similarRank')
+  const picks = pickSimilar(candidates, recent, recent.length - 1, tasteFor(stats, useTaste.getState().signals), settings.similarVariety, 20, Math.random, tracks, timeOfDay(stats), why)
+  if (picks.length < 2) return notify(tr('No similar songs found'))
+  usePickWhy.setState(Object.fromEntries(why), true)
+  usePlayer.getState().playTracks(picks, 0)
+  markPicks(picks.map((t) => t.id))
+  if (usePlayer.getState().list === picks) usePlayer.setState({ from: tr('New for you'), fromKind: 'mix', fromId: undefined })
 }

@@ -76,6 +76,7 @@ const zh: Record<string, string> = {
   'By an artist you play next to these songs': '你常和这些歌曲一起听的艺术家',
   'Sounds like what is playing': '听起来像正在播放的歌',
   'Something new for you': '给你的新鲜感',
+  'New for you': '为你推荐的新歌',
   'Mixes': '混音',
   'Add music': '添加音乐',
   'Songs': '歌曲',
