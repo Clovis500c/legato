@@ -80,6 +80,7 @@ const de: Record<string, string> = {
   'Guess the artist': 'Den Künstler erraten',
   'Which artist is playing?': 'Welcher Künstler spielt?',
   'Blind test from this playlist…': 'Blindtest aus dieser Playlist …',
+  'Translate into': 'Übersetzen in',
   'Mixes': 'Mixe',
   'Add music': 'Musik hinzufügen',
   'Songs': 'Songs',

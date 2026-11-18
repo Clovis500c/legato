@@ -80,6 +80,7 @@ const tr: Record<string, string> = {
   'Guess the artist': 'Sanatçıyı tahmin et',
   'Which artist is playing?': 'Hangi sanatçı çalıyor?',
   'Blind test from this playlist…': 'Bu çalma listesiyle kör test…',
+  'Translate into': 'Şuna çevir',
   'Mixes': 'Mix’ler',
   'Add music': 'Müzik ekle',
   'Songs': 'Şarkılar',

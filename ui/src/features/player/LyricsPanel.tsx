@@ -15,11 +15,11 @@ import { toggleKaraoke } from './karaokeMode'
 import { positionNow, usePosition } from './Progress'
 import { useNowTrack, usePlayer } from './store'
 import { CARD } from './UpNext'
-import { lang, locale, tr } from '../../shared/i18n/i18n'
+import { locale, tr } from '../../shared/i18n/i18n'
 import { allowsMotion, useSystemReduced } from '../../shared/motion'
 import { TranslateLyrics } from './TranslateLyrics'
 import { useTranslated } from './translated'
-import { alignTranslation, translateTarget } from './translateWords'
+import { underFor } from './translateWords'
 
 /** A hand on the scroll wins for this long. */
 const HAND_MS = 4000
@@ -45,8 +45,7 @@ function Synced({ lines: sung, durationMs, fix, onTap }: { lines: Lyrics['lines'
   // A translation the user asked for, in the interface's language: a smaller row under each line (memory only, this song's).
   const song = usePlayer((s) => songKey(s.now) ?? '')
   const done = useTranslated()
-  const target = translateTarget(lang())
-  const under = useMemo(() => (done && done.song === song && done.code === target ? alignTranslation(lines, done.from, done.to) : null), [done, song, target, lines])
+  const under = useMemo(() => underFor(done, song, lines), [done, song, lines])
   const calm = !allowsMotion(useSettings((s) => s.settings.motion), useSystemReduced())
   useEffect(() => {
     const el = box.current

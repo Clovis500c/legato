@@ -80,6 +80,7 @@ const pl: Record<string, string> = {
   'Guess the artist': 'Zgadnij wykonawcę',
   'Which artist is playing?': 'Którego wykonawcy słychać?',
   'Blind test from this playlist…': 'Test w ciemno z tej playlisty…',
+  'Translate into': 'Przetłumacz na',
   'Mixes': 'Miksy',
   'Add music': 'Dodaj muzykę',
   'Songs': 'Utwory',

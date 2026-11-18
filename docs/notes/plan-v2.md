@@ -337,7 +337,7 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       (`crates/shield/src/watch.js`).
       Left by the autopilot (2026-11-05): `watch.js` already hides the column the panel sits in (`#secondary`, `#below`)
       and pauses at the end; what's left needs a real watch page, behind YouTube's cookie choice in a new profile.
-- [ ] `M` Lyrics translation in the panel (a service sends text: add the website's privacy row first).
+- [x] `M` Lyrics translation in the panel (a service sends text: add the website's privacy row first).
       Owner's call (2026-11-01): which service gets the lyrics (the user's own DeepL or Google key, a LibreTranslate
       server); Windows gives apps no offline translator. The panel side is small once that's chosen.
       2026-11-13: built on MyMemory (`connectors/translate.rs`, no key, 500 bytes a request, ~5 000 characters a day per address
@@ -349,6 +349,7 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       mockito only (chunks, quota, refusal, shape), never against the real service. Left: the translation under the lines
       inside the panel itself (it shows in the box), a language other than the interface's.
       2026-11-18 (lot 61): the translation the user asked for now shows under each sung line in the lyrics panel (a smaller row, in the interface's language, this song only, kept in memory by `translated.ts`; the lines are matched by `alignTranslation`, tested: breaks, empty lines, a short or long answer, a repeated chorus). Nothing new is sent (the same box and "Send and translate"). Left: Karaoke (its fixed seats would need a layout of their own), a language other than the interface's. Decided alone (2026-11-18): no new setting (it appears only after the user's own Translate…), a line the service returns unchanged gets no row. Not tried in the app: the glide after the rows change line heights (the effect re-measures when the translation arrives, from the lot 52 recipe).
+      2026-11-19 (night run), the two things left: Karaoke shows the translation the user asked for as a smaller row under each line (`Karaoke.tsx`, the same `underFor` as the panel), and the box has a "Translate into" list of the app's languages, the interface's by default (`TranslateLyrics.tsx`; a translation now shows for its song in whatever language was asked). Decided alone: Karaoke only shows, the Translate… button stays in the panel. Never seen in the app (the Karaoke layout with rows, MyMemory in another language).
 - [ ] `M` Equalizer presets per output device (headphones vs speakers) and AutoEQ profiles for known headphones.
       Skipped 2026-11-12 (not for this run): the engine only knows the default output device (`output.rs`), no name and no change event,
       so per-device presets need platform code (a device-change watch on WASAPI, then the same on the other systems); AutoEQ profiles

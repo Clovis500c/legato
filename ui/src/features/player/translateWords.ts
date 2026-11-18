@@ -29,3 +29,8 @@ export function alignTranslation(shown: { text: string }[], from: string[], to: 
     return got && got !== t ? got : null
   })
 }
+
+/** The rows to show under the lines of `song`: its translation as the user asked it (any language), else none. */
+export function underFor(done: { song: string; code?: string; from: string[]; to: string[] } | null, song: string, shown: { text: string }[]): (string | null)[] | null {
+  return done && done.song === song ? alignTranslation(shown, done.from, done.to) : null
+}

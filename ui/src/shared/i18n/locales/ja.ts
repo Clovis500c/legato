@@ -80,6 +80,7 @@ const ja: Record<string, string> = {
   'Guess the artist': 'アーティストを当てる',
   'Which artist is playing?': 'どのアーティストの曲？',
   'Blind test from this playlist…': 'このプレイリストでブラインドテスト…',
+  'Translate into': '翻訳先',
   'Mixes': 'ミックス',
   'Add music': '音楽を追加',
   'Songs': '曲',

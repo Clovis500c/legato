@@ -80,6 +80,7 @@ const uk: Record<string, string> = {
   'Guess the artist': 'Вгадати виконавця',
   'Which artist is playing?': 'Який виконавець грає?',
   'Blind test from this playlist…': 'Сліпий тест із цього плейлиста…',
+  'Translate into': 'Перекласти на',
   'Mixes': 'Мікси',
   'Add music': 'Додати музику',
   'Songs': 'Пісні',

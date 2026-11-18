@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { translateTarget, wordsToTranslate, alignTranslation } from './translateWords'
+import { translateTarget, wordsToTranslate, alignTranslation, underFor } from './translateWords'
 
 describe('translateWords', () => {
   it('names the target language the way the service wants it', () => {
@@ -34,5 +34,18 @@ describe('alignTranslation', () => {
     expect(alignTranslation(shown('x', 'y', 'x'), ['x', 'y', 'x'], ['X', 'Y', 'X2'])).toEqual(['X', 'Y', 'X2'])
     expect(alignTranslation(shown('a', 'z'), ['a'], ['A'])).toEqual(['A', null])
     expect(alignTranslation(shown('a'), [], [])).toEqual([null])
+  })
+})
+
+describe('underFor', () => {
+  const shown = [{ text: 'one' }, { text: 'two' }]
+  const done = { song: 's1', code: 'fr', from: ['one', 'two'], to: ['un', 'deux'] }
+  it('the rows of this song’s translation, in whatever language was asked', () => {
+    expect(underFor(done, 's1', shown)).toEqual(['un', 'deux'])
+    expect(underFor({ ...done, code: 'ja' }, 's1', shown)).toEqual(['un', 'deux'])
+  })
+  it('none for another song, or when nothing was translated', () => {
+    expect(underFor(done, 's2', shown)).toBeNull()
+    expect(underFor(null, 's1', shown)).toBeNull()
   })
 })

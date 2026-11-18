@@ -80,6 +80,7 @@ const hi: Record<string, string> = {
   'Guess the artist': 'कलाकार पहचानें',
   'Which artist is playing?': 'कौन-सा कलाकार चल रहा है?',
   'Blind test from this playlist…': 'इस प्लेलिस्ट से ब्लाइंड टेस्ट…',
+  'Translate into': 'इसमें अनुवाद करें',
   'Mixes': 'मिक्स',
   'Add music': 'संगीत जोड़ें',
   'Songs': 'गाने',

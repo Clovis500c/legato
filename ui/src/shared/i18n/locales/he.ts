@@ -72,6 +72,7 @@ const he: Record<string, string> = {
   'Guess the artist': 'נחשו את האמן',
   'Which artist is playing?': 'איזה אמן מתנגן?',
   'Blind test from this playlist…': 'מבחן עיוור מהפלייליסט הזה…',
+  'Translate into': 'תרגום ל',
   'Mixes': 'מיקסים',
   'Add music': 'הוספת מוזיקה',
   'Songs': 'שירים',

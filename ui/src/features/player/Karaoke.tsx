@@ -16,6 +16,8 @@ import { closeKaraoke } from './karaokeMode'
 import { centerShift, glideFrom, GLIDE, LEAD_MS, plainShift, seatOf, type Seat } from './karaokeLines'
 import { applyFix, fixLabel, lineAt, NO_FIX, withBreaks, type LyricsFix, type Timed } from './lyricsAt'
 import { useNowLyrics } from './LyricsPanel'
+import { useTranslated } from './translated'
+import { underFor } from './translateWords'
 import { Backdrop } from './Backdrop'
 import { SeekBar, TimeText, usePosition } from './Progress'
 import { useNowTrack, usePlayer } from './store'
@@ -42,7 +44,7 @@ function useBox(ref: RefObject<HTMLElement | null>) {
   return box
 }
 
-const Line = memo(function Line({ text, seat, calm }: { text: string; seat: Seat; calm: boolean }) {
+const Line = memo(function Line({ text, sub, seat, calm }: { text: string; sub?: string | null; seat: Seat; calm: boolean }) {
   return (
     <p
       aria-hidden={seat === 'hidden'}
@@ -61,6 +63,7 @@ const Line = memo(function Line({ text, seat, calm }: { text: string; seat: Seat
       ) : (
         text
       )}
+      {sub && <span className="mt-[0.4em] block text-[0.5em] leading-snug font-semibold text-ink-2">{sub}</span>}
     </p>
   )
 })
@@ -68,6 +71,10 @@ const Line = memo(function Line({ text, seat, calm }: { text: string; seat: Seat
 /** Synced lyrics: every line in one column, moved so the sung line is in the middle (a transform; nothing reflows). */
 function Lines({ lines: sung, durationMs, fix, calm }: { lines: Timed[]; durationMs: number | null; fix: LyricsFix; calm: boolean }) {
   const lines = useMemo(() => withBreaks(applyFix(sung, fix), durationMs), [sung, fix, durationMs])
+  // The translation the user asked for, a smaller row under each line (this song's, in memory).
+  const song = usePlayer((s) => songKey(s.now) ?? '')
+  const done = useTranslated()
+  const under = useMemo(() => underFor(done, song, lines), [done, song, lines])
   const pos = usePosition(100)
   const at = lineAt(lines, pos + LEAD_MS)
   const focus = Math.max(0, at)
@@ -85,7 +92,7 @@ function Lines({ lines: sung, durationMs, fix, calm }: { lines: Timed[]; duratio
     jump.current = last.current !== undefined && glideFrom(last.current, s, h, false) === 0
     last.current = s
     setShift(s)
-  }, [focus, w, h, lines])
+  }, [focus, w, h, lines, under])
   return (
     <div ref={view} className={`relative min-h-0 flex-1 overflow-hidden ${FADE_EDGES}`}>
       <div
@@ -96,7 +103,7 @@ function Lines({ lines: sung, durationMs, fix, calm }: { lines: Timed[]; duratio
       >
         {lines.map((l, i) => {
           const seat = seatOf(i, at)
-          return <Line key={i} text={l.text} seat={seat} calm={calm} />
+          return <Line key={i} text={l.text} sub={under?.[i]} seat={seat} calm={calm} />
         })}
       </div>
     </div>

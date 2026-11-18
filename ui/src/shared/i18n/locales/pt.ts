@@ -80,6 +80,7 @@ const pt: Record<string, string> = {
   'Guess the artist': 'Adivinha o artista',
   'Which artist is playing?': 'Que artista está a tocar?',
   'Blind test from this playlist…': 'Teste às cegas desta playlist…',
+  'Translate into': 'Traduzir para',
   'Mixes': 'Mixes',
   'Add music': 'Adicionar música',
   'Songs': 'Músicas',

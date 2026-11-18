@@ -80,6 +80,7 @@ const nl: Record<string, string> = {
   'Guess the artist': 'Raad de artiest',
   'Which artist is playing?': 'Welke artiest speelt?',
   'Blind test from this playlist…': 'Blindtest van deze afspeellijst…',
+  'Translate into': 'Vertalen naar',
   'Mixes': 'Mixen',
   'Add music': 'Muziek toevoegen',
   'Songs': 'Nummers',
