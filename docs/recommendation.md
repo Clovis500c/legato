@@ -187,7 +187,7 @@ rules still hold for every lookup. No script ever runs real requests in bulk; te
 - *Never*: the crowd at YouTube's own depth (watch time across users, embeddings). We see ranked lists, not their
   model, and InnerTube is unofficial: it may change or break, and the pool then falls back to the library.
 **Slices** (each one tested first, from fixtures, with no real network):
-1. *Up next and "Start a mix" use several radios, signed in or out.* A Rust command over `listening::radios` (cache,
+1. *Up next and "Start a mix" use several radios, signed in or out.* Done 2026-11-18 (lot 62, no new Rust: `ytm_list` already answers signed out and through the `lists` cache): `crowd.ts` (`seedsOf`, `mergeRadios`, `crowdOf`), `radio.ts` `around`, `score.ts` `radioVote`; tests in `crowd.test.ts` and `feel.test.ts` (the Rust mockito refusal case became a front-end one: one request, nothing from the crowd). Never run against the real YouTube Music. A Rust command over `listening::radios` (cache,
    public fallback) takes the last 3 distinct YouTube songs; candidates carry `votes`; the `fit` term above.
    Acceptance: `feel.test.ts` gets 3 radio fixtures that overlap:
    - a song in all 3 is in the first 5 picks;

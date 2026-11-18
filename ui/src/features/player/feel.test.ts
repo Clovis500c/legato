@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useStore } from '../../app/store'
 import type { LibraryTrack, TasteSignal } from '../../shared/api'
+import { mergeRadios } from './crowd'
 import { endListen, progress, startListen } from './listens'
 import type { Candidate, Taste } from './score'
 import { pickSimilar } from './similarRank'
@@ -123,5 +124,65 @@ describe('what felt horrible, fixed', () => {
       expect(new Set(after).size).toBe(list.length)
     }
     expect(tried).toBeGreaterThan(5)
+  })
+})
+
+// Three radios of the last three songs, overlapping (slice 1 of docs/recommendation.md): each answers 40 songs of its own, and four
+// songs come in all of them (the crowd's "played together") at middle places, one more in only one of them, late.
+describe('several radios, merged', () => {
+  const unique = (r: number) => range(40).map((i) => ({ ...song(-(1000 * (r + 1) + i), `Crowd ${r}-${i % 10}`), ids: { youtube: `c${r}-${i}` } }))
+  const shared = range(4).map((i) => ({ ...song(-(9000 + i), `Shared ${i}`), ids: { youtube: `s${i}` } }))
+  const lone = { ...song(-9100, 'Lone'), ids: { youtube: 'lone' } }
+  const radios = [0, 1, 2].map((r) => {
+    const list = unique(r)
+    shared.forEach((t, i) => list.splice(10 + 3 * i + r, 0, t))
+    if (r === 0) list.splice(35, 0, lone)
+    return list
+  })
+  const merged = mergeRadios(radios)
+  const candidates: Candidate[] = [...library.map((track) => ({ track })), ...merged]
+  beforeEach(() => {
+    vi.spyOn(Date, 'now').mockReturnValue(NOW * 1000)
+    useStore.setState({ tracks: library, stats })
+    useTaste.setState({ signals, loaded: true })
+  })
+  afterEach(() => vi.restoreAllMocks())
+  const queue = bands.slice(0, 3)
+  const ids = (out: LibraryTrack[]) => out.map((t) => t.ids.youtube)
+
+  it('songs in all 3 radios come among the first 5 picks; the one in a single radio at a late place comes after them', () => {
+    for (let s = 1; s <= 10; s++) {
+      const out = ids(pickSimilar(candidates, queue, 2, mine, 'balanced', 15, seeded(s), library))
+      const top = out.slice(0, 5).filter((v) => v?.startsWith('s')).length
+      expect(top, `seed ${s}`).toBeGreaterThanOrEqual(2)
+      if (out.includes('lone')) expect(out.indexOf('lone')).toBeGreaterThan(Math.max(...shared.map((t) => out.indexOf(t.ids.youtube!))))
+    }
+  })
+
+  it('the caps still hold: at most 2 favourites of another style, no artist more than twice in 10', () => {
+    for (let s = 1; s <= 10; s++) {
+      const out = pickSimilar(candidates, queue, 2, mine, 'balanced', 15, seeded(s), library)
+      expect(out.filter((t) => t.artist === 'Fav').length).toBeLessThanOrEqual(2)
+      const n = new Map<string, number>()
+      for (const t of out.slice(0, 10)) n.set(t.artist, (n.get(t.artist) ?? 0) + 1)
+      expect(Math.max(...n.values())).toBeLessThanOrEqual(2)
+    }
+  })
+
+  it('signed out or in, the same radios give the same picks', () => {
+    const a = pickSimilar(candidates, queue, 2, mine, 'balanced', 15, seeded(3), library).map((t) => t.id)
+    const b = pickSimilar([...merged.slice().reverse(), ...library.map((track) => ({ track }))].reverse(), queue, 2, mine, 'balanced', 15, seeded(3), library).map((t) => t.id)
+    expect(b).toEqual(a)
+  })
+
+  it('a song in all 3 radios that was heard many times today does not take the top spot (the rest term still applies)', () => {
+    const heard = shared[0]
+    const stat = { ...stats, [heard.id]: [30, NOW - 3600] as [number, number] }
+    const sig = new Map(signals).set(heard.id, signal(heard.id, { playsDecayed: 8, playsLong: 12, lastPlayed: NOW - 3600 }))
+    useStore.setState({ stats: stat })
+    for (let s = 1; s <= 10; s++) {
+      const out = pickSimilar(candidates, queue, 2, tasteFor(stat, sig), 'balanced', 15, seeded(s), library)
+      expect(ids(out)[0], `seed ${s}`).not.toBe('s0')
+    }
   })
 })

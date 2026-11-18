@@ -7,6 +7,7 @@ import { radioName, radioQueue, radioSeeds, shuffled } from './radioMix'
 import { K } from './score'
 import type { Candidate } from './similarRank'
 import { remoteTrack, usePlayer } from './store'
+import { crowdOf, seedsOf } from './crowd'
 import { loadTaste, tasteFor, useTaste } from './taste'
 
 const keyOf = (t: LibraryTrack) => t.ids.youtube ?? `#${t.id}`
@@ -63,17 +64,15 @@ export async function startRadioFrom(songs: LibraryTrack[], name = radioName(son
 /** The local hour for the time-of-day signal, only once there are enough plays of history to read it from. */
 const timeOfDay = (stats: Record<number, [plays: number, last: number, stars?: number] | undefined>) => (Object.values(stats).reduce((n, s) => n + (s?.[0] ?? 0), 0) >= K.timeOfDay.minPlays ? new Date().getHours() : undefined)
 
-/** What a pick around `last` is made from: the library, YouTube Music's radio of `last` when signed in (its order counts), your taste. Nothing new is asked: that one radio request is the one it always made. */
-async function around(last: LibraryTrack) {
+/** What a pick around `seeds` is made from: the library, the merged YouTube Music radios of the seeds, signed in or out (their votes and order count), your taste. At most one request per seed (3 for Up next's end, 1 for a mix), through the app's cache. */
+async function around(seeds: LibraryTrack[]) {
   const { settings } = useSettings.getState()
-  const { status, tracks, stats } = useStore.getState()
+  const { tracks, stats } = useStore.getState()
   const fresh = (t: LibraryTrack) => !(settings.hideExplicit && t.explicit) && t.musicness !== 'notMusic'
   const candidates: Candidate[] = tracks.filter(fresh).map((track) => ({ track }))
-  const video = last.ids.youtube
-  if (status.youtube.connected && video) {
-    const radio = (await api.ytmList({ type: 'radio', videoId: video, playlistId: `RDAMVM${video}` }).catch(() => [])).map(remoteTrack).filter(fresh)
-    radio.forEach((track, rank) => candidates.push({ track, rank }))
-  }
+  // The radios of the last songs, signed in or out (the public ones), merged: a song in several carries votes (crowd.ts).
+  const radios = await crowdOf(seeds.flatMap((t) => (t.ids.youtube ? [t.ids.youtube] : [])), async (video) => (await api.ytmList({ type: 'radio', videoId: video, playlistId: `RDAMVM${video}` })).map(remoteTrack).filter(fresh))
+  candidates.push(...radios)
   // Never in mixes and recent skips come from the taste store (loaded when idle; asked here only if it is still empty).
   if (!useTaste.getState().loaded) await loadTaste()
   return { candidates, library: tracks, taste: tasteFor(stats, useTaste.getState().signals), variety: settings.similarVariety, hour: timeOfDay(stats) }
@@ -86,7 +85,7 @@ async function around(last: LibraryTrack) {
 export async function similarForQueue(list: LibraryTrack[], index: number, max: number): Promise<LibraryTrack[]> {
   const last = list[index]
   if (!last) return []
-  const { candidates, library, taste, variety, hour } = await around(last)
+  const { candidates, library, taste, variety, hour } = await around(seedsOf(list, index, 3))
   // Loaded when Up next runs out, not at launch.
   const { pickSimilar } = await import('./similarRank')
   return pickSimilar(candidates, list, index, taste, variety, max, Math.random, library, hour)
@@ -94,7 +93,7 @@ export async function similarForQueue(list: LibraryTrack[], index: number, max: 
 
 /** Right-click › Start a mix from this song: 30 songs of its style laid out as an arc (songMix.ts, a chunk loaded here), named "<Title> mix". */
 export async function startMix(seed: LibraryTrack) {
-  const { candidates, library, taste, variety, hour } = await around(seed)
+  const { candidates, library, taste, variety, hour } = await around([seed])
   const { mixFromSong } = await import('./songMix')
   const list = mixFromSong({ seed, candidates, taste, variety, rand: Math.random, library, hour })
   if (list.length < 2) return useStore.getState().notify(tr('No similar songs found'))

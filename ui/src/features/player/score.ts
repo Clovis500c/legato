@@ -25,7 +25,7 @@ export const K = {
    * Fit, how well a song goes with the queue (0..~2): a floor, the queue's features (0..1 over the candidates), what you play next
    * to the queue's songs (that song, its artist: shares of the queue), a radio's answer by its place (YouTube Music's own "goes with").
    */
-  fit: { floor: 0.05, features: 0.6, song: 0.5, artist: 0.35, radio: 0.9, radioStep: 0.04 },
+  fit: { floor: 0.05, features: 0.6, song: 0.5, artist: 0.35, radio: 0.9, radioStep: 0.04, radioVote: 0.5 },
   /**
    * Preference, how much you like a song: a factor e^p on its fit, so a favourite of another style stays out (the owner, 2026-11-17);
    * p from the plays (log), a rating 8-10 or 6-7, a like, the long profile (0..1), minus each recent skip, clamped.
@@ -92,6 +92,8 @@ const bits = (n: number) => {
 export interface Candidate {
   track: LibraryTrack
   rank?: number
+  /** In how many of the merged radios it came (1 when it is alone, none for a library song): the crowd's "played together" (crowd.ts). */
+  votes?: number
 }
 
 /** The features that make two songs alike: the main artist, the album, the genre, the decade, the tempo (by 10), the key. */
@@ -231,7 +233,7 @@ export function scoreAll(candidates: Candidate[], session: Map<string, number>, 
   const [top, topLoved] = [topOf(aff), topOf(loved)]
   const fits = candidates.map((c, i) => {
     const f = K.fit
-    return f.floor + (top > 0 ? (f.features * aff[i]) / top : 0) + f.song * Math.min(1, links.song.get(c.track.id) ?? 0) + f.artist * Math.min(1, links.artist.get(artists[i]) ?? 0) + (c.rank !== undefined ? f.radio / (1 + f.radioStep * c.rank) : 0)
+    return f.floor + (top > 0 ? (f.features * aff[i]) / top : 0) + f.song * Math.min(1, links.song.get(c.track.id) ?? 0) + f.artist * Math.min(1, links.artist.get(artists[i]) ?? 0) + (c.rank !== undefined ? (f.radio * (1 + f.radioVote * ((c.votes ?? 1) - 1))) / (1 + f.radioStep * c.rank) : 0)
   })
   const raw = candidates.map((c, i) => {
     const t = c.track
