@@ -25,7 +25,7 @@ const HALF_LIFE_DAYS: f64 = 30.0;
 const LONG_HALF_LIFE_DAYS: f64 = 180.0;
 /// Under this = skipped (negative signal).
 pub(crate) const SKIP_MS: u32 = 30_000;
-const SESSION_GAP: i64 = 30 * 60;
+pub(crate) const SESSION_GAP: i64 = 30 * 60;
 const PLAYLIST_BONUS: f64 = 1.5;
 /// Imported playlists (YouTube Music likes, Spotify): saved there, not picked here.
 const SAVED_BONUS: f64 = 0.6;

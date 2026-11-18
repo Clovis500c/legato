@@ -1,6 +1,7 @@
+import type { LibraryTrack } from '../../shared/api'
 import { fold } from '../../shared/format'
 import { primaryArtist } from '../library/filter'
-import type { Variety } from './score'
+import type { Taste, Variety } from './score'
 
 /** Heard this recently (s): smart shuffle plays the song after the others. */
 export const RECENT_S = 24 * 3600
@@ -66,35 +67,107 @@ export function smartOrder(artists: readonly string[], current: number, recent: 
   return has ? [current, ...fresh, ...later] : [...fresh, ...later]
 }
 
-/** How sharply Shuffle follows the score, by variety (docs/recommendation.md): higher = the best songs come sooner. */
-export const BETA: Record<Variety, number> = { alike: 1.2, balanced: 0.9, adventurous: 0.5 }
+/** How sharply Shuffle follows your marks, by variety (docs/recommendation.md › Shuffle): the power the marks' factor is raised to. */
+export const SHARP: Record<Variety, number> = { alike: 1.4, balanced: 1, adventurous: 0.6 }
 
-/** A song's weight from its z-score: never 0 (everything stays reachable), capped (one song never takes over). */
-export const weightOf = (z: number, beta: number) => Math.min(30, Math.max(0.1, Math.exp(beta * z)))
+/** Days a song rests once heard: its weight comes back as 1 - 0.9 e^(-days / REST_DAYS) (heard today 0.1, 3 days ago 0.67, a week 0.91). */
+export const REST_DAYS = 3
+
+/**
+ * A song's weight in Shuffle, never 0: how rested it is (never heard or long ago: 1) times your marks (a like, a rating, each recent
+ * skip, Less), the marks raised to the variety's sharpness. No play count and no artist taste: a playlist rotates instead of
+ * opening on the same favourites every time (the owner, 2026-11-17).
+ */
+export function shuffleWeight(t: LibraryTrack, taste: Taste, now: number, sharp = 1): number {
+  const last = taste.lastPlayed?.(t) ?? 0
+  const rest = last > 0 ? 1 - 0.9 * Math.exp(-Math.max(0, now - last) / 86_400 / REST_DAYS) : 1
+  const rating = taste.rating(t)
+  const marks = (taste.liked?.(t) ? 2 : 1) * (rating >= 8 ? 1.8 : rating >= 6 ? 1.3 : 1) * 0.6 ** Math.min(4, taste.skips(t)) * (taste.less?.(t) ? 0.4 : 1)
+  return Math.max(0.01, rest * marks ** sharp)
+}
 
 /**
  * Weighted random order without replacement (Efraimidis-Spirakis): each song gets the key ln(u) / w, u in (0, 1], and the
- * songs are sorted by key, the largest first. `zs` = the songs' z-scores; returns indexes.
+ * songs are sorted by key, the largest first. Returns indexes.
  */
-export function weightedOrder(zs: readonly number[], beta: number, rand: () => number = Math.random): number[] {
-  return zs
-    .map((z, i) => [Math.log(1 - rand()) / weightOf(z, beta), i] as const)
+export function weightedOrder(weights: readonly number[], rand: () => number = Math.random): number[] {
+  return weights
+    .map((w, i) => [Math.log(1 - rand()) / w, i] as const)
     .sort((a, b) => b[0] - a[0])
     .map(([, i]) => i)
 }
 
+/** Songs looked at ahead for one whose artist is far enough. */
+const LOOK = 60
+
 /**
- * Shuffle shaped by the score: current first, the rest weighted-random by `zs` (the better a song scores, the sooner it
- * tends to come), then an artist never plays twice in a row while someone else is left, and `later` songs (heard lately,
- * rated 1-2) after all the others. Indexes into `artists`.
+ * `order` with each artist's songs kept apart: at least `gap` others between two of theirs, about 0.7 of an even spread over
+ * `order` (at most 10), so an artist you play a lot comes back now and then, not every other song. Each place takes the first
+ * song of the next `LOOK` whose artist is far enough, else the one nearest to it (the end of a list may have nothing else).
  */
-export function shapedOrder(artists: readonly string[], current: number, later: (i: number) => boolean, zs: readonly number[], beta: number, rand: () => number = Math.random): number[] {
+function spaced(order: readonly number[], key: readonly string[], prev: number | undefined): number[] {
+  const count = new Map<string, number>()
+  for (const i of order) count.set(key[i], (count.get(key[i]) ?? 0) + 1)
+  const gap = (a: string) => Math.min(10, Math.max(1, Math.floor((0.7 * order.length) / count.get(a)!)))
+  const last = new Map<string, number>()
+  if (prev !== undefined) last.set(key[prev], -1)
+  const taken = new Uint8Array(order.length)
+  const out: number[] = []
+  let head = 0
+  for (let at = 0; at < order.length; at++) {
+    while (taken[head]) head++
+    let pick = head
+    let best = -Infinity
+    for (let j = head, seen = 0; j < order.length && seen < LOOK; j++) {
+      if (taken[j]) continue
+      seen++
+      const room = at - (last.get(key[order[j]]) ?? -Infinity) - gap(key[order[j]])
+      if (room > best) [best, pick] = [room, j]
+      if (room > 0) break
+    }
+    taken[pick] = 1
+    out.push(order[pick])
+    last.set(key[order[pick]], at)
+  }
+  return out
+}
+
+/**
+ * Shuffle shaped by `weights` (`shuffleWeight`): current first, the rest weighted-random (the more rested and liked, the sooner it
+ * tends to come), each artist kept apart, and `later` songs (heard in the last day, rated 1-2) after all the others. Indexes into
+ * `artists`.
+ */
+export function shapedOrder(artists: readonly string[], current: number, later: (i: number) => boolean, weights: readonly number[], rand: () => number = Math.random): number[] {
   const key = artists.map((a, i) => fold(primaryArtist(a)) || `#${i}`)
   const has = current >= 0 && current < key.length
-  const rest = weightedOrder(zs, beta, rand).filter((i) => i !== current)
-  const fresh = rest.filter((i) => !later(i))
-  apart(fresh, has ? current : undefined, key)
-  const late = rest.filter(later)
-  apart(late, fresh.at(-1) ?? (has ? current : undefined), key)
+  const rest = weightedOrder(weights, rand).filter((i) => i !== current)
+  const fresh = spaced(
+    rest.filter((i) => !later(i)),
+    key,
+    has ? current : undefined,
+  )
+  const late = spaced(rest.filter(later), key, fresh.at(-1) ?? (has ? current : undefined))
   return has ? [current, ...fresh, ...late] : [...fresh, ...late]
+}
+
+/** Songs a skip keeps out of what comes next. */
+export const STEER = 10
+
+/**
+ * After an early skip (docs/recommendation.md › In the session): the next `STEER` songs after place `at` carry none of the `same`
+ * ones (the skipped song's artist), which move just past them in their order; `all` (that artist skipped twice this session): all
+ * of theirs go to the end. Songs you queued (`mine`) stay put; every song stays once.
+ */
+export function steered(order: readonly number[], at: number, same: (i: number) => boolean, mine: ReadonlySet<number>, all: boolean): number[] {
+  const out = order.slice(0, at + 1)
+  const moved: number[] = []
+  let kept = 0
+  for (const i of order.slice(at + 1)) {
+    if (same(i) && !mine.has(i) && (all || kept < STEER)) moved.push(i)
+    else {
+      out.push(i)
+      if (++kept === STEER && !all) out.push(...moved.splice(0))
+    }
+  }
+  return [...out, ...moved]
 }

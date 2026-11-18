@@ -3,15 +3,16 @@ import { useStore } from '../../app/store'
 import { api, type Levelling, type LibraryTrack, type PlayerCommand, type PlayerStatus, type SpotifyCommand, type SpotifyPlayback, type Track } from '../../shared/api'
 import { markBroken } from '../library/broken'
 import type { Box } from '../../shared/artbox'
-import { region } from '../../shared/format'
-import { endListen, progress, startListen } from './listens'
+import { fold, region } from '../../shared/format'
+import { endListen, onListenEnd, progress, session, SKIP_MS, startListen } from './listens'
 import { albumGoesOn, demoGain, demoLength, fadeGain, NO_FADE, overlapDue, PICK_IN_S, type Fade } from './fade'
 import { sweetFade } from './sweet'
 import { endsOf } from './sweetData'
 import { insertAt, keepQueued, moveInOrder, moveToSlot, nextIndex, playOrder, queued, tooLong, type Repeat } from './queue'
 import { contextOf, type FromKind } from './fromLabel'
-import { libraryScores, type Variety } from './score'
-import { BETA, RECENT_S, shapedOrder, smartOrder } from './shuffle'
+import { lowRated, type Variety } from './score'
+import { RECENT_S, shapedOrder, SHARP, shuffleWeight, smartOrder, steered } from './shuffle'
+import { primaryArtist } from '../library/filter'
 import { tasteFor, useTaste } from './taste'
 import { isNative, nativePath, SERVER_PATH, serverDown, toFind, vias, viaOfPath, type Via } from './sources'
 import { formatDuration } from '../../shared/format'
@@ -278,26 +279,38 @@ const endRun = () => {
 // Knob drags fire many changes: one Spotify call per pause.
 let volumeTimer: ReturnType<typeof setTimeout> | undefined
 /**
- * Play order for `list` from `current`: smart shuffle's unless off. Shaped by the taste score (docs/recommendation.md: songs you like
- * tend to come sooner, none is ever out) once the taste store has loaded; before that, artists spread. Songs heard in the last day
- * and songs rated 1-2 come last. Never waits: a cold store gives the plain smart order.
+ * Play order for `list` from `current`: smart shuffle's unless off. Shaped once the taste store has loaded (docs/recommendation.md ›
+ * Shuffle: songs rested longest and the ones you like tend to come sooner, those you skip later, none is ever out, artists apart);
+ * before that, artists spread. Songs heard in the last day and songs rated 1-2 come last. Never waits: a cold store gives the plain
+ * smart order.
  */
 function shuffleOrder(p: PlayerState, list: LibraryTrack[], current: number, shuffle: boolean): number[] {
   if (!shuffle || !p.smartShuffle) return playOrder(list.length, current, shuffle)
-  const { stats, tracks } = useStore.getState()
+  const { stats } = useStore.getState()
   const now = Date.now() / 1000
   const recent = (i: number) => (stats[list[i].id]?.[1] ?? 0) >= now - RECENT_S
   const artists = list.map((t) => t.artist)
   const { loaded, signals } = useTaste.getState()
   if (!loaded) return smartOrder(artists, current, recent)
   const taste = tasteFor(stats, signals)
-  const zs = libraryScores(list, tracks, taste, now)
-  const low = (i: number) => {
-    const r = taste.rating(list[i])
-    return r >= 1 && r <= 2
-  }
-  return shapedOrder(artists, current, (i) => recent(i) || low(i), zs, BETA[p.shuffleVariety])
+  const weights = list.map((t) => shuffleWeight(t, taste, now, SHARP[p.shuffleVariety]))
+  return shapedOrder(artists, current, (i) => recent(i) || lowRated(taste.rating(list[i])), weights)
 }
+
+// An early skip steers Shuffle at once (docs/recommendation.md › In the session): that artist leaves the next songs; skipped twice this
+// session, all of theirs go to the end. Songs you queued stay put.
+onListenEnd((play) => {
+  if (play.completed || play.listenedMs >= SKIP_MS) return
+  const { shuffle, smartShuffle, list, order, index, added } = usePlayer.getState()
+  const key = (t: LibraryTrack) => fold(primaryArtist(t.artist))
+  const skipped = list.find((t) => t.id === play.trackId)
+  const artist = skipped && key(skipped)
+  if (!shuffle || !smartShuffle || !artist) return
+  const theirs = new Set(list.filter((t) => key(t) === artist).map((t) => t.id))
+  let skips = 0
+  for (const [id, n] of session.skips) if (theirs.has(id)) skips += n
+  usePlayer.setState({ order: steered(order, order.indexOf(index), (i) => key(list[i]) === artist, new Set(added), skips >= 2) })
+})
 
 // Last volume sent to the playing source (fades send many).
 let sent = -1

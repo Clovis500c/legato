@@ -40,7 +40,7 @@ pub struct Play {
 /// `plays_*` = the sum of the plays' weights (`mixes::play_weight`, a skip counts below zero) each decayed by its age, with a
 /// 30-day half-life (taste now) and a 180-day one (the long profile); `last_played` unix s, 0 = never; `skips_recent` = skips
 /// (under 30 s, not finished) in the last `SKIP_DAYS` days; `liked` = in Liked Music; `less` / `never` = the song's pref.
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, ts_rs::TS)]
+#[derive(Debug, Clone, PartialEq, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export)]
 pub struct TasteSignal {
@@ -54,7 +54,13 @@ pub struct TasteSignal {
     pub never: bool,
     /// Bit h set = played (finished or 30 s heard) at local hour h in the last 90 days: the time-of-day signal.
     pub hours: u32,
+    /// The songs heard right before or after this one in a session (30 min apart at most, skips passed over), most often
+    /// first, `NEAR` at most: what goes together for you (YouTube's "watched together", from this PC alone).
+    pub near: Vec<i64>,
 }
+
+/// Songs kept in `TasteSignal::near`.
+const NEAR: usize = 8;
 
 /// How far back a skip still counts for the ranking.
 const SKIP_DAYS: i64 = 30;
@@ -142,11 +148,21 @@ impl Library {
     /// call). `now` = unix seconds, `utc_offset` = local minus UTC in seconds (for `hours`). Same weights and decays as the mixes (`mixes::play_weight`, `decay`, `long_decay`).
     pub fn taste_signals(&self, now: i64, utc_offset: i64) -> Result<Vec<TasteSignal>> {
         let mut out: HashMap<i64, TasteSignal> = HashMap::new();
-        let blank = |id| TasteSignal { id, plays_decayed: 0.0, plays_long: 0.0, last_played: 0, skips_recent: 0, liked: false, less: false, never: false, hours: 0 };
-        let mut stmt = self.db.prepare_cached("SELECT p.track_id, p.started_at, p.listened_ms, p.completed, t.duration_ms FROM plays p JOIN tracks t ON t.id = p.track_id")?;
+        let blank = |id| TasteSignal { id, plays_decayed: 0.0, plays_long: 0.0, last_played: 0, skips_recent: 0, liked: false, less: false, never: false, hours: 0, near: Vec::new() };
+        let mut stmt = self.db.prepare_cached("SELECT p.track_id, p.started_at, p.listened_ms, p.completed, t.duration_ms FROM plays p JOIN tracks t ON t.id = p.track_id ORDER BY p.started_at")?;
         let rows = stmt.query_map([], |r| Ok((Play { track_id: r.get(0)?, started_at: r.get(1)?, listened_ms: r.get(2)?, completed: r.get(3)? }, r.get::<_, Option<u32>>(4)?)))?;
+        // Song → song heard next to it → times; the last listen heard (finished or 30 s), with its start.
+        let mut links: HashMap<i64, HashMap<i64, u32>> = HashMap::new();
+        let mut prev: Option<(i64, i64)> = None;
         for row in rows {
             let (p, duration) = row?;
+            if p.completed || p.listened_ms >= crate::mixes::SKIP_MS {
+                if let Some((a, _)) = prev.filter(|(a, at)| *a != p.track_id && p.started_at - at <= crate::mixes::SESSION_GAP) {
+                    *links.entry(a).or_default().entry(p.track_id).or_default() += 1;
+                    *links.entry(p.track_id).or_default().entry(a).or_default() += 1;
+                }
+                prev = Some((p.track_id, p.started_at));
+            }
             let s = out.entry(p.track_id).or_insert_with(|| blank(p.track_id));
             let w = crate::mixes::play_weight(&p, duration);
             s.plays_decayed += w * crate::mixes::decay(now - p.started_at);
@@ -165,6 +181,11 @@ impl Library {
         }
         for id in self.liked_tracks()? {
             out.entry(id).or_insert_with(|| blank(id)).liked = true;
+        }
+        for (id, next) in links {
+            let mut next: Vec<(i64, u32)> = next.into_iter().collect();
+            next.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
+            out.entry(id).or_insert_with(|| blank(id)).near = next.into_iter().take(NEAR).map(|(n, _)| n).collect();
         }
         let mut all: Vec<_> = out.into_values().collect();
         all.sort_by_key(|s| s.id);
@@ -301,6 +322,25 @@ mod tests {
         }
         let s = lib.taste_signals(now, 3600)?.into_iter().find(|s| s.id == a).unwrap();
         assert_eq!(s.hours, 1 << 11);
+        Ok(())
+    }
+
+    #[test]
+    fn taste_signals_link_the_songs_heard_one_after_the_other() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let [a, b, c, d, e] = ["a", "b", "c", "d", "e"].map(|k| track(&lib, k, Source::Youtube, k));
+        let now = 100 * 86_400;
+        // A and B back and forth (4 links), A and C (2), then A, a skip of D, E: A goes with E, D with nobody. An hour later, B: no link to E.
+        let heard = |id, at| Play { track_id: id, started_at: at, listened_ms: 200_000, completed: true };
+        for p in [heard(a, 0), heard(b, 200), heard(a, 400), heard(b, 600), heard(a, 800), heard(c, 1000), heard(a, 1200), Play { track_id: d, started_at: 1400, listened_ms: 3_000, completed: false }, heard(e, 1420), heard(b, 1420 + 3600)] {
+            lib.record_play(&Play { started_at: now - 10_000 + p.started_at, ..p })?;
+        }
+        let got = lib.taste_signals(now, 0)?;
+        let near = |id| got.iter().find(|s| s.id == id).map(|s| s.near.clone()).unwrap();
+        assert_eq!(near(a), [b, c, e], "most often first");
+        assert_eq!(near(b), [a]);
+        assert_eq!(near(e), [a]);
+        assert!(near(d).is_empty(), "a skip goes with nothing");
         Ok(())
     }
 

@@ -4,6 +4,18 @@ What picks the songs: Shuffle, what plays after Up next runs out, mixes made fro
 for all of them, computed on this PC from this PC's history. Written 2026-11-14 from the owner's ask: the algorithm shapes
 everything, the user gets the best of their music "but not only that", no Instagram-style bubble.
 
+Rebuilt 2026-11-18, the owner's word (2026-11-17): Shuffle in playlists and mixes was "horrible"; redo it "the way YouTube or
+TikTok" recommend. What made it bad, each reproduced by a test on a made-up library like theirs (`feel.test.ts`: streamed songs
+with no tags, one artist played every day and liked):
+- Shuffle weighted every song by its score, play counts and artist taste included, up to 300 times one against another: the
+  most played artist opened every shuffle and came back every other song, the rest of the playlist almost never got its turn,
+  and what played got more plays (a loop).
+- The picks after Up next and the mixes from a song ADDED preference to fit: a liked, often played song of another style scored
+  like a song that fits, and every third song of a mix was a favourite from anywhere: 11 of 30 songs of a mix were off-style.
+- Untagged songs (most streamed ones) had nothing to say they go together but the artist; YouTube Music's radio counted less
+  than a like.
+- Nothing reacted to a skip before the next reload of the signals (every 20 listens).
+
 ## What we copy, what we do differently
 - YouTube (Covington 2016): two stages, candidates then a ranker; the target is time really listened, not clicks. We copy
   both: candidates from the library (plus YouTube Music's radio when signed in), a score from listened time, skips, likes.
@@ -18,6 +30,11 @@ everything, the user gets the best of their music "but not only that", no Instag
   listened to, finished or liked, and one song's influence is capped.
 - Pandora / Plexamp: similarity from the song's own features (tempo, key, mood). We have tempo and key where analysed
   (`crates/dsp`, tags), genre, decade, album, artist; energy and mood are not there yet and stay out.
+- TikTok (the For You feed): the strongest signals are implicit and immediate (watched to the end, swiped away), and the feed
+  reacts within the session. We copy it: an early skip steers what comes next at once, a full listen counts more in the queue's
+  profile (In the session, below).
+- YouTube's "watched together": songs you hear right after one another go together, whatever their tags. We keep it per song,
+  from this PC's plays only (`TasteSignal::near`), and it counts in the fit of what plays after Up next and of a mix.
 - We do not do: servers, accounts, embeddings trained on other users, anything that needs a crowd. Taste here is a small
   weighted feature profile plus a co-listening graph, both from this library.
 
@@ -25,11 +42,13 @@ everything, the user gets the best of their music "but not only that", no Instag
 Per library song, from `plays`, `track_prefs`, ratings, likes (same definitions as `music_core::mixes`):
 - play weight: finished 1.0; partial 0.3 to 0.9 by the share heard; skip under 30 s: -0.9 to -0.3 (`mixes::play_weight`).
 - decay: half-life 30 days (taste now), 180 days for the long profile (`mixes::decay`). Mixes use both: 70 / 30.
-- rating 8-10: +6, 6-7: +2.5, 1-2: out of every pick (shuffle: weight x0.05, reachable); like: +3 decaying with its age.
-- skips in the last 30 days: -1.5 each, capped at -6 (`similar_signals`, exists). Never in mixes: out. Less: x0.3.
-- playlists: in one of yours +1.5, imported ones less (`mixes`).
-- heard in the last 20 h: x0.6 (cooldown, as `mixes`); the last 24 h go last in Shuffle (exists).
-All numbers are first guesses, never heard by ear; they live in one table at the top of the module.
+- preference = a factor e^p, p = 0.12 ln(1 + listens) + rating (8-10: 0.5, 6-7: 0.2) + like 0.35 + long profile (0..0.4)
+  - 0.45 per skip in the last 30 days (4 at most), clamped to -1.8..1.1 (x0.17..x3). Rated 1-2 or Never in mixes: out. Less:
+  x0.3.
+- near: the 8 songs heard most often right before or after it, 30 min apart at most, skips passed over (`taste_signals`).
+- playlists: in one of yours +1.5, imported ones less (`mixes`, the Mixes page only).
+- heard in the last 20 h: x0.6 (cooldown, as `mixes`); the last 24 h go last in Shuffle.
+All numbers are first guesses, never heard by ear; they live in one table at the top of `score.ts` (`K`) and of `shuffle.ts`.
 
 ## Taste profile
 A map feature -> weight, features = main artist (3), genre (2), album (1.5), decade (1), tempo by 10 bpm (0.8), key (0.8),
@@ -41,10 +60,13 @@ The profile is rebuilt at start and every 20 plays, kept in memory, never writte
 ## Candidates, score, diversity
 1. Candidates: the library (one cheap pass over 10 000 songs, no per-song call), the seed's YouTube Music radio when signed
    in (already requested, nothing new), for a mix from a song the co-listening neighbours of its artist (`mixes` graph).
-2. Score = affinity (profile . features, scaled 0..1 over the candidates) + preference (log plays, rating, like) - skip
-   cost, x cooldown. Standardised to z-scores so the weights below do not depend on the library's size.
+2. Score = fit x preference, x Less, x cooldown, x 0.3 per early skip of its artist in the queue (two at most). Fit = 0.05 +
+   0.6 x the session profile's features (0..1 over the candidates) + 0.5 x the share of the queue it is played next to + 0.35
+   x the same for its artist + a radio row 0.9 / (1 + 0.04 x its place). Multiplied, not added: a favourite that fits nothing
+   stays near the floor, so it never pushes out what fits (it still fills in when nothing else is left). The long profile is
+   part of the preference, not of the fit. Standardised to z-scores so the weights below do not depend on the library's size.
 3. Exploration dose by variety: Alike 10 %, Balanced 20 %, Adventurous 35 % of the slots go to explore picks: songs with
-   middle affinity (same genre or decade, another artist) and few plays, or never played; picked by weighted sampling,
+   middle fit (same genre or decade, another artist) and few plays, or never played; picked by weighted sampling,
    not the top. Hard floor: never 0, whatever the setting.
 4. Diversity re-rank (greedy MMR, lambda 0.7): next pick = score - 0.3 x its similarity to the last 4 chosen. Caps: the same
    artist at most 2 in any 10 picks (3 for a mix from a song, whose seed artist gets 4), never twice in a row while another
@@ -57,14 +79,30 @@ next, Shuffle and mixes alike (it is no longer shown only when "Then, similar so
 shuffle sharpness (below). Decided alone (2026-11-14): keep it, it is the only handle the user has on the bubble.
 
 ## Shuffle
-Weighted random sampling without replacement (Efraimidis-Spirakis): each song gets the key `ln(u) / w`, u uniform in (0,1),
-and the list is sorted by the keys, largest first. `w = clamp(exp(beta x z), 0.1, 30)` with z the score's z-score and
-beta = 1.2 / 0.9 / 0.5 for Alike / Balanced / Adventurous: with Balanced a +1.5 sigma song comes before a -1.5 sigma one
-about 15 times in 16 on average, and no song has weight 0, so everything stays reachable. Then the existing pass: no artist
-twice in a row, songs heard in the last 24 h later. `Math.random` only through an injected `rand` (tests pass a seeded one).
-The "Smart shuffle" setting keeps its place: off = plain random order. Decided alone: always shaped when on (the owner's
-word: "pas assez influencé").
-Cost: 10 000 songs = one pass for z, 10 000 keys, one sort: a few ms.
+A playlist or a mix you play is your pick: Shuffle orders it, it does not rank it. Weighted random sampling without
+replacement (Efraimidis-Spirakis): each song gets the key `ln(u) / w`, u uniform in (0,1), and the list is sorted by the keys,
+largest first. `w = rest x marks^sharp` (`shuffleWeight`), never below 0.01, so everything stays reachable:
+- rest = 1 - 0.9 e^(-days since heard / 3): heard today 0.1, 3 days ago 0.67, a week 0.91, never 1. What you heard waits its
+  turn and comes back, so the head of the shuffle rotates from day to day.
+- marks = a like x2, a rating 8-10 x1.8 or 6-7 x1.3, each recent skip x0.6 (4 at most), Less x0.4. No play count and no artist
+  taste: those made the same favourites open every shuffle.
+- sharp = 1.4 / 1 / 0.6 for Alike / Balanced / Adventurous.
+Then each artist is kept apart (`spaced`): at least `gap` other songs between two of theirs, `gap` = 0.7 of an even spread
+over the list, at most 10 (an artist with a sixth of the list comes back every 5 songs or so, one with 5 songs in 100 every 11);
+each place takes the first song of the next 60 whose artist is far enough. Songs heard in the last 24 h and rated 1-2 after all
+the others, spread the same way. `Math.random` only through an injected `rand` (tests pass a seeded one). The "Smart shuffle"
+setting keeps its place: off = plain random order; the taste store not loaded yet = artists spread, unweighted.
+Cost: 10 000 songs, the whole shuffle about 11 ms (was 27).
+
+## In the session
+`listens.ts` keeps this session's verdicts in memory only (nothing new is written): early skips (under 30 s, not finished)
+counted by song, and the last verdict by song (skipped early, heard to the end). They act at once, before the next reload of
+the signals:
+- Shuffle: an early skip moves that artist's songs out of the next 10 (`steered`, the moved ones right after); a second skip of
+  the same artist this session sends all of theirs to the end. Songs you queued yourself stay put.
+- The taste: the session's skips count as recent skips (the larger of the two, so a reload does not count them twice).
+- After Up next and in a mix: a queue song skipped early no longer shapes the queue's profile and cuts its artist's songs (x0.3
+  each, two at most); one heard to the end counts 1.5 times.
 
 ## After Up next runs out
 Always: the "Then, similar songs" switch goes (the stored value is ignored). The queue's session profile + the long profile
@@ -76,16 +114,19 @@ A queue the user ended on purpose (Stop, a one-song play with repeat off) is sti
 seed's YouTube Music radio, the artists listened to near the seed's artist (co-listening). Score as above with the seed's
 own features counting double in the profile. Arc, not a pile: 3 parts (settle, middle, return); where tempo is known each
 step moves at most 12 bpm and avoids a clashing key, else the co-listening "flow" order of `mixes`; every third song is a
-favourite (high preference), the dose of explore picks as above, none with a low rating, never in mixes, or a recent skip.
+favourite (high preference) when one is among the next 8 by rank (further down it is of another style), the dose of explore
+picks as above, none with a low rating, never in mixes, or a recent skip.
 Name: "<Title> mix". The Mixes page gets the same, made ahead: up to 8 "Like <song>" mixes from the user's most loved songs,
 one per style cluster (genre + decade, else the co-listening cluster), seeds rotating by day (`mixes` stays pure: same
 input and seed = same mixes).
 
 ## Where the code lives
 - `crates/core`: signals over the whole library in one SQL pass (`taste_signals`: decayed plays, last played, recent skips,
-  like, less, never; no IN list, one call), and `song_mixes` for the Mixes page (next to `mixes`, same Input).
-- `ui/src/features/player/score.ts` (new, pure, no store, no network): profile, score, dose, MMR, weighted order, arc.
-  `similarRank.ts`, `shuffle.ts`, `radio.ts` call it. Front end because Up next and Shuffle already live there and the
+  like, less, never, the songs heard next to it; no IN list, one call), and `song_mixes` for the Mixes page (next to `mixes`,
+  same Input).
+- `ui/src/features/player/score.ts` (pure, no store, no network): profiles, links, fit, preference, dose, MMR.
+  `similarRank.ts`, `songMix.ts`, `radio.ts` call it; `shuffle.ts` has Shuffle's own weight, spacing and steering, `listens.ts`
+  the session's verdicts, `store.ts` steers on a skip. Front end because Up next and Shuffle already live there and the
   queue is a front-end object; the Rust side stays a data source. If a measurement on 10 000 songs (`pnpm bench`) shows more
   than 50 ms for a shuffle, the scoring pass moves into `music_core` behind one command.
 - The signals are cached in a small store (refreshed every 20 plays); Shuffle reads the cache, so toggling it stays instant.
@@ -103,6 +144,12 @@ audio is downloaded, recorded or analysed from a platform; only local files' tag
 - Mok et al., The Dynamics of Exploration on Spotify (ICWSM 2022): https://ojs.aaai.org/index.php/ICWSM/article/view/19324
 - Efraimidis, Spirakis, Weighted random sampling with a reservoir (2006); the log form: https://opensource.posit.co/blog/2020-07-29_parallelized-sampling/
 - Result Diversification in Search and Recommendation: A Survey (MMR, DPP): https://arxiv.org/pdf/2212.14464
+
+## Measured (2026-11-18, the rebuild)
+On the made-up library of `feel.test.ts`: a mix from a song had 11 favourites of another style in 30, now at most 2; after Up
+next 4 in 15, now at most 2; signed out, songs played next to the queue's lead. In Shuffle the most played artist came every
+other song; now any two songs of an artist are at least 4 apart in the first 30, and an early skip clears the next 10 of that
+artist. A whole Shuffle of 10 000 songs: about 11 ms (`shuffleBench.test.ts`). Still never heard by ear.
 
 ## Measured (2026-11-14, lot 42B)
 Node, the code the app runs, 10 000 songs with tags, best of 5 on a PC doing other things: a whole Shuffle (the taste store built from

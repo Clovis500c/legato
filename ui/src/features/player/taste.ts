@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { api, type LibraryTrack, type TasteSignal } from '../../shared/api'
-import { onListenEnd } from './listens'
+import { onListenEnd, session } from './listens'
 import type { Taste } from './score'
 
 /**
@@ -39,7 +39,10 @@ export function tasteFor(stats: Record<number, [plays: number, last: number, sta
   return {
     rating: (t: LibraryTrack) => stats[t.id]?.[2] ?? 0,
     plays: (t: LibraryTrack) => stats[t.id]?.[0] ?? 0,
-    skips: (t: LibraryTrack) => signals.get(t.id)?.skipsRecent ?? 0,
+    // This session's early skips count at once; the store counts them too once it reloads.
+    skips: (t: LibraryTrack) => Math.max(signals.get(t.id)?.skipsRecent ?? 0, session.skips.get(t.id) ?? 0),
+    heard: (t: LibraryTrack) => session.last.get(t.id) ?? 0,
+    near: (t: LibraryTrack) => signals.get(t.id)?.near ?? [],
     never: (t: LibraryTrack) => signals.get(t.id)?.never ?? false,
     less: (t: LibraryTrack) => signals.get(t.id)?.less ?? false,
     liked: (t: LibraryTrack) => signals.get(t.id)?.liked ?? false,
@@ -49,6 +52,7 @@ export function tasteFor(stats: Record<number, [plays: number, last: number, sta
       return s ? 0.7 * s.playsDecayed + 0.3 * s.playsLong : 0
     },
     hours: (t: LibraryTrack) => signals.get(t.id)?.hours ?? 0,
-    lastPlayed: (t: LibraryTrack) => signals.get(t.id)?.lastPlayed ?? 0,
+    // The stats see a start at once, the signals at their next load.
+    lastPlayed: (t: LibraryTrack) => Math.max(signals.get(t.id)?.lastPlayed ?? 0, stats[t.id]?.[1] ?? 0),
   }
 }

@@ -32,10 +32,12 @@ describe('similar songs ranked by the whole queue', () => {
     expect(p.get('g:rock')!).toBeGreaterThan(p.get('g:jazz')!)
   })
 
-  it('a song you rated high comes first, one you rated 1-2 never', () => {
-    const taste: Taste = { ...none, rating: (t) => (t.id === jazz.id ? 10 : t.id === rock.id ? 1 : 0) }
-    const out = pickSimilar(cands([rock, jazz, alpha]), queue, 3, taste, 'alike', 3)
-    expect(out[0].id).toBe(jazz.id)
+  it('of two songs that fit alike, the one you rated high comes first; one you rated 1-2 never', () => {
+    // The rating multiplies the fit (the owner, 2026-11-17): it lifts a song among those that go with the queue, not over them.
+    const alpha2 = song(13, 'Alpha', { genre: 'rock', year: 1993 })
+    const taste: Taste = { ...none, rating: (t) => (t.id === alpha2.id ? 10 : t.id === rock.id ? 1 : 0) }
+    const out = pickSimilar(cands([rock, alpha, alpha2]), queue, 3, taste, 'alike', 3)
+    expect(out[0].id).toBe(alpha2.id)
     expect(ids(out)).not.toContain(rock.id)
   })
 

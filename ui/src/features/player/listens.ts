@@ -28,11 +28,25 @@ export const onListenEnd = (f: Listener) => {
   return () => void listeners.delete(f)
 }
 
+/** Under this, not finished: an early skip (Rust's `mixes::SKIP_MS`). */
+export const SKIP_MS = 30_000
+
+/**
+ * This session's verdicts, in memory only (docs/recommendation.md › In the session): early skips counted by song, and the last
+ * verdict by song (-1 skipped early, 1 heard to the end). Shuffle and what plays next react to them at once.
+ */
+export const session = { skips: new Map<number, number>(), last: new Map<number, -1 | 1>() }
+
 export function endListen(ended: boolean) {
   const play = cur && toPlay(cur, ended)
   const durationMs = cur?.durationMs ?? null
   cur = null
   if (!play) return
+  if (play.completed) session.last.set(play.trackId, 1)
+  else if (play.listenedMs < SKIP_MS) {
+    session.skips.set(play.trackId, (session.skips.get(play.trackId) ?? 0) + 1)
+    session.last.set(play.trackId, -1)
+  }
   api.recordPlay(play).catch(() => {})
   for (const f of listeners) f(play, durationMs)
 }

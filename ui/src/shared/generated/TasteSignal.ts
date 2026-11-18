@@ -10,4 +10,9 @@ export type TasteSignal = { id: number, playsDecayed: number, playsLong: number,
 /**
  * Bit h set = played (finished or 30 s heard) at local hour h in the last 90 days: the time-of-day signal.
  */
-hours: number, };
+hours: number, 
+/**
+ * The songs heard right before or after this one in a session (30 min apart at most, skips passed over), most often
+ * first, `NEAR` at most: what goes together for you (YouTube's "watched together", from this PC alone).
+ */
+near: Array<number>, };

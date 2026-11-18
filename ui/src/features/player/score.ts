@@ -17,26 +17,28 @@ export const K = {
   feature: { artist: 3, album: 1.5, genre: 2, decade: 1, tempo: 0.8, key: 0.8 },
   /** Share of the slots that go to explore picks (a floor above 0 whatever the setting). */
   dose: { alike: 0.1, balanced: 0.2, adventurous: 0.35 } as Record<Variety, number>,
-  /** The queue's weight in the profile against the long profile (when there is one). */
-  session: 0.7,
   /** One song adds at most this many plays' worth to the long profile; a feature's weight saturates (tanh) at this scale. */
   songCap: 3,
   longScale: 20,
   sessionScale: 4,
-  /** Affinity (0..1 over the candidates) is brought to this scale so the points below stay meaningful beside it. */
-  affinity: 8,
-  logPlays: 0.4,
-  rating: { high: 6, good: 2.5 },
-  like: 3,
-  /** A skip in the last 30 days costs this much, up to `skipCap` in all. */
-  skip: 1.5,
-  skipCap: 6,
-  /** Less: the positive score is cut to this share. Heard in the last 20 h: the same, with `coolFactor`. */
+  /**
+   * Fit, how well a song goes with the queue (0..~2): a floor, the queue's features (0..1 over the candidates), what you play next
+   * to the queue's songs (that song, its artist: shares of the queue), a radio's answer by its place (YouTube Music's own "goes with").
+   */
+  fit: { floor: 0.05, features: 0.6, song: 0.5, artist: 0.35, radio: 0.9, radioStep: 0.04 },
+  /**
+   * Preference, how much you like a song: a factor e^p on its fit, so a favourite of another style stays out (the owner, 2026-11-17);
+   * p from the plays (log), a rating 8-10 or 6-7, a like, the long profile (0..1), minus each recent skip, clamped.
+   */
+  pref: { plays: 0.12, high: 0.5, good: 0.2, like: 0.35, long: 0.4, skip: 0.45, min: -1.8, max: 1.1 },
+  /** A song of the queue heard to the end this session counts this much more in its profile; one skipped early, not at all. */
+  heardFull: 1.5,
+  /** A song by an artist skipped early in the queue: its score times this, per skip (two at most). */
+  steer: 0.3,
+  /** Less: the score cut to this share. Heard in the last 20 h: the same, with `coolFactor`. */
   less: 0.3,
   coolHours: 20,
   coolFactor: 0.6,
-  /** A radio's answer: the first song counts this much, the later ones less. */
-  radio: 1.5,
   /** Diversity: score minus this x the similarity to each of the last 4 picks. */
   mmr: 0.3,
   /** The hours a song was played at (last 90 days) near now add up to `bonus` of its affinity, once there are `minPlays` plays of history. */
@@ -67,6 +69,10 @@ export interface Taste {
   lastPlayed?: (t: LibraryTrack) => number
   /** Bit h = played at local hour h in the last 90 days. */
   hours?: (t: LibraryTrack) => number
+  /** This session: -1 skipped early, 1 heard to the end, 0 neither. */
+  heard?: (t: LibraryTrack) => number
+  /** The library songs you play right before or after this one, most often first: what goes together for you. */
+  near?: (t: LibraryTrack) => readonly number[]
 }
 
 /** The hours within `K.timeOfDay.span` of `hour` (0-23), as a bit mask, wrapping midnight. */
@@ -119,14 +125,51 @@ function queueWeight(distance: number, rating: number): number {
   return base * (rating >= 8 ? 2 : rating >= 6 ? 1.3 : lowRated(rating) ? 0.2 : 1)
 }
 
+/** Each queue song's weight: `queueWeight`, more for a full listen this session, none for an early skip. */
+function queueWeights(queue: LibraryTrack[], index: number, taste: Pick<Taste, 'rating' | 'heard'>): number[] {
+  return queue.map((t, i) => {
+    const heard = taste.heard?.(t) ?? 0
+    return queueWeight(i - index, taste.rating(t)) * (heard > 0 ? K.heardFull : heard < 0 ? 0 : 1)
+  })
+}
+
 /** Feature → weight in 0..1 (tanh: it saturates), from the whole queue around `index`: the session profile. */
-export function profileOf(queue: LibraryTrack[], index: number, taste: Pick<Taste, 'rating'>): Map<string, number> {
+export function profileOf(queue: LibraryTrack[], index: number, taste: Pick<Taste, 'rating' | 'heard'>): Map<string, number> {
+  const weights = queueWeights(queue, index, taste)
   const raw = new Map<string, number>()
   queue.forEach((t, i) => {
-    const w = queueWeight(i - index, taste.rating(t))
-    for (const [f, fw] of featuresOf(t)) raw.set(f, (raw.get(f) ?? 0) + w * fw)
+    if (weights[i]) for (const [f, fw] of featuresOf(t)) raw.set(f, (raw.get(f) ?? 0) + weights[i] * fw)
   })
   return saturate(raw, K.sessionScale)
+}
+
+/** What the queue says beyond features: the songs you play next to its songs and their artists (shares 0..1 of the queue's weight), the artists skipped early in it (times). */
+export interface Links {
+  song: Map<number, number>
+  artist: Map<string, number>
+  skipped: Map<string, number>
+}
+
+const NO_LINKS: Links = { song: new Map(), artist: new Map(), skipped: new Map() }
+
+/** The queue's links (`byId`: the library, to know the artist of a song played next to one of the queue). */
+export function linksOf(queue: LibraryTrack[], index: number, taste: Taste, byId: ReadonlyMap<number, LibraryTrack>): Links {
+  const weights = queueWeights(queue, index, taste)
+  const total = weights.reduce((a, b) => a + b, 0) || 1
+  const links: Links = { song: new Map(), artist: new Map(), skipped: new Map() }
+  queue.forEach((t, i) => {
+    if ((taste.heard?.(t) ?? 0) < 0) links.skipped.set(artistOf(t), (links.skipped.get(artistOf(t)) ?? 0) + 1)
+    const w = weights[i] / total
+    if (!w) return
+    const artists = new Set<string>()
+    for (const id of taste.near?.(t) ?? []) {
+      links.song.set(id, (links.song.get(id) ?? 0) + w)
+      const n = byId.get(id)
+      if (n) artists.add(artistOf(n))
+    }
+    for (const a of artists) links.artist.set(a, (links.artist.get(a) ?? 0) + w)
+  })
+  return links
 }
 
 /** The long profile: every library song's decayed plays (one song at most `songCap`), saturated so no feature, and no one liked song, takes over. */
@@ -144,12 +187,14 @@ function saturate(raw: Map<string, number>, scale: number): Map<string, number> 
   return new Map([...raw].map(([f, v]) => [f, Math.tanh(v / scale)]))
 }
 
-/** How much of the song's features the profiles hold: 0..~3 (the feature weights over 3). */
-function affinityOf(features: [string, number][], session: Map<string, number>, long: Map<string, number> | null): number {
+/** How much of the song's features a profile holds: 0..~3 (the feature weights over 3). */
+function affinityOf(features: [string, number][], profile: Map<string, number>): number {
   let s = 0
-  for (const [f, fw] of features) s += (fw / 3) * (long ? K.session * (session.get(f) ?? 0) + (1 - K.session) * (long.get(f) ?? 0) : (session.get(f) ?? 0))
-  return s
+  for (const [f, fw] of features) s += (fw / 3) * (profile.get(f) ?? 0)
+  return Math.max(0, s)
 }
+
+const topOf = (xs: number[]) => xs.reduce((a, b) => (b > a ? b : a), 0)
 
 /** Everything about a candidate the picks need. */
 interface Scored {
@@ -170,30 +215,38 @@ function standardise(xs: number[]): number[] {
   return xs.map((x) => (sd > 1e-9 ? (x - mean) / sd : 0))
 }
 
-/** Score = affinity + preference (plays, rating, like) - skips, cut for Less and for what was just heard, then standardised over the candidates. */
-export function scoreAll(candidates: Candidate[], session: Map<string, number>, long: Map<string, number> | null, taste: Taste, now: number, hour: number | null = null): Scored[] {
+/**
+ * Score = fit (the session profile's features, what you play next to the queue, a radio's place) x preference (plays, rating, like,
+ * the long profile, recent skips), cut for Less, for what was just heard and for an artist skipped in the queue, then standardised
+ * over the candidates.
+ */
+export function scoreAll(candidates: Candidate[], session: Map<string, number>, long: Map<string, number> | null, taste: Taste, now: number, hour: number | null = null, links: Links = NO_LINKS): Scored[] {
   const feats = candidates.map((c) => featuresOf(c.track))
-  const aff = feats.map((f) => affinityOf(f, session, long))
+  const artists = candidates.map((c) => artistOf(c.track))
+  const aff = feats.map((f) => affinityOf(f, session))
   // The hours the songs were played at: up to `bonus` more affinity for the ones played around this hour.
   const win = hour === null || !taste.hours ? 0 : hourWindow(hour)
   if (win) candidates.forEach((c, i) => (aff[i] *= 1 + (K.timeOfDay.bonus * bits((taste.hours?.(c.track) ?? 0) & win)) / (2 * K.timeOfDay.span + 1)))
-  let top = 0
-  for (const a of aff) if (a > top) top = a
+  const loved = long ? feats.map((f) => affinityOf(f, long)) : []
+  const [top, topLoved] = [topOf(aff), topOf(loved)]
+  const fits = candidates.map((c, i) => {
+    const f = K.fit
+    return f.floor + (top > 0 ? (f.features * aff[i]) / top : 0) + f.song * Math.min(1, links.song.get(c.track.id) ?? 0) + f.artist * Math.min(1, links.artist.get(artists[i]) ?? 0) + (c.rank !== undefined ? f.radio / (1 + f.radioStep * c.rank) : 0)
+  })
   const raw = candidates.map((c, i) => {
     const t = c.track
     const rating = taste.rating(t)
-    let s = top > 0 ? (aff[i] / top) * K.affinity : 0
-    s += K.logPlays * Math.log1p(taste.plays(t)) + (rating >= 8 ? K.rating.high : rating >= 6 ? K.rating.good : 0) + (taste.liked?.(t) ? K.like : 0)
-    s -= Math.min(K.skipCap, K.skip * taste.skips(t))
-    if (c.rank !== undefined) s += K.radio / (1 + c.rank * 0.2)
-    if (s > 0 && taste.less?.(t)) s *= K.less
+    const p = K.pref
+    const pref = p.plays * Math.log1p(taste.plays(t)) + (rating >= 8 ? p.high : rating >= 6 ? p.good : 0) + (taste.liked?.(t) ? p.like : 0) + (topLoved > 0 ? (p.long * loved[i]) / topLoved : 0) - p.skip * Math.min(4, taste.skips(t))
+    let s = fits[i] * Math.exp(Math.min(p.max, Math.max(p.min, pref)))
+    if (taste.less?.(t)) s *= K.less
     const last = taste.lastPlayed?.(t) ?? 0
-    if (s > 0 && last > 0 && now - last < K.coolHours * 3600) s *= K.coolFactor
-    return s
+    if (last > 0 && now - last < K.coolHours * 3600) s *= K.coolFactor
+    return s * K.steer ** Math.min(2, links.skipped.get(artists[i]) ?? 0)
   })
   const z = standardise(raw)
-  const za = standardise(aff)
-  return candidates.map((c, i) => ({ c, f: feats[i], artist: artistOf(c.track), z: z[i], za: za[i] }))
+  const za = standardise(fits)
+  return candidates.map((c, i) => ({ c, f: feats[i], artist: artists[i], z: z[i], za: za[i] }))
 }
 
 /** How many of `max` slots go to explore picks: the dose of the variety, never none from 5 slots up. */
@@ -256,7 +309,8 @@ export function rankPicks({ candidates, queue, index, taste, variety, max, rand,
   const eligible = candidates.filter((c) => !inQueue.has(c.track.id) && !seen.has(c.track.id) && !!seen.add(c.track.id) && !lowRated(taste.rating(c.track)) && !taste.never(c.track))
   const decayed = taste.decayed
   const long = library && decayed ? longProfile(library, decayed) : null
-  let pool = scoreAll(eligible, profileOf(queue, index, taste), long && long.size ? long : null, taste, now, hour ?? null)
+  const links = linksOf(queue, index, taste, new Map((library ?? []).map((t) => [t.id, t])))
+  let pool = scoreAll(eligible, profileOf(queue, index, taste), long && long.size ? long : null, taste, now, hour ?? null, links)
   // Only the best by score and some explore candidates can be picked: the rest of a 10 000-song library is not walked at each pick.
   const byZ = [...pool].sort((a, b) => b.z - a.z)
   const mids = byZ.slice(KEEP).filter((x) => isMid(x, taste)).slice(0, KEEP)
@@ -296,10 +350,4 @@ export function rankPicks({ candidates, queue, index, taste, variety, max, rand,
     pool = pool.filter((x) => x !== chosen)
   }
   return out
-}
-
-/** The z-scores of the songs of `list` against the whole `library`'s long profile (Shuffle: no queue yet, so no session profile). */
-export function libraryScores(list: LibraryTrack[], library: LibraryTrack[], taste: Taste, now = Date.now() / 1000): number[] {
-  const long = taste.decayed ? longProfile(library, taste.decayed) : null
-  return scoreAll(list.map((track) => ({ track })), new Map(), long && long.size ? long : null, taste, now).map((x) => x.z)
 }

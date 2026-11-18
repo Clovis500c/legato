@@ -13,6 +13,8 @@ export const MIX_LEN = 30
 export const MAX_STEP = 12
 /** The candidates ranked for the arc (the best of the neighbourhood). */
 const POOL = 120
+/** A favourite slot looks this far down the ranked songs. */
+const FAV_REACH = 8
 
 /** Pitch class of a key's major equivalent (a minor key counts as its relative major): 'Am' and 'C' are 0, 'G' and 'Em' 7. Null: not read. */
 function fifths(key: string | null | undefined): number | null {
@@ -68,7 +70,8 @@ export function mixFromSong({ seed, candidates, taste, variety, rand, library, h
     let ok = window.filter((t) => tempoOk(prev, t) && !keyClash(prev.key, t.key))
     if (!ok.length) ok = window.filter((t) => tempoOk(prev, t))
     if (!ok.length) ok = [...window].sort((a, b) => Math.abs((a.bpm ?? prev.bpm ?? 0) - (prev.bpm ?? 0)) - Math.abs((b.bpm ?? prev.bpm ?? 0) - (prev.bpm ?? 0))).slice(0, 1)
-    const pick = (favSlot && ok.find(fav)) || ok[0]
+    // Only among the next few by rank: further down, a favourite is of another style (the owner, 2026-11-17).
+    const pick = (favSlot && ok.slice(0, FAV_REACH).find(fav)) || ok[0]
     out.push(pick)
     left.splice(left.indexOf(pick), 1)
   }

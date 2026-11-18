@@ -3,7 +3,7 @@ import type { TasteSignal } from '../../shared/api'
 
 vi.mock('@tauri-apps/api/core', () => ({ convertFileSrc: (p: string) => p, invoke: vi.fn(async () => undefined) }))
 
-const signal = (id: number, extra: Partial<TasteSignal> = {}): TasteSignal => ({ id, playsDecayed: 0, playsLong: 0, lastPlayed: 0, skipsRecent: 0, liked: false, less: false, never: false, hours: 0, ...extra })
+const signal = (id: number, extra: Partial<TasteSignal> = {}): TasteSignal => ({ id, playsDecayed: 0, playsLong: 0, lastPlayed: 0, skipsRecent: 0, liked: false, less: false, never: false, hours: 0, near: [], ...extra })
 
 describe('the taste store', () => {
   beforeEach(() => vi.resetModules())
