@@ -140,11 +140,18 @@ impl Heard {
     }
 }
 
-/// The automatic round runs now: `ROUND_EVERY` after the last, or `ROUND_SOON` after it when a trusted device woke it or a
-/// change here (the last one at `changed`) has settled. Times in ms.
-pub fn round_now(now: i64, last: i64, changed: Option<i64>, woke: bool) -> bool {
+/// The automatic round runs now: `ROUND_EVERY` after the last, `ROUND_SOON` after it when a trusted device woke it, or
+/// `gap` after it (`change_gap`) when a change here (the last one at `changed`) has settled. Times in ms.
+pub fn round_now(now: i64, last: i64, changed: Option<i64>, woke: bool, gap: i64) -> bool {
     let since = now.saturating_sub(last);
-    since >= ROUND_EVERY || (since >= ROUND_SOON && (woke || changed.is_some_and(|at| now - at >= SETTLE)))
+    since >= ROUND_EVERY || (since >= ROUND_SOON && woke) || (since >= gap && changed.is_some_and(|at| now - at >= SETTLE))
+}
+
+/// The wait before a round a change here wakes, once a new change is seen `quiet` ms after the one before: back to
+/// `ROUND_SOON` after a quiet minute, else the gap so far (it doubles after each such round, up to `ROUND_EVERY`: an
+/// import or a scan writing for minutes is no sync every 5 s).
+pub fn change_gap(gap: i64, quiet: i64) -> i64 {
+    if quiet >= ROUND_EVERY { ROUND_SOON } else { gap }
 }
 
 /// This device's mDNS TXT words.
@@ -389,12 +396,33 @@ mod tests {
     #[test]
     fn a_change_wakes_the_round_once_settled_never_in_a_loop() {
         let last = 1_000_000;
-        assert!(!round_now(last + 59_999, last, None, false) && round_now(last + ROUND_EVERY, last, None, false), "nothing new: every minute");
-        assert!(round_now(last + ROUND_SOON, last, None, true), "a trusted device moved: soon");
-        assert!(!round_now(last + ROUND_SOON - 1, last, None, true), "never two rounds closer than ROUND_SOON");
-        assert!(!round_now(last + 10_000, last, Some(last + 9_000), false), "still changing here: wait");
-        assert!(round_now(last + 10_000, last, Some(last + 10_000 - SETTLE), false), "settled: now");
-        assert!(round_now(0, i64::MIN, None, false), "the first round");
+        let g = ROUND_SOON;
+        assert!(!round_now(last + 59_999, last, None, false, g) && round_now(last + ROUND_EVERY, last, None, false, g), "nothing new: every minute");
+        assert!(round_now(last + ROUND_SOON, last, None, true, ROUND_EVERY), "a trusted device moved: soon, whatever the gap");
+        assert!(!round_now(last + ROUND_SOON - 1, last, None, true, g), "never two rounds closer than ROUND_SOON");
+        assert!(!round_now(last + 10_000, last, Some(last + 9_000), false, g), "still changing here: wait");
+        assert!(round_now(last + 10_000, last, Some(last + 10_000 - SETTLE), false, g), "settled: now");
+        assert!(!round_now(last + 10_000, last, Some(last + 10_000 - SETTLE), false, 20_000), "settled, but within the gap");
+        assert!(round_now(0, i64::MIN, None, false, g), "the first round");
+    }
+
+    #[test]
+    fn changes_that_keep_coming_space_the_rounds_out() {
+        // An import writing every 3 s for 10 minutes: rounds at 5, 10, 20, 40, then every 60 s, not 120 of them.
+        let (mut gap, mut seen, mut last, mut rounds) = (ROUND_SOON, i64::MIN, 0, 0);
+        for t in (3_000..600_000).step_by(1_000) {
+            let change = t - t % 3_000;
+            if change > seen {
+                gap = change_gap(gap, change.saturating_sub(seen));
+                seen = change;
+            }
+            if round_now(t, last, Some(seen), false, gap) {
+                (gap, last, rounds) = ((gap * 2).min(ROUND_EVERY), t, rounds + 1);
+            }
+        }
+        assert!(rounds <= 14, "{rounds} rounds");
+        assert_eq!(change_gap(ROUND_EVERY, ROUND_EVERY), ROUND_SOON, "a change after a quiet minute: soon again");
+        assert_eq!(change_gap(40_000, 3_000), 40_000, "changes still coming: the gap stays");
     }
 
     #[test]

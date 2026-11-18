@@ -629,17 +629,24 @@ pub fn spawn(app: AppHandle) {
         let versions = |a: &AppHandle| a.state::<AppState>().lib().versions.clone();
         let mut v = versions(&app);
         let (mut seen, mut changed, mut woke, mut last) = (v.changes(), None, false, i64::MIN);
+        // Changes that keep coming (an import, a scan) space the rounds out (`dv::change_gap`).
+        let (mut gap, mut last_change) = (dv::ROUND_SOON, i64::MIN);
         loop {
-            if dv::round_now(now_ms(), last, changed, woke) {
+            if dv::round_now(now_ms(), last, changed, woke, gap) {
                 auto_round(&app).await;
                 v = versions(&app);
+                if changed.is_some() {
+                    gap = (gap * 2).min(dv::ROUND_EVERY);
+                }
                 // What the round itself wrote (a merge) is no change to send back.
                 (seen, changed, woke, last) = (v.changes(), None, false, now_ms());
             }
             woke |= tokio::time::timeout(TICK, dev(&app).wake.notified()).await.is_ok();
-            let now = v.changes();
-            if now != seen {
-                (seen, changed) = (now, Some(now_ms()));
+            let count = v.changes();
+            if count != seen {
+                let at = now_ms();
+                gap = dv::change_gap(gap, at.saturating_sub(last_change));
+                (seen, changed, last_change) = (count, Some(at), at);
             }
         }
     });
