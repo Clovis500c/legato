@@ -5,6 +5,10 @@
  */
 export type Slot = 'card' | 'hidden' | 'none'
 
+/** The right panel holds the mini player: chosen, and there is one (a narrow window and a phone have none; 2026-11-18: on a
+ *  phone its hidden panel took the video into a 0×0 box). */
+export const dockedOf = (place: 'panel' | 'float', narrow: boolean, phone: boolean) => place === 'panel' && !narrow && !phone
+
 /** The floating card (MiniPlayer): `docked` = the right panel holds it, `phone` never gets a card over its lists. */
 export function miniCard({ video, on, phone, full, docked }: { video: boolean; on: boolean; phone: boolean; full: boolean; docked: boolean }): Slot {
   if (full || docked) return 'none'

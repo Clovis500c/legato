@@ -15,7 +15,7 @@ import { MiniViz } from './MiniViz'
 import { volumeWheelRef } from './volume'
 import { Transport } from './Transport'
 import { tr } from '../../shared/i18n/i18n'
-import { miniCard } from './miniRule'
+import { dockedOf, miniCard } from './miniRule'
 
 // Title bar (52) and player bar (100) stay clear, 12 px gap; 24 px from the sides.
 const INSETS = { top: 64, right: 24, bottom: 112, left: 24 }
@@ -42,7 +42,7 @@ export function MiniPlayer() {
   // A narrow window has no right panel (SidePanel): its mini player floats here.
   const narrow = useNarrow()
   const phone = usePhone()
-  const docked = place === 'panel' && !narrow
+  const docked = dockedOf(place, narrow, phone)
   const spot = useSettings((s) => s.settings.miniSpot)
   const miniWidth = useSettings((s) => s.settings.miniWidth)
   const update = useSettings((s) => s.update)

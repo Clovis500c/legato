@@ -1,5 +1,5 @@
 import { useSettings } from '../../app/settings'
-import { useNarrow } from '../../shared/phone'
+import { useNarrow, usePhone } from '../../shared/phone'
 import { trackArt } from '../../shared/art'
 import { tr } from '../../shared/i18n/i18n'
 import { onMenu } from '../../shared/ui/ContextMenu'
@@ -54,7 +54,9 @@ export function SidePanel() {
   const update = useSettings((s) => s.update)
   // A narrow window: the page keeps the room. Now Playing has Up next and the lyrics; the video floats (MiniPlayer).
   const narrow = useNarrow()
-  if (!now || narrow) return null
+  // A phone has no right panel: the floating card's hidden slot keeps its video (dockedOf).
+  const phone = usePhone()
+  if (!now || narrow || phone) return null
   // Not under Now Playing: its own video slot takes the video. Nothing playing (paused, restored): no player here
   // (user's pick 2026-10-30).
   const what = panelCard({ here, full, playing, video: now.via === 'youtube', on })
