@@ -9,6 +9,7 @@ import { AppleImport } from '../add/AppleConnect'
 import { openAppInfo } from '../add/phoneMic'
 import { MUSIC_REFUSED, phoneFolders, withPhone } from '../add/phoneMusic'
 import { SpotifyImport } from '../add/SpotifyConnect'
+import { useScan } from '../library/scanProgress'
 import { accountKey, api, type Direction, type PlexPin, type PlexServer, type ServerExposure, type ServerKind, type ServerStatus, type YtmAccount } from '../../shared/api'
 import { useGoogleAccounts } from './google'
 import { timeAgo } from '../../shared/format'
@@ -726,6 +727,7 @@ function LocalFolders() {
   const [folders, setFolders] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
   const [refused, setRefused] = useState(false)
+  const reading = useScan((s) => s.progress)
   const files = tracks.filter((t) => t.ids.local).length
   useEffect(() => void api.localFolders().then(setFolders), [])
 
@@ -768,6 +770,14 @@ function LocalFolders() {
             </li>
           ))}
         </ul>
+      )}
+      {reading && (
+        <p role="status" className="ms-13 @max-lg:ms-0 flex flex-col gap-1.5 text-xs text-ink-2">
+          {tr('Reading your files… {done} of {total}', { done: reading[0].toLocaleString(), total: reading[1].toLocaleString() })}
+          <span aria-hidden className="block h-0.5 overflow-hidden rounded-full bg-line">
+            <span className="block h-full rounded-full bg-accent transition-[width] duration-200" style={{ width: `${Math.min(100, (reading[0] / Math.max(1, reading[1])) * 100)}%` }} />
+          </span>
+        </p>
       )}
       {refused && (
         <p className="ms-13 @max-lg:ms-0 text-xs text-ink">
