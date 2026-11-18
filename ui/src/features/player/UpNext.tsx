@@ -13,6 +13,8 @@ import { Cover } from '../../shared/ui/Cover'
 import { dragSource, useDrag, useDropTarget } from '../../shared/ui/drag'
 import { shaped, trackMenu } from '../menus'
 import { stopAutoDj, useDjWhy, whyText } from './autoDj'
+import { pickWhyText } from './pickWhy'
+import { usePickWhy } from './pickWhyStore'
 import { fileFormat } from './PlayerBar'
 import { queueItems, queueRows, repeatsAhead, type QueueRow } from './queue'
 import { canPlay, fileTitle, isRemote, useNowTrack, usePlayer } from './store'
@@ -102,6 +104,8 @@ export function UpNext({ onHide, className = CARD, heading, bare = false }: { on
   const dj = usePlayer((s) => !!s.dj)
   // Why each Auto-DJ pick came up (its stars, an artist you liked).
   const why = useDjWhy()
+  // Why each song the app picked came up (the end of Up next, a mix from a song): its biggest reason.
+  const picked = usePickWhy()
   const added = usePlayer((s) => s.added)
   const from = usePlayer((s) => s.from)
   const items = useMemo(() => queueItems(rows, added), [rows, added])
@@ -236,6 +240,7 @@ export function UpNext({ onHide, className = CARD, heading, bare = false }: { on
                     <span className="block truncate text-xs text-ink-2">
                       {artist}
                       {dj && t && why[t.id] && <span className="text-ink-3"> · {whyText(why[t.id])}</span>}
+                      {!dj && t && picked[t.id] && <span className="text-ink-3"> · {pickWhyText(picked[t.id])}</span>}
                     </span>
                   </span>
                   {r.current ? (

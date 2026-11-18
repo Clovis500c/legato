@@ -8,6 +8,8 @@ import { K } from './score'
 import type { Candidate } from './similarRank'
 import { markPicks, remoteTrack, usePlayer } from './store'
 import { crowdOf, seedsOf } from './crowd'
+import type { PickWhy } from './pickWhy'
+import { usePickWhy } from './pickWhyStore'
 import { loadTaste, tasteFor, useTaste } from './taste'
 
 const keyOf = (t: LibraryTrack) => t.ids.youtube ?? `#${t.id}`
@@ -88,15 +90,21 @@ export async function similarForQueue(list: LibraryTrack[], index: number, max: 
   const { candidates, library, taste, variety, hour } = await around(seedsOf(list, index, 3))
   // Loaded when Up next runs out, not at launch.
   const { pickSimilar } = await import('./similarRank')
-  return pickSimilar(candidates, list, index, taste, variety, max, Math.random, library, hour)
+  const why = new Map<number, PickWhy>()
+  const picks = pickSimilar(candidates, list, index, taste, variety, max, Math.random, library, hour, why)
+  // Kept beside the earlier picks' reasons: Up next shows them under the songs.
+  usePickWhy.setState((old) => ({ ...old, ...Object.fromEntries(why) }))
+  return picks
 }
 
 /** Right-click › Start a mix from this song: 30 songs of its style laid out as an arc (songMix.ts, a chunk loaded here), named "<Title> mix". */
 export async function startMix(seed: LibraryTrack) {
   const { candidates, library, taste, variety, hour } = await around([seed])
   const { mixFromSong } = await import('./songMix')
-  const list = mixFromSong({ seed, candidates, taste, variety, rand: Math.random, library, hour })
+  const why = new Map<number, PickWhy>()
+  const list = mixFromSong({ seed, candidates, taste, variety, rand: Math.random, library, hour, why })
   if (list.length < 2) return useStore.getState().notify(tr('No similar songs found'))
+  usePickWhy.setState(Object.fromEntries(why), true)
   usePlayer.getState().playTracks(list, 0)
   // Its songs after the seed are the app's picks: an early skip steers the rest of its artist (store.ts).
   markPicks(list.slice(1).map((t) => t.id))

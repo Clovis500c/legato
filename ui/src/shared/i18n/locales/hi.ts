@@ -70,6 +70,12 @@ const hi: Record<string, string> = {
   'Text on panel': 'पैनल पर टेक्स्ट',
   'Icon on accent': 'एक्सेंट पर आइकन',
   // Sidebar
+  'In {n} radios of what you played': 'आपके सुने हुए के {n} रेडियो में',
+  'In a radio of what you played': 'आपके सुने हुए के एक रेडियो में',
+  'You often play it next to songs like these': 'आप इसे अक्सर ऐसे गानों के साथ सुनते हैं',
+  'By an artist you play next to these songs': 'ऐसे कलाकार का जिसे आप इन गानों के साथ सुनते हैं',
+  'Sounds like what is playing': 'जो चल रहा है उससे मिलता-जुलता',
+  'Something new for you': 'आपके लिए कुछ नया',
   'Mixes': 'मिक्स',
   'Add music': 'संगीत जोड़ें',
   'Songs': 'गाने',

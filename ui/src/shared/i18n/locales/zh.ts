@@ -70,6 +70,12 @@ const zh: Record<string, string> = {
   'Text on panel': '面板上的文字',
   'Icon on accent': '强调色上的图标',
   // Sidebar
+  'In {n} radios of what you played': '出现在你听过歌曲的 {n} 个电台中',
+  'In a radio of what you played': '出现在你听过歌曲的一个电台中',
+  'You often play it next to songs like these': '你常把它和这类歌曲一起听',
+  'By an artist you play next to these songs': '你常和这些歌曲一起听的艺术家',
+  'Sounds like what is playing': '听起来像正在播放的歌',
+  'Something new for you': '给你的新鲜感',
   'Mixes': '混音',
   'Add music': '添加音乐',
   'Songs': '歌曲',

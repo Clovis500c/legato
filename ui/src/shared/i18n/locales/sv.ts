@@ -70,6 +70,12 @@ const sv: Record<string, string> = {
   'Text on panel': 'Text på panel',
   'Icon on accent': 'Ikon på accent',
   // Sidebar
+  'In {n} radios of what you played': 'I {n} radiokanaler av det du spelat',
+  'In a radio of what you played': 'I en radiokanal av det du spelat',
+  'You often play it next to songs like these': 'Du spelar den ofta bredvid låtar som dessa',
+  'By an artist you play next to these songs': 'Av en artist du spelar bredvid de här låtarna',
+  'Sounds like what is playing': 'Låter som det som spelas',
+  'Something new for you': 'Något nytt för dig',
   'Mixes': 'Mixar',
   'Add music': 'Lägg till musik',
   'Songs': 'Låtar',

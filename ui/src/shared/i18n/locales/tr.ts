@@ -70,6 +70,12 @@ const tr: Record<string, string> = {
   'Text on panel': 'Panel üzerindeki metin',
   'Icon on accent': 'Vurgu üzerindeki simge',
   // Sidebar
+  'In {n} radios of what you played': 'Dinlediklerinin {n} radyosunda',
+  'In a radio of what you played': 'Dinlediklerinin bir radyosunda',
+  'You often play it next to songs like these': 'Bunu sık sık böyle şarkıların yanında dinliyorsun',
+  'By an artist you play next to these songs': 'Bu şarkıların yanında dinlediğin bir sanatçıdan',
+  'Sounds like what is playing': 'Çalana benziyor',
+  'Something new for you': 'Senin için yeni bir şey',
   'Mixes': 'Mix’ler',
   'Add music': 'Müzik ekle',
   'Songs': 'Şarkılar',

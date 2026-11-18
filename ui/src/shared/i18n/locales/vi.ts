@@ -70,6 +70,12 @@ const vi: Record<string, string> = {
   'Text on panel': 'Văn bản trên bảng',
   'Icon on accent': 'Biểu tượng trên màu nhấn',
   // Sidebar
+  'In {n} radios of what you played': 'Trong {n} radio từ những gì bạn đã nghe',
+  'In a radio of what you played': 'Trong một radio từ những gì bạn đã nghe',
+  'You often play it next to songs like these': 'Bạn thường nghe cùng những bài như thế này',
+  'By an artist you play next to these songs': 'Của nghệ sĩ bạn hay nghe cùng các bài này',
+  'Sounds like what is playing': 'Nghe giống bài đang phát',
+  'Something new for you': 'Điều mới dành cho bạn',
   'Mixes': 'Bản phối',
   'Add music': 'Thêm nhạc',
   'Songs': 'Bài hát',

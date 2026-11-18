@@ -70,6 +70,12 @@ const ja: Record<string, string> = {
   'Text on panel': 'パネル上のテキスト',
   'Icon on accent': 'アクセント上のアイコン',
   // Sidebar
+  'In {n} radios of what you played': '聴いた曲の {n} 件のラジオに入っています',
+  'In a radio of what you played': '聴いた曲のラジオに入っています',
+  'You often play it next to songs like these': 'こうした曲の次によく聴いています',
+  'By an artist you play next to these songs': 'これらの曲と一緒によく聴くアーティスト',
+  'Sounds like what is playing': '再生中の曲に似ています',
+  'Something new for you': 'あなたに新しい一曲',
   'Mixes': 'ミックス',
   'Add music': '音楽を追加',
   'Songs': '曲',

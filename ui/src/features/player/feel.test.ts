@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useStore } from '../../app/store'
 import type { LibraryTrack, TasteSignal } from '../../shared/api'
 import { mergeRadios } from './crowd'
+import type { PickWhy } from './pickWhy'
 import { endListen, progress, startListen } from './listens'
 import type { Candidate, Taste } from './score'
 import { pickSimilar } from './similarRank'
@@ -262,5 +263,55 @@ describe('an early skip of a pick, shuffle off', () => {
     const before = usePlayer.getState().order
     skip(playlist[0])
     expect(usePlayer.getState().order).toEqual(before)
+  })
+})
+
+// "Why this song" (docs/recommendation.md, slice 2): every pick carries ONE reason, the part of its fit that counted most.
+describe('every pick carries one reason', () => {
+  const KINDS = ['radios', 'radio', 'after', 'artist', 'style', 'new']
+  const radioOf = (r: number) => range(30).map((i) => ({ ...song(-(2000 * (r + 1) + i), `Why ${r}-${i % 10}`), ids: { youtube: `w${r}-${i}` } }))
+  const sharedSong = { ...song(-9500, 'Shared one'), ids: { youtube: 'ws' } }
+  const radios = [0, 1, 2].map((r) => {
+    const l = radioOf(r)
+    l.splice(2 + r, 0, sharedSong)
+    return l
+  })
+  const candidates: Candidate[] = [...library.map((track) => ({ track })), ...mergeRadios(radios)]
+  beforeEach(() => {
+    vi.spyOn(Date, 'now').mockReturnValue(NOW * 1000)
+    useStore.setState({ tracks: library, stats })
+    useTaste.setState({ signals, loaded: true })
+  })
+  afterEach(() => vi.restoreAllMocks())
+
+  it('Up next’s end: one known reason per pick, and the song of all 3 radios says so', () => {
+    for (let s = 1; s <= 8; s++) {
+      const why = new Map<number, PickWhy>()
+      const out = pickSimilar(candidates, bands.slice(0, 3), 2, mine, 'balanced', 15, seeded(s), library, undefined, why)
+      expect(out).toHaveLength(15)
+      for (const t of out) expect(KINDS, `seed ${s} ${t.title}`).toContain(why.get(t.id)?.kind)
+      expect(why.size).toBe(out.length)
+      const shared = why.get(sharedSong.id)
+      if (shared) expect(shared).toEqual({ kind: 'radios', n: 3 })
+    }
+  })
+
+  it('a mix from a song: every song after the seed carries one', () => {
+    const seed = bands[0]
+    const why = new Map<number, PickWhy>()
+    const out = mixFromSong({ seed, candidates, taste: mine, variety: 'balanced', rand: seeded(4), library, why })
+    expect(out[0]).toBe(seed)
+    expect(out.length).toBeGreaterThan(5)
+    for (const t of out.slice(1)) expect(KINDS, t.title).toContain(why.get(t.id)?.kind)
+  })
+
+  it('a pick from an explore slot says it is new; the others never do', () => {
+    let news = 0
+    for (let s = 1; s <= 8; s++) {
+      const why = new Map<number, PickWhy>()
+      pickSimilar(candidates, bands.slice(0, 3), 2, mine, 'adventurous', 15, seeded(s), library, undefined, why)
+      news += [...why.values()].filter((w) => w.kind === 'new').length
+    }
+    expect(news).toBeGreaterThan(0)
   })
 })

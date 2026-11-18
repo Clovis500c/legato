@@ -70,6 +70,12 @@ const id: Record<string, string> = {
   'Text on panel': 'Teks di panel',
   'Icon on accent': 'Ikon di aksen',
   // Sidebar
+  'In {n} radios of what you played': 'Di {n} radio dari yang kamu putar',
+  'In a radio of what you played': 'Di satu radio dari yang kamu putar',
+  'You often play it next to songs like these': 'Sering kamu putar bersama lagu seperti ini',
+  'By an artist you play next to these songs': 'Dari artis yang kamu putar bersama lagu-lagu ini',
+  'Sounds like what is playing': 'Mirip dengan yang sedang diputar',
+  'Something new for you': 'Sesuatu yang baru untukmu',
   'Mixes': 'Mix',
   'Add music': 'Tambah musik',
   'Songs': 'Lagu',

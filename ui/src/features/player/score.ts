@@ -1,5 +1,6 @@
 import type { LibraryTrack } from '../../shared/api'
 import { primaryArtist } from '../library/filter'
+import { whyOf, type FitParts, type PickWhy } from './pickWhy'
 
 /**
  * The one taste model behind what Up next adds after it runs out (and, next, Shuffle and mixes from a song): docs/recommendation.md.
@@ -208,6 +209,8 @@ interface Scored {
   z: number
   /** Standardised affinity alone (to find the explore picks). */
   za: number
+  /** The parts of its fit, for the reason it is picked (pickWhy.ts). */
+  parts: FitParts
 }
 
 function standardise(xs: number[]): number[] {
@@ -231,10 +234,11 @@ export function scoreAll(candidates: Candidate[], session: Map<string, number>, 
   if (win) candidates.forEach((c, i) => (aff[i] *= 1 + (K.timeOfDay.bonus * bits((taste.hours?.(c.track) ?? 0) & win)) / (2 * K.timeOfDay.span + 1)))
   const loved = long ? feats.map((f) => affinityOf(f, long)) : []
   const [top, topLoved] = [topOf(aff), topOf(loved)]
-  const fits = candidates.map((c, i) => {
+  const parts: FitParts[] = candidates.map((c, i) => {
     const f = K.fit
-    return f.floor + (top > 0 ? (f.features * aff[i]) / top : 0) + f.song * Math.min(1, links.song.get(c.track.id) ?? 0) + f.artist * Math.min(1, links.artist.get(artists[i]) ?? 0) + (c.rank !== undefined ? (f.radio * (1 + f.radioVote * ((c.votes ?? 1) - 1))) / (1 + f.radioStep * c.rank) : 0)
+    return { features: top > 0 ? (f.features * aff[i]) / top : 0, song: f.song * Math.min(1, links.song.get(c.track.id) ?? 0), artist: f.artist * Math.min(1, links.artist.get(artists[i]) ?? 0), radio: c.rank !== undefined ? (f.radio * (1 + f.radioVote * ((c.votes ?? 1) - 1))) / (1 + f.radioStep * c.rank) : 0 }
   })
+  const fits = parts.map((p) => K.fit.floor + p.features + p.song + p.artist + p.radio)
   const raw = candidates.map((c, i) => {
     const t = c.track
     const rating = taste.rating(t)
@@ -248,7 +252,7 @@ export function scoreAll(candidates: Candidate[], session: Map<string, number>, 
   })
   const z = standardise(raw)
   const za = standardise(fits)
-  return candidates.map((c, i) => ({ c, f: feats[i], artist: artists[i], z: z[i], za: za[i] }))
+  return candidates.map((c, i) => ({ c, f: feats[i], artist: artists[i], z: z[i], za: za[i], parts: parts[i] }))
 }
 
 /** How many of `max` slots go to explore picks: the dose of the variety, never none from 5 slots up. */
@@ -297,6 +301,8 @@ export interface RankInput {
   perArtist?: (artist: string) => number
   /** Local hour 0-23 for the time-of-day signal; none = off (callers give it only past `K.timeOfDay.minPlays` plays). */
   hour?: number
+  /** Filled with the reason of each pick, by song id (pickWhy.ts); none asked, none kept. */
+  why?: Map<number, PickWhy>
 }
 
 /**
@@ -305,7 +311,7 @@ export interface RankInput {
  * `perArtist` songs per artist and `perAlbum` per album in any `window` picks, and never the same artist twice in a row while
  * another is left (the caps give way last-first when nothing else is left).
  */
-export function rankPicks({ candidates, queue, index, taste, variety, max, rand, library, now = Date.now() / 1000, hour, perArtist }: RankInput): LibraryTrack[] {
+export function rankPicks({ candidates, queue, index, taste, variety, max, rand, library, now = Date.now() / 1000, hour, perArtist, why }: RankInput): LibraryTrack[] {
   const inQueue = new Set(queue.map((t) => t.id))
   const seen = new Set<number>()
   const eligible = candidates.filter((c) => !inQueue.has(c.track.id) && !seen.has(c.track.id) && !!seen.add(c.track.id) && !lowRated(taste.rating(c.track)) && !taste.never(c.track))
@@ -341,6 +347,7 @@ export function rankPicks({ candidates, queue, index, taste, variety, max, rand,
     }
     let chosen: Scored
     const mid = explore.has(out.length) ? open.filter((x) => isMid(x, taste)) : []
+    const fromExplore = mid.length > 0
     if (mid.length) {
       chosen = mid[draw(mid.map((x) => Math.max(0.1, 1 + x.za)), rand)]
     } else {
@@ -349,6 +356,7 @@ export function rankPicks({ candidates, queue, index, taste, variety, max, rand,
       chosen = open.reduce((best, x) => (adj(x) > adj(best) ? x : best))
     }
     out.push(chosen.c.track)
+    why?.set(chosen.c.track.id, whyOf(chosen.parts, chosen.c.votes, fromExplore))
     pool = pool.filter((x) => x !== chosen)
   }
   return out

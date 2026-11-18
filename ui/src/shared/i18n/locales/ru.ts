@@ -70,6 +70,12 @@ const ru: Record<string, string> = {
   'Text on panel': 'Текст на панели',
   'Icon on accent': 'Значок на акценте',
   // Sidebar
+  'In {n} radios of what you played': 'В {n} радио по тому, что вы слушали',
+  'In a radio of what you played': 'В радио по тому, что вы слушали',
+  'You often play it next to songs like these': 'Вы часто слушаете это рядом с такими песнями',
+  'By an artist you play next to these songs': 'Исполнитель, которого вы слушаете рядом с этими песнями',
+  'Sounds like what is playing': 'Звучит как то, что играет',
+  'Something new for you': 'Что-то новое для вас',
   'Mixes': 'Миксы',
   'Add music': 'Добавить музыку',
   'Songs': 'Песни',

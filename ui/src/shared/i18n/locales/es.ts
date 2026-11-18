@@ -70,6 +70,12 @@ const es: Record<string, string> = {
   'Text on panel': 'Texto sobre panel',
   'Icon on accent': 'Icono sobre acento',
   // Sidebar
+  'In {n} radios of what you played': 'En {n} radios de lo que has escuchado',
+  'In a radio of what you played': 'En una radio de lo que has escuchado',
+  'You often play it next to songs like these': 'Sueles escucharla junto a canciones así',
+  'By an artist you play next to these songs': 'De un artista que escuchas junto a estas canciones',
+  'Sounds like what is playing': 'Suena como lo que está sonando',
+  'Something new for you': 'Algo nuevo para ti',
   'Mixes': 'Mixes',
   'Add music': 'Añadir música',
   'Songs': 'Canciones',

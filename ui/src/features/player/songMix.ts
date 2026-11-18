@@ -1,4 +1,5 @@
 import type { LibraryTrack } from '../../shared/api'
+import type { PickWhy } from './pickWhy'
 import { artistOf, lowRated, rankPicks, type Candidate, type Taste, type Variety } from './score'
 
 /**
@@ -44,9 +45,11 @@ export interface MixInput {
   rand: () => number
   library?: LibraryTrack[]
   hour?: number
+  /** Filled with each pick's reason, by song id (pickWhy.ts). */
+  why?: Map<number, PickWhy>
 }
 
-export function mixFromSong({ seed, candidates, taste, variety, rand, library, hour }: MixInput): LibraryTrack[] {
+export function mixFromSong({ seed, candidates, taste, variety, rand, library, hour, why }: MixInput): LibraryTrack[] {
   const artist = artistOf(seed)
   const decade = seed.year ? Math.floor(seed.year / 10) : null
   const genre = seed.genre?.toLowerCase()
@@ -56,7 +59,7 @@ export function mixFromSong({ seed, candidates, taste, variety, rand, library, h
   const styled = open.filter(near)
   const pool = styled.length >= 2 * MIX_LEN ? styled : open
   // The seed twice in the queue: its features count double in the session profile.
-  const ranked = rankPicks({ candidates: pool, queue: [seed, seed], index: 1, taste, variety, max: Math.min(POOL, pool.length), rand, library, hour, perArtist: (a) => (a === artist ? 4 : 3) })
+  const ranked = rankPicks({ candidates: pool, queue: [seed, seed], index: 1, taste, variety, max: Math.min(POOL, pool.length), rand, library, hour, perArtist: (a) => (a === artist ? 4 : 3), why })
   const fav = (t: LibraryTrack) => taste.rating(t) >= 8 || !!taste.liked?.(t)
   const out = [seed]
   const left = [...ranked]

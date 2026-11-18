@@ -70,6 +70,12 @@ const ko: Record<string, string> = {
   'Text on panel': '패널 위 텍스트',
   'Icon on accent': '강조색 위 아이콘',
   // Sidebar
+  'In {n} radios of what you played': '들은 곡의 라디오 {n}곳에 있어요',
+  'In a radio of what you played': '들은 곡의 라디오에 있어요',
+  'You often play it next to songs like these': '이런 곡 다음에 자주 들어요',
+  'By an artist you play next to these songs': '이 곡들과 함께 자주 듣는 아티스트',
+  'Sounds like what is playing': '재생 중인 곡과 비슷해요',
+  'Something new for you': '새로운 곡',
   'Mixes': '믹스',
   'Add music': '음악 추가',
   'Songs': '노래',

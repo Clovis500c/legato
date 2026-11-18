@@ -199,7 +199,7 @@ rules still hold for every lookup. No script ever runs real requests in bulk; te
    - the caps still hold (at most 2 off-style favourites in 15; the artist spacing);
    - the signed-out fixtures give the same picks;
    - a refused radio (fixture error) gives library picks, with one request only (a mockito test).
-2. *"Why this song"*, from the reason that scored the pick most, as `words.ts` and `autoDj` do already ("In 3 radios of
+2. *"Why this song"* Done 2026-11-18 (lot 64): `rankPicks` fills a `why` map (`pickWhy.ts`: the largest weighted part of the fit, "new" for an explore slot), Up next shows it after the artist (`pickWhyStore.ts`, `UpNext.tsx`); `feel.test.ts` checks every pick carries one., from the reason that scored the pick most, as `words.ts` and `autoDj` do already ("In 3 radios of
    what you played", "Played after <artist>"). Measure: each `feel` pick carries one reason.
 3. *Session signals*: replays and skipped transitions (`taste_signals`, `listens.ts`). Measure: in `feel` cases, a
    replayed song rises, and a pair skipped twice is no longer a neighbour.
