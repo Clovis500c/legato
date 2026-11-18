@@ -6,10 +6,11 @@ versions are in git (`git log -p -- docs/notes/handoff.md`). Updated 2026-11-18 
 
 ## Where things stand
 - **master** = `fb5676fc` (lot 51, the Rich Presence's own artist cache, is in it). Stable **1.2.10** (tag `v1.2.10`), unchanged.
-- **platforms** = master + 4 local commits of 2026-11-18, the owner's four asks (`git log --oneline origin/master..HEAD`):
-  the algorithm rebuilt `4a921e9f`, imported playlists in Add to playlist `b4ce2fac`, « From » kept `85ab43b8`, the
-  phone's slim mini player `edb7648a`. Only the owner's word pushes.
-- **Next Beta**: the push of those four releases it; `node scripts/release.mjs --dry-run` gives its number.
+- **platforms** = master + 8 local commits of 2026-11-18, the owner's four asks and two handoff updates
+  (`git log --oneline origin/master..HEAD`): the algorithm rebuilt `4a921e9f`, imported playlists in Add to playlist
+  `b4ce2fac` then into the playlist itself `49d18fd5`, « From » kept `85ab43b8`, no mini player card on the phone
+  `edb7648a` + `dae41ca2`. Only the owner's word pushes (2026-11-18: not yet).
+- **Next Beta**: the push of those commits releases it; `node scripts/release.mjs --dry-run` gives its number.
 - **Version rule** (`CONTRIBUTING.md` › Version): `MAJOR.MINOR` is in `src-tauri/tauri.conf.json` (`1.2`); the patch is
   the number of commits since the base in `BASES` (`scripts/release.mjs`), with `n % 1000`. A bump of `MAJOR.MINOR` is
   the owner's decision.
@@ -48,9 +49,10 @@ Only what is new or still untried. Most of the rest is behind a setting that is 
     twice and all of theirs go to the end. « Start a mix from this song » and the end of Up next: your favourites spice
     it, they no longer fill it.
   - Add to playlist on the phone (or on a PC signed out of YouTube): the imported playlists are offered; the song goes
-    into your own copy « <name> (copy) », made at the first add; the import itself is left alone.
+    into the playlist itself, stays when its service updates it and reaches the other PC (Sync Mode); a click on its
+    checked row, or Remove from ›, takes it out. The service's own songs stay (checked, greyed).
   - Close and reopen the app: Now Playing still says « From » and the playlist (desktop and phone).
-  - The phone with the mini player in the sidebar: one slim row at the foot of Your library, the video in Now Playing.
+  - The phone: no mini player card at the foot of Your library any more; a YouTube video shows in Now Playing.
 - **Lot 49, comma names**: « Tyler, The Creator » should be one artist (one « TT » tile). So should « Earth, Wind & Fire »,
   « Crosby, Stills, Nash & Young », « Crosby, Stills & Nash » and « Emerson, Lake & Palmer ». Tell us any other comma name
   you see. A « Never in mixes » you set on those artists must be set again.
