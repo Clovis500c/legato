@@ -24,6 +24,8 @@ export function BlindTest() {
   const pool = useBlind((s) => s.pool)
   const [artists, setArtists] = useState(false)
   const make = (by: boolean) => pickRounds(pool ?? useStore.getState().tracks, undefined, undefined, by ? 'artist' : 'song')
+  // Fewer than 8 artists (a small playlist): no artist game, so no switch to one (it would end on « not enough songs »).
+  const canArtists = useMemo(() => pickRounds(pool ?? useStore.getState().tracks, 1, undefined, 'artist').length > 0, [pool])
   const [game, setGame] = useState(() => make(false))
   const [round, setRound] = useState(0)
   const [answer, setAnswer] = useState<number | null>(null)
@@ -97,14 +99,16 @@ export function BlindTest() {
           <div className="flex items-center gap-3">
             <p className="text-sm text-ink-3">{trn(game.length, 'Round {r} of {n} song', 'Round {r} of {n} songs', { r: round + 1 })}</p>
             {/* Switching starts a new game: the answers change kind. */}
-            <LedChip
-              on={artists}
-              label={tr('Guess the artist')}
-              onClick={() => {
-                setArtists(!artists)
-                again(!artists)
-              }}
-            />
+            {canArtists && (
+              <LedChip
+                on={artists}
+                label={tr('Guess the artist')}
+                onClick={() => {
+                  setArtists(!artists)
+                  again(!artists)
+                }}
+              />
+            )}
           </div>
           <h2 className="text-2xl font-black">{answer === null ? (artists ? tr('Which artist is playing?') : tr('Which song is playing?')) : answer === right ? tr('Correct!') : tr('It was “{title}” by {artist}', { title: current.song.title, artist: current.song.artist })}</h2>
           {answer === null && <span aria-hidden key={round} className="h-0.5 w-full max-w-xl origin-left rounded-full bg-accent" style={{ animation: `blind-clock ${ANSWER_MS}ms linear forwards` }} />}
