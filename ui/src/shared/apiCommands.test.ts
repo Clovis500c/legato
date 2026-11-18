@@ -12,6 +12,9 @@ const rust = (dir: string): string[] => readdirSync(dir, { withFileTypes: true }
 const files = rust(join(ROOT, 'src-tauri/src'))
 const src = files.map((f) => readFileSync(f, 'utf8').replace(/\r\n/g, '\n')).join('\n')
 
+/** Rust's `//` comments dropped (caveman ones carry colons and commas); a string's `://`, `///` or `"//` is left alone. */
+const uncomment = (text: string) => text.replace(/(?<![:/"])\/\/[^\n]*/g, '')
+
 /** The top-level pieces of `text` split at `sep`, brackets of every kind respected. */
 function parts(text: string, strings = false): string[] {
   const out: string[] = []
@@ -36,17 +39,18 @@ function parts(text: string, strings = false): string[] {
 }
 
 /** Command → its parameters `{ name, optional }` as Tauri sees them from JS (shell-injected ones left out). */
-function commands() {
+function commands(text = src) {
+  text = uncomment(text)
   const map = new Map<string, { name: string; optional: boolean }[]>()
-  for (const m of src.matchAll(/#\[tauri::command[^\]]*\]\s*(?:#\[[^\]]*\]\s*)*(?:pub(?:\([a-z]+\))?\s+)?(?:async\s+)?fn\s+(\w+)\s*(?:<[^>]*>)?\(/g)) {
+  for (const m of text.matchAll(/#\[tauri::command[^\]]*\]\s*(?:#\[[^\]]*\]\s*)*(?:pub(?:\([a-z]+\))?\s+)?(?:async\s+)?fn\s+(\w+)\s*(?:<[^>]*>)?\(/g)) {
     let i = m.index! + m[0].length
     let depth = 1
     const start = i
-    for (; i < src.length && depth; i++) {
-      if (src[i] === '(') depth++
-      else if (src[i] === ')') depth--
+    for (; i < text.length && depth; i++) {
+      if (text[i] === '(') depth++
+      else if (text[i] === ')') depth--
     }
-    const list = parts(src.slice(start, i - 1)).flatMap((p) => {
+    const list = parts(text.slice(start, i - 1)).flatMap((p) => {
       const at = p.indexOf(':')
       if (at < 0) return []
       const type = p.slice(at + 1).trim()
@@ -60,8 +64,8 @@ function commands() {
 }
 
 /** The names `generate_handler!` registers: the last segment of each path. */
-function registered(): Set<string> {
-  const block = /generate_handler!\[([\s\S]*?)\]\)/.exec(src)![1]
+function registered(text = src): Set<string> {
+  const block = /generate_handler!\[([\s\S]*?)\]\)/.exec(uncomment(text))![1]
   return new Set(parts(block).map((p) => p.replace(/#\[[^\]]*\]/g, '').trim().split('::').at(-1)!))
 }
 
@@ -108,6 +112,23 @@ describe('the typed invoke wrappers match the Rust commands', () => {
     expect(cmds.get('server_scrobble')!.map((p) => p.name)).toContain('startedAtMs')
     expect(found.find((c) => c.cmd === 'connect')!.keys).toEqual(['source', 'credentials'])
     expect(found.find((c) => c.cmd === 'sources_status')!.keys).toBeNull()
+  })
+
+  it('a comment in a parameter list or in the handler list is not read as code', () => {
+    const rs = [
+      '#[tauri::command]',
+      'async fn demo(',
+      '    // Feb 2026: own playlists only, never theirs.',
+      '    id: i64, // the row: from `playlists`',
+      "    state: State<'_, App>,",
+      ') {}',
+      'fn run() { b.invoke_handler(tauri::generate_handler![',
+      '    // Phone only: a, b',
+      '    demo,',
+      ']); }',
+    ].join('\n')
+    expect(commands(rs).get('demo')).toEqual([{ name: 'id', optional: false }])
+    expect([...registered(rs)]).toEqual(['demo'])
   })
 
   it('every command api.ts calls is registered and exists', () => {
