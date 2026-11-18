@@ -501,6 +501,7 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       Left:
       a purpose-built home screen, the player bar enlarged beyond the zoom, on-screen keyboard for search.
       2026-11-13, third slice: an on-screen keyboard (Enter in a text field in the mode opens a grid of keys at the bottom, walked with the arrows or a pad; letters, digits, a few marks, space, delete, Done, Enter; lazy `livingRoom/OnScreenKeyboard.tsx`). 2026-11-13, fourth slice: a TV home (Settings › General › TV home, off by default; with the mode on, big tiles to Search, Songs, Albums, Artists, Mixes, Radio, Podcasts and Audiobooks when on, Settings; opens when the mode turns on, and in the app menu; lazy `livingRoom/TvHome.tsx`). Decided alone (2026-11-13): plain tiles, no cover rows, easy to replace by the owner's design. Never seen on a TV.
+      2026-11-18 (lot 60): found that the TV home (fourth slice, `ac4ab854`) already is the dedicated home screen; added its Up next row (the next 6 queue songs as big tiles, a press plays that one; pure `tvQueue.ts`, tested). Left: the player bar enlarged beyond the zoom. Never seen on a TV; the arrows reach the new tiles through the existing `nextBox` map (not run for real). Decided alone (2026-11-18): no second focus-map function (`spatial.ts` `nextBox` already handles rows and edges, tested), the bar left alone (it needs a look on a real TV).
 - [ ] `L` Media panel off Windows.
 
 ## Visualizer v2 (user's ask 2026-10-30: more realistic, more detailed)
