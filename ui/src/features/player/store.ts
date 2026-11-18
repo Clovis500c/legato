@@ -26,6 +26,7 @@ import { tr } from '../../shared/i18n/i18n'
 import { offline } from '../../shared/online'
 import { note, report } from '../../shared/diag'
 import { phoneApp } from '../../shared/platform'
+import type { PickWhy } from './pickWhy'
 import { usePickWhy } from './pickWhyStore'
 
 /** via youtube = embed plays it, else Rust engine (local file, or Apple preview held in memory). */
@@ -309,6 +310,14 @@ function songOrder(p: PlayerState, list: LibraryTrack[], current: number, shuffl
 // The songs the app chose itself (the run-out's, a mix from a song's, the Auto-DJ's), by id: an early skip of one steers the others
 // of its artist even with Shuffle off. Songs you queued and a playlist's own never are. Emptied when a new queue is played.
 const picks = new Set<number>()
+/** Plays the app's own picks (a mix, New for you), each with why it came up; `from` = the first that is a pick (a mix's seed is not). The
+ * reasons go in after `playTracks`, which forgets the earlier ones. */
+export function playPicks(list: LibraryTrack[], why: ReadonlyMap<number, PickWhy>, from = 0) {
+  usePlayer.getState().playTracks(list, 0)
+  usePickWhy.setState(Object.fromEntries(why), true)
+  markPicks(list.slice(from).map((t) => t.id))
+}
+
 /** Songs the app picked (not the user): kept for the skip steering below. `[]` forgets them. */
 export function markPicks(ids: readonly number[]) {
   if (!ids.length) {

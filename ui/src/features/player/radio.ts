@@ -6,7 +6,7 @@ import { songsThatFit } from '../library/fit'
 import { radioName, radioQueue, radioSeeds, shuffled } from './radioMix'
 import { K } from './score'
 import type { Candidate } from './similarRank'
-import { markPicks, remoteTrack, usePlayer } from './store'
+import { playPicks, remoteTrack, usePlayer } from './store'
 import { crowdOf, fansOf, seedsOf } from './crowd'
 import { discoveryCandidates } from './discovery'
 import { primaryArtist } from '../library/filter'
@@ -113,10 +113,8 @@ export async function startMix(seed: LibraryTrack) {
   const why = new Map<number, PickWhy>()
   const list = mixFromSong({ seed, candidates, taste, variety, rand: Math.random, library, hour, why })
   if (list.length < 2) return useStore.getState().notify(tr('No similar songs found'))
-  usePlayer.getState().playTracks(list, 0)
-  usePickWhy.setState(Object.fromEntries(why), true)
   // Its songs after the seed are the app's picks: an early skip steers the rest of its artist (store.ts).
-  markPicks(list.slice(1).map((t) => t.id))
+  playPicks(list, why, 1)
   if (usePlayer.getState().list === list) usePlayer.setState({ from: tr('{title} mix', { title: seed.title }), fromKind: 'mix', fromId: undefined })
 }
 
@@ -136,8 +134,6 @@ export async function startDiscovery(home: YtmHome) {
   const { pickSimilar } = await import('./similarRank')
   const picks = pickSimilar(candidates, recent, recent.length - 1, tasteFor(stats, useTaste.getState().signals), settings.similarVariety, 20, Math.random, tracks, timeOfDay(stats), why)
   if (picks.length < 2) return notify(tr('No similar songs found'))
-  usePickWhy.setState(Object.fromEntries(why), true)
-  usePlayer.getState().playTracks(picks, 0)
-  markPicks(picks.map((t) => t.id))
+  playPicks(picks, why)
   if (usePlayer.getState().list === picks) usePlayer.setState({ from: tr('New for you'), fromKind: 'mix', fromId: undefined })
 }

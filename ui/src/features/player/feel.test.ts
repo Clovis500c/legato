@@ -8,7 +8,7 @@ import { endListen, progress, startListen } from './listens'
 import type { Candidate, Taste } from './score'
 import { pickSimilar } from './similarRank'
 import { mixFromSong } from './songMix'
-import { markPicks, usePlayer } from './store'
+import { markPicks, playPicks, usePlayer } from './store'
 import { tasteFor, useTaste } from './taste'
 
 vi.mock('@tauri-apps/api/core', () => ({ convertFileSrc: (p: string) => p, invoke: vi.fn(async () => undefined) }))
@@ -407,5 +407,13 @@ describe('New for you', () => {
       const out = pickSimilar(candidates, own, 2, mine, 'balanced', 15, seeded(s), library)
       expect(out.slice(0, 10).filter((t) => t.genre === 'Jazz'), `seed ${s}`).toEqual([])
     }
+  })
+  it('its picks keep why they came up once played (a mix from a song too)', async () => {
+    const { usePickWhy } = await import('./pickWhyStore')
+    const picks = range(4).map((i) => song(-(9000 + i), `Newer ${i}`))
+    usePlayer.setState({ list: [], order: [], index: 0, now: undefined })
+    playPicks(picks, new Map(picks.map((t) => [t.id, { kind: 'style' } as PickWhy])))
+    expect(usePlayer.getState().list).toBe(picks)
+    expect(Object.keys(usePickWhy.getState())).toHaveLength(4)
   })
 })
