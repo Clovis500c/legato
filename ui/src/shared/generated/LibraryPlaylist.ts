@@ -13,4 +13,8 @@ newestFirst: boolean,
 /**
  * That order was set by hand (else learned from syncs).
  */
-orderManual: boolean, };
+orderManual: boolean, 
+/**
+ * Imported: the songs added to it here (`Library::add_here`), kept through its imports; only these can leave it.
+ */
+added?: Array<number>, };

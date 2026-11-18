@@ -197,9 +197,38 @@ fn imported_mirror_takes_tracks_custom_edit_still_refuses() -> Result<()> {
     let other = lib.upsert_track(&spotify())?;
     lib.append_to_imported(pid, &[other])?;
     assert_eq!(lib.playlist_tracks(pid)?.len(), 2);
-    assert!(lib.edit_playlist(PlaylistEdit::Add { id: pid, track_ids: vec![other] }).is_err());
+    assert!(lib.edit_playlist(PlaylistEdit::Move { id: pid, from: 0, to: 1 }).is_err());
     // YouTube playlist: newest on top.
     assert_eq!(lib.playlist_orders()?[&pid][0], other);
+    Ok(())
+}
+
+#[test]
+fn a_song_added_here_to_an_imported_playlist_stays_through_its_imports_and_alone_can_leave() -> Result<()> {
+    let lib = Library::in_memory()?;
+    let pid = lib.save_playlist(Source::Spotify, "p1", "Road trip", &[song(1)])?;
+    let mine = lib.upsert_track(&spotify())?;
+    lib.edit_playlist(PlaylistEdit::Add { id: pid, track_ids: vec![mine, mine] })?;
+    assert_eq!(lib.playlist_orders()?[&pid].len(), 2, "once, at the bottom (Spotify grows there)");
+    // Spotify adds a song: the next import keeps the one added here, after the service's own.
+    lib.save_playlist(Source::Spotify, "p1", "Road trip", &[song(1), song(2)])?;
+    let order = lib.playlist_orders()?[&pid].clone();
+    assert_eq!((order.len(), order[2]), (3, mine));
+    assert_eq!(lib.playlists()?.into_iter().find(|p| p.id == pid).unwrap().added, Some(vec![mine]));
+    // The service's songs stay read-only; the one added here leaves for good.
+    assert!(lib.edit_playlist(PlaylistEdit::RemoveTrack { id: pid, track_id: order[0] }).is_err());
+    assert!(lib.edit_playlist(PlaylistEdit::Remove { id: pid, position: 0 }).is_err());
+    lib.edit_playlist(PlaylistEdit::Remove { id: pid, position: 2 })?;
+    lib.save_playlist(Source::Spotify, "p1", "Road trip", &[song(1), song(2)])?;
+    assert_eq!(lib.playlist_orders()?[&pid].len(), 2);
+    assert_eq!(lib.playlists()?.into_iter().find(|p| p.id == pid).unwrap().added, None);
+    // A newest-first list (YouTube) takes it on top, and keeps it there; never YouTube's own likes.
+    let yt = lib.save_playlist(Source::Youtube, "PL2", "Mix", &[song(3)])?;
+    lib.edit_playlist(PlaylistEdit::Add { id: yt, track_ids: vec![mine] })?;
+    lib.save_playlist(Source::Youtube, "PL2", "Mix", &[song(4), song(3)])?;
+    assert_eq!(lib.playlist_orders()?[&yt][0], mine);
+    let likes = lib.save_playlist(Source::Youtube, "LM", "Liked Music", &[song(5)])?;
+    assert!(lib.edit_playlist(PlaylistEdit::Add { id: likes, track_ids: vec![mine] }).is_err());
     Ok(())
 }
 
@@ -588,7 +617,7 @@ fn replaces_playlist_content() -> Result<()> {
     let id = lib.save_playlist(Source::Spotify, "p1", "New", &[spotify()])?;
     assert_eq!(
         lib.playlists()?,
-        vec![LibraryPlaylist { id, source: Source::Spotify, source_id: "p1".into(), name: "New".into(), track_count: 1, custom: false, newest_first: false, order_manual: false }]
+        vec![LibraryPlaylist { id, source: Source::Spotify, source_id: "p1".into(), name: "New".into(), track_count: 1, custom: false, newest_first: false, order_manual: false, added: None }]
     );
     Ok(())
 }

@@ -8,8 +8,8 @@ never reaches the network itself).
 
 Everything the user made, from one PC to the others:
 
-- playlists made in the app and imported ones (name, songs, order), songs added by hand, songs removed from the
-  library;
+- playlists made in the app and imported ones (name, songs, order, the songs added here to an imported one, kept
+  through its imports on every PC), songs added by hand, songs removed from the library;
 - listening history, mix preferences (Less / Never) and star ratings (the latest one wins, a rating taken off too);
 - Live Editor versions and presets (songs found by their ids on the other side);
 - settings, key by key, except this PC's own: interface size, mini player spot and width, update channel, cover cache size, phone remote, streaming overlay and its visualizer, defaults version, sidebar width, mini player place, close to tray, automatic updates, keyboard shortcuts, the welcome, reopen, microphone choices, Discord, the alarm (both PCs would ring), picture-in-picture's place and opening it on minimize, keep the screen on, the Discord sign-in (its keychain is this PC's), scanning QR codes with the webcam (this PC's camera), asking this PC's media players first (its media session);

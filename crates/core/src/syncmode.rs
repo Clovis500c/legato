@@ -90,6 +90,9 @@ pub struct PlaylistSnap {
     /// Indexes into `Snapshot::tracks`.
     pub tracks: Vec<u32>,
     pub updated: i64,
+    /// Imported: the songs added to it on a PC (`Library::add_here`), oldest first; indexes into `Snapshot::tracks`.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub added: Vec<u32>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -334,11 +337,12 @@ impl Library {
         {
             let mut stmt = self.db.prepare("SELECT id, source || ':' || source_id, name, custom, newest_first, order_manual, updated FROM playlists ORDER BY id")?;
             let rows: Vec<(i64, PlaylistSnap)> = stmt
-                .query_map([], |r| Ok((r.get(0)?, PlaylistSnap { key: r.get(1)?, name: r.get(2)?, custom: r.get(3)?, newest_first: r.get(4)?, order_manual: r.get(5)?, tracks: Vec::new(), updated: r.get(6)? })))?
+                .query_map([], |r| Ok((r.get(0)?, PlaylistSnap { key: r.get(1)?, name: r.get(2)?, custom: r.get(3)?, newest_first: r.get(4)?, order_manual: r.get(5)?, tracks: Vec::new(), updated: r.get(6)?, added: Vec::new() })))?
                 .collect::<rusqlite::Result<_>>()?;
             for (id, mut p) in rows {
                 let ids: Vec<i64> = self.db.prepare_cached("SELECT track_id FROM playlist_tracks WHERE playlist_id = ?1 ORDER BY position")?.query_map([id], |r| r.get(0))?.collect::<rusqlite::Result<_>>()?;
                 p.tracks = ids.into_iter().map(|t| refs.of(self, t)).collect::<Result<_>>()?;
+                p.added = self.added_here(id)?.into_iter().map(|t| refs.of(self, t)).collect::<Result<_>>()?;
                 playlists.push(p);
             }
         }
@@ -532,6 +536,13 @@ impl Library {
             let mut ins = self.db.prepare_cached("INSERT INTO playlist_tracks (playlist_id, position, track_id) VALUES (?1, ?2, ?3)")?;
             for (pos, t) in ids.iter().enumerate() {
                 ins.execute(params![id, pos as i64, t])?;
+            }
+            // Songs added to an imported one on that PC: kept through this PC's next imports too, in the same order.
+            self.db.execute("DELETE FROM playlist_added WHERE playlist_id = ?1", [id])?;
+            for (k, i) in p.added.iter().enumerate() {
+                if let Some(t) = row(*i, &mut m)? {
+                    self.db.execute("INSERT OR IGNORE INTO playlist_added (playlist_id, track_id, at) VALUES (?1, ?2, ?3)", params![id, t, p.updated + k as i64])?;
+                }
             }
             self.db.execute("UPDATE playlists SET updated = ?2 WHERE id = ?1", params![id, p.updated])?;
             m.playlists += 1;
@@ -878,6 +889,25 @@ mod tests {
         assert!(!b.merge(&snap(&a))?.any());
         assert_eq!((b.versions.library(), b.versions.history()), before);
         assert_eq!(b.plays()?.len(), 1);
+        Ok(())
+    }
+
+    #[test]
+    fn a_song_added_to_an_imported_playlist_travels_and_outlives_the_other_pcs_import() -> Result<()> {
+        let a = Library::in_memory()?;
+        let b = Library::in_memory()?;
+        a.save_playlist(Source::Spotify, "p1", "Road trip", &[song("Y", "y1")])?;
+        b.save_playlist(Source::Spotify, "p1", "Road trip", &[song("Y", "y1")])?;
+        let pa = a.playlists()?[0].id;
+        let x = a.upsert_track(&song("X", "x1"))?;
+        std::thread::sleep(std::time::Duration::from_millis(5));
+        a.edit_playlist(PlaylistEdit::Add { id: pa, track_ids: vec![x] })?;
+        b.merge(&snap(&a))?;
+        // B's own next import of the playlist keeps it.
+        let pb = b.save_playlist(Source::Spotify, "p1", "Road trip", &[song("Y", "y1")])?;
+        let titles: Vec<String> = b.playlist_tracks(pb)?.into_iter().map(|t| t.track.title).collect();
+        assert_eq!(titles, ["Y", "X"]);
+        assert_eq!(b.playlists()?[0].added.as_ref().map(Vec::len), Some(1));
         Ok(())
     }
 

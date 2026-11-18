@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS settings (
 ";
 
 /// Schema version this code writes (user_version after migrations).
-pub const SCHEMA_VERSION: i64 = 22;
+pub const SCHEMA_VERSION: i64 = 23;
 
 /// The library was made by a newer version of the app.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -222,6 +222,10 @@ pub struct LibraryPlaylist {
     pub newest_first: bool,
     /// That order was set by hand (else learned from syncs).
     pub order_manual: bool,
+    /// Imported: the songs added to it here (`Library::add_here`), kept through its imports; only these can leave it.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub added: Option<Vec<i64>>,
 }
 
 /// Edits on custom playlists. Duplicate also works on imported ones.
@@ -530,6 +534,12 @@ impl Library {
         if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 22 {
             // v22: local files' tempo and key (their tags), filled by the next scan.
             lib.db.execute_batch("BEGIN; ALTER TABLE tracks ADD COLUMN bpm INTEGER; ALTER TABLE tracks ADD COLUMN key TEXT; PRAGMA user_version = 22; COMMIT;")?;
+        }
+        if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 23 {
+            // v23: songs added here to an imported playlist, kept through its next imports (the owner, 2026-11-18).
+            lib.db.execute_batch(
+                "BEGIN; CREATE TABLE IF NOT EXISTS playlist_added (playlist_id INTEGER NOT NULL REFERENCES playlists(id) ON DELETE CASCADE, track_id INTEGER NOT NULL REFERENCES tracks(id) ON DELETE CASCADE, at INTEGER NOT NULL, PRIMARY KEY (playlist_id, track_id)); CREATE INDEX IF NOT EXISTS playlist_added_track ON playlist_added (track_id); PRAGMA user_version = 23; COMMIT;",
+            )?;
         }
         lib.db.execute_batch(CHANGE_LOG)?;
         // Statements on logged tables compile their triggers too: kept, not rebuilt per call.

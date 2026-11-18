@@ -124,6 +124,7 @@ impl Library {
         )?;
         self.db.execute("UPDATE track_ids SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
         self.db.execute("UPDATE playlist_tracks SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
+        self.db.execute("UPDATE OR IGNORE playlist_added SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
         self.db.execute("UPDATE plays SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
         self.db.execute("UPDATE OR IGNORE track_prefs SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
         self.db.execute("UPDATE OR IGNORE track_ratings SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
@@ -201,6 +202,13 @@ impl Library {
             let mut ids = oldest_first.into_iter().map(|t| self.upsert_track(t)).collect::<Result<Vec<_>>>()?;
             if newest {
                 ids.reverse();
+            }
+            // Songs added here (`add_here`) stay, at the newest end as they were put in.
+            let mine: Vec<i64> = self.added_here(id)?.into_iter().filter(|t| !ids.contains(t)).collect();
+            if newest {
+                ids.splice(0..0, mine.into_iter().rev());
+            } else {
+                ids.extend(mine);
             }
             if before.as_deref() != Some(name) || ids != old_order || flipped {
                 self.touch(id)?;

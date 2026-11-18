@@ -24,7 +24,7 @@ import { clearLoop, markLoop, useLoop } from './player/abLoop'
 import { toggleMetronome, useMetronome } from './player/metronome'
 import { addToPlaylist, markMusic, markNotExplicit, removeFromPlaylist, removePositions, removeTrackFromPlaylist, songs } from './library/edits'
 import { ownLiked, youtubeLiked } from './library/likedMusic'
-import { copyNamed, takesCopy } from './library/addTo'
+import { addsHere } from './library/addTo'
 import { editInfo, findDuplicates, openCast, showCredits } from './library/dialogs'
 import { repeatedRows } from './library/duplicates'
 import { PlaylistCover as PlaylistIcon } from './library/PlaylistCover'
@@ -168,27 +168,30 @@ async function addToYoutubePlaylist(p: LibraryPlaylist, ids: number[]) {
   }
 }
 
-/** Songs dropped on a playlist (sidebar): yours, or a YouTube Music one of yours when signed in. False = can't take them. */
+/** An imported playlist the app writes to at its source: one of your YouTube Music ones when signed in, a Subsonic server's. */
+const writable = (p: LibraryPlaylist) => !p.custom && ((p.source === 'youtube' && app().status.youtube.connected) || takesEdits(p))
+
+/** Songs dropped on a playlist (sidebar): yours, one written at its source, another imported one (kept here). False = can't take them. */
 export function canDropOn(p: LibraryPlaylist): boolean {
-  return p.custom || (p.source === 'youtube' && app().status.youtube.connected) || takesEdits(p)
+  return p.custom || writable(p) || addsHere(p, writable)
 }
 export function dropOn(p: LibraryPlaylist, ids: number[]) {
-  if (p.custom) return void addToPlaylist(p.id, ids)
-  if (canDropOn(p)) void addToYoutubePlaylist(p, ids)
+  if (writable(p)) return void addToYoutubePlaylist(p, ids)
+  if (canDropOn(p)) void addToPlaylist(p.id, ids)
 }
 
 /**
  * Add to playlist choices: a new one, your playlists, your YouTube Music ones (added there too), then the other imported
- * ones (into your own copy), each with its sidebar icon. Hidden ones left out. A submenu of the song menus; the row and
- * Now Playing buttons open it alone.
+ * ones (in here, kept through their imports), each with its sidebar icon. Hidden ones left out. A submenu of the song
+ * menus; the row and Now Playing buttons open it alone.
  */
 export function addToItems(ids: () => number[] | Promise<number[]>, only?: LibraryTrack): MenuEntry[] {
   const add = async (id: number) => addToPlaylist(id, await ids())
   const addYoutube = async (p: LibraryPlaylist) => addToYoutubePlaylist(p, await ids())
   const off = hidden()
   const shown = app().playlists.filter((p) => !off.has(playlistKey(p)))
-  const youtube = shown.filter((p) => (p.source === 'youtube' && !p.custom && app().status.youtube.connected) || takesEdits(p))
-  const copied = shown.filter((p) => takesCopy(p, (x) => youtube.includes(x)))
+  const youtube = shown.filter(writable)
+  const here = shown.filter((p) => addsHere(p, writable))
   return [
       {
         label: tr('New playlist…'),
@@ -208,20 +211,14 @@ export function addToItems(ids: () => number[] | Promise<number[]>, only?: Libra
       }),
       youtube.length > 0 && '-',
       ...youtube.map((p) => ({ label: p.name, icon: <PlaylistIcon p={p} size={16} />, onSelect: () => void addYoutube(p) })),
-      copied.length > 0 && '-',
-      ...copied.map((p) => ({ label: p.name, icon: <PlaylistIcon p={p} size={16} />, onSelect: async () => void addToCopy(p, await ids()) })),
+      here.length > 0 && '-',
+      // Imported: only a song added here comes out; one from its service stays checked, the service's to take out.
+      ...here.map((p) => {
+        const held = !!only && holds(app().orders, p.id, only.id)
+        const mine = held && !!p.added?.includes(only!.id)
+        return { label: p.name, icon: <PlaylistIcon p={p} size={16} />, checked: held, disabled: held && !mine, onSelect: () => void (mine ? removeTrackFromPlaylist(p.id, only!.id) : add(p.id)) }
+      }),
   ]
-}
-
-/**
- * Into an imported playlist the app cannot write to (`takesCopy`): your own copy of it takes the songs, made on the first add as
- * Duplicate makes it ("<name> (copy)"); the notice names the copy. The import itself stays as its service has it.
- * shortcut: the copy is found again by its name, so one renamed (or the language changed) gets a new copy; a link would need a column.
- */
-async function addToCopy(p: LibraryPlaylist, trackIds: number[]) {
-  const name = tr('{name} (copy)', { name: p.name })
-  const id = copyNamed(name, app().playlists)?.id ?? (await app().editPlaylist({ type: 'duplicate', id: p.id, name }))
-  if (id !== null) await addToPlaylist(id, trackIds)
 }
 
 /** "Add to playlist ›". */
@@ -353,7 +350,7 @@ function remoteMenu(t: LibraryTrack, list: LibraryTrack[], index: number): MenuE
 
 /**
  * "Remove from ›": every playlist holding the song (yours here, YouTube Music ones on the account, Liked Music = the
- * like goes; Spotify imports are read-only), then the whole library.
+ * like goes, an imported one it was added to here; Spotify's own songs are read-only), then the whole library.
  */
 function removeFrom(t: LibraryTrack): MenuEntry {
   const { playlists, orders, status, raw } = app()
@@ -400,6 +397,7 @@ function removeFrom(t: LibraryTrack): MenuEntry {
     items: [
       ...holding.map((p): MenuEntry => {
         const youtube = !p.custom && p.source === 'youtube'
+        if (!p.custom && p.added?.includes(t.id)) return { label: p.name, icon: <PlaylistIcon p={p} size={16} />, onSelect: () => void removeTrackFromPlaylist(p.id, t.id) }
         if (takesEdits(p)) return { label: p.name, icon: <PlaylistIcon p={p} size={16} />, onSelect: () => void fromServer(p) }
         return {
           label: p.custom || youtube ? p.name : tr('{name} (read-only)', { name: p.name }),

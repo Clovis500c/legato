@@ -2,6 +2,8 @@
 
 use super::*;
 
+const READ_ONLY: &str = "Imported playlist: edit it in its service, or duplicate it";
+
 impl Library {
     pub fn playlists(&self) -> Result<Vec<LibraryPlaylist>> {
         self.playlist_rows(None)
@@ -11,7 +13,8 @@ impl Library {
     pub(super) fn playlist_rows(&self, only: Option<&str>) -> Result<Vec<LibraryPlaylist>> {
         let filter = if only.is_some() { "WHERE p.id IN (SELECT value FROM json_each(?1))" } else { "" };
         let mut stmt = self.db.prepare_cached(&format!(
-            "SELECT p.id, p.source, p.source_id, p.name, COUNT(pt.track_id), p.custom, p.newest_first, p.order_manual
+            "SELECT p.id, p.source, p.source_id, p.name, COUNT(pt.track_id), p.custom, p.newest_first, p.order_manual,
+               (SELECT group_concat(track_id) FROM (SELECT track_id FROM playlist_added WHERE playlist_id = p.id ORDER BY at, track_id))
              FROM playlists p LEFT JOIN playlist_tracks pt ON pt.playlist_id = p.id {filter}
              GROUP BY p.id ORDER BY p.name COLLATE NOCASE, p.id"
         ))?;
@@ -28,6 +31,7 @@ impl Library {
                 name: r.get(3)?,
                 track_count: r.get(4)?,
                 custom: r.get(5)?,
+                added: r.get::<_, Option<String>>(8)?.map(|s| s.split(',').filter_map(|t| t.parse().ok()).collect()),
             })
         })?;
         Ok(rows.collect::<rusqlite::Result<_>>()?)
@@ -132,12 +136,17 @@ impl Library {
                     None
                 }
                 PlaylistEdit::Add { id, track_ids } => {
-                    self.ensure_custom(id)?;
-                    self.rewrite(id, |ids| ids.extend(track_ids))?;
+                    if self.is_custom(id)? {
+                        self.rewrite(id, |ids| ids.extend(track_ids))?;
+                    } else {
+                        self.add_here(id, &track_ids)?;
+                    }
                     None
                 }
                 PlaylistEdit::Remove { id, position } => {
-                    self.ensure_custom(id)?;
+                    if !self.is_custom(id)? {
+                        self.drop_added(id, self.playlist_track_ids(id)?.get(position).copied())?;
+                    }
                     self.rewrite(id, |ids| {
                         if position < ids.len() {
                             ids.remove(position);
@@ -146,7 +155,9 @@ impl Library {
                     None
                 }
                 PlaylistEdit::RemoveTrack { id, track_id } => {
-                    self.ensure_custom(id)?;
+                    if !self.is_custom(id)? {
+                        self.drop_added(id, Some(track_id))?;
+                    }
                     self.rewrite(id, |ids| ids.retain(|t| *t != track_id))?;
                     None
                 }
@@ -315,11 +326,54 @@ impl Library {
         Ok(())
     }
 
-    pub(super) fn ensure_custom(&self, id: i64) -> Result<()> {
+    fn is_custom(&self, id: i64) -> Result<bool> {
         let custom: Option<bool> = self.db.query_row("SELECT custom FROM playlists WHERE id = ?1", [id], |r| r.get(0)).optional()?;
-        anyhow::ensure!(custom.is_some(), "Playlist not found");
-        anyhow::ensure!(custom == Some(true), "Imported playlist: edit it in its service, or duplicate it");
+        custom.ok_or_else(|| anyhow::anyhow!("Playlist not found"))
+    }
+
+    pub(super) fn ensure_custom(&self, id: i64) -> Result<()> {
+        anyhow::ensure!(self.is_custom(id)?, READ_ONLY);
         Ok(())
+    }
+
+    /// Songs added here to an imported playlist (the owner, 2026-11-18): in it beside the service's own, kept through its
+    /// next imports (`save_playlist`), carried by Sync Mode. YouTube's likes are the heart's, never this.
+    fn add_here(&self, id: i64, track_ids: &[i64]) -> Result<()> {
+        let (source, source_id): (String, String) = self.db.query_row("SELECT source, source_id FROM playlists WHERE id = ?1", [id], |r| Ok((r.get(0)?, r.get(1)?)))?;
+        anyhow::ensure!(!liked_music(serde_json::from_value(source.into())?, &source_id), READ_ONLY);
+        let at = now_ms();
+        let mut kept = 0;
+        for t in track_ids {
+            kept += self.db.execute("INSERT OR IGNORE INTO playlist_added (playlist_id, track_id, at) VALUES (?1, ?2, ?3)", params![id, t, at])?;
+        }
+        // One already there from the service is kept too (it stays if the service drops it), not put in twice.
+        if kept > 0 {
+            self.touch(id)?;
+        }
+        let have: BTreeSet<i64> = self.playlist_track_ids(id)?.into_iter().collect();
+        let mut fresh: Vec<i64> = Vec::new();
+        for t in track_ids.iter().filter(|t| !have.contains(t)) {
+            if !fresh.contains(t) {
+                fresh.push(*t);
+            }
+        }
+        self.append_to_imported(id, &fresh)
+    }
+
+    /// A song added here leaves an imported playlist; the service's own songs never do (edit them in the service).
+    fn drop_added(&self, id: i64, track_id: Option<i64>) -> Result<()> {
+        let gone = match track_id {
+            Some(t) => self.db.execute("DELETE FROM playlist_added WHERE playlist_id = ?1 AND track_id = ?2", params![id, t])?,
+            None => 0,
+        };
+        anyhow::ensure!(gone == 1, READ_ONLY);
+        Ok(())
+    }
+
+    /// The songs added here to a playlist, oldest first.
+    pub(crate) fn added_here(&self, id: i64) -> Result<Vec<i64>> {
+        let mut stmt = self.db.prepare_cached("SELECT track_id FROM playlist_added WHERE playlist_id = ?1 ORDER BY at, track_id")?;
+        Ok(stmt.query_map([id], |r| r.get(0))?.collect::<rusqlite::Result<_>>()?)
     }
 
     pub(super) fn playlist_track_ids(&self, id: i64) -> Result<Vec<i64>> {
