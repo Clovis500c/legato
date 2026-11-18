@@ -33,7 +33,7 @@ const stats: Record<number, [number, number, number?]> = {}
 for (const t of fav) stats[t.id] = [20, NOW - 3 * DAY]
 for (const t of skippy) stats[t.id] = [1, NOW - 5 * DAY]
 for (const t of bands.slice(0, 20)) stats[t.id] = [1, NOW - 40 * DAY]
-const signal = (id: number, s: Partial<TasteSignal>): TasteSignal => ({ id, playsDecayed: 0, playsLong: 0, lastPlayed: 0, skipsRecent: 0, liked: false, less: false, never: false, hours: 0, near: [], ...s })
+const signal = (id: number, s: Partial<TasteSignal>): TasteSignal => ({ id, playsDecayed: 0, playsLong: 0, lastPlayed: 0, skipsRecent: 0, liked: false, less: false, never: false, hours: 0, replays: 0, near: [], ...s })
 const signals = new Map<number, TasteSignal>([
   ...fav.map((t) => [t.id, signal(t.id, { playsDecayed: 6, playsLong: 10, lastPlayed: NOW - 3 * DAY, liked: true })] as const),
   ...skippy.map((t) => [t.id, signal(t.id, { playsDecayed: -1.5, lastPlayed: NOW - 5 * DAY, skipsRecent: 3 })] as const),
@@ -313,5 +313,40 @@ describe('every pick carries one reason', () => {
       news += [...why.values()].filter((w) => w.kind === 'new').length
     }
     expect(news).toBeGreaterThan(0)
+  })
+})
+
+// Session signals (docs/recommendation.md, slice 3): taken from the stored plays by Rust, read here.
+describe('session signals', () => {
+  // Two candidates alike in everything but one signal: the queue is Band 1, they are Band 7 and Band 8 songs never played.
+  const queue = bands.slice(0, 3)
+  const a = bands[60]
+  const b = bands[70]
+  const rank = (sig: Map<number, TasteSignal>) => {
+    const out: number[] = []
+    for (let seed = 1; seed <= 12; seed++) {
+      const picks = pickSimilar([a, b].map((track) => ({ track })), queue, 2, tasteFor(stats, sig), 'alike', 2, seeded(seed), library)
+      out.push(picks.findIndex((t) => t.id === a.id))
+    }
+    return out
+  }
+  beforeEach(() => {
+    vi.spyOn(Date, 'now').mockReturnValue(NOW * 1000)
+    useStore.setState({ tracks: library, stats })
+  })
+  afterEach(() => vi.restoreAllMocks())
+
+  it('a song heard again within a day rises, as a strong like would lift it', () => {
+    // Alike in everything, `a` (the older band number) comes first; the same signal on `b` puts b first.
+    expect(rank(new Map()).every((i) => i === 0)).toBe(true)
+    const replayed = rank(new Map([[b.id, signal(b.id, { replays: 1 })]]))
+    expect(replayed.every((i) => i === 1)).toBe(true)
+  })
+
+  it('a pair skipped twice is no longer a neighbour: Rust drops it from `near`, so the song loses what the link gave it', () => {
+    const linked = new Map([[queue[2].id, signal(queue[2].id, { near: [b.id] })]])
+    const dropped = new Map([[queue[2].id, signal(queue[2].id, { near: [] })]])
+    const first = (sig: Map<number, TasteSignal>) => rank(sig).filter((i) => i === 0).length
+    expect(first(linked)).toBeLessThan(first(dropped))
   })
 })

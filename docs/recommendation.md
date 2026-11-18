@@ -201,7 +201,7 @@ rules still hold for every lookup. No script ever runs real requests in bulk; te
    - a refused radio (fixture error) gives library picks, with one request only (a mockito test).
 2. *"Why this song"* Done 2026-11-18 (lot 64): `rankPicks` fills a `why` map (`pickWhy.ts`: the largest weighted part of the fit, "new" for an explore slot), Up next shows it after the artist (`pickWhyStore.ts`, `UpNext.tsx`); `feel.test.ts` checks every pick carries one., from the reason that scored the pick most, as `words.ts` and `autoDj` do already ("In 3 radios of
    what you played", "Played after <artist>"). Measure: each `feel` pick carries one reason.
-3. *Session signals*: replays and skipped transitions (`taste_signals`, `listens.ts`). Measure: in `feel` cases, a
+3. *Session signals* Done 2026-11-18 (lot 65, from the stored plays, no new table): `taste_signals` counts `replays` (a song heard again within a day of its last listen, over 30 days; `taste.ts` reads one as a like) and drops from `near`, both ways, a pair skipped twice (B skipped right after A, 90 days); tests in `history.rs` and `feel.test.ts`. Not done: this session's replays before the next reload. Original: replays and skipped transitions (`taste_signals`, `listens.ts`). Measure: in `feel` cases, a
    replayed song rises, and a pair skipped twice is no longer a neighbour.
 4. *Related artists*: keep "Fans might also like" in `artist_page` (it must fail empty), used by mixes. Measure: a
    parser fixture plus a `feel` case.

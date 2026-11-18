@@ -54,6 +54,8 @@ pub struct TasteSignal {
     pub never: bool,
     /// Bit h set = played (finished or 30 s heard) at local hour h in the last 90 days: the time-of-day signal.
     pub hours: u32,
+    /// Times it was heard again within a day of its last listen, in the last `REPLAY_DAYS` days: a replay is a strong like (session signal).
+    pub replays: u32,
     /// The songs heard right before or after this one in a session (30 min apart at most, skips passed over), most often
     /// first, `NEAR` at most: what goes together for you (YouTube's "watched together", from this PC alone).
     pub near: Vec<i64>,
@@ -61,6 +63,12 @@ pub struct TasteSignal {
 
 /// Songs kept in `TasteSignal::near`.
 const NEAR: usize = 8;
+/// A song heard again this soon after its last listen is a replay (s), counted over the last `REPLAY_DAYS` days.
+const REPLAY_GAP: i64 = 86_400;
+const REPLAY_DAYS: i64 = 30;
+/// A song skipped right after another this many times (in the last `PAIR_DAYS` days) is no longer its neighbour.
+const PAIR_SKIPS: u32 = 2;
+const PAIR_DAYS: i64 = 90;
 
 /// How far back a skip still counts for the ranking.
 const SKIP_DAYS: i64 = 30;
@@ -148,15 +156,31 @@ impl Library {
     /// call). `now` = unix seconds, `utc_offset` = local minus UTC in seconds (for `hours`). Same weights and decays as the mixes (`mixes::play_weight`, `decay`, `long_decay`).
     pub fn taste_signals(&self, now: i64, utc_offset: i64) -> Result<Vec<TasteSignal>> {
         let mut out: HashMap<i64, TasteSignal> = HashMap::new();
-        let blank = |id| TasteSignal { id, plays_decayed: 0.0, plays_long: 0.0, last_played: 0, skips_recent: 0, liked: false, less: false, never: false, hours: 0, near: Vec::new() };
+        let blank = |id| TasteSignal { id, plays_decayed: 0.0, plays_long: 0.0, last_played: 0, skips_recent: 0, liked: false, less: false, never: false, hours: 0, replays: 0, near: Vec::new() };
         let mut stmt = self.db.prepare_cached("SELECT p.track_id, p.started_at, p.listened_ms, p.completed, t.duration_ms FROM plays p JOIN tracks t ON t.id = p.track_id ORDER BY p.started_at")?;
         let rows = stmt.query_map([], |r| Ok((Play { track_id: r.get(0)?, started_at: r.get(1)?, listened_ms: r.get(2)?, completed: r.get(3)? }, r.get::<_, Option<u32>>(4)?)))?;
         // Song → song heard next to it → times; the last listen heard (finished or 30 s), with its start.
         let mut links: HashMap<i64, HashMap<i64, u32>> = HashMap::new();
         let mut prev: Option<(i64, i64)> = None;
+        // Song → start of its last listen heard (replays); (song heard before, song skipped right after it) → times (pairs).
+        let mut last_heard: HashMap<i64, i64> = HashMap::new();
+        let mut skipped_after: HashMap<(i64, i64), u32> = HashMap::new();
         for row in rows {
             let (p, duration) = row?;
-            if p.completed || p.listened_ms >= crate::mixes::SKIP_MS {
+            let heard = p.completed || p.listened_ms >= crate::mixes::SKIP_MS;
+            if !heard
+                && p.started_at >= now - PAIR_DAYS * 86_400
+                && let Some((a, _)) = prev.filter(|(a, at)| *a != p.track_id && p.started_at - at <= crate::mixes::SESSION_GAP)
+            {
+                *skipped_after.entry((a, p.track_id)).or_default() += 1;
+            }
+            if heard {
+                if let Some(before) = last_heard.insert(p.track_id, p.started_at)
+                    && p.started_at - before <= REPLAY_GAP
+                    && p.started_at >= now - REPLAY_DAYS * 86_400
+                {
+                    out.entry(p.track_id).or_insert_with(|| blank(p.track_id)).replays += 1;
+                }
                 if let Some((a, _)) = prev.filter(|(a, at)| *a != p.track_id && p.started_at - at <= crate::mixes::SESSION_GAP) {
                     *links.entry(a).or_default().entry(p.track_id).or_default() += 1;
                     *links.entry(p.track_id).or_default().entry(a).or_default() += 1;
@@ -173,6 +197,17 @@ impl Library {
             }
             if (p.completed || p.listened_ms >= crate::mixes::SKIP_MS) && p.started_at >= now - HOUR_DAYS * 86_400 {
                 s.hours |= 1 << ((p.started_at + utc_offset).rem_euclid(86_400) / 3600);
+            }
+        }
+        // A pair skipped twice goes with nobody any more, both ways.
+        for ((a, b), n) in skipped_after {
+            if n >= PAIR_SKIPS {
+                if let Some(m) = links.get_mut(&a) {
+                    m.remove(&b);
+                }
+                if let Some(m) = links.get_mut(&b) {
+                    m.remove(&a);
+                }
             }
         }
         for (id, pref) in self.prefs()? {
@@ -341,6 +376,45 @@ mod tests {
         assert_eq!(near(b), [a]);
         assert_eq!(near(e), [a]);
         assert!(near(d).is_empty(), "a skip goes with nothing");
+        Ok(())
+    }
+
+    #[test]
+    fn a_song_heard_again_within_a_day_counts_a_replay() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let [a, b, c] = ["a", "b", "c"].map(|k| track(&lib, k, Source::Youtube, k));
+        let now = 100 * 86_400;
+        let heard = |id, at| Play { track_id: id, started_at: now - at, listened_ms: 200_000, completed: true };
+        // A: heard, again 3 h later (a replay), again 3 days later (not within a day). B: heard twice 2 days apart. C: a skip then a full listen.
+        for p in [heard(a, 5 * 86_400), heard(a, 5 * 86_400 - 10_800), heard(a, 2 * 86_400), heard(b, 9 * 86_400), heard(b, 7 * 86_400), Play { track_id: c, started_at: now - 3_000, listened_ms: 2_000, completed: false }, heard(c, 2_900)] {
+            lib.record_play(&p)?;
+        }
+        let got = lib.taste_signals(now, 0)?;
+        let replays = |id| got.iter().find(|s| s.id == id).map(|s| s.replays).unwrap();
+        assert_eq!((replays(a), replays(b), replays(c)), (1, 0, 0), "a skip is not a listen: the next full one is a first");
+        Ok(())
+    }
+
+    #[test]
+    fn a_pair_skipped_twice_is_no_longer_a_neighbour() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let [a, b, c] = ["a", "b", "c"].map(|k| track(&lib, k, Source::Youtube, k));
+        let now = 100 * 86_400;
+        let heard = |id, at| Play { track_id: id, started_at: now - 100_000 + at, listened_ms: 200_000, completed: true };
+        let skipped = |id, at| Play { track_id: id, started_at: now - 100_000 + at, listened_ms: 3_000, completed: false };
+        // A and B go together twice (B heard right after A), A and C once. Then B is skipped right after A: once, B stays; a second time, B goes.
+        let mut plays = vec![heard(a, 0), heard(b, 300), heard(a, 1000), heard(b, 1300), heard(a, 2000), heard(c, 2300), heard(a, 3000), skipped(b, 3300)];
+        for p in &plays {
+            lib.record_play(p)?;
+        }
+        let near = |lib: &Library, id| lib.taste_signals(now, 0).map(|g| g.iter().find(|s| s.id == id).map(|s| s.near.clone()).unwrap());
+        assert_eq!(near(&lib, a)?, [b, c], "skipped once after A: still a neighbour");
+        plays = vec![heard(a, 4000), skipped(b, 4300)];
+        for p in &plays {
+            lib.record_play(p)?;
+        }
+        assert_eq!(near(&lib, a)?, [c], "skipped twice after A: dropped");
+        assert_eq!(near(&lib, b)?, Vec::<i64>::new(), "both ways");
         Ok(())
     }
 

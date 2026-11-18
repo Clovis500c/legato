@@ -12,6 +12,10 @@ export type TasteSignal = { id: number, playsDecayed: number, playsLong: number,
  */
 hours: number, 
 /**
+ * Times it was heard again within a day of its last listen, in the last `REPLAY_DAYS` days: a replay is a strong like (session signal).
+ */
+replays: number, 
+/**
  * The songs heard right before or after this one in a session (30 min apart at most, skips passed over), most often
  * first, `NEAR` at most: what goes together for you (YouTube's "watched together", from this PC alone).
  */
