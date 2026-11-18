@@ -6,7 +6,7 @@ import { trackArt } from '../../shared/art'
 import { tr } from '../../shared/i18n/i18n'
 import { Cover } from '../../shared/ui/Cover'
 import { PageHeader } from '../../shared/ui/PageHeader'
-import { usePlayer } from '../player/store'
+import { canPlay, usePlayer } from '../player/store'
 import { tvQueue } from './tvQueue'
 
 /** The living-room mode's front door (Settings › General › TV home, off by default): a few big tiles, each a page, for a pad or the arrow keys. */
@@ -18,7 +18,8 @@ export function TvHome() {
   const order = usePlayer((s) => s.order)
   const index = usePlayer((s) => s.index)
   const playAt = usePlayer((s) => s.playAt)
-  const coming = tvQueue(order, index, 6)
+  const sp = useStore((s) => s.status.spotify.connected)
+  const coming = tvQueue(order, index, 6, (i) => !!list[i] && canPlay(list[i], sp))
   const tiles: [string, ReactNode, View][] = [
     [tr('Search'), <MagnifyingGlass key="s" size={40} />, { name: 'search' }],
     [tr('Songs'), <MusicNotes key="o" size={40} />, { name: 'songs' }],

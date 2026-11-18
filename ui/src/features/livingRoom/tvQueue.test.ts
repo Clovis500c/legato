@@ -14,4 +14,7 @@ describe('the TV home’s Up next row', () => {
   it('a playing song that is not in the order (a lone file): the queue from its start', () => {
     expect(tvQueue([5, 6, 7], 99, 2)).toEqual([5, 6])
   })
+  it('songs that cannot play (Spotify off) are left out, as in the Up next panel, and the row still fills up', () => {
+    expect(tvQueue([0, 1, 2, 3, 4], 0, 2, (i) => i !== 1)).toEqual([2, 3])
+  })
 })
