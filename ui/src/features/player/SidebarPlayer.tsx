@@ -84,8 +84,10 @@ export function SidebarPlayer() {
   const phone = usePhone()
   const video = now?.via === 'youtube'
   if (!now || full || !docked || !(video || on)) return null
-  // The phone: one row (the owner, 2026-11-17: the video's box took far too much of Your library). A YouTube song plays
-  // out of sight there, as with the floating card (MiniPlayer); Now Playing shows its video.
+  // The phone: no card at the foot of Your library (the owner, 2026-11-18: "nothing at all"; the video's box took far too
+  // much room, a slim row repeated the bar below), as with the floating one (MiniPlayer). A YouTube song plays out of
+  // sight; Now Playing shows its video.
+  if (phone) return video ? <VideoSlot hidden className="fixed top-0 left-0 size-0" /> : null
   return (
     <section
       ref={volumeWheelRef}
@@ -94,9 +96,7 @@ export function SidebarPlayer() {
       className="relative mx-2 mt-1 mb-2 flex shrink-0 flex-col gap-2.5 overflow-hidden rounded-xl border border-line-soft bg-raised p-2.5 pb-3 shadow-[0_8px_24px_var(--shadow)]"
     >
       {glow && <span aria-hidden className="pointer-events-none absolute inset-0 transition-[background] duration-700" style={{ background: `radial-gradient(130% 75% at 50% 0%, rgb(${glow.join(' ')} / 0.32), transparent 72%)` }} />}
-      {phone ? (
-        video && <VideoSlot hidden className="fixed top-0 left-0 size-0" />
-      ) : video ? (
+      {video ? (
         <VideoSlot fill onClick={toggle} className="relative h-50 w-full shadow-[0_6px_18px_rgb(0_0_0/0.35)]" />
       ) : vinyl ? (
         <Record title={now.title} art={art} playing={playing} spin={motion} onClick={toggle} />
@@ -109,7 +109,6 @@ export function SidebarPlayer() {
         </button>
       )}
       <div className="relative flex items-center gap-1.5">
-        {phone && <Cover title={now.title} art={art} size={40} className="me-1.5" />}
         <div className="min-w-0 flex-1">
           <button onClick={() => setFull(true)} className="block max-w-full truncate text-left text-[0.8125rem] font-semibold hover:underline" title={tr('Open Now Playing')}>
             {now.title}
@@ -123,9 +122,8 @@ export function SidebarPlayer() {
           <ArrowsOutSimple size={13} />
         </RoundButton>
       </div>
-      {!phone && <MiniViz className="mx-3 mb-1" />}
-      {/* The phone's bar right below has its own progress line: one is enough (the owner, 2026-11-18). */}
-      {!phone && <ProgressLine />}
+      <MiniViz className="mx-3 mb-1" />
+      <ProgressLine />
     </section>
   )
 }
