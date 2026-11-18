@@ -4,7 +4,7 @@ import { api, type LibraryTrack } from '../../shared/api'
 import { rememberEnd } from './ends'
 import { NO_FADE } from './fade'
 import { useSponsor } from './sponsor'
-import { bindFrame, onQueueEnd, tailVolume, usePlayer } from './store'
+import { bindFrame, onQueueEnd, splitIntoParts, tailVolume, usePlayer } from './store'
 
 const song = (id: number): LibraryTrack => ({ id, added: 0, addedAt: null, title: `Song ${id}`, artist: 'Artist', album: null, durationMs: null, isrc: null, ids: { youtube: `video${id}` } })
 // No Tauri here: IPC calls fail, other uploads come back empty. A macrotask lets their awaits settle.
@@ -563,5 +563,103 @@ describe('Next on the last song, with similar songs always on', () => {
     usePlayer.getState().step(1)
     await settle()
     expect(usePlayer.getState().now?.youtubeId).toBe('video904')
+  })
+})
+
+describe('a long video split by its chapters', () => {
+  const MIN = 60
+  const mix = { ...song(50), title: 'Live at the pier', durationMs: 120 * MIN * 1000 }
+  const chapters = [
+    { startMs: 0, title: 'Intro' },
+    { startMs: 5 * MIN * 1000, title: 'First track' },
+    { startMs: 40 * MIN * 1000, title: 'Second track' },
+  ]
+  const p = () => usePlayer.getState()
+  const at = (s: number) => p().onYoutube({ state: 1, time: s })
+  const split = async () => {
+    usePlayer.setState({ repeat: 'off', shuffle: false })
+    p().playTracks([mix, song(51)], 0)
+    p().onYoutube({ state: 1, time: 1, duration: 120 * MIN })
+    splitIntoParts('video50', chapters)
+    await settle()
+  }
+  const titles = () => p().order.map((i) => p().list[i].title)
+
+  it('each part a row of Up next in time order, the playing one first, the songs after it kept', async () => {
+    await split()
+    expect(titles()).toEqual(['Intro', 'First track', 'Second track', 'Song 51'])
+    expect(p().now).toMatchObject({ title: 'Intro', youtubeId: 'video50' })
+    expect(p().list[p().index].durationMs).toBe(5 * MIN * 1000)
+  })
+
+  it('the music reaching the next part moves the row along, in the same video, without starting it again', async () => {
+    await split()
+    at(4 * MIN)
+    const playId = p().playId
+    at(5 * MIN + 0.2)
+    expect(p().now).toMatchObject({ title: 'First track', youtubeId: 'video50' })
+    expect(p().playId).toBe(playId + 1)
+    expect(p().positionMs).toBe((5 * MIN + 0.2) * 1000)
+  })
+
+  it('Next and Previous go part to part; a late report of the old place does not pull it back', async () => {
+    await split()
+    at(2 * MIN)
+    p().step(1)
+    expect(p()).toMatchObject({ now: { title: 'First track', youtubeId: 'video50' }, startAt: 5 * MIN * 1000 })
+    at(2 * MIN + 0.5)
+    expect(p().now?.title).toBe('First track')
+    at(5 * MIN + 1)
+    p().step(-1)
+    expect(p()).toMatchObject({ now: { title: 'Intro' }, startAt: 0 })
+  })
+
+  it('a part taken out of Up next is jumped over at the end of the one before', async () => {
+    await split()
+    p().dequeue(p().order[1])
+    at(4 * MIN)
+    at(5 * MIN + 0.2)
+    await settle()
+    expect(p()).toMatchObject({ now: { title: 'Second track' }, startAt: 40 * MIN * 1000 })
+  })
+
+  it('a seek into another part takes its row', async () => {
+    await split()
+    at(1)
+    p().seek(41 * MIN * 1000)
+    at(41 * MIN)
+    expect(p().now?.title).toBe('Second track')
+  })
+
+  it('Repeat one plays the part again', async () => {
+    await split()
+    at(4 * MIN)
+    usePlayer.setState({ repeat: 'one' })
+    at(5 * MIN + 0.2)
+    await settle()
+    expect(p()).toMatchObject({ now: { title: 'Intro' }, startAt: 0 })
+  })
+
+  it('Shuffle mixes the songs, never the parts of one video', async () => {
+    await split()
+    p().toggleShuffle()
+    const parts = titles().filter((t) => t !== 'Song 51')
+    expect(parts).toEqual(['Intro', 'First track', 'Second track'])
+    const o = p().order
+    expect(o.indexOf(p().list.findIndex((t) => t.title === 'First track'))).toBe(o.indexOf(p().list.findIndex((t) => t.title === 'Intro')) + 1)
+  })
+
+  it('the video ending after its last part: the next song', async () => {
+    await split()
+    at(41 * MIN)
+    p().onYoutube({ state: 0 })
+    await settle()
+    expect(p().now).toMatchObject({ title: 'Song 51', youtubeId: 'video51' })
+  })
+
+  it('asked again (the next part playing): the queue is split once', async () => {
+    await split()
+    splitIntoParts('video50', chapters)
+    expect(titles()).toEqual(['Intro', 'First track', 'Second track', 'Song 51'])
   })
 })

@@ -340,6 +340,26 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       description, `core/chapters::from_text`) fills the same Chapters menu the audiobooks use. Tested on made-up answers and
       descriptions only (mockito), never on a real video. Left: each part as its own row in Up next, the pinned comment (a
       separate continuation call), Music Detector naming unlabelled parts.
+      2026-11-18 (lot 56), each part as its own row of Up next: done (`videoParts.ts`, `splitIntoParts` / `followPart` in
+      `store.ts`, tested on made-up chapters). Decided alone (2026-11-18):
+      - A part is a queue row over the same video (`part: { startMs, endMs }`, a row of its own outside the library like a
+        recommendation, `remoteTrack` keyed by its start); times stay the video's everywhere, so the progress bar shows the
+        whole video and a seek there stays in it. Why: the fades, the overlap, Skip silence, SponsorBlock and the resume
+        all read the video's time; a time per part would touch each of them.
+      - The music reaching the next part only moves the row along (index, title, a new playId): no seek, no fade, the set
+        plays on as one. Next / Previous / a part picked in Up next seek the same embed (`playAt`, its start). Why: a DJ
+        set is continuous; a seek at each part would cut it.
+      - A part's end is as exact as YouTube's time reports (the watch page's once a second, the embed's about as often):
+        it only matters when what follows is not the next part (taken out of Up next, Repeat one, another song), where up
+        to about a second of the next part can be heard. The IFrame API's `endSeconds` stops the video, which would cut
+        the gliding parts. A part followed by another song ends with a cut, not a crossfade (the overlap times the video).
+      - Shuffle and an early skip's steering keep a video's parts together and in order (`keepParts`); taken-out parts stay
+        out. Only the playing video is split, once its answer comes (the setting on, 2 chapters or more).
+      - Plays and ratings: the parts count none; the video counts once, its listen running from its start until a part is
+        picked by hand (the parts gliding on do not end it), so a whole set heard is one full play, not 30. Edits saved
+        for the library video do not apply while it plays split (its parts key by the video, `songKey`).
+      Not tried: a real long mix, a real Google answer (the owner: turn the setting on, play a DJ set with chapters, let a
+      part end, press Next / Previous, take a part out of Up next, shuffle, quit and reopen the app mid-set).
 - [ ] `M` Output devices: switch from the player bar, remember per device (volume, EQ preset).
       2026-11-13 (lot 27), EQ per device: Settings › Playback › Equalizer per output device (off by default) adds "Equalizer for this
       output" to the player's menu: one of the built-in presets per output device (this PC's, `deviceEq.ts`), whose bands are

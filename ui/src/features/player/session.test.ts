@@ -55,6 +55,20 @@ describe('session', () => {
     expect(q?.list[2].id).toBeLessThan(0)
   })
 
+  it('the parts of a split video come back each as its part; a part saved wrong comes back as the whole video', () => {
+    const part = (id: number, startMs: number, endMs: number | null) => ({ ...t(0), id, title: `P${id}`, ids: { youtube: 'mix' }, part: { startMs, endMs } }) as LibraryTrack
+    const list = [part(-1, 0, 60_000), part(-2, 60_000, null)]
+    const s = JSON.parse(JSON.stringify(snapshot({ ...player, list, index: 1, order: [0, 1], added: [], now: { trackId: -2, via: 'youtube' } })))
+    const q = restore(s, lib)?.queue
+    expect(q?.list.map((x) => [x.title, (x as { part?: unknown }).part])).toEqual([
+      ['P-1', { startMs: 0, endMs: 60_000 }],
+      ['P-2', { startMs: 60_000, endMs: null }],
+    ])
+    expect(new Set(q?.list.map((x) => x.id)).size).toBe(2)
+    s.remote[1].part = { startMs: 'x', endMs: -4 }
+    expect((restore(s, lib)?.queue?.list[1] as { part?: unknown }).part).toBeUndefined()
+  })
+
   it('current track gone or junk: no queue, volume kept when valid', () => {
     expect(restore(snapshot(player), [t(1)])).toEqual({ volume: 0.4, queue: null })
     expect(restore('junk', lib)).toBeNull()

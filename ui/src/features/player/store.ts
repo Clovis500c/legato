@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { useStore } from '../../app/store'
-import { api, type Levelling, type LibraryTrack, type PlayerCommand, type PlayerStatus, type SpotifyCommand, type SpotifyPlayback, type Track } from '../../shared/api'
+import { api, type Chapter, type Levelling, type LibraryTrack, type PlayerCommand, type PlayerStatus, type SpotifyCommand, type SpotifyPlayback, type Track } from '../../shared/api'
 import { markBroken } from '../library/broken'
 import type { Box } from '../../shared/artbox'
 import { fold, region } from '../../shared/format'
@@ -9,6 +9,7 @@ import { albumGoesOn, demoGain, demoLength, fadeGain, NO_FADE, overlapDue, PICK_
 import { sweetFade } from './sweet'
 import { endsOf } from './sweetData'
 import { insertAt, keepQueued, moveInOrder, moveToSlot, nextIndex, playOrder, queued, tooLong, type Repeat } from './queue'
+import { keepParts, partIn, partOf, partRows } from './videoParts'
 import { contextOf, type FromKind } from './fromLabel'
 import { lowRated, type Variety } from './score'
 import { RECENT_S, shapedOrder, SHARP, shuffleWeight, smartOrder, steered } from './shuffle'
@@ -169,7 +170,9 @@ let asking = false
 let again = false
 
 export function remoteTrack(t: Track): LibraryTrack {
-  const key = t.ids.youtube ?? `${t.artist}\u0000${t.title}`
+  // A part of a split video is a row of its own (videoParts.ts).
+  const part = partOf(t as LibraryTrack)
+  const key = (t.ids.youtube ?? `${t.artist}\u0000${t.title}`) + (part ? `#${part.startMs}` : '')
   let id = remoteIds.get(key)
   if (id === undefined) remoteIds.set(key, (id = -(remoteIds.size + 1)))
   return { ...t, id, added: 0, addedAt: null }
@@ -285,6 +288,11 @@ let volumeTimer: ReturnType<typeof setTimeout> | undefined
  * smart order.
  */
 function shuffleOrder(p: PlayerState, list: LibraryTrack[], current: number, shuffle: boolean): number[] {
+  // A video split by its chapters keeps its parts together, in time order (videoParts.ts).
+  return keepParts(songOrder(p, list, current, shuffle), list)
+}
+
+function songOrder(p: PlayerState, list: LibraryTrack[], current: number, shuffle: boolean): number[] {
   if (!shuffle || !p.smartShuffle) return playOrder(list.length, current, shuffle)
   const { stats } = useStore.getState()
   const now = Date.now() / 1000
@@ -309,7 +317,8 @@ onListenEnd((play) => {
   const theirs = new Set(list.filter((t) => key(t) === artist).map((t) => t.id))
   let skips = 0
   for (const [id, n] of session.skips) if (theirs.has(id)) skips += n
-  usePlayer.setState({ order: steered(order, order.indexOf(index), (i) => key(list[i]) === artist, new Set(added), skips >= 2) })
+  // The parts of a split video stay with it (a skip of its first seconds is a jump to a part).
+  usePlayer.setState({ order: steered(order, order.indexOf(index), (i) => key(list[i]) === artist && !partOf(list[i]), new Set(added), skips >= 2) })
 })
 
 // Last volume sent to the playing source (fades send many).
@@ -725,9 +734,13 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     // Recommendations: no history (not in the library).
     startListen(isRemote(t) ? undefined : t.id, t.durationMs)
     const base: NowPlaying = { title: t.title, artist: t.artist, trackId: t.id, via: how }
+    // A part of a split video starts where it does; times stay the video's, so its length is the video's (known once
+    // the same video plays on, else from YouTube's first report: a part's own length would end it at once).
+    const part = partOf(list[index])
     // Preview: 30 s from Apple, no resume point.
-    const start = how === 'preview' ? 0 : from
-    set({ index, playId: get().playId + 1, playing: !hold, hold, positionMs: start, startAt: start, fadeFrom: 0, durationMs: t.durationMs, upcoming: [], tail: how === 'youtube' ? stopTail(get().tail) : null, fadeIn: auto ? (albumGoesOnAt(get(), index) ? 0 : fadeInFor(get(), t)) : get().fade.skip ? Math.min(get().fade.in, PICK_IN_S) : 0 })
+    const start = how === 'preview' ? 0 : Math.max(from, part?.startMs ?? 0)
+    const length = part ? (get().now?.youtubeId === t.ids.youtube ? get().durationMs : null) : t.durationMs
+    set({ index, playId: get().playId + 1, playing: !hold, hold, positionMs: start, startAt: start, fadeFrom: 0, durationMs: length, upcoming: [], tail: how === 'youtube' ? stopTail(get().tail) : null, fadeIn: auto ? (albumGoesOnAt(get(), index) ? 0 : fadeInFor(get(), t)) : get().fade.skip ? Math.min(get().fade.in, PICK_IN_S) : 0 })
     sent = -1
     useSponsor.setState({ video: undefined, segs: [] })
     parts = { playId: get().playId, prev: start / 1000, done: new Set() }
@@ -1054,6 +1067,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
         set({ positionMs: lead * 1000, fadeFrom: lead * 1000 })
       }
       skipPart(time, lead > 0 && time === lead)
+      if (followPart(time * 1000)) return
       progress(time * 1000, videoMs || undefined)
       get().applyVolume()
       overlap()
@@ -1257,6 +1271,63 @@ function songOver() {
   }
 }
 
+// Play (playId) that has reached its part: until then a report of the old place (a seek on its way) is not followed.
+let settled = -1
+
+/**
+ * A video split by its chapters (videoParts.ts): the row follows the video's time. The music reaching the next part, or a
+ * seek into another, takes that part's row with no new start (the same video plays on, no fade); past a part's end with
+ * nothing of it after here (taken out of Up next), Repeat one, Stop after this song or a room's turn: over, as a song's
+ * end. Its end is as exact as YouTube's reports of the time. True: the play moved on.
+ */
+function followPart(ms: number): boolean {
+  const p = usePlayer.getState()
+  const part = partOf(p.list[p.index])
+  const video = p.now?.youtubeId
+  if (!part || !video) return false
+  const over = part.endMs !== null && ms >= part.endMs
+  if (ms >= part.startMs && !over) {
+    settled = p.playId
+    return false
+  }
+  if (settled !== p.playId) return false
+  const j = partIn(p.list, p.order, video, ms)
+  const following = p.order[p.order.indexOf(p.index) + 1]
+  if (j >= 0 && !(over && j === following && (stopAtEnd || beforeNext || p.repeat === 'one'))) {
+    const t = p.list[j]
+    usePlayer.setState({ index: j, playId: p.playId + 1, startAt: ms, fadeFrom: ms, fadeIn: 0, now: { ...p.now!, title: t.title, artist: t.artist, trackId: t.id } })
+    settled = p.playId + 1
+    return false
+  }
+  if (!over) return false
+  songOver()
+  return true
+}
+
+/**
+ * The playing video's chapters came (chaptersLoad.ts, the setting on): its row becomes one row per part in Up next, the
+ * playing part first. Once per video in the queue; a part, another video, or fewer than two chapters: nothing.
+ */
+export function splitIntoParts(video: string, chapters: readonly Chapter[]) {
+  const p = usePlayer.getState()
+  const t = p.list[p.index]
+  if (!t || partOf(t) || t.ids.youtube !== video || p.now?.youtubeId !== video) return
+  const rows = partRows(t, chapters, videoMs || p.durationMs || 0).map(remoteTrack)
+  if (rows.length < 2) return
+  const fresh = rows.slice(1).map((_, k) => p.list.length + k)
+  const list = [...p.list, ...rows.slice(1)]
+  list[p.index] = rows[0]
+  usePlayer.setState({
+    list,
+    order: insertAt(p.order, fresh, p.order.indexOf(p.index) + 1),
+    added: p.added.includes(p.index) ? [...p.added, ...fresh] : p.added,
+    now: { ...p.now, title: rows[0].title, trackId: rows[0].id },
+  })
+  settled = p.playId
+  // Further in than the first part (a resume): its row.
+  followPart(p.positionMs)
+}
+
 // Early end heard (live.js, in the silence after the song): kept for the next plays. The overlap's tail stops; the
 // playing song is over now. Its position checks the report is about this video (not one skipped from meanwhile).
 onEndHeard((end, tail) => {
@@ -1302,7 +1373,8 @@ usePlayer.subscribe((s) => {
 // queue keeps the length, so a second pass skips it before it starts (no endless loop on repeat).
 usePlayer.subscribe((s, prev) => {
   const t = s.list[s.index]
-  if (!t || s.now?.trackId !== t.id || s.playId !== prev.playId || prev.durationMs !== null || s.durationMs === null || !reachedAuto || s.repeat === 'one') return
+  // A part's length is its own; the video's, learned here, is not its (videoParts.ts).
+  if (!t || partOf(t) || s.now?.trackId !== t.id || s.playId !== prev.playId || prev.durationMs !== null || s.durationMs === null || !reachedAuto || s.repeat === 'one') return
   const known = { ...t, durationMs: s.durationMs }
   if (!passOver(known, s.skipLong)) return
   usePlayer.setState({ list: s.list.map((x, j) => (j === s.index ? known : x)) })

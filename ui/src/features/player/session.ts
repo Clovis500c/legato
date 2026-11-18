@@ -53,7 +53,10 @@ const isInt = (v: unknown): v is number => Number.isInteger(v) && (v as number) 
 function remoteBack(v: unknown): [number, LibraryTrack][] {
   const t = v as LibraryTrack | null
   if (!t || typeof t !== 'object' || !Number.isInteger(t.id) || t.id >= 0 || typeof t.title !== 'string' || typeof t.artist !== 'string' || !t.ids || typeof t.ids !== 'object') return []
-  return [[t.id, remoteTrack(t)]]
+  // A part of a split video (videoParts.ts): its times checked, else it plays whole.
+  const { part, ...rest } = t as LibraryTrack & { part?: { startMs?: unknown; endMs?: unknown } }
+  const ok = part && isInt(part.startMs) && (part.endMs === null || (isInt(part.endMs) && part.endMs > part.startMs))
+  return [[t.id, remoteTrack(ok ? t : rest)]]
 }
 
 /**
