@@ -162,9 +162,6 @@ Where a line says "reading", the owner hasn't confirmed it.
 
 ## The owner's asks of 2026-11-12
 
-- [ ] `M` Sign in with Discord, to show who shared (the owner's wish; only a note, nothing to build now): the version WITHOUT a bot first, an OAuth
-      sign-in without a secret, the profile carried in the link; later, optionally, the link signed by the owner's bot, an exception to
-      "serverless" that the owner must validate. Application id received 2026-11-13 and the first part done (above); the signature is left.
 
 ## Best in class (user's ask 2026-10-30)
 
@@ -276,7 +273,6 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - **Low**: niche or fun, for later.
 
 **High**
-- [ ] `L` macOS and Linux builds (media panel, detector, tray per OS).
 - [ ] `L+` Mobile version, well optimised, the Rust code reused (the owner's ask 2026-11-02): Tauri 2's Android target
       with the same crates and `ui/`, Android first, iPhone after. Spec, seven phases, what stays desktop-only and the
       owner's calls (Android SDK / NDK on this PC, a phone, GitHub or Play Store, YouTube sign-in in a WebView):
@@ -311,7 +307,8 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       Skipped 2026-11-12 (not for this run): the engine only knows the default output device (`output.rs`), no name and no change event,
       so per-device presets need platform code (a device-change watch on WASAPI, then the same on the other systems); AutoEQ profiles
       are parametric filters from a large dataset to map onto the 10-band graphic EQ, a data and licence choice. For Opus and the owner.
-- [ ] `M` Credits and artist pages: who wrote / produced (MusicBrainz), a short bio (Wikipedia), links out.
+- [x] `M` Credits and artist pages: who wrote / produced (MusicBrainz), a short bio (Wikipedia), links out.
+      Ticked 2026-11-18 (audit): everything the line names shipped: the links (`MusicBrainz::artist_links`), Credits (`eae99997`), the bio (`afb764fd`), YouTube Music's About (`71d4c9bb`). What is left is a try against the real services (Check live).
       2026-11-12, the links out only: an artist's page has "Find links on MusicBrainz" (a click, two requests a second apart, the
       name only; `MusicBrainz::artist_links`: the artist by exact name with a score of 90, then its url relations, http(s) of 8
       kinds, 12 at most), opened in the browser; the website's "Artist links" privacy row. Untried against the real MusicBrainz: the answers' shape is from their docs. 2026-11-12, who wrote / produced: a song's
@@ -323,7 +320,8 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       opening paragraph (`wikipedia.rs`, one new host family: the article's own `xx.wikipedia.org`, address checked first), shown with
       "From Wikipedia, under CC BY-SA" linking to the article; the website's "Artist links" row says so. Untried against the real
       Wikipedia (mock tests only). Decided alone (2026-11-12): on a click, never on opening the page.
-- [ ] `M` Sweet fades (Plexamp): crossfade length picked per pair from the songs' ends (loudness, silence, tempo).
+- [x] `M` Sweet fades (Plexamp): crossfade length picked per pair from the songs' ends (loudness, silence, tempo).
+      Ticked 2026-11-18 (audit): tempo (`9f1a1fed`), the ends' loudness and silence (`7b87b623`), the next song really coming (`ef27f850`) shipped; only hearing it on real songs is left (the owner's ear).
       2026-11-13, by tempo: Settings › Playback › Sweet fades (off by default): `sweet.ts` `sweetSeconds(a, b, base)` picks each
       pair's fade out and fade in from the library's `bpm` (whole phrases of 8 beats when the tempos are within 4%, half and
       double time counted; the set seconds within 12%; at most 3 s beyond; unknown tempo or no fade: unchanged), `songFade`
@@ -367,7 +365,8 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
         for the library video do not apply while it plays split (its parts key by the video, `songKey`).
       Not tried: a real long mix, a real Google answer (the owner: turn the setting on, play a DJ set with chapters, let a
       part end, press Next / Previous, take a part out of Up next, shuffle, quit and reopen the app mid-set).
-- [ ] `M` Output devices: switch from the player bar, remember per device (volume, EQ preset).
+- [x] `M` Output devices: switch from the player bar, remember per device (volume, EQ preset).
+      Ticked 2026-11-18 (audit): the switch, volume per device (`ca26c14c`) and EQ per device (`8fc31212`, `a5618b3d`) shipped; a device-change event is left (WASAPI watch: needs a real device).
       2026-11-13 (lot 27), EQ per device: Settings › Playback › Equalizer per output device (off by default) adds "Equalizer for this
       output" to the player's menu: one of the built-in presets per output device (this PC's, `deviceEq.ts`), whose bands are
       added to the song's own Live Editor edit (`withDeviceEq`, tested) on the one path that already pushes effects to the
@@ -765,7 +764,7 @@ video ahead, no Spotify previews, Android as the APK with its own updates (no Pl
 - [ ] `S` Signed-out YouTube search: check it on the owner's PC; if it still fails, read the error under the search.
 - [ ] `S` Settings labels: review the descriptions' length and read the labels in the app in every language; the JSX per group is optional.
 - [ ] `S` Server songs levelled: Jellyfin's `NormalizationGain` and Plex's loudness are not read yet (other scales).
-- [ ] `S` Discovery: covers from the Cover Art Archive (one more host) are not done.
+- [x] `S` Discovery: covers from the Cover Art Archive (one more host) are not done. Done: `79492349` (an option, off by default).
 - [ ] `S` Streamed songs: genre, year and tempo are not filled (no source gives them without a new host).
 - [ ] `S` Last.fm "Discoveries": left for the owner (its public API has changed).
 - [ ] `S` Internet radio: a phone tab, and the station's own metadata (no ICY).
