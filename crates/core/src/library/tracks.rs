@@ -228,7 +228,7 @@ impl Library {
     }
 
     /// Imported playlist's "date added" order: (newest first, set by hand).
-    pub(super) fn order_of(&self, id: i64) -> Result<(bool, bool)> {
+    pub(crate) fn order_of(&self, id: i64) -> Result<(bool, bool)> {
         let (source, set, manual): (String, Option<bool>, bool) =
             self.db.query_row("SELECT source, newest_first, order_manual FROM playlists WHERE id = ?1", [id], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))?;
         let source: Source = serde_json::from_value(source.into())?;

@@ -362,21 +362,29 @@ impl Library {
 
     /// A song added here leaves an imported playlist; the service's own songs never do (edit them in the service).
     fn drop_added(&self, id: i64, track_id: Option<i64>) -> Result<()> {
-        let gone = match track_id {
-            Some(t) => self.db.execute("DELETE FROM playlist_added WHERE playlist_id = ?1 AND track_id = ?2", params![id, t])?,
-            None => 0,
-        };
+        let Some(t) = track_id else { anyhow::bail!(READ_ONLY) };
+        let gone = self.db.execute("DELETE FROM playlist_added WHERE playlist_id = ?1 AND track_id = ?2", params![id, t])?;
         anyhow::ensure!(gone == 1, READ_ONLY);
+        // Remembered for Sync Mode, under every name the song goes by: the other PCs take it out too, never back in.
+        let key: String = self.db.query_row("SELECT source || ':' || source_id FROM playlists WHERE id = ?1", [id], |r| r.get(0))?;
+        for k in self.added_keys_of(&key, t)? {
+            self.gone("added", &k)?;
+        }
         Ok(())
     }
 
     /// The songs added here to a playlist, oldest first.
     pub(crate) fn added_here(&self, id: i64) -> Result<Vec<i64>> {
-        let mut stmt = self.db.prepare_cached("SELECT track_id FROM playlist_added WHERE playlist_id = ?1 ORDER BY at, track_id")?;
-        Ok(stmt.query_map([id], |r| r.get(0))?.collect::<rusqlite::Result<_>>()?)
+        Ok(self.added_rows(id)?.into_iter().map(|(t, _)| t).collect())
     }
 
-    pub(super) fn playlist_track_ids(&self, id: i64) -> Result<Vec<i64>> {
+    /// The same with when each was added (ms), for Sync Mode.
+    pub(crate) fn added_rows(&self, id: i64) -> Result<Vec<(i64, i64)>> {
+        let mut stmt = self.db.prepare_cached("SELECT track_id, at FROM playlist_added WHERE playlist_id = ?1 ORDER BY at, track_id")?;
+        Ok(stmt.query_map([id], |r| Ok((r.get(0)?, r.get(1)?)))?.collect::<rusqlite::Result<_>>()?)
+    }
+
+    pub(crate) fn playlist_track_ids(&self, id: i64) -> Result<Vec<i64>> {
         let mut stmt = self.db.prepare_cached("SELECT track_id FROM playlist_tracks WHERE playlist_id = ?1 ORDER BY position")?;
         Ok(stmt.query_map([id], |r| r.get(0))?.collect::<rusqlite::Result<_>>()?)
     }

@@ -90,9 +90,10 @@ pub struct PlaylistSnap {
     /// Indexes into `Snapshot::tracks`.
     pub tracks: Vec<u32>,
     pub updated: i64,
-    /// Imported: the songs added to it on a PC (`Library::add_here`), oldest first; indexes into `Snapshot::tracks`.
+    /// Imported: the songs added to it on a PC (`Library::add_here`), oldest first: [index into `Snapshot::tracks`, when (ms)].
+    /// Merged one by one, not replaced with the playlist (a PC that never saw an add must not drop it); absent from older files.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub added: Vec<u32>,
+    pub added: Vec<(u32, i64)>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -234,6 +235,14 @@ impl Refs {
     }
 }
 
+/// The names a song added to an imported playlist goes by on every PC: each of its service ids, and its normalised title and
+/// first artist. A removal is remembered under all of them, so a PC that knows the song by any one honours it.
+fn added_keys(playlist: &str, ids: &BTreeMap<Source, String>, title: &str, artist: &str) -> Vec<String> {
+    let mut keys: Vec<String> = ids.iter().filter(|(s, _)| **s != Source::Local).map(|(s, id)| format!("{playlist}|{}:{id}", s.as_str())).collect();
+    keys.push(format!("{playlist}|{}\u{1f}{}", crate::matching::normalize(title), crate::matching::normalize(crate::matching::first_artist(artist))));
+    keys
+}
+
 /// Settings values that name playlists by row id (`custom:<id>`, this PC only) ↔ by their portable key.
 fn swap_playlist_keys(value: &Value, map: &HashMap<String, String>) -> Value {
     let swap = |k: &str| map.get(k).cloned().unwrap_or_else(|| k.to_string());
@@ -342,7 +351,7 @@ impl Library {
             for (id, mut p) in rows {
                 let ids: Vec<i64> = self.db.prepare_cached("SELECT track_id FROM playlist_tracks WHERE playlist_id = ?1 ORDER BY position")?.query_map([id], |r| r.get(0))?.collect::<rusqlite::Result<_>>()?;
                 p.tracks = ids.into_iter().map(|t| refs.of(self, t)).collect::<Result<_>>()?;
-                p.added = self.added_here(id)?.into_iter().map(|t| refs.of(self, t)).collect::<Result<_>>()?;
+                p.added = self.added_rows(id)?.into_iter().map(|(t, at)| Ok((refs.of(self, t)?, at))).collect::<Result<_>>()?;
                 playlists.push(p);
             }
         }
@@ -420,6 +429,52 @@ impl Library {
 
     fn gone_at(&self, kind: &str, key: &str) -> Result<i64> {
         Ok(self.db.query_row("SELECT at FROM sync_gone WHERE kind = ?1 AND key = ?2", params![kind, key], |r| r.get(0)).optional()?.unwrap_or(i64::MIN))
+    }
+
+    /// When a song added to a playlist was last taken out of it, under any of its names (`added_keys`).
+    fn added_gone_at(&self, keys: &[String]) -> Result<i64> {
+        keys.iter().try_fold(i64::MIN, |at, k| Ok(at.max(self.gone_at("added", k)?)))
+    }
+
+    /// `added_keys` of one of this PC's songs.
+    pub(crate) fn added_keys_of(&self, playlist: &str, track: i64) -> Result<Vec<String>> {
+        let (title, artist): (String, String) = self.db.query_row("SELECT title, artist FROM tracks WHERE id = ?1", [track], |r| Ok((r.get(0)?, r.get(1)?)))?;
+        let mut ids = BTreeMap::new();
+        let mut stmt = self.db.prepare_cached("SELECT source, source_id FROM track_ids WHERE track_id = ?1 AND source != 'local'")?;
+        for row in stmt.query_map([track], |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?)))? {
+            let (s, sid) = row?;
+            if let Ok(s) = serde_json::from_value::<Source>(Value::String(s)) {
+                ids.insert(s, sid);
+            }
+        }
+        Ok(added_keys(playlist, &ids, &title, &artist))
+    }
+
+    /// After a merge: an added song a removal outranks leaves the playlist, every other one is in it (at its newest end,
+    /// as `save_playlist` keeps them). Not a change of this PC: `updated` stays, so the PCs don't take turns winning.
+    fn settle_added(&self, id: i64, key: &str) -> Result<()> {
+        let mut ids = self.playlist_track_ids(id)?;
+        let before = ids.clone();
+        for (t, at) in self.added_rows(id)? {
+            if self.added_gone_at(&self.added_keys_of(key, t)?)? >= at {
+                self.db.execute("DELETE FROM playlist_added WHERE playlist_id = ?1 AND track_id = ?2", params![id, t])?;
+                ids.retain(|x| *x != t);
+            }
+        }
+        let missing: Vec<i64> = self.added_here(id)?.into_iter().filter(|t| !ids.contains(t)).collect();
+        if self.order_of(id)?.0 {
+            ids.splice(0..0, missing.into_iter().rev());
+        } else {
+            ids.extend(missing);
+        }
+        if ids != before {
+            self.db.execute("DELETE FROM playlist_tracks WHERE playlist_id = ?1", [id])?;
+            let mut ins = self.db.prepare_cached("INSERT INTO playlist_tracks (playlist_id, position, track_id) VALUES (?1, ?2, ?3)")?;
+            for (pos, t) in ids.iter().enumerate() {
+                ins.execute(params![id, pos as i64, t])?;
+            }
+        }
+        Ok(())
     }
 
     /// Takes another PC's snapshot in: newest change wins per item, deletions spread.
@@ -506,46 +561,57 @@ impl Library {
             row(*i, &mut m)?;
         }
 
-        // 4. Playlists: the newer one wins whole (name, songs, order).
+        // 4. Playlists: the newer one wins whole (name, songs, order); the songs added to an imported one merge one by one.
         for p in &s.playlists {
             let Some((source, source_id)) = p.key.split_once(':') else { continue };
             if serde_json::from_value::<Source>(Value::String(source.into())).is_err() || p.updated <= self.gone_at("playlist", &p.key)? {
                 continue;
             }
             let here: Option<(i64, i64)> = self.db.query_row("SELECT id, updated FROM playlists WHERE source = ?1 AND source_id = ?2", params![source, source_id], |r| Ok((r.get(0)?, r.get(1)?))).optional()?;
-            if here.is_some_and(|(_, updated)| updated >= p.updated) {
-                continue;
-            }
-            let name: String = p.name.chars().take(200).collect();
             let id = match here {
-                Some((id, _)) => {
-                    self.db.execute("UPDATE playlists SET name = ?2, newest_first = ?3, order_manual = ?4 WHERE id = ?1", params![id, name, p.newest_first, p.order_manual])?;
+                // This PC's is newer: kept, but the added songs below still join.
+                Some((id, updated)) if updated >= p.updated => id,
+                _ => {
+                    let name: String = p.name.chars().take(200).collect();
+                    let id = match here {
+                        Some((id, _)) => {
+                            self.db.execute("UPDATE playlists SET name = ?2, newest_first = ?3, order_manual = ?4 WHERE id = ?1", params![id, name, p.newest_first, p.order_manual])?;
+                            id
+                        }
+                        None => self.db.query_row(
+                            "INSERT INTO playlists (source, source_id, name, custom, newest_first, order_manual) VALUES (?1, ?2, ?3, ?4, ?5, ?6) RETURNING id",
+                            params![source, source_id, name, p.custom, p.newest_first, p.order_manual],
+                            |r| r.get(0),
+                        )?,
+                    };
+                    let mut ids = Vec::with_capacity(p.tracks.len());
+                    for i in &p.tracks {
+                        ids.extend(row(*i, &mut m)?);
+                    }
+                    self.db.execute("DELETE FROM playlist_tracks WHERE playlist_id = ?1", [id])?;
+                    let mut ins = self.db.prepare_cached("INSERT INTO playlist_tracks (playlist_id, position, track_id) VALUES (?1, ?2, ?3)")?;
+                    for (pos, t) in ids.iter().enumerate() {
+                        ins.execute(params![id, pos as i64, t])?;
+                    }
+                    self.db.execute("UPDATE playlists SET updated = ?2 WHERE id = ?1", params![id, p.updated])?;
+                    m.playlists += 1;
                     id
                 }
-                None => self.db.query_row(
-                    "INSERT INTO playlists (source, source_id, name, custom, newest_first, order_manual) VALUES (?1, ?2, ?3, ?4, ?5, ?6) RETURNING id",
-                    params![source, source_id, name, p.custom, p.newest_first, p.order_manual],
-                    |r| r.get(0),
-                )?,
             };
-            let mut ids = Vec::with_capacity(p.tracks.len());
-            for i in &p.tracks {
-                ids.extend(row(*i, &mut m)?);
+            if p.custom {
+                continue;
             }
-            self.db.execute("DELETE FROM playlist_tracks WHERE playlist_id = ?1", [id])?;
-            let mut ins = self.db.prepare_cached("INSERT INTO playlist_tracks (playlist_id, position, track_id) VALUES (?1, ?2, ?3)")?;
-            for (pos, t) in ids.iter().enumerate() {
-                ins.execute(params![id, pos as i64, t])?;
-            }
-            // Songs added to an imported one on that PC: kept through this PC's next imports too, in the same order.
-            self.db.execute("DELETE FROM playlist_added WHERE playlist_id = ?1", [id])?;
-            for (k, i) in p.added.iter().enumerate() {
-                if let Some(t) = row(*i, &mut m)? {
-                    self.db.execute("INSERT OR IGNORE INTO playlist_added (playlist_id, track_id, at) VALUES (?1, ?2, ?3)", params![id, t, p.updated + k as i64])?;
+            // Songs added to it on that PC join this one's (2026-11-18: a whole-playlist win lost an add made on a PC whose
+            // copy was older), unless a removal came after the add.
+            for (i, at) in &p.added {
+                let Some(t) = row(*i, &mut m)? else { continue };
+                let r = track_ref(*i)?;
+                if self.added_gone_at(&added_keys(&p.key, &r.ids, &r.title, &r.artist))? >= *at {
+                    continue;
                 }
+                self.db.execute("INSERT OR IGNORE INTO playlist_added (playlist_id, track_id, at) VALUES (?1, ?2, ?3)", params![id, t, at])?;
             }
-            self.db.execute("UPDATE playlists SET updated = ?2 WHERE id = ?1", params![id, p.updated])?;
-            m.playlists += 1;
+            self.settle_added(id, &p.key)?;
         }
 
         // 5. Mix preferences.
@@ -908,6 +974,74 @@ mod tests {
         let titles: Vec<String> = b.playlist_tracks(pb)?.into_iter().map(|t| t.track.title).collect();
         assert_eq!(titles, ["Y", "X"]);
         assert_eq!(b.playlists()?[0].added.as_ref().map(Vec::len), Some(1));
+        Ok(())
+    }
+
+    fn titles_of(lib: &Library) -> Result<Vec<String>> {
+        let id = lib.playlists()?[0].id;
+        Ok(lib.playlist_tracks(id)?.into_iter().map(|t| t.track.title).collect())
+    }
+
+    #[test]
+    fn an_import_on_the_other_pc_never_drops_a_song_added_here() -> Result<()> {
+        let a = Library::in_memory()?;
+        let b = Library::in_memory()?;
+        a.save_playlist(Source::Spotify, "p1", "Road trip", &[song("Y", "y1")])?;
+        b.save_playlist(Source::Spotify, "p1", "Road trip", &[song("Y", "y1")])?;
+        let x = a.upsert_track(&song("X", "x1"))?;
+        std::thread::sleep(std::time::Duration::from_millis(5));
+        a.edit_playlist(PlaylistEdit::Add { id: a.playlists()?[0].id, track_ids: vec![x] })?;
+        // B never read A's file, and imports the playlist again later (the service gained Z): B's copy is the newer one.
+        std::thread::sleep(std::time::Duration::from_millis(5));
+        b.save_playlist(Source::Spotify, "p1", "Road trip", &[song("Y", "y1"), song("Z", "z1")])?;
+        a.merge(&snap(&b))?;
+        assert_eq!(titles_of(&a)?, ["Y", "Z", "X"]);
+        assert_eq!(a.playlists()?[0].added.as_ref().map(Vec::len), Some(1));
+        // And B gets it from A, its own import kept.
+        b.merge(&snap(&a))?;
+        assert_eq!(titles_of(&b)?, ["Y", "Z", "X"]);
+        Ok(())
+    }
+
+    #[test]
+    fn a_song_taken_out_on_one_pc_leaves_the_others() -> Result<()> {
+        let a = Library::in_memory()?;
+        let b = Library::in_memory()?;
+        a.save_playlist(Source::Spotify, "p1", "Road trip", &[song("Y", "y1")])?;
+        let x = a.upsert_track(&song("X", "x1"))?;
+        std::thread::sleep(std::time::Duration::from_millis(5));
+        a.edit_playlist(PlaylistEdit::Add { id: a.playlists()?[0].id, track_ids: vec![x] })?;
+        b.merge(&snap(&a))?;
+        assert_eq!(titles_of(&b)?, ["Y", "X"]);
+        // B's copy turns newer (its own import), then A takes the song out: A's removal still wins on B, and B's file
+        // does not bring it back to A.
+        std::thread::sleep(std::time::Duration::from_millis(5));
+        a.edit_playlist(PlaylistEdit::RemoveTrack { id: a.playlists()?[0].id, track_id: x })?;
+        std::thread::sleep(std::time::Duration::from_millis(5));
+        b.save_playlist(Source::Spotify, "p1", "Road trip", &[song("Y", "y1"), song("Z", "z1")])?;
+        b.merge(&snap(&a))?;
+        assert_eq!(titles_of(&b)?, ["Y", "Z"]);
+        assert_eq!(b.playlists()?[0].added, None);
+        a.merge(&snap(&b))?;
+        assert_eq!(titles_of(&a)?, ["Y", "Z"]);
+        Ok(())
+    }
+
+    #[test]
+    fn a_file_from_an_older_app_without_added_keeps_the_song() -> Result<()> {
+        let a = Library::in_memory()?;
+        a.save_playlist(Source::Spotify, "p1", "Road trip", &[song("Y", "y1")])?;
+        let x = a.upsert_track(&song("X", "x1"))?;
+        std::thread::sleep(std::time::Duration::from_millis(5));
+        a.edit_playlist(PlaylistEdit::Add { id: a.playlists()?[0].id, track_ids: vec![x] })?;
+        // An older app's file: the playlist imported there later, without the song, and no `added` at all.
+        let old = Library::in_memory()?;
+        std::thread::sleep(std::time::Duration::from_millis(5));
+        old.save_playlist(Source::Spotify, "p1", "Road trip", &[song("Y", "y1")])?;
+        let mut file = snap(&old);
+        file.playlists[0].added.clear();
+        a.merge(&file)?;
+        assert_eq!(titles_of(&a)?, ["Y", "X"]);
         Ok(())
     }
 
