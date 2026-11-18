@@ -31,9 +31,26 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # macOS is the costly runner and only a Rust change can break it there (the front end's tests run the same on Windows): on
+      # a push or a pull request that touches none of the Rust, the shell or this workflow, its job stays green and skips the
+      # rest. Anything unclear (no base commit, a failed fetch, another system) runs everything.
+      - id: scope
+        shell: bash
+        run: |
+          run=true
+          if [ "$RUNNER_OS" = macOS ]; then
+            base="${{ github.event.pull_request.base.sha || github.event.before }}"
+            case "$base" in 0000000*) base="" ;; esac
+            if [ -n "$base" ] && git fetch --no-tags --depth=1 origin "$base" 2>/dev/null; then
+              git diff --name-only "$base" HEAD | grep -qE '^(crates/|src-tauri/|Cargo\.(toml|lock)$|rust-toolchain|\.github/workflows/check\.yml$)' || run=false
+            fi
+          fi
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+          [ "$run" = true ] || echo "macOS: no Rust change in this push, the rest of this job is skipped."
+
       # Crates only: ALSA headers for the player (OpenSSL and pkg-config come with the runner). A slow Ubuntu mirror
       # used to hang `apt-get update` for 20+ minutes: short timeouts, retries, a cap on the step.
-      - if: runner.os == 'Linux'
+      - if: (runner.os == 'Linux') && steps.scope.outputs.run != 'false'
         timeout-minutes: 8
         run: |
           APT="-o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20"
@@ -41,38 +58,41 @@ jobs:
           sudo apt-get $APT install -y --no-install-recommends pkg-config libssl-dev libasound2-dev
 
       # No "packageManager" in package.json, so pin the major here (drop `version` if one is added).
-      - if: runner.os != 'Linux'
+      - if: (runner.os != 'Linux') && steps.scope.outputs.run != 'false'
         uses: pnpm/action-setup@v6
         with:
           version: 10
 
-      - if: runner.os != 'Linux'
+      - if: (runner.os != 'Linux') && steps.scope.outputs.run != 'false'
         uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
 
       - uses: dtolnay/rust-toolchain@stable
+        if: steps.scope.outputs.run != 'false'
         with:
           components: clippy
 
       - uses: Swatinem/rust-cache@v2
+        if: steps.scope.outputs.run != 'false'
 
-      - if: runner.os != 'Linux'
+      - if: (runner.os != 'Linux') && steps.scope.outputs.run != 'false'
         run: pnpm install --frozen-lockfile
 
       # tauri::generate_context! needs the frontend build output (dist/) to exist.
-      - if: runner.os != 'Linux'
+      - if: (runner.os != 'Linux') && steps.scope.outputs.run != 'false'
         run: pnpm vite build
 
       # JS at launch under its budget (scripts/budget.mjs): a large regression fails here.
-      - if: runner.os == 'Windows'
+      - if: (runner.os == 'Windows') && steps.scope.outputs.run != 'false'
         run: node scripts/budget.mjs
 
       - run: cargo fetch --locked
+        if: steps.scope.outputs.run != 'false'
 
       # No test may reach the network: anything but loopback goes to a dead proxy (mockito servers are on 127.0.0.1).
-      - if: runner.os != 'Linux'
+      - if: (runner.os != 'Linux') && steps.scope.outputs.run != 'false'
         run: pnpm check
         env:
           CARGO_NET_OFFLINE: true
@@ -84,13 +104,13 @@ jobs:
       # pnpm check began by writing the interface's types from the Rust ones (scripts/types.mjs): they must be what is
       # committed. Intent-to-add, so a new type's file counts too. Windows only: Linux leaves out the app crate, which
       # holds some of the types.
-      - if: runner.os == 'Windows'
+      - if: (runner.os == 'Windows') && steps.scope.outputs.run != 'false'
         shell: bash
         run: |
           git add --intent-to-add ui/src/shared/generated
           git diff --exit-code ui/src/shared/generated || { echo '::error::Generated types are stale: run pnpm types and commit ui/src/shared/generated'; exit 1; }
 
-      - if: runner.os == 'Linux'
+      - if: (runner.os == 'Linux') && steps.scope.outputs.run != 'false'
         run: |
           cargo clippy --workspace --exclude legato --all-targets -- -D warnings
           cargo test --workspace --exclude legato
