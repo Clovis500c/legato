@@ -64,6 +64,9 @@ pub async fn album_info(state: State<'_, AppState>, artist: String, album: Strin
     }))
 }
 
+/// Google refused a YouTube Music list lately: every list and radio waits (`searchpace::Quiet`), Mixes' radios included.
+pub(crate) static LISTS_QUIET: std::sync::Mutex<music_core::searchpace::Quiet> = std::sync::Mutex::new(music_core::searchpace::Quiet::new());
+
 /// Songs of a home card's playlist, album or radio: played without importing it.
 #[tauri::command]
 pub async fn ytm_list(state: State<'_, AppState>, list: ListRef) -> CmdResult<Vec<Track>> {
@@ -77,7 +80,7 @@ pub async fn ytm_list(state: State<'_, AppState>, list: ListRef) -> CmdResult<Ve
     }
     // Signed out: public lists (an artist's albums and playlists) still open.
     let yt = state.ytm_or_public();
-    let tracks = yt.list_tracks(&list).await.map_err(err)?;
+    let tracks = yt.list_tracks_quiet(&list, &LISTS_QUIET).await.map_err(err)?;
     Ok((*state.cache.lists.put(&key, tracks)).clone())
 }
 

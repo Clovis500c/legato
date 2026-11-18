@@ -120,6 +120,27 @@ impl Sparse {
     }
 }
 
+/// YouTube Music's lists and radios (Up next's end, a mix, the Mixes page, a Home card): after a refusal none is asked for
+/// 15 minutes, by any of them; they answer at once from the cache or with an error (2026-11-18: each run-out asked again).
+#[derive(Default)]
+pub struct Quiet {
+    until: Option<Instant>,
+}
+
+impl Quiet {
+    pub const fn new() -> Self {
+        Quiet { until: None }
+    }
+
+    pub fn may_ask(&self, now: Instant) -> bool {
+        !self.until.is_some_and(|at| now < at)
+    }
+
+    pub fn refused(&mut self, now: Instant) {
+        self.until = Some(now + SPARSE_REFUSED);
+    }
+}
+
 /// Artist pictures for the big title (the owner's choice 2026-11-11): each name asked once, then kept by the caller's
 /// cache; a name that gave nothing waits 6 hours before another try, a refusal stops every lookup for 15 minutes. The
 /// caller runs them one at a time.
@@ -237,6 +258,15 @@ mod tests {
     }
 
     const SECOND: Duration = Duration::from_secs(1);
+
+    #[test]
+    fn lists_stay_quiet_for_15_minutes_after_a_refusal() {
+        let (t0, mut q) = (Instant::now(), Quiet::default());
+        assert!(q.may_ask(t0));
+        q.refused(t0);
+        assert!(!q.may_ask(t0 + 14 * 60 * SECOND));
+        assert!(q.may_ask(t0 + 15 * 60 * SECOND));
+    }
 
     #[test]
     fn artist_lookups_skip_a_recent_miss_and_stop_after_a_refusal() {

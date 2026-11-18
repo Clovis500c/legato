@@ -4,6 +4,8 @@
 use super::{ARTISTS, YouTubeMusic, all, big_thumb, explicit_badge, page_type, parse_duration, row_track, row_track_with, text};
 use anyhow::Result;
 use music_core::matching::normalize;
+use music_core::searchpace::{Quiet, refused};
+use std::time::Instant;
 use music_core::model::{Source, Track};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
@@ -409,6 +411,19 @@ impl YouTubeMusic {
             }
         }
     }
+
+    /// `list_tracks` unless Google refused a list lately (`quiet`, shared by every caller): a refusal is remembered and the
+    /// next ones fail at once with no request, never sooner and never another way.
+    pub async fn list_tracks_quiet(&self, list: &ListRef, quiet: &std::sync::Mutex<Quiet>) -> Result<Vec<Track>> {
+        anyhow::ensure!(quiet.lock().unwrap().may_ask(Instant::now()), "YouTube Music refused a moment ago: asked again in a few minutes");
+        let r = self.list_tracks(list).await;
+        if let Err(e) = &r
+            && refused(&e.to_string())
+        {
+            quiet.lock().unwrap().refused(Instant::now());
+        }
+        r
+    }
 }
 
 #[cfg(test)]
@@ -619,6 +634,19 @@ mod tests {
         let yt = YouTubeMusic::anonymous_with_api(&s.url());
         assert!(yt.artist_or_channel("prodphanda", &[], None, Some("vid1")).await.is_err());
         search.assert_async().await;
+        next.assert_async().await;
+    }
+
+    #[tokio::test]
+    async fn a_refused_radio_keeps_the_next_ones_quiet() {
+        let mut s = mockito::Server::new_async().await;
+        let next = s.mock("POST", "/next").match_query(mockito::Matcher::Any).with_status(429).with_body("Sorry").expect(1).create_async().await;
+        let yt = YouTubeMusic::anonymous_with_api(&s.url());
+        let quiet = std::sync::Mutex::new(Quiet::default());
+        let radio = |v: &str| ListRef::Radio { video_id: Some(v.into()), playlist_id: format!("RDAMVM{v}") };
+        assert!(yt.list_tracks_quiet(&radio("a1"), &quiet).await.unwrap_err().to_string().contains("429"));
+        // Another radio, right after: no request at all.
+        assert!(yt.list_tracks_quiet(&radio("b2"), &quiet).await.unwrap_err().to_string().contains("refused a moment ago"));
         next.assert_async().await;
     }
 

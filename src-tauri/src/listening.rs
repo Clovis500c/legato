@@ -96,7 +96,7 @@ pub async fn radios(state: &AppState, seeds: Vec<(i64, String)>) -> Vec<(i64, Ve
         }
         // Signed out: anonymous radios.
         let yt = yt.get_or_insert_with(|| Arc::new(state.ytm_or_public())).clone();
-        asked.push((id, video, tauri::async_runtime::spawn(async move { yt.list_tracks(&list).await })));
+        asked.push((id, video, tauri::async_runtime::spawn(async move { yt.list_tracks_quiet(&list, &crate::ytm_browse::LISTS_QUIET).await })));
     }
     for (id, video, task) in asked {
         if let Ok(Ok(tracks)) = task.await {
