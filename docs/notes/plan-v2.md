@@ -773,6 +773,7 @@ video ahead, no Spotify previews, Android as the APK with its own updates (no Pl
 - [ ] `S` Streamed songs: genre, year and tempo are not filled (no source gives them without a new host).
 - [ ] `S` Last.fm "Discoveries": left for the owner (its public API has changed).
 - [ ] `S` Internet radio: a phone tab, and the station's own metadata (no ICY).
+  2026-11-18 (lot 63): the phone tab is done: Radio is the 5th bottom tab (`PhoneTabs.tsx`, the lit tab chosen by the pure `tabLogic.ts`, tested), since the sidebar that holds Radio is hidden on a phone. Untried on a phone (5 tabs at 375 px). Left: the station's own metadata (ICY, a stream read: needs a real station).
 - [ ] `S` Focus / workout sessions: the session itself (timer, no-lyrics filter, summary) is left.
 - [ ] `S` Smart playlists from words: the LLM half, with the user's own key, is left for the owner (a service and a privacy row to decide).
 - [ ] `M` Blind test: left out, the artist-only guess, the answer timer, several players (local or LAN), a game from one playlist.
