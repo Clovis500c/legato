@@ -194,6 +194,14 @@ describe('resume', () => {
     usePlayer.getState().resume({ list, index: 0, order: [], added: [2], shuffle: false, repeat: 'off', positionMs: 0, paused: true })
     expect(usePlayer.getState().added).toEqual([])
   })
+
+  it('brings back its "From …"; a resume that names none (a room, a blind test) leaves no old one', () => {
+    const list = [song(7), song(8)]
+    usePlayer.getState().resume({ list, index: 0, order: [0, 1], shuffle: false, repeat: 'off', positionMs: 0, paused: true, from: 'Road trip', fromKind: 'playlist', fromId: 3 })
+    expect(usePlayer.getState()).toMatchObject({ from: 'Road trip', fromKind: 'playlist', fromId: 3 })
+    usePlayer.getState().resume({ list, index: 0, order: [0, 1], shuffle: false, repeat: 'off', positionMs: 0, paused: true })
+    expect(usePlayer.getState().from).toBeUndefined()
+  })
 })
 
 describe('pause while a YouTube video starts', () => {

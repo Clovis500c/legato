@@ -1,5 +1,6 @@
 import { useStore } from '../../app/store'
 import { api, type LibraryTrack } from '../../shared/api'
+import { FROM_KINDS, type FromKind } from './fromLabel'
 import type { Repeat } from './queue'
 import type { Via } from './sources'
 import { remoteTrack, usePlayer } from './store'
@@ -22,6 +23,10 @@ export interface Session {
   paused?: boolean
   /** When it was saved (unix ms): Sync Mode's other PCs offer the newest (pick up on another PC). */
   at?: number
+  /** Where the queue was started, Now Playing's "From …" (the owner, 2026-11-17: lost at each launch). */
+  from?: string
+  fromKind?: FromKind
+  fromId?: number
 }
 
 /** Saved with its time. */
@@ -31,7 +36,7 @@ const MAX_IDS = 10_000
 const MAX_REMOTE = 150
 
 /** What to save from the player, or null when nothing from the library plays. */
-export function snapshot(p: { now?: { trackId?: number; via: Via }; list: LibraryTrack[]; index: number; order: number[]; added?: number[]; shuffle: boolean; repeat: Repeat; positionMs: number; volume: number; playing?: boolean }): Session | null {
+export function snapshot(p: { now?: { trackId?: number; via: Via }; list: LibraryTrack[]; index: number; order: number[]; added?: number[]; shuffle: boolean; repeat: Repeat; positionMs: number; volume: number; playing?: boolean; from?: string; fromKind?: FromKind; fromId?: number }): Session | null {
   if (!p.now?.trackId || !p.list.length) return null
   // Huge queues: keep a window around the current track.
   const from = Math.max(0, Math.min(p.index - MAX_IDS / 2, p.list.length - MAX_IDS))
@@ -39,7 +44,7 @@ export function snapshot(p: { now?: { trackId?: number; via: Via }; list: Librar
   const order = from || list.length < p.list.length ? [] : p.order
   // shortcut: remote songs far from the current one are dropped (session size cap), keep more if queues grow huge.
   const remote = list.filter((t, i) => t.id < 0 && Math.abs(i - (p.index - from)) <= MAX_REMOTE)
-  return { ids: list.map((t) => t.id), remote, index: p.index - from, order, added: order.length ? (p.added ?? []) : [], shuffle: p.shuffle, repeat: p.repeat, positionMs: Math.round(p.positionMs), via: p.now.via, volume: p.volume, paused: p.playing === false }
+  return { ids: list.map((t) => t.id), remote, index: p.index - from, order, added: order.length ? (p.added ?? []) : [], shuffle: p.shuffle, repeat: p.repeat, positionMs: Math.round(p.positionMs), via: p.now.via, volume: p.volume, paused: p.playing === false, from: p.from, fromKind: p.fromKind, fromId: p.fromId }
 }
 
 const isInt = (v: unknown): v is number => Number.isInteger(v) && (v as number) >= 0
@@ -55,7 +60,7 @@ function remoteBack(v: unknown): [number, LibraryTrack][] {
  * Stored session → queue on today's library. Tracks deleted since are dropped; the current one gone = nothing to
  * resume (volume still comes back).
  */
-export function restore(raw: unknown, tracks: LibraryTrack[]): { volume: number; queue: { list: LibraryTrack[]; index: number; order: number[]; added: number[]; shuffle: boolean; repeat: Repeat; positionMs: number; via?: Via; paused: boolean } | null } | null {
+export function restore(raw: unknown, tracks: LibraryTrack[]): { volume: number; queue: { list: LibraryTrack[]; index: number; order: number[]; added: number[]; shuffle: boolean; repeat: Repeat; positionMs: number; via?: Via; paused: boolean; from?: string; fromKind?: FromKind; fromId?: number } | null } | null {
   if (!raw || typeof raw !== 'object') return null
   const r = raw as Record<string, unknown>
   const volume = typeof r.volume === 'number' && r.volume >= 0 && r.volume <= 1 ? r.volume : 1
@@ -75,9 +80,13 @@ export function restore(raw: unknown, tracks: LibraryTrack[]): { volume: number;
   // What the user queued plays next only in that order: without it, they're part of the list again.
   const added = order.length && Array.isArray(r.added) ? r.added.filter((i): i is number => isInt(i) && i < list.length) : []
   const via = (['local', 'server', 'youtube', 'spotify', 'preview'] as const).find((v) => v === r.via)
+  // The words as saved: a playlist renamed since keeps its old name, as it does while it plays.
+  const from = typeof r.from === 'string' && r.from ? r.from : undefined
+  const fromKind = from ? FROM_KINDS.find((k) => k === r.fromKind) : undefined
+  const fromId = from && isInt(r.fromId) ? r.fromId : undefined
   return {
     volume,
-    queue: { list, index, order, added, shuffle: r.shuffle === true, repeat: r.repeat === 'all' || r.repeat === 'one' ? r.repeat : 'off', positionMs: isInt(r.positionMs) ? r.positionMs : 0, via, paused: r.paused === true },
+    queue: { list, index, order, added, shuffle: r.shuffle === true, repeat: r.repeat === 'all' || r.repeat === 'one' ? r.repeat : 'off', positionMs: isInt(r.positionMs) ? r.positionMs : 0, via, paused: r.paused === true, from, fromKind, fromId },
   }
 }
 

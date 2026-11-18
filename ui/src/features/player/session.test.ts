@@ -25,6 +25,15 @@ describe('session', () => {
     expect(restore({ ...served, via: 'elsewhere' }, lib)?.queue?.via).toBeUndefined()
   })
 
+  it('keeps where the queue was started (Now Playing\'s "From …") through a relaunch, junk dropped', () => {
+    const s = JSON.parse(JSON.stringify(snapshot({ ...player, from: 'Road trip', fromKind: 'playlist', fromId: 7 })))
+    expect(restore(s, lib)?.queue).toMatchObject({ from: 'Road trip', fromKind: 'playlist', fromId: 7 })
+    const odd = restore({ ...s, fromKind: 'elsewhere', fromId: -1 }, lib)?.queue
+    expect([odd?.from, odd?.fromKind, odd?.fromId]).toEqual(['Road trip', undefined, undefined])
+    const none = restore({ ...s, from: 5 }, lib)?.queue
+    expect([none?.from, none?.fromKind, none?.fromId]).toEqual([undefined, undefined, undefined])
+  })
+
   it('remembers a pause (an update relaunch comes back paused)', () => {
     const s = JSON.parse(JSON.stringify(snapshot({ ...player, playing: false })))
     expect(restore(s, lib)?.queue?.paused).toBe(true)

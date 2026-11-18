@@ -132,7 +132,7 @@ interface PlayerState {
   /** Queue item `index` through `via` (default: best source). auto = previous one ended; from = start position, ms. */
   playAt: (index: number, via?: Via, opts?: { auto?: boolean; from?: number; hold?: boolean }) => Promise<void>
   /** Last session's queue, picked up where it stopped. */
-  resume: (s: { list: LibraryTrack[]; index: number; order: number[]; added?: number[]; shuffle: boolean; repeat: Repeat; positionMs: number; via?: Via; paused?: boolean }) => void
+  resume: (s: { list: LibraryTrack[]; index: number; order: number[]; added?: number[]; shuffle: boolean; repeat: Repeat; positionMs: number; via?: Via; paused?: boolean; from?: string; fromKind?: FromKind; fromId?: number }) => void
   /** Plays a song change on the current song: fade out, silence, fade in (curve editor's Try it). */
   previewFade: () => void
   /** Sends volume × fade to whatever plays. force = even if unchanged. */
@@ -700,10 +700,10 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     set({ repeat })
   },
 
-  resume({ list, index, order, added = [], shuffle, repeat, positionMs, via, paused = false }) {
+  resume({ list, index, order, added = [], shuffle, repeat, positionMs, via, paused = false, from, fromKind, fromId }) {
     const valid = order.length === list.length && order.includes(index)
     // Queued songs come back with their order (session.ts); a rebuilt order makes them part of the list again.
-    set({ list, shuffle, repeat, order: valid ? order : shuffleOrder(get(), list, index, shuffle), added: valid ? added : [], from: undefined, fromKind: undefined, fromId: undefined })
+    set({ list, shuffle, repeat, order: valid ? order : shuffleOrder(get(), list, index, shuffle), added: valid ? added : [], from, fromKind, fromId })
     void get().playAt(index, via, { from: positionMs, hold: paused })
   },
 
