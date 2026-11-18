@@ -64,7 +64,8 @@ pub async fn album_info(state: State<'_, AppState>, artist: String, album: Strin
     }))
 }
 
-/// Google refused a YouTube Music list lately: every list and radio waits (`searchpace::Quiet`), Mixes' radios included.
+/// Google refused a YouTube Music list lately: every list, radio and artist page asked from here waits (`searchpace::Quiet`),
+/// Mixes' radios and a mix's related artists included.
 pub(crate) static LISTS_QUIET: std::sync::Mutex<music_core::searchpace::Quiet> = std::sync::Mutex::new(music_core::searchpace::Quiet::new());
 
 /// Songs of a home card's playlist, album or radio: played without importing it.
@@ -116,6 +117,22 @@ pub async fn ytm_artist(state: State<'_, AppState>, name: String, titles: Option
     if let Some(hit) = state.cache.artists.get(&key) {
         return Ok((*hit).clone());
     }
-    let page = artist_page_for(&state, &name, &crate::song_titles(titles), video).await.map_err(err)?;
+    let page = music_connectors::ytmusic::quietly(&LISTS_QUIET, artist_page_for(&state, &name, &crate::song_titles(titles), video)).await.map_err(err)?;
+    Ok((*state.cache.artists.put(&key, page)).clone())
+}
+
+/// An artist's page by its channel (`UC…`, from another page's "Fans might also like"): one `browse`, no search by name.
+/// Public page, asked without the account; quiet after a refusal like the lists.
+#[tauri::command]
+pub async fn ytm_channel(state: State<'_, AppState>, id: String) -> CmdResult<Option<Artist>> {
+    // Trust boundary: the id goes into a YouTube request.
+    if !music_connectors::ytmusic::valid_channel(&id) {
+        return Err("Invalid channel".into());
+    }
+    let key = format!("channel:{id}");
+    if let Some(hit) = state.cache.artists.get(&key) {
+        return Ok((*hit).clone());
+    }
+    let page = music_connectors::ytmusic::quietly(&LISTS_QUIET, public_ytm().channel(&id)).await.map_err(err)?;
     Ok((*state.cache.artists.put(&key, page)).clone())
 }

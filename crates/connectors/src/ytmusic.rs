@@ -17,7 +17,7 @@ use std::sync::LazyLock;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 mod home;
-pub use home::{Artist, Home, HomeItem, ListRef, Mood, Shelf, valid_mood};
+pub use home::{Artist, Home, HomeItem, ListRef, Mood, Shelf, quietly, valid_channel, valid_mood};
 
 pub const API: &str = "https://music.youtube.com/youtubei/v1";
 /// Start of the error when Google refuses the session as signed out (401): its cookies went stale (src-tauri ytm.rs).

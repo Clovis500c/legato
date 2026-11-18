@@ -13,7 +13,8 @@ export type YtmArtist = { name: string, art: string | null, songs: Array<Track>,
  */
 about: string | null, 
 /**
- * The names the page's "Fans might also like" carousel lists (artists YouTube Music says go with this one), 6 at most; none when
- * the page has no such carousel or its cards carry no artist channel (it fails empty).
+ * The channels (`UC…`) of the artists the page's "Fans might also like" carousel lists (YouTube Music says they go with
+ * this one), 6 at most: their pages are asked by id, never searched by name. None when the page has no such carousel
+ * or its cards carry no artist channel (it fails empty).
  */
 related: Array<string>, };

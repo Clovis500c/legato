@@ -58,7 +58,7 @@ const FANS_FROM = 5
  * The top songs of the first `FANS` artists YouTube Music says go with the seed's ("Fans might also like"), one request each: candidates
  * placed after the radios' best, one vote. No related artist: no request. A refusal: nothing from them and no further request.
  */
-export async function fansOf(related: readonly string[], askTop: (artist: string) => Promise<LibraryTrack[]>): Promise<Candidate[]> {
+export async function fansOf(related: readonly string[], askTop: (channel: string) => Promise<LibraryTrack[]>): Promise<Candidate[]> {
   const out: Candidate[] = []
   for (const name of related.slice(0, FANS)) {
     try {

@@ -71,8 +71,9 @@ pub struct Artist {
     pub shelves: Vec<Shelf>,
     /// The page's "About" text, as YouTube Music shows it (often Wikipedia's, its credit line kept at the end).
     pub about: Option<String>,
-    /// The names the page's "Fans might also like" carousel lists (artists YouTube Music says go with this one), 6 at most; none when
-    /// the page has no such carousel or its cards carry no artist channel (it fails empty).
+    /// The channels (`UC…`) of the artists the page's "Fans might also like" carousel lists (YouTube Music says they go with
+    /// this one), 6 at most: their pages are asked by id, never searched by name. None when the page has no such carousel
+    /// or its cards carry no artist channel (it fails empty).
     pub related: Vec<String>,
 }
 
@@ -278,7 +279,7 @@ fn artist_page(page: &Value) -> Option<Artist> {
     Some(Artist { name, art: last_thumb(header.get("thumbnail")), songs, all_songs, shelves: shelves(page), about: about(page, header), related: related(page) })
 }
 
-/// "Fans might also like": the artist cards' names (a card links an artist channel, `UC…`), at most `RELATED`.
+/// "Fans might also like": the artist cards' channels (`UC…`, a named card's), at most `RELATED`.
 fn related(page: &Value) -> Vec<String> {
     all(page, "musicCarouselShelfRenderer")
         .into_iter()
@@ -287,7 +288,8 @@ fn related(page: &Value) -> Vec<String> {
         .filter_map(|c| {
             let card = c.get("musicTwoRowItemRenderer")?;
             let id = card.pointer("/navigationEndpoint/browseEndpoint/browseId")?.as_str()?;
-            valid_channel(id).then(|| card.get("title").and_then(text)).flatten().filter(|n| !n.trim().is_empty())
+            let named = card.get("title").and_then(text).is_some_and(|n| !n.trim().is_empty());
+            (named && valid_channel(id)).then(|| id.to_string())
         })
         .take(RELATED)
         .collect()
@@ -435,15 +437,21 @@ impl YouTubeMusic {
     /// `list_tracks` unless Google refused a list lately (`quiet`, shared by every caller): a refusal is remembered and the
     /// next ones fail at once with no request, never sooner and never another way.
     pub async fn list_tracks_quiet(&self, list: &ListRef, quiet: &std::sync::Mutex<Quiet>) -> Result<Vec<Track>> {
-        anyhow::ensure!(quiet.lock().unwrap().may_ask(Instant::now()), "YouTube Music refused a moment ago: asked again in a few minutes");
-        let r = self.list_tracks(list).await;
-        if let Err(e) = &r
-            && refused(&e.to_string())
-        {
-            quiet.lock().unwrap().refused(Instant::now());
-        }
-        r
+        quietly(quiet, self.list_tracks(list)).await
     }
+}
+
+/// `ask` unless Google refused a list, a radio or an artist page lately (`quiet`, shared by every caller): a refusal is
+/// remembered and the next ones fail at once with no request, never sooner and never another way.
+pub async fn quietly<T>(quiet: &std::sync::Mutex<Quiet>, ask: impl std::future::Future<Output = Result<T>>) -> Result<T> {
+    anyhow::ensure!(quiet.lock().unwrap().may_ask(Instant::now()), "YouTube Music refused a moment ago: asked again in a few minutes");
+    let r = ask.await;
+    if let Err(e) = &r
+        && refused(&e.to_string())
+    {
+        quiet.lock().unwrap().refused(Instant::now());
+    }
+    r
 }
 
 #[cfg(test)]
@@ -561,7 +569,7 @@ mod tests {
         assert_eq!(a.all_songs, Some(ListRef::Browse { id: "VLOLAK5uy_top".into() }));
         assert_eq!(a.shelves.iter().map(|s| s.title.as_str()).collect::<Vec<_>>(), ["Featured on"], "artists-only shelf dropped");
         assert_eq!(a.about, None, "no About: none");
-        assert_eq!(a.related, ["Justice"], "the artists carousel is kept as names");
+        assert_eq!(a.related, ["UC9"], "the artists carousel is kept as their channels: the exact page, no name search");
     }
 
     #[test]
@@ -574,7 +582,7 @@ mod tests {
         assert!(related(page(vec![carousel("Featured on", vec![card("A", "UC1")])])).is_empty(), "another carousel");
         // Not an artist channel (a playlist), no name, a bad id: left out, the rest stays.
         let mixed = vec![card("Playlist", "VLPL1"), card(" ", "UC2"), card("Bad", "UC../x"), card("Good", "UC3"), json!({ "musicTwoRowItemRenderer": {} }), json!(null)];
-        assert_eq!(related(page(vec![carousel("Fans might also like", mixed)])), ["Good"]);
+        assert_eq!(related(page(vec![carousel("Fans might also like", mixed)])), ["UC3"]);
         let many: Vec<Value> = (0..10).map(|i| card(&format!("A{i}"), &format!("UC{i}"))).collect();
         assert_eq!(related(page(vec![carousel("Fans might also like", many)])).len(), RELATED);
     }
@@ -684,6 +692,20 @@ mod tests {
         // Another radio, right after: no request at all.
         assert!(yt.list_tracks_quiet(&radio("b2"), &quiet).await.unwrap_err().to_string().contains("refused a moment ago"));
         next.assert_async().await;
+    }
+
+    #[tokio::test]
+    async fn a_refused_artist_page_keeps_the_next_lookups_quiet() {
+        let mut s = mockito::Server::new_async().await;
+        let browse = s.mock("POST", "/browse").match_query(mockito::Matcher::Any).with_status(429).with_body("Sorry").expect(1).create_async().await;
+        let yt = YouTubeMusic::anonymous_with_api(&s.url());
+        let quiet = std::sync::Mutex::new(Quiet::default());
+        assert!(quietly(&quiet, yt.channel("UC1")).await.unwrap_err().to_string().contains("429"));
+        // Another page, or a radio, right after: no request at all.
+        assert!(quietly(&quiet, yt.channel("UC2")).await.unwrap_err().to_string().contains("refused a moment ago"));
+        let radio = ListRef::Radio { video_id: Some("a1".into()), playlist_id: "RDAMVMa1".into() };
+        assert!(yt.list_tracks_quiet(&radio, &quiet).await.is_err());
+        browse.assert_async().await;
     }
 
     #[test]

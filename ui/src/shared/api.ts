@@ -53,6 +53,7 @@ export const api = {
   ytmList: (list: ListRef) => invoke<Track[]>('ytm_list', { list }),
   /** Null = no artist of that name on YouTube Music. Works signed out. */
   ytmArtist: (name: string, titles?: string[], video?: string) => invoke<YtmArtist | null>('ytm_artist', { name, titles, video }),
+  ytmChannel: (id: string) => invoke<YtmArtist | null>('ytm_channel', { id }),
   /** Year and every song of an album from the Apple catalog, with which ones you have. Null = not in the store. */
   tempoScan: (limit: number) => invoke<number>('tempo_scan', { limit }),
   discordLoginStatus: () => invoke<DiscordCard | null>('discord_login_status'),

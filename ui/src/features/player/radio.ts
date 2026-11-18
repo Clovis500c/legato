@@ -105,7 +105,8 @@ export async function startMix(seed: LibraryTrack) {
   const fans = async (t: LibraryTrack): Promise<Candidate[]> => {
     if (!t.ids.youtube) return []
     const page = await api.ytmArtist(primaryArtist(t.artist), [t.title], t.ids.youtube).catch(() => null)
-    return fansOf(page?.related ?? [], async (name) => ((await api.ytmArtist(name))?.songs ?? []).map((s) => remoteTrack(s)))
+    // Their pages by channel id (the carousel's): the exact artist, never a namesake found by a search.
+    return fansOf(page?.related ?? [], async (id) => ((await api.ytmChannel(id))?.songs ?? []).map((s) => remoteTrack(s)))
   }
   const { candidates, library, taste, variety, hour } = await around([seed], fans)
   const { mixFromSong } = await import('./songMix')
