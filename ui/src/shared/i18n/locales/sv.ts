@@ -275,6 +275,7 @@ const sv: Record<string, string> = {
   'Nothing added to {name}: not on that server': 'Inget lades till i {name}: finns inte på den servern',
   'Not added to {name} on your music server: {reason}. Taken back out here.': 'Inte tillagd i {name} på din musikserver: {reason}. Borttagen här igen.',
   'Not removed from {name} on your music server: {reason}. Put back here.': 'Inte borttagen från {name} på din musikserver: {reason}. Tillbakalagd här.',
+  'Not renamed on your music server: {reason}. Called {name} here again.': 'Inte omdöpt på din musikserver: {reason}. Heter {name} här igen.',
   'Add to playlist': 'Lägg till i spellista',
   'New playlist…': 'Ny spellista…',
   'Name of the new playlist': 'Namn på den nya spellistan',

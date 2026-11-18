@@ -275,6 +275,7 @@ const ru: Record<string, string> = {
   'Nothing added to {name}: not on that server': 'Ничего не добавлено в «{name}»: нет на этом сервере',
   'Not added to {name} on your music server: {reason}. Taken back out here.': 'Не добавлено в {name} на музыкальном сервере: {reason}. Здесь тоже убрано.',
   'Not removed from {name} on your music server: {reason}. Put back here.': 'Не удалено из {name} на музыкальном сервере: {reason}. Возвращено сюда.',
+  'Not renamed on your music server: {reason}. Called {name} here again.': 'Не переименовано на вашем музыкальном сервере: {reason}. Здесь снова называется {name}.',
   'Add to playlist': 'Добавить в плейлист',
   'New playlist…': 'Новый плейлист…',
   'Name of the new playlist': 'Название нового плейлиста',

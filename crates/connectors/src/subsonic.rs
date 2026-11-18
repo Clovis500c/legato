@@ -331,6 +331,11 @@ impl Subsonic {
         Ok(id)
     }
 
+    /// A playlist's new name (`updatePlaylist`).
+    pub async fn playlist_rename(&self, id: &str, name: &str) -> Result<()> {
+        self.call("updatePlaylist", &[("playlistId", id), ("name", name)], LIST_TIMEOUT).await.map(|_| ())
+    }
+
     /// A song out of a playlist, every occurrence. `updatePlaylist` removes by position: the playlist is read again
     /// first, so a mirror gone stale never takes another song out.
     pub async fn playlist_remove(&self, id: &str, item: &str) -> Result<()> {
@@ -499,6 +504,16 @@ mod tests {
         for id in ["peaks", "odd", "none"] {
             assert_eq!(sub.replay_gain(id).await.unwrap(), None, "{id}");
         }
+    }
+
+    #[tokio::test]
+    async fn a_playlist_renamed_here_is_renamed_on_the_server() {
+        let mut s = Server::new_async().await;
+        let q = |pairs: &[(&str, &str)]| Matcher::AllOf(pairs.iter().map(|(k, v)| Matcher::UrlEncoded((*k).into(), (*v).into())).chain([signed("me")]).collect());
+        let renamed = s.mock("GET", "/rest/updatePlaylist.view").match_query(q(&[("playlistId", "pl-9"), ("name", "Road trip")])).with_body(ok("")).expect(1).create_async().await;
+        let sub = Subsonic::new(&s.url(), "me", "pw");
+        sub.playlist_rename("pl-9", "Road trip").await.unwrap();
+        renamed.assert_async().await;
     }
 
     #[tokio::test]

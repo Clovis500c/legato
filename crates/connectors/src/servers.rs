@@ -254,6 +254,14 @@ impl Conn {
         }
     }
 
+    /// One of the server's playlists renamed. Subsonic only for now.
+    pub async fn playlist_rename(&self, id: &str, name: &str) -> Result<()> {
+        match self {
+            Self::Subsonic(s) => s.playlist_rename(id, name).await,
+            _ => Err(anyhow::anyhow!(READ_ONLY)),
+        }
+    }
+
     /// A song out of one of the server's playlists, every occurrence. Subsonic only for now.
     pub async fn playlist_remove(&self, id: &str, item: &str) -> Result<()> {
         match self {

@@ -312,6 +312,7 @@ export function App() {
         unlike: tr('Couldn’t take the like back on YouTube Music: {reason}. Still in {name}.', say),
         serverAdd: tr('Not added to {name} on your music server: {reason}. Taken back out here.', say),
         serverRemove: tr('Not removed from {name} on your music server: {reason}. Put back here.', say),
+        serverRename: tr('Not renamed on your music server: {reason}. Called {name} here again.', say),
       }[f.kind]
       useStore.getState().notify(text, { kind: 'error' })
       void useStore.getState().refreshChanged()

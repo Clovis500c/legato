@@ -275,6 +275,7 @@ const ko: Record<string, string> = {
   'Nothing added to {name}: not on that server': '{name}에 추가된 항목 없음: 해당 서버에 없음',
   'Not added to {name} on your music server: {reason}. Taken back out here.': '음악 서버의 {name}에 추가하지 못했습니다: {reason}. 여기서도 다시 뺐습니다.',
   'Not removed from {name} on your music server: {reason}. Put back here.': '음악 서버의 {name}에서 제거하지 못했습니다: {reason}. 여기에 다시 넣었습니다.',
+  'Not renamed on your music server: {reason}. Called {name} here again.': '음악 서버에서 이름을 바꾸지 못했습니다: {reason}. 여기서는 다시 {name}(으)로 표시됩니다.',
   'Add to playlist': '플레이리스트에 추가',
   'New playlist…': '새 플레이리스트…',
   'Name of the new playlist': '새 플레이리스트 이름',

@@ -275,6 +275,7 @@ const de: Record<string, string> = {
   'Nothing added to {name}: not on that server': 'Nichts zu {name} hinzugefügt: nicht auf diesem Server',
   'Not added to {name} on your music server: {reason}. Taken back out here.': 'Nicht zu {name} auf deinem Musikserver hinzugefügt: {reason}. Hier wieder entfernt.',
   'Not removed from {name} on your music server: {reason}. Put back here.': 'Nicht aus {name} auf deinem Musikserver entfernt: {reason}. Hier wieder eingefügt.',
+  'Not renamed on your music server: {reason}. Called {name} here again.': 'Auf deinem Musikserver nicht umbenannt: {reason}. Heißt hier wieder {name}.',
   'Add to playlist': 'Zur Playlist hinzufügen',
   'New playlist…': 'Neue Playlist …',
   'Name of the new playlist': 'Name der neuen Playlist',

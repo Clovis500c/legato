@@ -275,6 +275,7 @@ const vi: Record<string, string> = {
   'Nothing added to {name}: not on that server': 'Không thêm gì vào {name}: không có trên máy chủ đó',
   'Not added to {name} on your music server: {reason}. Taken back out here.': 'Không thêm được vào {name} trên máy chủ nhạc của bạn: {reason}. Đã gỡ lại ở đây.',
   'Not removed from {name} on your music server: {reason}. Put back here.': 'Không xóa được khỏi {name} trên máy chủ nhạc của bạn: {reason}. Đã đặt lại ở đây.',
+  'Not renamed on your music server: {reason}. Called {name} here again.': 'Chưa đổi tên trên máy chủ nhạc của bạn: {reason}. Ở đây lại có tên {name}.',
   'Add to playlist': 'Thêm vào danh sách phát',
   'New playlist…': 'Danh sách phát mới…',
   'Name of the new playlist': 'Tên danh sách phát mới',

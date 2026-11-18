@@ -851,5 +851,6 @@ video ahead, no Spotify previews, Android as the APK with its own updates (no Pl
   (Remove from) from here, sent with `updatePlaylist` in the background and undone here when refused; a
   removal reads the server's list first (it removes by position). 2026-11-13: `createPlaylist` too (a playlist made
   here: menu "Send to <server>", every song must be that server's, then it is mirrored from that server and the
-  next sync finds it by its id). Left: renames and order, Jellyfin and Plex (read-only, said in words). Untried on a real
-  server: mock tests only.
+  next sync finds it by its id). 2026-11-19: renames too (Rename… on a Subsonic playlist whose direction sends:
+  `rename_imported` here, `updatePlaylist` with `name` in the background, the old name back and `serverRename`'s text
+  when refused). Left: order, Jellyfin and Plex (read-only, said in words). Untried on a real server: mock tests only.

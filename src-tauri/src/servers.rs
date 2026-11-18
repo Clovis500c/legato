@@ -550,6 +550,22 @@ pub async fn server_playlist_remove(state: State<'_, AppState>, id: i64, track_i
     Ok(())
 }
 
+/// Rename a playlist of your Subsonic server: here at once, then on the server in the background (`push.rs`), its old
+/// name put back here if it refuses.
+#[tauri::command]
+pub async fn server_playlist_rename(state: State<'_, AppState>, id: i64, name: String) -> CmdResult<()> {
+    let (_, a, remote) = sent_playlist(&state, id)?;
+    let old = state.lib().rename_imported(id, &name).map_err(err)?;
+    let app = state.app.clone();
+    push::later(async move {
+        if let Err(e) = Conn::from_account(&a).playlist_rename(&remote, name.trim()).await {
+            let _ = app.state::<AppState>().lib().rename_imported(id, &old);
+            push::failed(&app, push::Failed { kind: push::Kind::ServerRename, playlist: old, songs: 0, reason: err(e) });
+        }
+    });
+    Ok(())
+}
+
 /// Songs' levelling gains as their servers gave them, by library id (None: it has none). Asked once per run of the app.
 static GAINS: Mutex<Option<HashMap<String, Option<Gain>>>> = Mutex::new(None);
 

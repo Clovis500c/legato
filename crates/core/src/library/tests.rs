@@ -1379,3 +1379,16 @@ fn a_shared_setting_moves_the_devices_sync_but_the_session_and_sync_config_never
     assert!(lib.versions.changes() > before, "a shared setting saved");
     Ok(())
 }
+
+#[test]
+fn an_imported_playlist_renamed_here_says_its_old_name_and_custom_ones_go_their_own_way() -> Result<()> {
+    let lib = Library::in_memory()?;
+    lib.save_playlist(Source::Server, "s1:pl-1", "Road", &served("s1", 2))?;
+    let id = lib.playlists()?.into_iter().find(|p| p.source == Source::Server).unwrap().id;
+    assert_eq!(lib.rename_imported(id, "  Road trip ")?, "Road", "the old name, to put back if the server refuses");
+    assert_eq!(lib.playlists()?.into_iter().find(|p| p.id == id).unwrap().name, "Road trip");
+    assert!(lib.rename_imported(id, "   ").is_err(), "no empty name");
+    let mine = lib.edit_playlist(PlaylistEdit::Create { name: "Mine".into() })?.unwrap();
+    assert!(lib.rename_imported(mine, "x").is_err(), "a custom playlist is renamed by edit_playlist");
+    Ok(())
+}

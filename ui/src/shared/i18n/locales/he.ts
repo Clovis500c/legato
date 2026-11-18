@@ -251,6 +251,7 @@ const he: Record<string, string> = {
   'Nothing added to {name}: not on that server': 'לא נוסף דבר אל {name}: לא בשרת הזה',
   'Not added to {name} on your music server: {reason}. Taken back out here.': 'לא נוסף אל {name} בשרת המוזיקה שלכם: {reason}. הוסר גם כאן.',
   'Not removed from {name} on your music server: {reason}. Put back here.': 'לא הוסר מ-{name} בשרת המוזיקה שלכם: {reason}. הוחזר גם כאן.',
+  'Not renamed on your music server: {reason}. Called {name} here again.': 'לא שונה השם בשרת המוזיקה שלך: {reason}. כאן היא שוב {name}.',
   'Add to playlist': 'הוספה לרשימת השמעה',
   'New playlist…': 'רשימת השמעה חדשה…',
   'Name of the new playlist': 'שם רשימת ההשמעה החדשה',

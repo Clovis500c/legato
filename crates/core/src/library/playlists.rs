@@ -197,6 +197,19 @@ impl Library {
     }
 
     /// Imported playlist mirror after the service dropped a song (custom ones: `edit_playlist`).
+    /// An imported playlist renamed here (a music server's that takes edits: the caller sends it there): its old name,
+    /// to put back if the server refuses. Custom playlists go through `edit_playlist`.
+    pub fn rename_imported(&self, id: i64, name: &str) -> Result<String> {
+        let name = clean_name(name)?;
+        self.tx(|| {
+            anyhow::ensure!(!self.is_custom(id)?, "Not an imported playlist");
+            let old: String = self.db.query_row("SELECT name FROM playlists WHERE id = ?1", [id], |r| r.get(0))?;
+            self.db.execute("UPDATE playlists SET name = ?1 WHERE id = ?2", params![name, id])?;
+            self.touch(id)?;
+            Ok(old)
+        })
+    }
+
     pub fn remove_from_imported(&self, id: i64, track_id: i64) -> Result<()> {
         self.tx(|| self.rewrite(id, |ids| ids.retain(|t| *t != track_id)))
     }

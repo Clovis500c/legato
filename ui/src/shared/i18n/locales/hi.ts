@@ -275,6 +275,7 @@ const hi: Record<string, string> = {
   'Nothing added to {name}: not on that server': '{name} में कुछ नहीं जोड़ा गया: उस सर्वर पर नहीं है',
   'Not added to {name} on your music server: {reason}. Taken back out here.': 'आपके म्यूज़िक सर्वर पर {name} में नहीं जोड़ा जा सका: {reason}. यहाँ से भी हटा दिया गया।',
   'Not removed from {name} on your music server: {reason}. Put back here.': 'आपके म्यूज़िक सर्वर पर {name} से नहीं हटाया जा सका: {reason}. यहाँ वापस रख दिया गया।',
+  'Not renamed on your music server: {reason}. Called {name} here again.': 'आपके म्यूज़िक सर्वर पर नाम नहीं बदला: {reason}. यहाँ फिर से {name} नाम है।',
   'Add to playlist': 'प्लेलिस्ट में जोड़ें',
   'New playlist…': 'नई प्लेलिस्ट…',
   'Name of the new playlist': 'नई प्लेलिस्ट का नाम',

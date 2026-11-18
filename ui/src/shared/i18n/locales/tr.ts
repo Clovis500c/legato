@@ -275,6 +275,7 @@ const tr: Record<string, string> = {
   'Nothing added to {name}: not on that server': '{name} listesine hiçbir şey eklenmedi: o sunucuda yok',
   'Not added to {name} on your music server: {reason}. Taken back out here.': 'Müzik sunucunuzdaki {name} listesine eklenemedi: {reason}. Buradan da çıkarıldı.',
   'Not removed from {name} on your music server: {reason}. Put back here.': 'Müzik sunucunuzdaki {name} listesinden kaldırılamadı: {reason}. Buraya geri kondu.',
+  'Not renamed on your music server: {reason}. Called {name} here again.': 'Müzik sunucunda yeniden adlandırılmadı: {reason}. Burada yine {name} adını taşıyor.',
   'Add to playlist': 'Çalma listesine ekle',
   'New playlist…': 'Yeni çalma listesi…',
   'Name of the new playlist': 'Yeni çalma listesinin adı',

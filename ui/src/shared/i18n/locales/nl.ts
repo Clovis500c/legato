@@ -275,6 +275,7 @@ const nl: Record<string, string> = {
   'Nothing added to {name}: not on that server': 'Niets toegevoegd aan {name}: niet op die server',
   'Not added to {name} on your music server: {reason}. Taken back out here.': 'Niet toegevoegd aan {name} op je muziekserver: {reason}. Hier weer verwijderd.',
   'Not removed from {name} on your music server: {reason}. Put back here.': 'Niet verwijderd uit {name} op je muziekserver: {reason}. Hier teruggezet.',
+  'Not renamed on your music server: {reason}. Called {name} here again.': 'Niet hernoemd op je muziekserver: {reason}. Heet hier weer {name}.',
   'Add to playlist': 'Toevoegen aan playlist',
   'New playlist…': 'Nieuwe playlist…',
   'Name of the new playlist': 'Naam van de nieuwe playlist',

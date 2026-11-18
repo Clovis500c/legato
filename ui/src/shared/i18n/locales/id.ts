@@ -275,6 +275,7 @@ const id: Record<string, string> = {
   'Nothing added to {name}: not on that server': 'Tidak ada yang ditambahkan ke {name}: tidak ada di server itu',
   'Not added to {name} on your music server: {reason}. Taken back out here.': 'Tidak ditambahkan ke {name} di server musik Anda: {reason}. Dikeluarkan lagi di sini.',
   'Not removed from {name} on your music server: {reason}. Put back here.': 'Tidak dihapus dari {name} di server musik Anda: {reason}. Dikembalikan di sini.',
+  'Not renamed on your music server: {reason}. Called {name} here again.': 'Tidak diganti namanya di server musikmu: {reason}. Di sini kembali bernama {name}.',
   'Add to playlist': 'Tambahkan ke playlist',
   'New playlist…': 'Playlist baru…',
   'Name of the new playlist': 'Nama playlist baru',

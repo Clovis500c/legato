@@ -275,6 +275,7 @@ const zh: Record<string, string> = {
   'Nothing added to {name}: not on that server': '未向 {name} 添加任何内容：不在该服务器上',
   'Not added to {name} on your music server: {reason}. Taken back out here.': '未能添加到音乐服务器上的 {name}：{reason}。已在此处撤回。',
   'Not removed from {name} on your music server: {reason}. Put back here.': '未能从音乐服务器上的 {name} 移除：{reason}。已在此处恢复。',
+  'Not renamed on your music server: {reason}. Called {name} here again.': '未在你的音乐服务器上重命名：{reason}。这里已改回 {name}。',
   'Add to playlist': '添加到歌单',
   'New playlist…': '新建歌单…',
   'Name of the new playlist': '新歌单的名称',

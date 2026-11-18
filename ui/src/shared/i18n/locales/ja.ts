@@ -275,6 +275,7 @@ const ja: Record<string, string> = {
   'Nothing added to {name}: not on that server': '{name}に何も追加されませんでした：そのサーバーにありません',
   'Not added to {name} on your music server: {reason}. Taken back out here.': '音楽サーバーの {name} に追加できませんでした：{reason}。こちらでも外しました。',
   'Not removed from {name} on your music server: {reason}. Put back here.': '音楽サーバーの {name} から外せませんでした：{reason}。こちらに戻しました。',
+  'Not renamed on your music server: {reason}. Called {name} here again.': '音楽サーバーで名前を変更できませんでした: {reason}。ここでは {name} に戻しました。',
   'Add to playlist': 'プレイリストに追加',
   'New playlist…': '新しいプレイリスト…',
   'Name of the new playlist': '新しいプレイリストの名前',

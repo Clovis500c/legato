@@ -641,13 +641,16 @@ export function playlistMenu(p: LibraryPlaylist): MenuEntry[] {
       onSelect: () => void sendToServer(p, s).catch(fail),
     })),
     { id: 'copyName', label: tr('Copy name'), icon: <Copy size={16} />, onSelect: () => copy(p.name, tr('Name copied')) },
-    p.custom && {
+    // A Subsonic server's playlist too: renamed there in the background, its old name back here if it refuses.
+    (p.custom || takesEdits(p)) && {
       id: 'rename',
       label: tr('Rename…'),
       icon: <PencilSimple size={16} />,
       onSelect: async () => {
         const name = await askText({ title: tr('Rename playlist'), ok: tr('Rename'), value: p.name })
-        if (name && name !== p.name) void editPlaylist({ type: 'rename', id: p.id, name })
+        if (!name || name === p.name) return
+        if (p.custom) void editPlaylist({ type: 'rename', id: p.id, name })
+        else void api.serverPlaylistRename(p.id, name).then(() => app().refreshChanged(), fail)
       },
     },
     {

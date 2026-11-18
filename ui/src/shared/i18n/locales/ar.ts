@@ -251,6 +251,7 @@ const ar: Record<string, string> = {
   'Nothing added to {name}: not on that server': 'لم تتم إضافة شيء إلى {name}: غير موجودة على ذلك الخادم',
   'Not added to {name} on your music server: {reason}. Taken back out here.': 'لم تتم الإضافة إلى {name} على خادم الموسيقى لديك: {reason}. تمت الإزالة هنا.',
   'Not removed from {name} on your music server: {reason}. Put back here.': 'لم تتم الإزالة من {name} على خادم الموسيقى لديك: {reason}. أُعيدت هنا.',
+  'Not renamed on your music server: {reason}. Called {name} here again.': 'لم تُغيَّر التسمية على خادم الموسيقى: {reason}. عاد اسمها هنا {name}.',
   'Add to playlist': 'إضافة إلى قائمة تشغيل',
   'New playlist…': 'قائمة تشغيل جديدة…',
   'Name of the new playlist': 'اسم قائمة التشغيل الجديدة',
