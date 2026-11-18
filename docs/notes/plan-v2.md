@@ -92,12 +92,18 @@ the order; a line leaves only when it ships or the user drops it.
       so a phone in the background that plays nothing is likely frozen by Android (cached apps, Doze) and its round
       stops. Find what Android allows (a round as the app leaves the screen, a periodic job, the playback service's
       lifetime) without a permanent notification nobody asked for; tried on the emulator with the app in the background.
-- [ ] `M` The devices sync needs no visit to the Sync screen (the owner, 2026-11-18: "qu'il ne faille pas aller exprès
+- [x] `M` The devices sync needs no visit to the Sync screen (the owner, 2026-11-18: "qu'il ne faille pas aller exprès
       sur le truc sync, que ça se fasse automatiquement"). "Sync automatically" is on by default, but when both devices
       sync automatically only the smaller id starts (`dv::starts`), so a sleeping device (the phone in the background)
       can hold the other back; the Sync screen only refreshes the status (`Devices.tsx`, every 10 s) and "Sync now" is
       a button. Find why the owner had to go there, then fix it (for instance: the other side starts after a grace
       delay, a round as soon as the phone comes back to the screen).
+      Done 2026-11-18, both: when both sync automatically, the bigger id starts too once a sync has been due here 30 s
+      with nothing from the other (`dv::GRACE`, `starts`' new `waited`; a round woken then); the app back on screen
+      (`visibilitychange`, `syncmode.ts`) calls `devices_wake`: a round now, and devices mDNS doesn't hear are tried at
+      their last addresses at once (not 10 minutes later). Decided alone (2026-11-18): the likely cause is the phone as
+      the smaller id, asleep or unheard after waking; 30 s is a guess; two syncs crossing at worst merge twice (no
+      loss). No wire or TXT change. Tests: `starts` in `crates/core`; never tried between two real devices.
 
 ## The owner's asks of 2026-11-07, evening
 

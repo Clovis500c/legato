@@ -206,10 +206,14 @@ pub fn is_code(code: &str) -> bool {
     code.len() == 6 && code.bytes().all(|b| b.is_ascii_digit())
 }
 
+/// Both automatic: the bigger id starts too once a sync has been due here this long without the other starting it (a
+/// phone asleep in the background, ms).
+pub const GRACE: i64 = 30_000;
+
 /// Starts an automatic sync with a trusted device: only when this one syncs automatically, and when both do, the smaller
-/// id (one sync, not two crossing).
-pub fn starts(me: &str, auto: bool, peer: &str, peer_auto: bool) -> bool {
-    auto && (!peer_auto || me < peer)
+/// id (one sync, not two crossing), or this one after `waited` (ms due here) reached `GRACE`.
+pub fn starts(me: &str, auto: bool, peer: &str, peer_auto: bool, waited: i64) -> bool {
+    auto && (!peer_auto || me < peer || waited >= GRACE)
 }
 
 /// A trusted device, as kept here (the `sync` config row; its pair key is in the keychain).
@@ -406,9 +410,11 @@ mod tests {
 
     #[test]
     fn one_side_starts() {
-        assert!(starts(A, true, B, true) && !starts(B, true, A, true), "both automatic: the smaller id");
-        assert!(starts(B, true, A, false), "only this one automatic");
-        assert!(!starts(A, false, B, true) && !starts(A, false, B, false), "never when this one isn't");
+        assert!(starts(A, true, B, true, 0) && !starts(B, true, A, true, 0), "both automatic: the smaller id");
+        assert!(starts(B, true, A, false, 0), "only this one automatic");
+        assert!(!starts(A, false, B, true, 0) && !starts(A, false, B, false, 0), "never when this one isn't");
+        assert!(!starts(B, true, A, true, GRACE - 1) && starts(B, true, A, true, GRACE), "the other asleep: the bigger id after GRACE");
+        assert!(!starts(B, false, A, true, GRACE), "still never when this one isn't automatic");
     }
 
     #[test]

@@ -27,7 +27,11 @@ export function startSyncMode(): () => void {
     })
     .catch(() => {})
   const pickup = startPickup()
+  // Back on screen (a phone woken, a window restored): your devices sync now, no visit to the Sync screen needed.
+  const back = () => document.visibilityState === 'visible' && void api.devicesWake().catch(() => {})
+  document.addEventListener('visibilitychange', back)
   return () => {
+    document.removeEventListener('visibilitychange', back)
     pickup()
     void off.then((f) => f())
   }

@@ -51,6 +51,8 @@ struct Inner {
     reached: HashMap<String, i64>,
     /// Last automatic try of a device mDNS doesn't hear (unix ms).
     tried: HashMap<String, i64>,
+    /// Since when a sync with a trusted device has been due here and the other was the one to start it (unix ms).
+    due_since: HashMap<String, i64>,
     offer: Option<Offer>,
     /// This device's stamp as announced.
     stamp: Option<String>,
@@ -459,6 +461,7 @@ async fn swap(app: &AppHandle, session: Session, theirs: &Intro) -> CmdResult<Me
         let mut inner = dev(app).inner.lock().unwrap();
         inner.reached.insert(theirs.card.id.clone(), now_ms());
         inner.failed.remove(&theirs.card.id);
+        inner.due_since.remove(&theirs.card.id);
     }
     emit(app);
     Ok(merged)
@@ -592,6 +595,15 @@ pub async fn device_sync(app: AppHandle, state: State<'_, AppState>, id: String)
     syncmode::logged("device", sync_with(&app, &peer).await)
 }
 
+/// The app is back on screen (a phone woken): the round runs now, and devices mDNS doesn't hear are tried again at once.
+#[tauri::command]
+pub async fn devices_wake(app: AppHandle) -> CmdResult<()> {
+    let devices = dev(&app);
+    devices.inner.lock().unwrap().tried.clear();
+    devices.wake.notify_one();
+    Ok(())
+}
+
 /// No longer trusted here: its key and row go.
 #[tauri::command]
 pub async fn device_forget(app: AppHandle, state: State<'_, AppState>, id: String) -> CmdResult<()> {
@@ -669,7 +681,25 @@ async fn auto_round(app: &AppHandle) {
                 None => (false, false, None),
             }
         };
-        if !dv::starts(&c.device, true, &peer.card.id, auto) || !peer.due(theirs.as_deref(), &mine, now) {
+        if !peer.due(theirs.as_deref(), &mine, now) {
+            dev(app).inner.lock().unwrap().due_since.remove(&peer.card.id);
+            continue;
+        }
+        let (waited, first) = {
+            let inner = dev(app).inner.lock().unwrap();
+            let since = inner.due_since.get(&peer.card.id).copied();
+            (since.map_or(0, |t| now - t), since.is_none())
+        };
+        if !dv::starts(&c.device, true, &peer.card.id, auto, waited) {
+            // Its turn to start: if it hasn't in `GRACE` (asleep), this side will, one round woken then.
+            if first {
+                dev(app).inner.lock().unwrap().due_since.insert(peer.card.id.clone(), now);
+                let a = app.clone();
+                tauri::async_runtime::spawn(async move {
+                    tokio::time::sleep(Duration::from_millis(dv::GRACE as u64 + 500)).await;
+                    dev(&a).wake.notify_one();
+                });
+            }
             continue;
         }
         // Not heard (mDNS quiet, or away): its last addresses, every 10 minutes at most.

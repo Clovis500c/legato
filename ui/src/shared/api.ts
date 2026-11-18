@@ -306,6 +306,7 @@ export const api = {
   devicePair: (code: string, link: string | null, trust: boolean) => invoke<Merged>('device_pair', { code, link, trust }),
   deviceSync: (id: string) => invoke<Merged>('device_sync', { id }),
   deviceForget: (id: string) => invoke<void>('device_forget', { id }),
+  devicesWake: () => invoke<void>('devices_wake'),
   /** Another PC's last song, if one came in since launch (pick up on another PC). */
   syncPickup: () => invoke<Pickup | null>('sync_pickup'),
   /** Another PC's changes were merged here: reload. */
