@@ -341,15 +341,8 @@ impl Library {
     fn add_here(&self, id: i64, track_ids: &[i64]) -> Result<()> {
         let (source, source_id): (String, String) = self.db.query_row("SELECT source, source_id FROM playlists WHERE id = ?1", [id], |r| Ok((r.get(0)?, r.get(1)?)))?;
         anyhow::ensure!(!liked_music(serde_json::from_value(source.into())?, &source_id), READ_ONLY);
-        let at = now_ms();
-        let mut kept = 0;
-        for t in track_ids {
-            kept += self.db.execute("INSERT OR IGNORE INTO playlist_added (playlist_id, track_id, at) VALUES (?1, ?2, ?3)", params![id, t, at])?;
-        }
-        // One already there from the service is kept too (it stays if the service drops it), not put in twice.
-        if kept > 0 {
-            self.touch(id)?;
-        }
+        // Only songs not in it yet: one the service already has stays the service's (else Remove took it out here and the
+        // next import put it back, 2026-11-18).
         let have: BTreeSet<i64> = self.playlist_track_ids(id)?.into_iter().collect();
         let mut fresh: Vec<i64> = Vec::new();
         for t in track_ids.iter().filter(|t| !have.contains(t)) {
@@ -357,6 +350,14 @@ impl Library {
                 fresh.push(*t);
             }
         }
+        if fresh.is_empty() {
+            return Ok(());
+        }
+        let at = now_ms();
+        for t in &fresh {
+            self.db.execute("INSERT OR IGNORE INTO playlist_added (playlist_id, track_id, at) VALUES (?1, ?2, ?3)", params![id, t, at])?;
+        }
+        self.touch(id)?;
         self.append_to_imported(id, &fresh)
     }
 

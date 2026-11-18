@@ -204,6 +204,19 @@ fn imported_mirror_takes_tracks_custom_edit_still_refuses() -> Result<()> {
 }
 
 #[test]
+fn a_song_the_service_already_has_is_never_marked_as_added_here() -> Result<()> {
+    let lib = Library::in_memory()?;
+    let pid = lib.save_playlist(Source::Spotify, "p1", "Road trip", &[song(1)])?;
+    let theirs = lib.playlist_orders()?[&pid][0];
+    lib.edit_playlist(PlaylistEdit::Add { id: pid, track_ids: vec![theirs] })?;
+    assert_eq!(lib.playlists()?.into_iter().find(|p| p.id == pid).unwrap().added, None);
+    // So it stays the service's: Remove is refused, and it is still there.
+    assert!(lib.edit_playlist(PlaylistEdit::RemoveTrack { id: pid, track_id: theirs }).unwrap_err().to_string().contains("Imported playlist"));
+    assert_eq!(lib.playlist_orders()?[&pid], vec![theirs]);
+    Ok(())
+}
+
+#[test]
 fn a_song_added_here_to_an_imported_playlist_stays_through_its_imports_and_alone_can_leave() -> Result<()> {
     let lib = Library::in_memory()?;
     let pid = lib.save_playlist(Source::Spotify, "p1", "Road trip", &[song(1)])?;
