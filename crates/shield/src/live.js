@@ -590,6 +590,18 @@
   }
   // tp:end
 
+  // lv:begin
+  // The momentary (0.4 s) and short-term (3 s) mean squares after `span` s of a read `ms`; pure (context.test.ts runs this
+  // block: the phone's reads every other tick land on the desktop's levels). Windows not full yet (song start): plain
+  // average of all so far, as the native meter does.
+  function smooth(g, ms, span) {
+    g.elapsed += span
+    const soFar = g.elapsed > 0 ? span / g.elapsed : 1
+    g.momentary += (ms - g.momentary) * Math.max(soFar, 1 - Math.exp(-span / 0.4))
+    g.short += (ms - g.short) * Math.max(soFar, 1 - Math.exp(-span / 3))
+  }
+  // lv:end
+
   // Sum of squares and peak of one analyser pair; `over`: the true peak (the levels' peak).
   function read(pair, over = false) {
     let sum = 0
@@ -814,11 +826,7 @@
       g.told = true
       report('No sound could be taken from this video')
     }
-    // Windows not full yet (song start): plain average of all so far, as the native meter does.
-    g.elapsed += span
-    const soFar = g.elapsed > 0 ? span / g.elapsed : 1
-    g.momentary += (ms - g.momentary) * Math.max(soFar, 1 - Math.exp(-span / 0.4))
-    g.short += (ms - g.short) * Math.max(soFar, 1 - Math.exp(-span / 3))
+    smooth(g, ms, span)
     g.peak = Math.max(peak, g.peak * 10 ** -span)
     const mom = lufs(g.momentary)
     const short = lufs(g.short)
