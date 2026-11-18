@@ -3,6 +3,9 @@ import { api, type Lyrics } from '../../shared/api'
 import { explain } from '../../shared/errors'
 import { lang, tr } from '../../shared/i18n/i18n'
 import { Dialog } from '../../shared/ui/Dialog'
+import { songKey } from './effects'
+import { usePlayer } from './store'
+import { useTranslated } from './translated'
 import { translateTarget, wordsToTranslate } from './translateWords'
 
 /** Settings › Playback › Translate lyrics: a button under the lyrics; the words leave only after the box's "Send and translate". */
@@ -15,7 +18,11 @@ export function TranslateLyrics({ lyrics }: { lyrics: Lyrics }) {
   const send = () => {
     setState('busy')
     api.translateLyrics(words, code).then(
-      (to) => setState({ from: words, to }),
+      (to) => {
+        setState({ from: words, to })
+        // Kept in memory for this song: the panel shows it under the lines (LyricsPanel).
+        useTranslated.setState({ song: songKey(usePlayer.getState().now) ?? '', code, from: words, to })
+      },
       (e) => setState({ error: explain(e).text }),
     )
   }

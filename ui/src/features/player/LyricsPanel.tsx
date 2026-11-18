@@ -15,9 +15,11 @@ import { toggleKaraoke } from './karaokeMode'
 import { positionNow, usePosition } from './Progress'
 import { useNowTrack, usePlayer } from './store'
 import { CARD } from './UpNext'
-import { locale, tr } from '../../shared/i18n/i18n'
+import { lang, locale, tr } from '../../shared/i18n/i18n'
 import { allowsMotion, useSystemReduced } from '../../shared/motion'
 import { TranslateLyrics } from './TranslateLyrics'
+import { useTranslated } from './translated'
+import { alignTranslation, translateTarget } from './translateWords'
 
 /** A hand on the scroll wins for this long. */
 const HAND_MS = 4000
@@ -40,6 +42,10 @@ function Synced({ lines: sung, durationMs, fix, onTap }: { lines: Lyrics['lines'
   const box = useRef<HTMLDivElement>(null)
   const col = useRef<HTMLDivElement>(null)
   const hand = useRef(0)
+  // A translation the user asked for, in the interface's language: a smaller row under each line (memory only, this song's).
+  const song = usePlayer((s) => songKey(s.now) ?? '')
+  const done = useTranslated()
+  const under = useMemo(() => (done && done.song === song && done.code === translateTarget(lang()) ? alignTranslation(lines, done.from, done.to) : null), [done, song, lines])
   const calm = !allowsMotion(useSettings((s) => s.settings.motion), useSystemReduced())
   useEffect(() => {
     const el = box.current
@@ -56,7 +62,7 @@ function Synced({ lines: sung, durationMs, fix, onTap }: { lines: Lyrics['lines'
     void c.offsetHeight
     c.style.transition = GLIDE
     c.style.transform = ''
-  }, [at, calm])
+  }, [at, calm, under])
   const touched = () => void (hand.current = performance.now())
   return (
     <div ref={box} onWheel={touched} onPointerDown={touched} onKeyDown={touched} className="no-scrollbar relative min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-2 pt-6 pb-12 [mask-image:linear-gradient(to_bottom,transparent,#000_1.5rem,#000_calc(100%-3rem),transparent)]">
@@ -82,6 +88,7 @@ function Synced({ lines: sung, durationMs, fix, onTap }: { lines: Lyrics['lines'
             ) : (
               l.text
             )}
+            {under?.[i] && <span className="mt-1 block text-[1.0625rem] leading-snug font-medium text-ink-2">{under[i]}</span>}
           </button>
         ))}
       </div>
