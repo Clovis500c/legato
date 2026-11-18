@@ -3,6 +3,8 @@
 //! the running one (single instance in lib.rs). The text is untrusted: it waits here until the interface takes it
 //! (`link_pending`), which reads it like a pasted one (`isShareCode`, then the same import dialog) and nothing else.
 //! Installed app only: the key is outside the app's folders (identity.rs). The installer's uninstall hook removes it.
+//! A `.lmix` file double-clicked comes the same way, as its path (`file_of`): the installer registers that file type
+//! (`tauri.windows.conf.json`), never the running app, and its uninstaller removes it.
 
 // Windows only; the argument parsing below is tested on every system.
 #![cfg_attr(not(windows), allow(dead_code))]
@@ -17,16 +19,28 @@ pub fn arg_of(args: &[String]) -> Option<String> {
     args.iter().skip(1).find(|a| a.get(..9).is_some_and(|p| p.eq_ignore_ascii_case("legato://"))).filter(|a| a.len() <= MAX && !a.chars().any(char::is_control)).cloned()
 }
 
+/// A `.lmix` file double-clicked (the installer's file type, `tauri.windows.conf.json`: Windows starts `legato.exe "<path>"`):
+/// its path, absolute, that extension, not a folder, no control characters. Only a path: `lmix_read` checks its size and
+/// content as for a dropped file; nothing runs it.
+pub fn file_of(args: &[String]) -> Option<String> {
+    use std::path::Path;
+    args.iter().skip(1).find(|a| {
+        let p = Path::new(a.as_str());
+        a.len() <= MAX && !a.chars().any(char::is_control) && p.is_absolute() && p.extension().is_some_and(|e| e.eq_ignore_ascii_case("lmix")) && !p.is_dir()
+    }).cloned()
+}
+
 static PENDING: Mutex<Option<String>> = Mutex::new(None);
 
-/// A launch's arguments (this one at start, a second one forwarded): true when they carry a link, kept for the interface.
+/// A launch's arguments (this one at start, a second one forwarded): true when they carry a link or a remix file, kept
+/// for the interface.
 pub fn note(args: &[String]) -> bool {
-    let Some(link) = arg_of(args) else { return false };
+    let Some(link) = arg_of(args).or_else(|| file_of(args)) else { return false };
     *PENDING.lock().unwrap() = Some(link);
     true
 }
 
-/// The link a launch carried, once.
+/// The link (or the remix file's path) a launch carried, once.
 #[tauri::command]
 pub fn link_pending() -> Option<String> {
     PENDING.lock().unwrap().take()
@@ -100,6 +114,32 @@ mod tests {
     }
 
     #[test]
+    fn a_double_clicked_remix_file_is_kept_as_its_absolute_path() {
+        let dir = std::env::temp_dir();
+        let path = |name: &str| dir.join(name).to_string_lossy().into_owned();
+        let spaced = path("My mixes/Été · remix.LMIX");
+        assert_eq!(file_of(&args(&["legato.exe", &spaced])).as_deref(), Some(spaced.as_str()));
+        // Two files: the first; the Jump List's argument and a link are not files.
+        let other = path("b.lmix");
+        assert_eq!(file_of(&args(&["legato.exe", &spaced, &other])).as_deref(), Some(spaced.as_str()));
+        assert_eq!(file_of(&args(&["legato.exe", "--jump", "shuffle"])), None);
+        assert_eq!(file_of(&args(&["legato.exe", "legato://remix/abc"])), None);
+        // Longer than MAX_PATH is still a path; past what a command line holds, dropped.
+        let long = path(&format!("{}.lmix", "a".repeat(300)));
+        assert_eq!(file_of(&args(&["legato.exe", &long])).as_deref(), Some(long.as_str()));
+        assert_eq!(file_of(&args(&["legato.exe", &path(&format!("{}.lmix", "a".repeat(MAX)))])), None);
+        // Relative, another type, the exe itself, a control character, a folder: none.
+        for bad in ["mix.lmix", r"..\mix.lmix", &path("mix.lmix.exe"), &path("mix.json"), &path("a\nb.lmix")] {
+            assert_eq!(file_of(&args(&["legato.exe", bad])), None, "{bad}");
+        }
+        assert_eq!(file_of(&args(&[&spaced])), None);
+        let folder = dir.join("legato-test-folder.lmix");
+        std::fs::create_dir_all(&folder).unwrap();
+        assert_eq!(file_of(&args(&["legato.exe", &folder.to_string_lossy()])), None);
+        let _ = std::fs::remove_dir(&folder);
+    }
+
+    #[test]
     fn the_registered_command_quotes_the_exe_and_the_link() {
         let exe = std::path::Path::new(r"C:\Program Files\Legato\legato.exe");
         assert_eq!(command(exe), r#""C:\Program Files\Legato\legato.exe" "%1""#);
@@ -113,5 +153,9 @@ mod tests {
         assert!(note(&args(&["legato.exe", "legato://playlist/Z"])));
         assert_eq!(link_pending().as_deref(), Some("legato://playlist/Z"));
         assert_eq!(link_pending(), None);
+        // A double-clicked remix file the same way (one test: the pending slot is shared).
+        let file = std::env::temp_dir().join("w.lmix").to_string_lossy().into_owned();
+        assert!(note(&args(&["legato.exe", &file])));
+        assert_eq!(link_pending(), Some(file));
     }
 }

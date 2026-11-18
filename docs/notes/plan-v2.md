@@ -110,6 +110,13 @@ Where a line says "reading", the owner hasn't confirmed it.
       2026-11-12, the compact link: `legato://remix/<base64url of the settings that differ from neutral>` (about 280
       characters), copied from the Live Editor's menu ("Copy this mix's link"), pasted anywhere or opened from the system, checked
       like a file (`lmix::from_link`, fuzzed). Decided alone (2026-11-12): the link carries no audio and no new host. Untried: a real drop, the editor's load race on a slow start (waits 5 s), the YouTube thumbnail as art.
+      2026-11-18 (lot 57), the file type: a `.lmix` double-clicked in Explorer opens in Legato (or the running one) like a
+      dropped file (`protocol::file_of`: absolute, that extension, not a folder; then `openRemix` → `lmix_read`). Registered
+      by the installer only (`src-tauri/tauri.windows.conf.json` `fileAssociations`; its uninstaller removes it), never by
+      the app; dev, e2e and bench builds don't bundle. Decided alone (2026-11-18): class `Legato.Remix`, "Legato remix",
+      the exe's own icon, role left at the default (macOS only); Windows only, else Android and Linux would claim it too; no
+      `.legatosync`. If the installer breaks: delete `src-tauri/tauri.windows.conf.json`. Untried: a real install,
+      double-click (app closed and open), uninstall. Still open: the local file that carries audio (the owner's call).
 - [ ] `M` Optional sign-in with Discord, for a profile (the owner will make a Discord bot anyway). Never required.
       First use: the share page shows who shared a playlist, their profile carried in the link so it can't be faked
       (the owner's word: encrypted in the link). Open before building: encryption alone doesn't stop a fake, a
