@@ -14,6 +14,7 @@ const KINDS: [MenuKind, string][] = [
   ['playlist', msg('Playlists')],
   ['folder', msg('Folders')],
   ['queue', msg('Up next')],
+  ['visualizer', msg('Visualizer')],
   ['player', msg('Player')],
   ['nav', msg('Sidebar')],
   ['app', msg('Elsewhere in the app')],

@@ -541,18 +541,18 @@ export function hitMenu(hit: SearchHit, add: () => void, busy: boolean, play: ()
   const t = app().tracks.find((x) => x.id === hit.libraryId) ?? ownOf(item)
   if (!isRemote(t)) return trackMenu(t)
   const links = pages({ ...hit, id: 0, added: 0, addedAt: null })
-  return [
-    { label: tr('Play'), icon: <Play size={16} />, onSelect: play },
-    { label: tr('Play next'), icon: <Queue size={16} />, onSelect: () => player().enqueue([item], true) },
-    { label: tr('Add to queue'), icon: <ListPlus size={16} />, onSelect: () => player().enqueue([item], false) },
+  return shaped('track', [
+    { id: 'play', label: tr('Play'), icon: <Play size={16} />, onSelect: play },
+    { id: 'playNext', label: tr('Play next'), icon: <Queue size={16} />, onSelect: () => player().enqueue([item], true) },
+    { id: 'addToQueue', label: tr('Add to queue'), icon: <ListPlus size={16} />, onSelect: () => player().enqueue([item], false) },
     '-',
-    { label: tr('Add to library'), icon: <Plus size={16} />, disabled: busy, onSelect: add },
-    addRemoteTo(item),
+    { id: 'addToLibrary', label: tr('Add to library'), icon: <Plus size={16} />, disabled: busy, onSelect: add },
+    tag('addTo', addRemoteTo(item)),
     '-',
-    links.length > 0 && { label: tr('Copy link'), icon: <Link size={16} />, onSelect: () => copy(links[0].url, tr('Link copied')) },
-    { label: tr('Copy title and artist'), icon: <Copy size={16} />, onSelect: () => copy(`${hit.artist} – ${hit.title}`, tr('Title and artist copied')) },
-    ...links.map((p) => ({ label: tr('Open in {service}', { service: p.label }), icon: <ArrowSquareOut size={16} />, onSelect: () => openUrl(p.url).catch(fail) })),
-  ]
+    links.length > 0 && { id: 'copyLink', label: tr('Copy link'), icon: <Link size={16} />, onSelect: () => copy(links[0].url, tr('Link copied')) },
+    { id: 'copyTitle', label: tr('Copy title and artist'), icon: <Copy size={16} />, onSelect: () => copy(`${hit.artist} – ${hit.title}`, tr('Title and artist copied')) },
+    ...links.map((p) => ({ id: 'openIn', label: tr('Open in {service}', { service: p.label }), icon: <ArrowSquareOut size={16} />, onSelect: () => openUrl(p.url).catch(fail) })),
+  ])
 }
 
 /** Several tracks at once (album, artist, mix). */
@@ -854,24 +854,24 @@ function bookmarkItem(trackId: number): MenuEntry {
 export function vizMenu(): MenuEntry[] {
   const { visualizerStyle: look, visualizerWeighting: weighting, visualizerColor: color, visualizerGradient: gradient, visualizerBands: bands, visualizerFloor: floor, visualizerFace: face, visualizerColormap: colormap, visualizerPlugin: plugin, visualizerPreset: preset, visualizerPresetColors: presetColors, visualizerPresets: saved } = useSettings.getState().settings
   const open = useVizFull.getState().open
-  return [
+  return shaped('visualizer', [
     {
-      label: tr('Visualizer style'),
+      id: 'vizStyle', label: tr('Visualizer style'),
       icon: <ChartBar size={16} />,
       items: lookOptions(usePluginViz.getState().looks).map((o) => ({ label: o.label, checked: lookValue(look, plugin) === o.value, onSelect: () => useSettings.getState().update(lookSettings(o.value)) })),
     },
     needleLook(look) && {
-      label: tr('Meter face'),
+      id: 'vizFace', label: tr('Meter face'),
       icon: <Gauge size={16} />,
       items: VIZ_FACES.map((v) => ({ label: tr(VIZ_FACE_LABELS[v]), checked: face === v, onSelect: () => useSettings.getState().update({ visualizerFace: v }) })),
     },
     look === 'spectrogram' && {
-      label: tr('Spectrogram colors'),
+      id: 'vizColormap', label: tr('Spectrogram colors'),
       icon: <Swatches size={16} />,
       items: VIZ_COLORMAPS.map((v) => ({ label: tr(VIZ_COLORMAP_LABELS[v]), checked: colormap === v, onSelect: () => useSettings.getState().update({ visualizerColormap: v }) })),
     },
     look === 'preset' && {
-      label: tr('Visualizer preset'),
+      id: 'vizPreset', label: tr('Visualizer preset'),
       icon: <Sparkle size={16} />,
       items: [
         ...presetOptions(saved).map((o) => ({ label: o.label, checked: preset === o.value, onSelect: () => useSettings.getState().update({ visualizerPreset: o.value }) })),
@@ -882,33 +882,33 @@ export function vizMenu(): MenuEntry[] {
       ],
     },
     look === 'preset' && {
-      label: tr('Preset colors'),
+      id: 'vizPresetColors', label: tr('Preset colors'),
       icon: <Swatches size={16} />,
       items: VIZ_PRESET_COLORS.map((v) => ({ label: tr(VIZ_PRESET_COLOR_LABELS[v]), checked: presetColors === v, onSelect: () => useSettings.getState().update({ visualizerPresetColors: v }) })),
     },
     {
-      label: tr('Visualizer weighting'),
+      id: 'vizWeighting', label: tr('Visualizer weighting'),
       icon: <Scales size={16} />,
       items: VIZ_WEIGHTINGS.map((v) => ({ label: tr(VIZ_WEIGHTING_LABELS[v]), checked: weighting === v, onSelect: () => useSettings.getState().update({ visualizerWeighting: v }) })),
     },
     {
-      label: tr('Visualizer color'),
+      id: 'vizColor', label: tr('Visualizer color'),
       icon: <Palette size={16} />,
       items: VIZ_COLORS.map((v) => ({ label: tr(VIZ_COLOR_LABELS[v]), checked: color === v, onSelect: () => useSettings.getState().update({ visualizerColor: v }) })),
     },
     {
-      label: tr('Visualizer gradient'),
+      id: 'vizGradient', label: tr('Visualizer gradient'),
       icon: <Gradient size={16} />,
       items: VIZ_GRADIENTS.map((v) => ({ label: tr(VIZ_GRADIENT_LABELS[v]), checked: gradient === v, onSelect: () => useSettings.getState().update({ visualizerGradient: v }) })),
     },
     {
-      label: tr('Visualizer bands'),
+      id: 'vizBands', label: tr('Visualizer bands'),
       icon: <Equalizer size={16} />,
       items: VIZ_BANDINGS.map((v) => ({ label: tr(VIZ_BANDING_LABELS[v]), checked: bands === v, onSelect: () => useSettings.getState().update({ visualizerBands: v }) })),
     },
-    { label: tr('Visualizer reflection'), icon: <FlipVertical size={16} />, checked: floor, onSelect: () => useSettings.getState().update({ visualizerFloor: !floor }) },
-    { label: open ? tr('Leave full screen') : tr('Full screen'), icon: <ArrowsOutSimple size={16} />, disabled: !open && !canVizFull(), onSelect: toggleVizFull },
-  ]
+    { id: 'vizReflection', label: tr('Visualizer reflection'), icon: <FlipVertical size={16} />, checked: floor, onSelect: () => useSettings.getState().update({ visualizerFloor: !floor }) },
+    { id: 'vizFullScreen', label: open ? tr('Leave full screen') : tr('Full screen'), icon: <ArrowsOutSimple size={16} />, disabled: !open && !canVizFull(), onSelect: toggleVizFull },
+  ])
 }
 
 /** Karaoke screen: the player's basics, the lyrics timing (same fix as the lyrics panel), leave. */

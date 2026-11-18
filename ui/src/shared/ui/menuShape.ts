@@ -10,7 +10,7 @@
 
 import { msg } from '../i18n/i18n'
 
-export type MenuKind = 'track' | 'tracks' | 'playlist' | 'folder' | 'album' | 'artist' | 'queue' | 'player' | 'nav' | 'app'
+export type MenuKind = 'track' | 'tracks' | 'playlist' | 'folder' | 'album' | 'artist' | 'queue' | 'visualizer' | 'player' | 'nav' | 'app'
 export type Level = 'essential' | 'standard' | 'detail'
 export type MenuPreset = 'essentials' | 'standard' | 'full'
 
@@ -49,6 +49,7 @@ export const MENU_ITEMS: Record<MenuKind, ItemDef[]> = {
     def('playVia', 'Play with', 'play', 'detail'),
     def('startRadio', 'Start radio', 'play', 'standard'),
     def('startMix', 'Start a mix from this song', 'play', 'standard'),
+    def('addToLibrary', 'Add to library', 'library', 'essential'),
     def('addTo', 'Add to playlist', 'library', 'essential'),
     def('removeFromPlaylist', 'Remove from this playlist', 'library', 'essential'),
     def('removeFrom', msg('Remove from library'), 'library', 'essential'),
@@ -128,6 +129,20 @@ export const MENU_ITEMS: Record<MenuKind, ItemDef[]> = {
     def('clearNext', 'Clear what’s next', 'queue', 'essential'),
     def('copyList', 'Copy song list', 'queue', 'detail'),
     def('hideUpNext', 'Hide up next', 'queue', 'standard'),
+  ],
+  // The visualizer's own menu (strip under the cover and its full screen): every item standard, so Standard shows what it always did.
+  visualizer: [
+    def('vizStyle', 'Visualizer style', 'look', 'essential'),
+    def('vizFace', 'Meter face', 'look', 'standard'),
+    def('vizColormap', 'Spectrogram colors', 'look', 'standard'),
+    def('vizPreset', 'Visualizer preset', 'look', 'standard'),
+    def('vizPresetColors', 'Preset colors', 'look', 'standard'),
+    def('vizWeighting', 'Visualizer weighting', 'sound', 'standard'),
+    def('vizColor', 'Visualizer color', 'look', 'essential'),
+    def('vizGradient', 'Visualizer gradient', 'look', 'standard'),
+    def('vizBands', 'Visualizer bands', 'sound', 'standard'),
+    def('vizReflection', 'Visualizer reflection', 'look', 'standard'),
+    def('vizFullScreen', 'Full screen', 'view', 'essential'),
   ],
   player: [
     def('playPause', msg('Play or pause'), 'play', 'essential'),
