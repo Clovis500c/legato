@@ -764,7 +764,7 @@ video ahead, no Spotify previews, Android as the APK with its own updates (no Pl
 - [ ] `S` Remove from a playlist: check it on YouTube Music and server playlists too (only local ones were checked).
 - [ ] `S` Crossfade: check that a refused embed (or the crossfade's other player) never keeps sounding once the watch page takes over.
 - [ ] `S` Share page: no covers and no player yet (covers would load from YouTube's host for the visitor).
-- [ ] `S` Stats recap cards: no code yet, nor the card from the web page; check the QR's look and size.
+- [x] `S` Stats recap cards. Ticked 2026-11-18 (lot 63, audit of the line): the recap shipped (`812a8d96` a year or a month as cards to share, `d725d9fe` the profile card; `features/stats/RecapView.tsx`, `recapCards.ts`, `recapDraw.ts`, tested in `recap.test.ts`). What the line still asked is a try by hand (the card from the web page, the QR's look and size): Check live.
 - [ ] `M` Whole-app security pass (for Opus).
 - [ ] `S` Signed-out YouTube search: check it on the owner's PC; if it still fails, read the error under the search.
 - [ ] `S` Settings labels: review the descriptions' length and read the labels in the app in every language; the JSX per group is optional.
