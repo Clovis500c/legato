@@ -26,6 +26,7 @@ import { tr } from '../../shared/i18n/i18n'
 import { offline } from '../../shared/online'
 import { note, report } from '../../shared/diag'
 import { phoneApp } from '../../shared/platform'
+import { usePickWhy } from './pickWhyStore'
 
 /** via youtube = embed plays it, else Rust engine (local file, or Apple preview held in memory). */
 export interface NowPlaying {
@@ -310,7 +311,10 @@ function songOrder(p: PlayerState, list: LibraryTrack[], current: number, shuffl
 const picks = new Set<number>()
 /** Songs the app picked (not the user): kept for the skip steering below. `[]` forgets them. */
 export function markPicks(ids: readonly number[]) {
-  if (!ids.length) picks.clear()
+  if (!ids.length) {
+    picks.clear()
+    usePickWhy.setState({}, true)
+  }
   for (const id of ids) picks.add(id)
 }
 

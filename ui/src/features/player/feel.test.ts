@@ -350,3 +350,13 @@ describe('session signals', () => {
     expect(first(linked)).toBeLessThan(first(dropped))
   })
 })
+
+// Why a pick came up lives as long as its queue: a new one played leaves no reason under songs the user chose.
+describe('pick reasons', () => {
+  it('are forgotten when a new queue is played', async () => {
+    const { usePickWhy } = await import('./pickWhyStore')
+    usePickWhy.setState({ 900: { kind: 'artist' } }, true)
+    markPicks([])
+    expect(usePickWhy.getState()).toEqual({})
+  })
+})
