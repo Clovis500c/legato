@@ -35,7 +35,7 @@ pub fn data_of(table: &str) -> Data {
 pub struct Versions {
     library: AtomicU64,
     history: AtomicU64,
-    /// Settings written (`Library::set_setting`), the playback session left out.
+    /// Shared settings saved (their `sync_times` row written, `Library::set_setting`).
     settings: AtomicU64,
 }
 

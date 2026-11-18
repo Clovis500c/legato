@@ -77,7 +77,7 @@ older Legato's code ("Enter a code" falls back to it when no new device offers o
   to guess, a fresh session key each time). "Forget" deletes the key here; the other side's next try fails and shows
   "Pair again".
 - **Sync automatically** (per device, on by default): every minute, and seconds after a change here (a counter of
-  library, history and settings writes, the playback session left out, looked at every 2 s; the round waits 2 s of quiet
+  library, history and shared settings writes (`sync_times`; not the session nor the sync config), looked at every 2 s; the round waits 2 s of quiet
   and runs 5 s after the last at the earliest), after a trusted device shows up or its stamp or automatic flag changes
   (`dv::round_now`, `Heard::wakes`). Its stamp (TXT `s`: 12 hex of SHA-256 of its snapshot without its time) is compared: a sync runs when the other's stamp
   changed since the last merge, or this one's since the last send. When both sync automatically, the smaller id starts, and the other

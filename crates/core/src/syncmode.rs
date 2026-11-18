@@ -31,7 +31,7 @@ pub const LOCAL_SETTINGS: [&str; 29] = [
     "keepScreenOn", "pipOnMinimize", "hiddenNav", "livingRoom", "discordSignIn", "webcamScan", "detectorSession",
 ];
 /// Library settings row holding when each interface setting last changed (unix ms).
-const TIMES: &str = "sync_times";
+pub(crate) const TIMES: &str = "sync_times";
 /// Other library settings rows that travel (key → its stamp in TIMES).
 const SHARED_ROWS: [&str; 2] = ["ytm_accounts", crate::sync::DIRECTIONS];
 /// Unpacked snapshot limit: a hostile file can't fill memory.

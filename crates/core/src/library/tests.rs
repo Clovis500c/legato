@@ -1368,12 +1368,14 @@ fn a_guessed_tempo_fills_a_gap_and_never_replaces_a_tag() -> Result<()> {
 }
 
 #[test]
-fn a_setting_written_moves_the_devices_sync_but_the_playback_session_never() -> Result<()> {
+fn a_shared_setting_moves_the_devices_sync_but_the_session_and_sync_config_never() -> Result<()> {
     let lib = Library::in_memory()?;
     let before = lib.versions.changes();
     lib.set_setting("session", &serde_json::json!({ "positionMs": 61_000 }))?;
     assert_eq!(lib.versions.changes(), before, "saved every few seconds while a song plays");
-    lib.set_setting("settings", &serde_json::json!({ "theme": "dark" }))?;
-    assert!(lib.versions.changes() > before);
+    lib.set_setting("sync", &serde_json::json!({ "peers": [] }))?;
+    assert_eq!(lib.versions.changes(), before, "this device's own sync config, saved after every sync: no round for it");
+    lib.save_ui_settings(&serde_json::json!({ "theme": "dark" }), 1_000)?;
+    assert!(lib.versions.changes() > before, "a shared setting saved");
     Ok(())
 }
