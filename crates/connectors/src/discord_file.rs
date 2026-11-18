@@ -53,6 +53,9 @@ pub fn check(raw: &str) -> Result<Url> {
     Ok(url)
 }
 
+/// Bytes `kind_of` reads: a remix names its format within them. The stream waits for them (or the end) before judging.
+const HEAD: usize = 160;
+
 /// The kind of a file from its first bytes (None: not a kind we take, or too short to tell). The caller decodes nothing before this.
 pub fn kind_of(head: &[u8]) -> Option<(Kind, bool)> {
     if head.starts_with(&[0x89, b'P', b'N', b'G', 0x0D, 0x0A, 0x1A, 0x0A]) {
@@ -64,7 +67,7 @@ pub fn kind_of(head: &[u8]) -> Option<(Kind, bool)> {
     // A remix file is JSON text that names its format first (the reader checks the rest, strictly).
     let text = head.strip_prefix(&[0xEF, 0xBB, 0xBF]).unwrap_or(head);
     let start = text.iter().position(|b| !b.is_ascii_whitespace())?;
-    (text[start] == b'{' && String::from_utf8_lossy(&text[..text.len().min(160)]).contains("\"lmix\"")).then_some((Kind::Remix, false))
+    (text[start] == b'{' && String::from_utf8_lossy(&text[..text.len().min(HEAD)]).contains("\"lmix\"")).then_some((Kind::Remix, false))
 }
 
 const fn cap(kind: Kind) -> usize {
@@ -95,7 +98,7 @@ async fn get(url: Url, stays: fn(&Url) -> bool, timeout: Duration) -> Result<(Ki
     let mut kind = None;
     while let Some(chunk) = res.chunk().await.context("The download was cut")? {
         body.extend_from_slice(&chunk);
-        if kind.is_none() && body.len() >= 16 {
+        if kind.is_none() && body.len() >= HEAD {
             kind = Some(kind_of(&body).context("That is not a picture or a Legato file")?);
         }
         if let Some((k, _)) = kind {
@@ -104,7 +107,7 @@ async fn get(url: Url, stays: fn(&Url) -> bool, timeout: Duration) -> Result<(Ki
             ensure!(body.len() <= MAX_IMAGE, "That file is too large");
         }
     }
-    // Shorter than 16 bytes: judged on what came.
+    // Shorter than `HEAD`: judged on what came.
     let (k, png) = match kind {
         Some(k) => k,
         None => kind_of(&body).context("That is not a picture or a Legato file")?,
@@ -194,6 +197,18 @@ mod tests {
         s.mock("GET", "/r").with_header("content-type", "application/octet-stream").with_body("{\"format\":\"lmix\",\"version\":1}").create_async().await;
         assert_eq!(take(&s, "/a.png").await.unwrap().0, Kind::Image);
         assert_eq!(take(&s, "/r").await.unwrap().0, Kind::Remix);
+    }
+
+    #[tokio::test]
+    async fn a_remix_file_whose_first_piece_is_short_is_still_a_remix() {
+        let mut s = Server::new_async().await;
+        s.mock("GET", "/slow.lmix").with_chunked_body(|w| {
+            w.write_all(b"{\n    \"format\": ")?;
+            w.flush()?;
+            std::thread::sleep(Duration::from_millis(200));
+            w.write_all(b"\"lmix\", \"version\": 1}")
+        }).create_async().await;
+        assert_eq!(take(&s, "/slow.lmix").await.unwrap().0, Kind::Remix);
     }
 
     #[tokio::test]
