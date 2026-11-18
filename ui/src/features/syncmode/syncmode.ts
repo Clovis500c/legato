@@ -27,8 +27,9 @@ export function startSyncMode(): () => void {
     })
     .catch(() => {})
   const pickup = startPickup()
-  // Back on screen (a phone woken, a window restored): your devices sync now, no visit to the Sync screen needed.
-  const back = () => document.visibilityState === 'visible' && void api.devicesWake().catch(() => {})
+  // Back on screen (a phone woken, a window restored): your devices sync now, no visit to the Sync screen needed. Leaving
+  // it too: a phone's last changes go out before Android freezes the app (its playback service lingers 30 s for that).
+  const back = () => void api.devicesWake().catch(() => {})
   document.addEventListener('visibilitychange', back)
   return () => {
     document.removeEventListener('visibilitychange', back)

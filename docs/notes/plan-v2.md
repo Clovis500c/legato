@@ -92,6 +92,15 @@ the order; a line leaves only when it ships or the user drops it.
       so a phone in the background that plays nothing is likely frozen by Android (cached apps, Doze) and its round
       stops. Find what Android allows (a round as the app leaves the screen, a periodic job, the playback service's
       lifetime) without a permanent notification nobody asked for; tried on the emulator with the app in the background.
+      Part done 2026-11-18, not tried: leaving the screen runs a round (`visibilitychange` → `devices_wake`), and the
+      playback service, silent, now lingers 30 s off screen before it stops (`LINGER`, `MainActivity.leftAt`), so that
+      round and the other device's answer finish before Android freezes the app; with music playing it already runs.
+      Decided alone (2026-11-18): no WorkManager job or permanent notification (a sync long after leaving would need
+      one); the media notification stays those 30 s as it did up to 60 s before. Not built or run here (no Android
+      target nor `env.ps1` on this PC: the Kotlin is unchecked, CI builds it). To try on the phone: change a playlist,
+      leave Legato at once (Home), within 30 s the PC has it; on the PC change one, the phone (off screen, silent)
+      gets it only once back on screen; check `visibilitychange` fires in the WebView as the app leaves (wry no longer
+      pauses it), else the leave round needs a Kotlin call instead.
 - [x] `M` The devices sync needs no visit to the Sync screen (the owner, 2026-11-18: "qu'il ne faille pas aller exprès
       sur le truc sync, que ça se fasse automatiquement"). "Sync automatically" is on by default, but when both devices
       sync automatically only the smaller id starts (`dv::starts`), so a sleeping device (the phone in the background)

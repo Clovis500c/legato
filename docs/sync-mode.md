@@ -81,7 +81,8 @@ older Legato's code ("Enter a code" falls back to it when no new device offers o
   and runs 5 s after the last at the earliest), after a trusted device shows up or its stamp or automatic flag changes
   (`dv::round_now`, `Heard::wakes`). Its stamp (TXT `s`: 12 hex of SHA-256 of its snapshot without its time) is compared: a sync runs when the other's stamp
   changed since the last merge, or this one's since the last send. When both sync automatically, the smaller id starts, and the other
-  after 30 s due with nothing from it (`dv::GRACE`). The app back on screen syncs at once (`devices_wake`).
+  after 30 s due with nothing from it (`dv::GRACE`). The app back on screen, or leaving it, syncs at once (`devices_wake`); on
+  Android the silent playback service lingers 30 s off screen so that round ends before the app is frozen.
   Off: "Sync now" only. Every 10 minutes a sync runs anyway when a stamp can't be heard.
 - **Here or not**: on this network = resolved by mDNS and not withdrawn, or reached in the last 3 minutes; else "Not on
   this network" with the last sync. The last addresses are kept per device and tried when mDNS hears nothing (Wi-Fi

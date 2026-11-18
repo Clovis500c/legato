@@ -152,6 +152,7 @@ class MainActivity : TauriActivity() {
   override fun onPause() {
     super.onPause()
     onScreen = false
+    leftAt = android.os.SystemClock.elapsedRealtime()
     if (wryWebView == null) web?.onResume()
   }
 
@@ -193,6 +194,8 @@ class MainActivity : TauriActivity() {
   companion object {
     // Read by PlaybackService.
     @Volatile var onScreen = false
+    // When it left the screen (elapsedRealtime ms): the service lingers a while after (your devices' sync).
+    @Volatile var leftAt = 0L
     private val APP = setOf("http://tauri.localhost", "https://tauri.localhost")
     private val YOUTUBE = setOf("https://www.youtube.com", "https://www.youtube-nocookie.com", "https://m.youtube.com", "https://music.youtube.com")
     private const val VISIBLE = """(() => {

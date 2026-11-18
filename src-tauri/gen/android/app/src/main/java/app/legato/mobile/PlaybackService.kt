@@ -20,7 +20,7 @@ import android.os.Looper
 import android.os.PowerManager
 
 // Music behind other apps: a media playback foreground service keeps the process alive (not frozen, not killed).
-// MainActivity starts it while on screen; off screen and silent, it stops within a minute. Its notification is a media
+// MainActivity starts it while on screen; off screen and silent, it stops within a minute (30 s off screen at least). Its notification is a media
 // one (previous, play / pause, next, title, artist, cover) and a MediaSession serves the lock screen and headset buttons:
 // every button goes back to the page (`MediaState`), which owns the queue.
 class PlaybackService : Service() {
@@ -31,10 +31,13 @@ class PlaybackService : Service() {
   private val check = object : Runnable {
     override fun run() {
       val audio = getSystemService(AudioManager::class.java)
-      if (!MainActivity.onScreen && !audio.isMusicActive) stopSelf()
+      val idle = !MainActivity.onScreen && !audio.isMusicActive
+      // Off screen at least LINGER first: the devices sync's round as the app leaves (syncmode.ts) gets to finish.
+      val off = android.os.SystemClock.elapsedRealtime() - MainActivity.leftAt
+      if (idle && off >= LINGER) stopSelf()
       else {
         hold(MediaState.playing)
-        tick.postDelayed(this, 60_000)
+        tick.postDelayed(this, if (idle) LINGER - off else 60_000L)
       }
     }
   }
@@ -154,6 +157,7 @@ class PlaybackService : Service() {
 
   companion object {
     private const val CHANNEL = "playback"
+    private const val LINGER = 30_000L
     const val ACTION = "legato.action"
   }
 }
