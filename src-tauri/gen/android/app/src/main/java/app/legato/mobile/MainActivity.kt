@@ -145,7 +145,11 @@ class MainActivity : TauriActivity() {
     }
     // An update downloaded off screen, or back from Android's "Install unknown apps" page: its installer now.
     ApkInstall.resumed(this)
+    screen()
   }
+
+  // The page never sees visibilitychange (KeepVisible): it hears the screen here (`window.legatoScreen`, syncmode.ts).
+  private fun screen() = web?.evaluateJavascript("window.legatoScreen && window.legatoScreen()", null)
 
   // wry pauses no WebView here (wryWebView): the music goes on behind other apps. A wry whose field wasn't found pauses
   // it, media with it: undone at once.
@@ -154,6 +158,7 @@ class MainActivity : TauriActivity() {
     onScreen = false
     leftAt = android.os.SystemClock.elapsedRealtime()
     if (wryWebView == null) web?.onResume()
+    screen()
   }
 
   // Back: the app's own first (`window.legatoBack`, ui/src/app/androidBack.ts: a menu, a dialog, a full screen, Now

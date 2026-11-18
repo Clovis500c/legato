@@ -10,6 +10,12 @@ import { startPickup } from './pickup'
  * Sync Mode in the interface (mounted once): another PC's changes reload what they touched. OneDrive on this PC and
  * the question never asked: asked once, the answer is in Settings › Sync Mode.
  */
+declare global {
+  interface Window {
+    legatoScreen?: () => void
+  }
+}
+
 export function startSyncMode(): () => void {
   const off = api.onSync((m) => {
     const text = mergedText(m)
@@ -31,8 +37,11 @@ export function startSyncMode(): () => void {
   // it too: a phone's last changes go out before Android freezes the app (its playback service lingers 30 s for that).
   const back = () => void api.devicesWake().catch(() => {})
   document.addEventListener('visibilitychange', back)
+  // Android: the page always looks visible (MainActivity.kt's KeepVisible): onResume and onPause call this instead.
+  window.legatoScreen = back
   return () => {
     document.removeEventListener('visibilitychange', back)
+    if (window.legatoScreen === back) delete window.legatoScreen
     pickup()
     void off.then((f) => f())
   }

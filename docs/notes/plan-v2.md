@@ -99,8 +99,8 @@ the order; a line leaves only when it ships or the user drops it.
       one); the media notification stays those 30 s as it did up to 60 s before. Not built or run here (no Android
       target nor `env.ps1` on this PC: the Kotlin is unchecked, CI builds it). To try on the phone: change a playlist,
       leave Legato at once (Home), within 30 s the PC has it; on the PC change one, the phone (off screen, silent)
-      gets it only once back on screen; check `visibilitychange` fires in the WebView as the app leaves (wry no longer
-      pauses it), else the leave round needs a Kotlin call instead.
+      gets it only once back on screen. The page never sees `visibilitychange` on Android (`KeepVisible`): `onResume`
+      and `onPause` call `window.legatoScreen` (syncmode.ts) instead, unchecked on a device.
 - [x] `M` The devices sync needs no visit to the Sync screen (the owner, 2026-11-18: "qu'il ne faille pas aller exprès
       sur le truc sync, que ça se fasse automatiquement"). "Sync automatically" is on by default, but when both devices
       sync automatically only the smaller id starts (`dv::starts`), so a sleeping device (the phone in the background)
