@@ -369,12 +369,26 @@
     send({ attached: false })
   }
 
+  // ctx:begin
+  // Pure (context.test.ts runs this block). A context that only LISTENS (analysers; the element keeps its own sound) asks
+  // for no output device: Chromium 110+ (`sinkId: { type: 'none' }`, MDN "AudioContext() constructor"), so a phone's
+  // Bluetooth earphones are not given a second, silent stream to keep fed. Older WebViews ignore the member (attach checks).
+  function contextOptions(listenOnly) {
+    return listenOnly ? { latencyHint: 'playback', sinkId: { type: 'none' } } : { latencyHint: 'playback' }
+  }
+  // The phone (Android's WebView) reads half as often through windows twice as long (still no gap at 48 kHz: 4096 samples
+  // are 85 ms, a read every 66 ms); the desktop keeps its 2048 every tick.
+  function analysis(phone) {
+    return phone ? { fft: 4096, every: 2 } : { fft: 2048, every: 1 }
+  }
+  // ctx:end
+
   // Two analysers per point (left / right): loudness sums both channels, as BS.1770 and the native meter do.
-  function pair(ctx, from) {
+  function pair(ctx, from, fft) {
     const split = ctx.createChannelSplitter(2)
     from.connect(split)
     return [0, 1].map((c) => {
-      const a = new AnalyserNode(ctx, { fftSize: 2048, smoothingTimeConstant: 0 })
+      const a = new AnalyserNode(ctx, { fftSize: fft, smoothingTimeConstant: 0 })
       split.connect(a, c)
       return a
     })
@@ -387,8 +401,14 @@
     let ctx
     try {
       const stream = video.captureStream()
-      ctx = new AudioContext({ latencyHint: 'playback' })
       const full = !settings.listen
+      try {
+        ctx = new AudioContext(contextOptions(!full))
+        // A WebView that ignores the member made a context with a device: nothing to undo, it is today's behaviour.
+      } catch {
+        ctx = new AudioContext({ latencyHint: 'playback' })
+      }
+      const { fft, every } = analysis(/Android/.test(navigator.userAgent))
       // Stereo in (mono is spread to both sides), then effects → gain → peak limiter → speakers. Listening only: the
       // analysers alone (Chromium pulls them unconnected), the element keeps its own sound.
       const input = new GainNode(ctx, { channelCount: 2, channelCountMode: 'explicit', channelInterpretation: 'speakers' })
@@ -416,12 +436,12 @@
       const shelf = new BiquadFilterNode(ctx, { type: 'highshelf', frequency: 1681, gain: 4 })
       const hp = new BiquadFilterNode(ctx, { type: 'highpass', frequency: 38.1, Q: 0.5 })
       tap.connect(shelf).connect(hp)
-      const k = pair(ctx, hp)
-      const raw = pair(ctx, tap)
+      const k = pair(ctx, hp, fft)
+      const raw = pair(ctx, tap, fft)
       await ctx.resume()
       if (ctx.state !== 'running') throw new Error('Sound processing is waiting for a click in the app')
       if (!settings.on || g || document.querySelector('video') !== video || full === settings.listen) return void ctx.close()
-      const s = { ctx, video, stream, input, tap, full, fx: null, post, direct, gain, limiter, gate, proven: false, told: false, k, raw, buf: new Float32Array(2048), track: null, src: null, wanted: video.muted, momentary: 0, short: 0, peak: 0, gainDb: full ? startGain(0) : 0, elapsed: 0, at: performance.now(), time: video.currentTime, silent: 0, quietAt: null, endSaid: false, leadFrom: null, leadQuiet: 0, leadSaid: false }
+      const s = { ctx, video, stream, input, tap, full, fx: null, post, direct, gain, limiter, gate, proven: false, told: false, k, raw, buf: new Float32Array(fft), every, lag: 0, beat: false, track: null, src: null, wanted: video.muted, momentary: 0, short: 0, peak: 0, gainDb: full ? startGain(0) : 0, elapsed: 0, at: performance.now(), time: video.currentTime, silent: 0, quietAt: null, endSaid: false, leadFrom: null, leadQuiet: 0, leadSaid: false }
       // The captured track changes with each video (new metadata): follow it.
       s.plug = () => {
         // Newest live track: the next video in the same element adds one, the old one stays "live" but silent
@@ -774,6 +794,11 @@
     // Paused: one last report, then quiet until it plays again.
     if (g.video.paused && g.idle) return
     g.idle = g.video.paused
+    // Phone: analysed every other tick (analysis()), the time between summed: the maths below keep their rates.
+    g.lag += dt
+    if (g.every === 2 && (g.beat = !g.beat)) return
+    const span = g.lag
+    g.lag = 0
     const { ms } = read(g.k)
     const { peak } = read(g.raw, true)
     // Sound captured: processing. Silent while playing: the element's own sound back after LOST_S; never any sound
@@ -782,7 +807,7 @@
     const playing = !v.paused && v.currentTime !== g.time
     g.time = v.currentTime
     const sound = peak > SOUND
-    g.silent = playing && !sound ? g.silent + dt : 0
+    g.silent = playing && !sound ? g.silent + span : 0
     if (sound) prove(g, true)
     else if (g.proven && g.silent > LOST_S) prove(g, false)
     else if (!g.proven && !g.told && g.silent > SILENT_SAY_S) {
@@ -790,18 +815,18 @@
       report('No sound could be taken from this video')
     }
     // Windows not full yet (song start): plain average of all so far, as the native meter does.
-    g.elapsed += dt
-    const soFar = g.elapsed > 0 ? dt / g.elapsed : 1
-    g.momentary += (ms - g.momentary) * Math.max(soFar, 1 - Math.exp(-dt / 0.4))
-    g.short += (ms - g.short) * Math.max(soFar, 1 - Math.exp(-dt / 3))
-    g.peak = Math.max(peak, g.peak * 10 ** -dt)
+    g.elapsed += span
+    const soFar = g.elapsed > 0 ? span / g.elapsed : 1
+    g.momentary += (ms - g.momentary) * Math.max(soFar, 1 - Math.exp(-span / 0.4))
+    g.short += (ms - g.short) * Math.max(soFar, 1 - Math.exp(-span / 3))
+    g.peak = Math.max(peak, g.peak * 10 ** -span)
     const mom = lufs(g.momentary)
     const short = lufs(g.short)
     if (g.full) {
       let want = 0
       // The app fading the song out, silence, or the music falling away: hold (processor.rs `wanted_db`).
       if (settings.adaptive) want = settings.ending || mom < HOLD_BELOW || mom < short - FALLING_DB ? g.gainDb : Math.min(MAX_BOOST, Math.max(MAX_CUT, settings.targetLufs - short))
-      g.gainDb += (want - g.gainDb) * (1 - Math.exp(-dt / (g.elapsed < START_S ? GLIDE_START_S : GLIDE_S)))
+      g.gainDb += (want - g.gainDb) * (1 - Math.exp(-span / (g.elapsed < START_S ? GLIDE_START_S : GLIDE_S)))
       setGain()
     }
     // fast: this read alone (the analysers hold ~43 ms).
@@ -821,7 +846,7 @@
           g.leadFrom = t
           if (t > 1) g.leadSaid = true
         }
-        g.leadQuiet += dt
+        g.leadQuiet += span
       } else {
         g.leadSaid = true
         if (g.leadFrom !== null && g.leadQuiet >= LEAD_S && t - g.leadFrom <= g.leadQuiet + 1) send({ lead: t })

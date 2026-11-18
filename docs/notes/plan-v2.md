@@ -47,6 +47,17 @@ the order; a line leaves only when it ships or the user drops it.
       earphones get one stream; then the processing mode (`full`, the element muted) checked the same way. Each tried on
       the owner's phone, screen off, Bluetooth; the YouTube Music app on the same earphones tells whether Bluetooth
       alone crackles. A connection drop stalls or stops a song rather than crackling it.
+      Built 2026-11-18 (NOT ticked: only the owner's phone can tell; nothing was run on Android): `live.js` makes a
+      listening-only context with `sinkId: { type: 'none' }` (documented: MDN "AudioContext() constructor", Chrome blog
+      "Change the destination output device in Web Audio", Chrome 110+; lore: that an unconnected context still holds an
+      output stream and that a silent sink stops it; a third-party report says Chromium 154 and older give the silent sink
+      the default device's parameters, 155+ paces it), the old constructor as fallback; the processing context is unchanged.
+      On Android only: analysis every other tick through 4096-point analysers (half the reads, no gap). Not done: suspending
+      the context when paused (`tick` detaches a context that is not running, a resume needs a gesture: too risky blind).
+      To try on the phone, in order: (1) YouTube song, Bluetooth earphones, screen off, as before: no crackle = the second
+      stream was it. (2) Still crackles: Settings › Sound, early song ends off (and cover pulse off), same test: no
+      crackle now = the listening alone still hurts (look at the analysis next); still crackles = not the listening.
+      (3) The YouTube Music app on the same earphones: crackles there too = Bluetooth alone. Not tried: `process` mode.
 
 ## The owner's asks of 2026-11-07, evening
 
