@@ -14,14 +14,17 @@ the order; a line leaves only when it ships or the user drops it.
 
 - [ ] `M` Android: the sound sometimes crackles or sounds saturated (the owner, 2026-11-18, cause unknown to them, "maybe
       the connection"). Their answers: a YouTube song, Bluetooth earphones, the screen off or the app in the background, no
-      effect on. Not reproduced. Suspect first (read in the code, not proven): by default every YouTube song is listened
-      to through Chromium's audio nodes, the phone too (`earlyEnds` on by default → `ends` in `player/liveSync.ts:55` →
-      `live.js` `attach()` in listen mode: `captureStream`, an `AudioContext`, four 2048-point analysers and the
-      K-weighting filters); the element keeps its own sound, but that extra rendering in a background WebView may starve
-      it, and Bluetooth (A2DP) wants steady buffers. To try on the phone, screen off, Bluetooth: the same song with
-      `earlyEnds` off (then `liveYoutube` off), and the YouTube Music app on the same earphones (Bluetooth itself). If
-      it is ours: on the phone, the listening-only work stops while the screen is off (early ends fall back to the song's
-      length). A connection drop stalls or stops a song rather than crackling it.
+      effect on. Not reproduced. The owner's word (2026-11-18): fix the live processing so it holds up there; never
+      switch it off to dodge the problem. Suspect first (read in the code, not proven): by default every YouTube song is
+      listened to through Chromium's audio nodes, the phone too (`earlyEnds` on by default → `ends` in
+      `player/liveSync.ts:55` → `live.js` `attach()` in listen mode: `captureStream`, an `AudioContext`, four 2048-point
+      analysers and the K-weighting filters). A running context likely opens a sound output of its own, connected or
+      not, beside the element's: two streams to the earphones from a background WebView, and Bluetooth (A2DP) wants
+      steady buffers. Fixes to try, in order: the listening-only context rendered with no sound output
+      (`new AudioContext({ sinkId: { type: 'none' } })`, Chromium 110 and later; older ones ignore the option), so the
+      earphones get one stream; then the processing mode (`full`, the element muted) checked the same way. Each tried on
+      the owner's phone, screen off, Bluetooth; the YouTube Music app on the same earphones tells whether Bluetooth
+      alone crackles. A connection drop stalls or stops a song rather than crackling it.
 
 ## The owner's asks of 2026-11-07, evening
 
