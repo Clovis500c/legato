@@ -166,6 +166,13 @@ code {
     transform: scale(1.35) translate3d(3%, 2%, 0) rotate(6deg);
   }
 }
+/* The blind test's answer clock: a thin line that runs out (a transform, nothing reflows; `.still` stops it full). */
+@keyframes blind-clock {
+  to {
+    transform: scaleX(0);
+  }
+}
+
 @keyframes fade-in {
   from {
     opacity: 0;

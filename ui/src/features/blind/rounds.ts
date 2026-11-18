@@ -32,3 +32,11 @@ export function pickRounds(tracks: LibraryTrack[], rounds = ROUNDS, random: () =
 
 /** Where the snippet starts: 30 % in, and early enough for the whole snippet. */
 export const snippetStart = (durationMs: number): number => Math.max(0, Math.min(Math.round(durationMs * 0.3), durationMs - SNIPPET_MS - 5_000))
+
+/** A round's answer window, from the start of its snippet: the whole snippet and ten seconds to think; then the round is over, unanswered. */
+export const ANSWER_MS = SNIPPET_MS + 10_000
+/** The "answer" of a round whose time ran out: no choice was picked. */
+export const TIMED_OUT = -1
+
+/** One point for the right answer; a wrong one, or none in time, scores nothing. */
+export const pointFor = (picked: number, right: number): number => (picked === right ? 1 : 0)

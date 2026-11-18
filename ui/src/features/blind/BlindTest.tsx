@@ -4,7 +4,7 @@ import type { LibraryTrack } from '../../shared/api'
 import { Button } from '../../shared/ui/Button'
 import { tr, trn } from '../../shared/i18n/i18n'
 import { usePlayer } from '../player/store'
-import { pickRounds, SNIPPET_MS, snippetStart } from './rounds'
+import { ANSWER_MS, pickRounds, pointFor, SNIPPET_MS, snippetStart, TIMED_OUT } from './rounds'
 import { holdLayer } from '../../shared/ui/layers'
 import { closeBlind } from './blindOpen'
 
@@ -43,6 +43,15 @@ export function BlindTest() {
       clearTimeout(timer.current)
     }
   }, [current, answer])
+  // The answer window: when it runs out with no answer, the round is over and shows the song (nothing scored).
+  useEffect(() => {
+    if (!current || answer !== null) return
+    const id = setTimeout(() => {
+      usePlayer.getState().pauseNow()
+      setAnswer(TIMED_OUT)
+    }, ANSWER_MS)
+    return () => clearTimeout(id)
+  }, [current, answer])
   useEffect(() => () => usePlayer.getState().pauseNow(), [])
   // Android's Back closes the game (it is a full-window cover over the page, not a page of its own).
   useEffect(() => holdLayer(closeBlind), [])
@@ -52,7 +61,7 @@ export function BlindTest() {
     if (answer !== null || !current) return
     usePlayer.getState().pauseNow()
     setAnswer(i)
-    if (i === right) setScore((n) => n + 1)
+    setScore((n) => n + pointFor(i, right))
   }
   const again = () => {
     setGame(pickRounds(useStore.getState().tracks))
@@ -82,6 +91,7 @@ export function BlindTest() {
         <>
           <p className="text-sm text-ink-3">{trn(game.length, 'Round {r} of {n} song', 'Round {r} of {n} songs', { r: round + 1 })}</p>
           <h2 className="text-2xl font-black">{answer === null ? tr('Which song is playing?') : answer === right ? tr('Correct!') : tr('It was “{title}” by {artist}', { title: current.song.title, artist: current.song.artist })}</h2>
+          {answer === null && <span aria-hidden key={round} className="h-0.5 w-full max-w-xl origin-left rounded-full bg-accent" style={{ animation: `blind-clock ${ANSWER_MS}ms linear forwards` }} />}
           <ul className="flex w-full max-w-xl flex-col gap-2">
             {current.choices.map((c, i) => (
               <li key={c.id}>

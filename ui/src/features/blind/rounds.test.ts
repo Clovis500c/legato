@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest'
 import type { LibraryTrack } from '../../shared/api'
-import { pickRounds, snippetStart } from './rounds'
+import { ANSWER_MS, pickRounds, pointFor, SNIPPET_MS, snippetStart, TIMED_OUT } from './rounds'
 
 const song = (id: number, extra: Partial<LibraryTrack> = {}) => ({ id, title: `Song ${id}`, artist: `Artist ${id}`, durationMs: 200_000, ids: { youtube: `v${id}` }, ...extra }) as LibraryTrack
 const seq = () => {
@@ -38,4 +38,13 @@ it('starts the snippet 30 % in, early enough to play it whole', () => {
   expect(snippetStart(60_000)).toBe(18_000)
   expect(snippetStart(30_000)).toBe(5_000)
   expect(snippetStart(10_000)).toBe(0)
+})
+
+it('a round is a point for the right answer only; time running out (no answer) is none', () => {
+  expect(pointFor(2, 2)).toBe(1)
+  expect(pointFor(1, 2)).toBe(0)
+  expect(pointFor(TIMED_OUT, 2)).toBe(0)
+  expect(TIMED_OUT).toBeLessThan(0)
+  // Long enough to hear the whole snippet and think a little.
+  expect(ANSWER_MS).toBeGreaterThan(SNIPPET_MS)
 })
