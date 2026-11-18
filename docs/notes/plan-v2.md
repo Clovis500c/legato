@@ -810,6 +810,7 @@ video ahead, no Spotify previews, Android as the APK with its own updates (no Pl
 - [ ] `S` Signed-out YouTube search: check it on the owner's PC; if it still fails, read the error under the search.
 - [ ] `S` Settings labels: review the descriptions' length and read the labels in the app in every language; the JSX per group is optional.
 - [ ] `S` Server songs levelled: Jellyfin's `NormalizationGain` and Plex's loudness are not read yet (other scales).
+  2026-11-19 (night run): Jellyfin done: `Jellyfin::replay_gain` reads `NormalizationGain` / `AlbumNormalizationGain` from `/Users/{id}/Items/{item}` (dB, -60..60, anything else none) into the same ReplayGain path as Subsonic's (`Conn::replay_gain`, `servers.rs` `gains`), tested with mockito. Assumption (not checked on a real server): the gain is to ReplayGain's -18 LUFS, as jellyfin-web's default target says; the server only has values after its LUFS scan. Left: Plex (its loudness attributes are not read: no documentation found, needs a real server).
 - [x] `S` Discovery: covers from the Cover Art Archive (one more host) are not done. Done: `79492349` (an option, off by default).
 - [ ] `S` Streamed songs: genre, year and tempo are not filled (no source gives them without a new host).
 - [ ] `S` Last.fm "Discoveries": left for the owner (its public API has changed).

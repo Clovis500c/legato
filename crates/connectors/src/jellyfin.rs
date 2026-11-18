@@ -9,6 +9,7 @@ use crate::art::Signed;
 use crate::linklist::REQUEST_TIMEOUT;
 use crate::servers::{COVER_SIZE, LIST_TIMEOUT, Read, Streamed, base_of, http, note, random_id, reach, refusal, safe_id};
 use anyhow::{Result, anyhow, bail};
+use music_core::local::ReplayGain;
 use music_core::lyrics::{self, Record};
 use music_core::model::{PlaylistRef, Source, Track};
 use music_core::server::{self, Account, Kind};
@@ -317,6 +318,14 @@ impl Jellyfin {
         Ok(Some(Record { plain: Some(lines.into_iter().map(|(_, t)| t).collect::<Vec<_>>().join("\n")), ..Default::default() }))
     }
 
+    /// A song's gain as the server's LUFS scan stored it (`NormalizationGain` and `AlbumNormalizationGain`, dB to the server's
+    /// target, read as ReplayGain's -18 LUFS like Subsonic's). None: the library was never scanned, or a value out of range.
+    pub async fn replay_gain(&self, item: &str) -> Result<Option<ReplayGain>> {
+        let v = self.get(&format!("/Users/{}/Items/{}", self.user_id, Self::item(item)?), &[], REQUEST_TIMEOUT).await?;
+        let db = |k: &str| v.get(k).and_then(Value::as_f64).filter(|g| (-60.0..=60.0).contains(g)).map(|g| g as f32);
+        Ok(db("NormalizationGain").map(|track_db| ReplayGain { track_db, track_peak: None, album: db("AlbumNormalizationGain").map(|a| (a, None)) }))
+    }
+
     fn item(item: &str) -> Result<&str> {
         if safe_id(item) { Ok(item) } else { bail!("Your music server doesn't have this item") }
     }
@@ -531,5 +540,27 @@ mod tests {
         assert_eq!(j.lyrics("a1b2").await.unwrap().unwrap().synced.as_deref(), Some("[00:01.50]Giving you a call\n[01:05.50]How I feel"));
         assert_eq!(j.lyrics("c3d4").await.unwrap().unwrap().plain.as_deref(), Some("Line one\nLine two"));
         assert!(j.lyrics("../x").await.is_err(), "not one of its ids");
+    }
+
+    #[tokio::test]
+    async fn a_songs_normalization_gain_is_its_replay_gain_when_the_server_scanned_it() {
+        let mut s = Server::new_async().await;
+        let user = account(&s.url()).user_id.clone();
+        for (id, body) in [
+            ("full", r#"{"Id":"full","NormalizationGain":-6.5,"AlbumNormalizationGain":-5.25}"#),
+            ("track", r#"{"Id":"track","NormalizationGain":2.1}"#),
+            ("unscanned", r#"{"Id":"unscanned"}"#),
+            ("odd", r#"{"Id":"odd","NormalizationGain":900,"AlbumNormalizationGain":-3}"#),
+            ("text", r#"{"Id":"text","NormalizationGain":"loud"}"#),
+        ] {
+            s.mock("GET", format!("/Users/{user}/Items/{id}").as_str()).with_body(body).create_async().await;
+        }
+        let j = Jellyfin::from_account(&account(&s.url()));
+        assert_eq!(j.replay_gain("full").await.unwrap(), Some(ReplayGain { track_db: -6.5, track_peak: None, album: Some((-5.25, None)) }));
+        assert_eq!(j.replay_gain("track").await.unwrap(), Some(ReplayGain { track_db: 2.1, track_peak: None, album: None }));
+        for id in ["unscanned", "odd", "text"] {
+            assert_eq!(j.replay_gain(id).await.unwrap(), None, "{id}");
+        }
+        assert!(j.replay_gain("../x").await.is_err(), "not one of its ids");
     }
 }
