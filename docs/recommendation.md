@@ -136,6 +136,89 @@ No new network request, host or field sent: the website's privacy rows (`PRIVACY
 call is the YouTube Music radio the app already makes. No new data written beyond what plays and prefs already store. No
 audio is downloaded, recorded or analysed from a platform; only local files' tags and `crates/dsp` results are read.
 
+## Why it is still not YouTube's level, and the levers
+Written 2026-11-18 from the owner's word: the picks are "still not at the level of YouTube's". Analysis only, nothing built.
+**The gap.** YouTube's picks come from collaborative filtering over billions of sessions. It learns what people who
+played A played next, and it trains the ranking on watch time (Covington 2016, Zhao 2019). It splits candidate generation
+(a few hundred songs out of millions) from ranking. Our ranker is close to theirs in shape (two stages, listened time,
+diversity), but our candidates are poor. One user's library: songs mostly untagged when streamed, a co-listening graph
+from one person's plays (`near`), and one YouTube Music radio. Ranking well among weak candidates cannot beat a
+crowd's candidates. So most of the gain lies in stage 1, the candidate pool, and that is where the crowd lives.
+**What the crowd signal is today.** `radio.ts` `around()` adds the radio of the last song only (`RDAMVM<id>`, ranked by
+its place), and only when signed in (`status.youtube.connected`). Yet `ytm_list` already answers signed out from the
+public catalog, and the Mixes page already asks anonymous radios of its seeds (`listening.rs` `radios`, cached for hours).
+The artist page parser drops "Fans might also like" (`home.rs` `artist_page`, "artists-only shelf dropped"). Last.fm
+`artist.getSimilar` and `artist.getTopTracks` are used once a day for Discoveries only, with the user's own key, opt-in.
+
+**The levers** (host / what leaves the PC / privacy cost / effort / offline measure):
+1. **YouTube Music's own radios as the candidate pool, several seeds, signed out too.** The radios of the last 3 queue
+   songs (or of the mix seed and 2 of its neighbours), merged. A song in 2 or 3 radios counts as a crowd vote, which adds
+   to its rank term in `fit`. Then the existing score, dose and MMR. Host: music.youtube.com, already a row. Leaves the PC:
+   video ids of songs being played, which the embed already sends to YouTube anyway. Privacy cost: none new when signed
+   in. Signed out, the same anonymous requests the Mixes page makes. Pace: at most 3 requests per run-out, through the
+   `radios` cache, never a search. Effort S. Measure: `feel.test.ts` with 3 radio fixtures; a song in all three outranks
+   one in one; off-style favourites stay at most 2 in 15.
+2. **Session signals we own but use thinly.** Completion ratio is in `play_weight`. Not used yet:
+   - a replay (the same song again within a day: a strong like);
+   - a skip of the next song as a verdict on the transition, not only on the song (`near` should lose that pair);
+   - energy/mood from `crates/dsp` loudness and tempo on local files.
+   Host: none; nothing leaves. Privacy cost: none. Effort S (replay, transitions), M (energy). Measure: `feel.test.ts`
+   cases: a replayed song rises; a pair skipped twice is no longer a neighbour.
+3. **Related artists from YouTube Music's artist page.** Keep the "Fans might also like" shelf; it is a crowd signal for
+   artists, so their top songs join the candidates of a mix from a song. Host: music.youtube.com, already a row. Leaves:
+   the artist's channel id, already sent when the artist page opens. Privacy cost: none new. Effort S-M; the page's shape
+   is unofficial, so it may break and must fail empty. Measure: a parser fixture plus a `feel` case.
+4. **Last.fm `track.getSimilar` / `artist.getSimilar`** ("based on listening data", the docs say), only for users who
+   connected Last.fm with their own key. Host: ws.audioscrobbler.com, already a row, but for more than "three artists
+   once a day". Leaves: the artist and title of songs being played, and those already go there as scrobbles. Privacy
+   cost: low, but the row's wording changes. Effort M: a key-gated path and a daily cap; Last.fm's names then need
+   matching to a playable version (`findAhead`'s pace). Measure: a mockito fixture, then a `feel` case.
+5. **ListenBrainz similarity** (labs.api.listenbrainz.org `similar-artists`, from session data, artist MBIDs, no key).
+   It adds an open crowd for users with no YouTube sign-in and no Last.fm. Host: new (labs.api.listenbrainz.org), plus
+   MusicBrainz to resolve MBIDs. Leaves: artist names or MBIDs. Privacy cost: a new host for everyone who turns it on.
+   Effort M-L: MBID lookup at 1 request/s, and staff call the labs API experimental, with some endpoints already removed.
+   Measure: fixtures only.
+6. **Exploration as a bandit.** Each explore pick is an arm; a full listen rewards it, an early skip punishes it; Thompson
+   sampling over the explore slots (genre or decade buckets) instead of a fixed dose. Nothing leaves. Effort M. Keep the
+   hard floor (Anderson 2020: the stream must not learn exploration away). Measure: a simulated user in a test, where the
+   share of explore picks heard to the end rises over 200 picks.
+7. **"Why this song".** A line per pick ("In 3 radios of what you played", "Played after Band X", "New to you, same
+   decade"), as `words.ts` does for mixes and `autoDj` for its picks. It builds trust and makes bad weights visible to the
+   owner. Nothing leaves. Effort S. Measure: each pick of `feel.test.ts` carries the reason that scored it most.
+8. **Two stages, made explicit.** Stage 1 = the crowd pool (1, then 3, 4 or 5 when on) plus library neighbours. Stage 2 =
+   today's score with diversity. This is the frame 1 and 3–5 plug into, not a separate piece of work.
+
+**Recommended order.**
+1. Lever 1 first: the best gain per privacy cost, no new host, the requests already allowed.
+2. Then 7: cheap, and it lets the owner say which reason was wrong.
+3. Then 2 and 3.
+4. Then 6.
+5. Last, 4 and 5: only on the owner's yes.
+
+**First slice (lever 1).** `around()` asks the radios of the last 3 distinct YouTube songs of the queue, through a Rust
+command that reuses `listening::radios` (cache, signed-out fallback). The candidates carry `votes` (how many radios hold
+them) next to `rank`, and `fit`'s radio term becomes 0.9 x (1 + 0.5 x (votes - 1)) / (1 + 0.04 x the best place).
+Acceptance with no network: `feel.test.ts` gets 3 radio fixtures with overlaps; the tests are written first and fail:
+- a song in all 3 radios lands in the first 5 picks;
+- a song in 1 radio only and of another style ranks below the overlapping ones;
+- the existing caps (2 in 15 off-style favourites, artist spacing) still hold;
+- signed out, the same picks come from the same fixtures.
+
+**Questions for the owner** (recommended default first):
+- Signed out, may Up next and "Start a mix" ask YouTube Music's public radios, as the Mixes page already does? **Yes**:
+  same host, same requests, at most 3 per run-out.
+- With Last.fm connected, may the songs being played also go to Last.fm to ask for similar ones (the privacy row
+  reworded)? **No by default**, an opt-in next to "Last.fm suggestions".
+- May a new host, labs.api.listenbrainz.org (plus musicbrainz.org), be added for similar artists? **Not now**: experimental
+  per its staff; revisit if 1 to 3 are not enough.
+
+Sources read for this section: the code above; Last.fm `track.getSimilar` / `artist.getSimilar` pages
+(https://www.last.fm/api/show/track.getSimilar, https://www.last.fm/api/show/artist.getSimilar: search excerpts only);
+ListenBrainz API docs (https://listenbrainz.readthedocs.io/en/latest/users/api/core.html, similar-artists response) and the
+MetaBrainz forum on the labs similarity API's stability (https://community.metabrainz.org/t/stability-of-the-similarity-api/570849).
+Not read in full: those pages themselves (only search excerpts); no documentation found for a labs similar-recordings
+endpoint; YouTube Music's radio algorithm is not public (the two papers above are YouTube's, not YouTube Music's).
+
 ## Sources
 - Covington, Adams, Sargin, Deep Neural Networks for YouTube Recommendations (RecSys 2016): https://gwern.net/doc/ai/nn/retrieval/2016-covington.pdf (summary: https://blog.acolyer.org/2016/09/19/deep-neural-networks-for-youtube-recommendations/)
 - Zhao et al., Recommending What Video to Watch Next: A Multitask Ranking System (RecSys 2019): https://research.google/pubs/recommending-what-video-to-watch-next-a-multitask-ranking-system/
