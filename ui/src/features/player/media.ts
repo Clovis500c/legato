@@ -11,10 +11,11 @@ export function mediaNow(now: NowPlaying | undefined, playing: boolean, track?: 
 }
 
 /** Media keys and panel buttons; toggle comes from the tray menu. */
-export type MediaKey = 'play' | 'pause' | 'toggle' | 'next' | 'previous' | 'stop'
+export type MediaKey = 'play' | 'pause' | 'toggle' | 'next' | 'previous' | 'stop' | 'like'
 
 /** Media key → store action. Play / pause only act when they change something. */
-export function keyAction(key: MediaKey, playing: boolean): 'toggle' | 'next' | 'prev' | null {
+export function keyAction(key: MediaKey, playing: boolean): 'toggle' | 'next' | 'prev' | 'like' | null {
+  if (key === 'like') return 'like'
   if (key === 'next') return 'next'
   if (key === 'previous') return 'prev'
   if (key === 'toggle') return 'toggle'
@@ -148,11 +149,18 @@ export function startMedia(): () => void {
     if (s.now !== prev.now || s.playing !== prev.playing || s.positionMs !== prev.positionMs || s.durationMs !== prev.durationMs) push()
   })
   const offBlind = useBlind.subscribe(push)
+  const run = (action: ReturnType<typeof keyAction>) => {
+    const p = usePlayer.getState()
+    if (action === 'like') {
+      // The heart of what plays (the Stream Deck's key); never during a blind test, its song is hidden.
+      const t = nowTrack()
+      if (t && !useBlind.getState().open) void import('./like').then((m) => m.toggleLike(t))
+    } else if (action === 'toggle') p.toggle()
+    else if (action) p.step(action === 'next' ? 1 : -1)
+  }
   const offKey = listen<MediaKey>('media-key', ({ payload }) => {
     const p = usePlayer.getState()
-    const action = keyAction(payload, p.playing)
-    if (action === 'toggle') p.toggle()
-    else if (action) p.step(action === 'next' ? 1 : -1)
+    run(keyAction(payload, p.playing))
   })
   const offSeek = listen<number>('media-seek', ({ payload }) => {
     if (usePlayer.getState().now) usePlayer.getState().seek(payload)
@@ -168,9 +176,7 @@ export function startMedia(): () => void {
         // A row of the queue widget: only a song still at that place.
         if (p.list[b.play] && !useBlind.getState().open) void p.playAt(b.play)
       } else {
-        const action = keyAction(b.key, p.playing)
-        if (action === 'toggle') p.toggle()
-        else if (action) p.step(action === 'next' ? 1 : -1)
+        run(keyAction(b.key, p.playing))
       }
     }
     push()

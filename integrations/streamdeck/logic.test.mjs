@@ -21,7 +21,8 @@ test('each key sends its own request', () => {
   assert.equal(requestFor(link, 'next').url, 'http://127.0.0.1:47821/key?k=next&t=a%2Bb')
   assert.equal(requestFor(link, 'previous').url, 'http://127.0.0.1:47821/key?k=previous&t=a%2Bb')
   assert.deepEqual(requestFor(link, 'state'), { method: 'GET', url: 'http://127.0.0.1:47821/state?t=a%2Bb', redirect: 'error' })
-  assert.equal(requestFor(link, 'like'), null)
+  assert.equal(requestFor(link, 'like').url, 'http://127.0.0.1:47821/key?k=like&t=a%2Bb')
+  assert.equal(requestFor(link, 'stop'), null)
 })
 
 test('the now playing key shows what plays, cut to fit', () => {

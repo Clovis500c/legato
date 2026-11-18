@@ -1,10 +1,11 @@
 # Stream Deck plugin
 
-`integrations/streamdeck/app.legato.deck.sdPlugin`: four keys for an Elgato Stream Deck (software 6.9 or later, Windows):
-Play / pause, Next track, Previous track and Now playing (the title and artist on the key, refreshed every 1.5 s; pressing
+`integrations/streamdeck/app.legato.deck.sdPlugin`: five keys for an Elgato Stream Deck (software 6.9 or later, Windows):
+Play / pause, Next track, Previous track, Like (the heart of what plays: in or out of Liked Music, never during a
+blind test) and Now playing (the title and artist on the key, refreshed every 1.5 s; pressing
 it plays or pauses).
 
-It talks to Legato's phone remote (`src-tauri/src/remote.rs`, routes in `music_core::remote`), nothing else: `POST /key?k=toggle|next|previous`
+It talks to Legato's phone remote (`src-tauri/src/remote.rs`, routes in `music_core::remote`), nothing else: `POST /key?k=toggle|next|previous|like`
 and `GET /state`, with the link's secret. The link is accepted only when its address is private (this PC, 10.x, 172.16-31.x,
 192.168.x, 169.254.x) and plain `http://`; the plugin never reaches the internet and no new host is added to the website's
 privacy rows.
@@ -26,6 +27,5 @@ A key that cannot reach Legato (off, wrong link, the remote switched off) shows 
 
 ## Not done
 
-- **Like**: the phone remote has no like route; a key for it needs a new route and an event in the interface.
 - **Not tried on a real Stream Deck**: the manifest, the protocol messages and the Node version are from Elgato's SDK
   documentation, never loaded by the software here. Tests cover the logic only.

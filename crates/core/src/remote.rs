@@ -83,6 +83,8 @@ pub fn route(head: &str, token: &str) -> Route {
             Some("toggle") => Route::Key("toggle"),
             Some("next") => Route::Key("next"),
             Some("previous") => Route::Key("previous"),
+            // The heart of what plays now (the Stream Deck's like key).
+            Some("like") => Route::Key("like"),
             _ => Route::No(400),
         },
         ("POST", "/seek") => query.get("ms").and_then(|ms| ms.parse().ok()).map_or(Route::No(400), Route::Seek),
@@ -153,6 +155,9 @@ mod tests {
         assert_eq!(route(&format!("GET /state?t={T} HTTP/1.1"), T), Route::State);
         assert_eq!(route(&format!("GET /cover?x=1&t={T} HTTP/1.1"), T), Route::Cover);
         assert_eq!(route(&format!("POST /key?t={T}&k=next HTTP/1.1"), T), Route::Key("next"));
+        assert_eq!(route(&format!("POST /key?t={T}&k=like HTTP/1.1"), T), Route::Key("like"));
+        assert_eq!(route("POST /key?k=like HTTP/1.1", T), Route::No(403), "a like needs the secret like every key");
+        assert!(matches!(route(&format!("GET /key?t={T}&k=like HTTP/1.1"), T), Route::No(_)), "never from a link followed");
         assert_eq!(route(&format!("POST /key?t={T}&k=stop HTTP/1.1"), T), Route::No(400));
         assert_eq!(route(&format!("POST /seek?t={T}&ms=61000 HTTP/1.1"), T), Route::Seek(61000));
         assert_eq!(route(&format!("POST /seek?t={T}&ms=-1 HTTP/1.1"), T), Route::No(400));

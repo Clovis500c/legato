@@ -495,8 +495,10 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       sample description, text in UTF-16 without a mark) shows none.
 - [ ] `M` Stream Deck plugin and an Xbox Game Bar widget (play / skip / like / now playing) over the local hotkeys.
   2026-11-13: Stream Deck done as `integrations/streamdeck` (`docs/streamdeck.md`): play / pause, next, previous, now
-  playing, over the phone remote's local routes; logic tested, never loaded by a real Stream Deck. Left: its like key (the
-  remote has no like route), the Xbox Game Bar widget (a UWP package, nothing here could build or load it).
+  playing, over the phone remote's local routes; logic tested, never loaded by a real Stream Deck. 2026-11-19: its like
+  key (`POST /key?k=like`, the same secret and private addresses as every key, POST only; the interface toggles the
+  heart of what plays, never during a blind test), tested in `logic.test.mjs`, `remote.rs`, `media.test.ts`. Left: the
+  Xbox Game Bar widget (a UWP package, nothing here could build or load it).
 - [ ] `M` Theme and plugin gallery without a server: an index file in a GitHub repo, browsed from Add-ons, installed after
       2026-11-13 (wider mandate), still not built: the index has to live in a repository that does not exist yet (and the project never creates
       one on its own); a gallery that can list nothing would be a fake button. When the owner makes it: one `index.json` (name, kind, url, sha256, size), fetched through `Noted`, a download refused when its hash differs, themes through the existing theme import, plugins through `plugin_inspect` and its permission review.

@@ -22,6 +22,7 @@ describe('media keys', () => {
     expect(keyAction('play', true)).toBeNull()
     expect(keyAction('pause', true)).toBe('toggle')
     expect(keyAction('pause', false)).toBeNull()
+    expect(keyAction('like', false)).toBe('like')
     expect(keyAction('stop', true)).toBe('toggle')
   })
 

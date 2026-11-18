@@ -2,7 +2,7 @@
 // It talks to Legato's phone remote (Settings › Playback › Phone remote) and nothing else: the link that setting shows,
 // on this PC or its own network, never beyond. Nothing is sent to the internet.
 
-const KEYS = { playpause: 'toggle', next: 'next', previous: 'previous' }
+const KEYS = { playpause: 'toggle', next: 'next', previous: 'previous', like: 'like' }
 
 /** A private address: this PC, or the 10.x, 172.16-31.x, 192.168.x and 169.254.x ranges of a home or office network. */
 export function isPrivateHost(host) {

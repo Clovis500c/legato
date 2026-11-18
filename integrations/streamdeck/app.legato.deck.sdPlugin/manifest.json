@@ -17,6 +17,7 @@
     { "UUID": "app.legato.deck.playpause", "Name": "Play / pause", "Icon": "ui/playpause.svg", "Tooltip": "Plays or pauses Legato.", "PropertyInspectorPath": "ui/link.html", "States": [{ "Image": "ui/playpause.svg" }] },
     { "UUID": "app.legato.deck.next", "Name": "Next track", "Icon": "ui/next.svg", "Tooltip": "Skips to the next track.", "PropertyInspectorPath": "ui/link.html", "States": [{ "Image": "ui/next.svg" }] },
     { "UUID": "app.legato.deck.previous", "Name": "Previous track", "Icon": "ui/previous.svg", "Tooltip": "Back to the previous track.", "PropertyInspectorPath": "ui/link.html", "States": [{ "Image": "ui/previous.svg" }] },
+    { "UUID": "app.legato.deck.like", "Name": "Like", "Icon": "ui/like.svg", "Tooltip": "Adds what plays to Liked Music, or takes it out.", "PropertyInspectorPath": "ui/link.html", "States": [{ "Image": "ui/like.svg" }] },
     { "UUID": "app.legato.deck.nowplaying", "Name": "Now playing", "Icon": "ui/nowplaying.svg", "Tooltip": "Shows the title and artist; pressing it plays or pauses.", "PropertyInspectorPath": "ui/link.html", "States": [{ "Image": "ui/nowplaying.svg", "ShowTitle": true }] }
   ]
 }
