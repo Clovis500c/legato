@@ -2,14 +2,14 @@
 
 Where the work stands, for a session with no history here. Read this first, then only the parts of
 [plan-v2.md](plan-v2.md) you need. Rewrite it, short, when a branch, a release or the next step changes; its older
-versions are in git (`git log -p -- docs/notes/handoff.md`). Updated 2026-11-15 (clean-up of the plan and the docs).
+versions are in git (`git log -p -- docs/notes/handoff.md`). Updated 2026-11-18 (the owner's four asks of 2026-11-17).
 
 ## Where things stand
-- **master** = `9ad1e6f7` (the Discord ping titles, lot 50, are in it). Stable **1.2.10** (tag `v1.2.10`), unchanged.
-- **platforms** = master + the clean-up commit that adds this line's version of the handoff and plan (`git log --oneline
-  origin/master..HEAD`). Nothing else is waiting. Only the owner's word pushes.
-- **Next Beta**: the push of the clean-up releases it. It is the first Beta to test the Discord pings (lot 50), and it
-  carries the plan's clean-up. `node scripts/release.mjs --dry-run` says v1.2.40 once this commit is on master.
+- **master** = `fb5676fc` (lot 51, the Rich Presence's own artist cache, is in it). Stable **1.2.10** (tag `v1.2.10`), unchanged.
+- **platforms** = master + 4 local commits of 2026-11-18, the owner's four asks (`git log --oneline origin/master..HEAD`):
+  the algorithm rebuilt `4a921e9f`, imported playlists in Add to playlist `b4ce2fac`, « From » kept `85ab43b8`, the
+  phone's slim mini player `edb7648a`. Only the owner's word pushes.
+- **Next Beta**: the push of those four releases it; `node scripts/release.mjs --dry-run` gives its number.
 - **Version rule** (`CONTRIBUTING.md` › Version): `MAJOR.MINOR` is in `src-tauri/tauri.conf.json` (`1.2`); the patch is
   the number of commits since the base in `BASES` (`scripts/release.mjs`), with `n % 1000`. A bump of `MAJOR.MINOR` is
   the owner's decision.
@@ -34,23 +34,33 @@ versions are in git (`git log -p -- docs/notes/handoff.md`). Updated 2026-11-15 
 
 ## The algorithm
 `docs/recommendation.md` is where it lives: the design, the weights (all first guesses, never heard by ear), the measured
-numbers. In short: `taste_signals` (Rust, one pass) → `player/taste.ts` (store) → `player/score.ts` (pure: profiles,
-z-scores, explore dose by Variety, diversity re-rank) used by Shuffle, the end of Up next and « Start a mix from this
-song »; the Mixes page's « Like <title> » mixes are built in Rust (`mixes()`). Variety is the one control.
+numbers; rebuilt 2026-11-18 (its top says what made it bad, each fault kept in `feel.test.ts`). In short: `taste_signals`
+(Rust, one pass, with `near`: the songs heard one after the other) → `player/taste.ts` (store) → Shuffle weighs rest x
+marks (`shuffle.ts`), keeps each artist apart, and an early skip steers it at once; the picks (the end of Up next, « Start a
+mix from this song ») multiply fit by preference (`score.ts`); the Mixes page's « Like <title> » mixes are built in Rust
+(`mixes()`). Variety is the one control.
 
 ## Try first (the owner)
 Only what is new or still untried. Most of the rest is behind a setting that is **off** by default.
+- **The four asks of 2026-11-17** (on `platforms`, not pushed; tests only, nothing heard or seen on a phone):
+  - Shuffle a playlist or a mix (Smart shuffle on): an artist never comes back right away; liked and well-rated songs
+    come more often, one heard yesterday less; skip a song in its first 30 s and that artist leaves the next 10 songs,
+    twice and all of theirs go to the end. « Start a mix from this song » and the end of Up next: your favourites spice
+    it, they no longer fill it.
+  - Add to playlist on the phone (or on a PC signed out of YouTube): the imported playlists are offered; the song goes
+    into your own copy « <name> (copy) », made at the first add; the import itself is left alone.
+  - Close and reopen the app: Now Playing still says « From » and the playlist (desktop and phone).
+  - The phone with the mini player in the sidebar: one slim row at the foot of Your library, the video in Now Playing.
 - **Lot 49, comma names**: « Tyler, The Creator » should be one artist (one « TT » tile). So should « Earth, Wind & Fire »,
   « Crosby, Stills, Nash & Young », « Crosby, Stills & Nash » and « Emerson, Lake & Palmer ». Tell us any other comma name
   you see. A « Never in mixes » you set on those artists must be set again.
 - **Lot 47, channel picture**: play a song by « prodphanda », wait about 10 s: its picture shows beside the title, and its
   artist page opens.
-- **Lot 48, From label**: Now Playing says « From », then the playlist's picture and the name in bold (desktop and phone).
 - **Not reported yet**: a Discord picture on a share link and on the share web page; the Adaptive Sound icons under the
   volume; Back on the phone from several pages and after a reopen; the Home flowing background (Appearance, off by
   default; it stops under Windows' reduce-motion).
-- **Lot 50, next Beta**: the Beta embed should appear with the Beta News Ping role, and the Stable promotion should ping
-  the Updates Ping. Nothing was tested for real.
+- **Lot 50**: a Beta's embed should come with the Beta News Ping role, and the Stable promotion should ping the Updates
+  Ping. Not confirmed here.
 - **Right to left** (Arabic, Hebrew): never looked at on a screen; machine translations to review.
 
 ## Open
