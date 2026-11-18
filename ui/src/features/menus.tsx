@@ -24,6 +24,7 @@ import { clearLoop, markLoop, useLoop } from './player/abLoop'
 import { toggleMetronome, useMetronome } from './player/metronome'
 import { addToPlaylist, markMusic, markNotExplicit, removeFromPlaylist, removePositions, removeTrackFromPlaylist, songs } from './library/edits'
 import { ownLiked, youtubeLiked } from './library/likedMusic'
+import { copyNamed, takesCopy } from './library/addTo'
 import { editInfo, findDuplicates, openCast, showCredits } from './library/dialogs'
 import { repeatedRows } from './library/duplicates'
 import { PlaylistCover as PlaylistIcon } from './library/PlaylistCover'
@@ -177,8 +178,9 @@ export function dropOn(p: LibraryPlaylist, ids: number[]) {
 }
 
 /**
- * Add to playlist choices: a new one, your playlists, then your YouTube Music ones (added there too), each with its
- * sidebar icon. Hidden ones left out. A submenu of the song menus; the row and Now Playing buttons open it alone.
+ * Add to playlist choices: a new one, your playlists, your YouTube Music ones (added there too), then the other imported
+ * ones (into your own copy), each with its sidebar icon. Hidden ones left out. A submenu of the song menus; the row and
+ * Now Playing buttons open it alone.
  */
 export function addToItems(ids: () => number[] | Promise<number[]>, only?: LibraryTrack): MenuEntry[] {
   const add = async (id: number) => addToPlaylist(id, await ids())
@@ -186,6 +188,7 @@ export function addToItems(ids: () => number[] | Promise<number[]>, only?: Libra
   const off = hidden()
   const shown = app().playlists.filter((p) => !off.has(playlistKey(p)))
   const youtube = shown.filter((p) => (p.source === 'youtube' && !p.custom && app().status.youtube.connected) || takesEdits(p))
+  const copied = shown.filter((p) => takesCopy(p, (x) => youtube.includes(x)))
   return [
       {
         label: tr('New playlist…'),
@@ -205,7 +208,20 @@ export function addToItems(ids: () => number[] | Promise<number[]>, only?: Libra
       }),
       youtube.length > 0 && '-',
       ...youtube.map((p) => ({ label: p.name, icon: <PlaylistIcon p={p} size={16} />, onSelect: () => void addYoutube(p) })),
+      copied.length > 0 && '-',
+      ...copied.map((p) => ({ label: p.name, icon: <PlaylistIcon p={p} size={16} />, onSelect: async () => void addToCopy(p, await ids()) })),
   ]
+}
+
+/**
+ * Into an imported playlist the app cannot write to (`takesCopy`): your own copy of it takes the songs, made on the first add as
+ * Duplicate makes it ("<name> (copy)"); the notice names the copy. The import itself stays as its service has it.
+ * shortcut: the copy is found again by its name, so one renamed (or the language changed) gets a new copy; a link would need a column.
+ */
+async function addToCopy(p: LibraryPlaylist, trackIds: number[]) {
+  const name = tr('{name} (copy)', { name: p.name })
+  const id = copyNamed(name, app().playlists)?.id ?? (await app().editPlaylist({ type: 'duplicate', id: p.id, name }))
+  if (id !== null) await addToPlaylist(id, trackIds)
 }
 
 /** "Add to playlist ›". */
