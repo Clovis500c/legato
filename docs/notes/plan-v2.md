@@ -549,10 +549,14 @@ Most useful first; the tag is the effort.
 
 Most useful first; the tag is the effort.
 
-- [ ] `S-M` YouTube embeds: one player reused instead of one per song where the crossfade allows; unload the hidden one.
-      2026-11-13, not started (decided alone): it changes the YouTube player's lifecycle, which only the running app with
-      sound can check (the e2e walk leaves the embed out).
-      Left by the autopilot (2026-11-05): playback-critical, and the demo has no YouTube player to try it on.
+- [ ] `S` YouTube embeds: measure what the second (hidden) embed costs, only if the owner's CPU or memory points at it.
+      Already so: one embed plays a whole run of YouTube songs (`loadVideoById`); a second exists only for an overlap
+      (two songs sound at once) or to hold Next's video cued (`cueNext`, 5 s into each song: Next is instant, the overlap
+      takes it); stopped when idle (`stopVideo`); both gone when a song of another source plays.
+      Decided alone (2026-11-18, lot 58): unloading the idle one not built. It is idle only seconds before `cueNext` reuses
+      it, so a 20–30 s unload would almost never fire, or would undo the cued Next; recreated, its video never starts in
+      the tray's hidden page (`overlap`, `holdPage`), the risk of a silent overlap. The CPU likely comes from the playing
+      embed and its live chain, not a stopped one: unproven, to measure with the Task Manager before touching it.
 
 ## Check live in the real app (built and unit-tested, never driven for real)
 
