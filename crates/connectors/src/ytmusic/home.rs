@@ -71,6 +71,9 @@ pub struct Artist {
     pub shelves: Vec<Shelf>,
     /// The page's "About" text, as YouTube Music shows it (often Wikipedia's, its credit line kept at the end).
     pub about: Option<String>,
+    /// The names the page's "Fans might also like" carousel lists (artists YouTube Music says go with this one), 6 at most; none when
+    /// the page has no such carousel or its cards carry no artist channel (it fails empty).
+    pub related: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, ts_rs::TS)]
@@ -272,8 +275,25 @@ fn artist_page(page: &Value) -> Option<Artist> {
         .and_then(Value::as_str)
         .map(|id| ListRef::Browse { id: id.into() })
         .filter(ListRef::valid);
-    Some(Artist { name, art: last_thumb(header.get("thumbnail")), songs, all_songs, shelves: shelves(page), about: about(page, header) })
+    Some(Artist { name, art: last_thumb(header.get("thumbnail")), songs, all_songs, shelves: shelves(page), about: about(page, header), related: related(page) })
 }
+
+/// "Fans might also like": the artist cards' names (a card links an artist channel, `UC…`), at most `RELATED`.
+fn related(page: &Value) -> Vec<String> {
+    all(page, "musicCarouselShelfRenderer")
+        .into_iter()
+        .filter(|s| s.pointer("/header/musicCarouselShelfBasicHeaderRenderer/title").and_then(text).is_some_and(|t| t.eq_ignore_ascii_case("Fans might also like")))
+        .flat_map(|s| s.get("contents").and_then(Value::as_array).into_iter().flatten())
+        .filter_map(|c| {
+            let card = c.get("musicTwoRowItemRenderer")?;
+            let id = card.pointer("/navigationEndpoint/browseEndpoint/browseId")?.as_str()?;
+            valid_channel(id).then(|| card.get("title").and_then(text)).flatten().filter(|n| !n.trim().is_empty())
+        })
+        .take(RELATED)
+        .collect()
+}
+
+const RELATED: usize = 6;
 
 /// A channel id from YouTube's own pages: `UC`, then letters, digits, - and _ (bounded). It goes into a `browse` request.
 pub fn valid_channel(id: &str) -> bool {
@@ -541,6 +561,22 @@ mod tests {
         assert_eq!(a.all_songs, Some(ListRef::Browse { id: "VLOLAK5uy_top".into() }));
         assert_eq!(a.shelves.iter().map(|s| s.title.as_str()).collect::<Vec<_>>(), ["Featured on"], "artists-only shelf dropped");
         assert_eq!(a.about, None, "no About: none");
+        assert_eq!(a.related, ["Justice"], "the artists carousel is kept as names");
+    }
+
+    #[test]
+    fn related_artists_fail_empty() {
+        let card = |title: &str, id: &str| json!({ "musicTwoRowItemRenderer": { "title": { "runs": [{ "text": title }] }, "navigationEndpoint": { "browseEndpoint": { "browseId": id } } } });
+        let carousel = |title: &str, items: Vec<Value>| json!({ "musicCarouselShelfRenderer": { "header": { "musicCarouselShelfBasicHeaderRenderer": { "title": { "runs": [{ "text": title }] } } }, "contents": items } });
+        let page = |shelves: Vec<Value>| json!({ "header": { "musicImmersiveHeaderRenderer": { "title": { "runs": [{ "text": "X" }] } } }, "contents": { "sectionListRenderer": { "contents": shelves } } });
+        let related = |p: Value| artist_page(&p).unwrap().related;
+        assert!(related(page(vec![])).is_empty(), "no carousel");
+        assert!(related(page(vec![carousel("Featured on", vec![card("A", "UC1")])])).is_empty(), "another carousel");
+        // Not an artist channel (a playlist), no name, a bad id: left out, the rest stays.
+        let mixed = vec![card("Playlist", "VLPL1"), card(" ", "UC2"), card("Bad", "UC../x"), card("Good", "UC3"), json!({ "musicTwoRowItemRenderer": {} }), json!(null)];
+        assert_eq!(related(page(vec![carousel("Fans might also like", mixed)])), ["Good"]);
+        let many: Vec<Value> = (0..10).map(|i| card(&format!("A{i}"), &format!("UC{i}"))).collect();
+        assert_eq!(related(page(vec![carousel("Fans might also like", many)])).len(), RELATED);
     }
 
     fn byline(runs: Vec<Value>) -> Value {
@@ -703,7 +739,7 @@ mod tests {
 
     fn page(name: &str, songs: &[&str]) -> Artist {
         let t = |title: &str| Track { title: title.into(), artist: name.into(), album: None, duration_ms: None, isrc: None, ids: Default::default(), art: None, musicness: None, explicit: false };
-        Artist { name: name.into(), art: None, songs: songs.iter().map(|s| t(s)).collect(), all_songs: None, shelves: vec![], about: None }
+        Artist { name: name.into(), art: None, songs: songs.iter().map(|s| t(s)).collect(), all_songs: None, shelves: vec![], about: None, related: vec![] }
     }
 
     #[test]

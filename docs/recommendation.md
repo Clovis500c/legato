@@ -203,7 +203,7 @@ rules still hold for every lookup. No script ever runs real requests in bulk; te
    what you played", "Played after <artist>"). Measure: each `feel` pick carries one reason.
 3. *Session signals* Done 2026-11-18 (lot 65, from the stored plays, no new table): `taste_signals` counts `replays` (a song heard again within a day of its last listen, over 30 days; `taste.ts` reads one as a like) and drops from `near`, both ways, a pair skipped twice (B skipped right after A, 90 days); tests in `history.rs` and `feel.test.ts`. Not done: this session's replays before the next reload. Original: replays and skipped transitions (`taste_signals`, `listens.ts`). Measure: in `feel` cases, a
    replayed song rises, and a pair skipped twice is no longer a neighbour.
-4. *Related artists*: keep "Fans might also like" in `artist_page` (it must fail empty), used by mixes. Measure: a
+4. *Related artists* Done 2026-11-19 (night run): `Artist.related` (the "Fans might also like" names, 6 at most, empty when absent, `home.rs`), `crowd.ts` `fansOf` (top 5 songs of the first 2, one request each, a refusal ends it), used by `startMix` when the seed is on YouTube; tests in `home.rs`, `crowd.test.ts`, `feel.test.ts`. Not for Up next's end. Original: keep "Fans might also like" in `artist_page` (it must fail empty), used by mixes. Measure: a
    parser fixture plus a `feel` case.
 5. *Discovery from Home* (signed in): the shelves' songs, ranked by our score with the explore dose, in a "New for you"
    mix. Measure: a Home fixture where an off-style song stays out of the first 10.

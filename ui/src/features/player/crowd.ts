@@ -47,3 +47,25 @@ export async function crowdOf(videos: readonly string[], ask: (video: string) =>
   }
   return mergeRadios(radios)
 }
+
+/** Related artists whose top songs join a mix from a song (docs/recommendation.md, slice 4). */
+const FANS = 2
+/** Top songs taken from each, and where they stand after a radio's first places. */
+const FANS_SONGS = 5
+const FANS_FROM = 5
+
+/**
+ * The top songs of the first `FANS` artists YouTube Music says go with the seed's ("Fans might also like"), one request each: candidates
+ * placed after the radios' best, one vote. No related artist: no request. A refusal: nothing from them and no further request.
+ */
+export async function fansOf(related: readonly string[], askTop: (artist: string) => Promise<LibraryTrack[]>): Promise<Candidate[]> {
+  const out: Candidate[] = []
+  for (const name of related.slice(0, FANS)) {
+    try {
+      ;(await askTop(name)).slice(0, FANS_SONGS).forEach((track, i) => out.push({ track, rank: FANS_FROM + i, votes: 1 }))
+    } catch {
+      return []
+    }
+  }
+  return out
+}

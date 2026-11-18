@@ -940,7 +940,7 @@ mod tests {
     #[test]
     fn an_unchecked_presence_page_is_invisible_to_the_checked_lookups() {
         let c = Caches::default();
-        let page = Artist { name: "Strano".into(), art: Some("https://x/y".into()), songs: vec![], all_songs: None, shelves: vec![], about: None };
+        let page = Artist { name: "Strano".into(), art: Some("https://x/y".into()), songs: vec![], all_songs: None, shelves: vec![], about: None, related: vec![] };
         for key in ["strano", "", "a|b", "STRANO".to_lowercase().as_str()] {
             c.presence_artists.put(key, Some(page.clone()));
             assert!(c.artists.get(key).is_none(), "{key:?}");

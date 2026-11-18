@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useStore } from '../../app/store'
 import type { LibraryTrack, TasteSignal } from '../../shared/api'
-import { mergeRadios } from './crowd'
+import { fansOf, mergeRadios } from './crowd'
 import type { PickWhy } from './pickWhy'
 import { endListen, progress, startListen } from './listens'
 import type { Candidate, Taste } from './score'
@@ -358,5 +358,29 @@ describe('pick reasons', () => {
     usePickWhy.setState({ 900: { kind: 'artist' } }, true)
     markPicks([])
     expect(usePickWhy.getState()).toEqual({})
+  })
+})
+
+// Related artists (slice 4): the top songs of 2 artists "Fans might also like" join a mix from a song, never taking it over.
+describe('a mix with related artists', () => {
+  beforeEach(() => {
+    vi.spyOn(Date, 'now').mockReturnValue(NOW * 1000)
+    useStore.setState({ tracks: library, stats })
+    useTaste.setState({ signals, loaded: true })
+  })
+  afterEach(() => vi.restoreAllMocks())
+  it('some of their songs come in, and no one of those artists fills the mix', async () => {
+    const top = (n: number) => range(8).map((i) => ({ ...song(-(7000 + n * 10 + i), `Related ${n}`), ids: { youtube: `rel${n}-${i}` } }))
+    const fans = await fansOf(['Related 1', 'Related 2'], async (name) => top(name === 'Related 1' ? 1 : 2))
+    const candidates: Candidate[] = [...library.map((track) => ({ track })), ...fans]
+    let seen = 0
+    for (let s = 1; s <= 8; s++) {
+      const out = mixFromSong({ seed: bands[0], candidates, taste: mine, variety: 'balanced', rand: seeded(s), library })
+      const related = out.filter((t) => t.artist.startsWith('Related'))
+      seen += related.length
+      expect(related.length, `seed ${s}`).toBeLessThanOrEqual(Math.ceil(out.length / 2))
+      expect(new Set(out).size).toBe(out.length)
+    }
+    expect(seen).toBeGreaterThan(0)
   })
 })

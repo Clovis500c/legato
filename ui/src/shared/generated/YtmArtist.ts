@@ -11,4 +11,9 @@ export type YtmArtist = { name: string, art: string | null, songs: Array<Track>,
 /**
  * The page's "About" text, as YouTube Music shows it (often Wikipedia's, its credit line kept at the end).
  */
-about: string | null, };
+about: string | null, 
+/**
+ * The names the page's "Fans might also like" carousel lists (artists YouTube Music says go with this one), 6 at most; none when
+ * the page has no such carousel or its cards carry no artist channel (it fails empty).
+ */
+related: Array<string>, };

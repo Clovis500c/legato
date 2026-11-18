@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { LibraryTrack } from '../../shared/api'
-import { crowdOf, mergeRadios, seedsOf } from './crowd'
+import { crowdOf, fansOf, mergeRadios, seedsOf } from './crowd'
 
 const song = (n: number, video = `v${n}`): LibraryTrack => ({ id: -n, added: 0, addedAt: null, title: `S${n}`, artist: `A${n}`, album: null, durationMs: 1, isrc: null, ids: { youtube: video } })
 
@@ -47,5 +47,25 @@ describe('asking the radios', () => {
     const first = vi.fn().mockRejectedValue(new Error('Sorry'))
     expect(await crowdOf(['a', 'b', 'c'], first)).toEqual([])
     expect(first).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('fans might also like', () => {
+  const top = (n: number) => Array.from({ length: 8 }, (_, i) => song(n * 10 + i))
+  it('the top songs of the first 2 related artists, 5 each, placed after the radios’ best', async () => {
+    const ask = vi.fn(async (name: string) => top(name === 'Justice' ? 1 : name === 'Air' ? 2 : 3))
+    const got = await fansOf(['Justice', 'Air', 'Moby'], ask)
+    expect(ask.mock.calls.map((c) => c[0])).toEqual(['Justice', 'Air'])
+    expect(got).toHaveLength(10)
+    expect(got.every((c) => c.votes === 1 && (c.rank ?? 0) >= 5)).toBe(true)
+    expect(got.slice(0, 5).map((c) => c.track.id)).toEqual([-10, -11, -12, -13, -14])
+  })
+  it('no related artist: no request; a refusal: nothing and no further request', async () => {
+    const none = vi.fn()
+    expect(await fansOf([], none)).toEqual([])
+    expect(none).not.toHaveBeenCalled()
+    const ask = vi.fn().mockRejectedValue(new Error('Too Many Requests'))
+    expect(await fansOf(['A', 'B'], ask)).toEqual([])
+    expect(ask).toHaveBeenCalledTimes(1)
   })
 })
