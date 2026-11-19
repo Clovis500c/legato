@@ -168,7 +168,9 @@ The phone (`src-tauri/src/mobile/update.rs`: Android has no Tauri updater) gives
 Betas carry an APK (`release.yml`), so it follows Beta: `music_connectors::apk` reads Beta's `latest.json` 5 s after the
 UI says ready and every 6 hours (release builds), and a version counts once its `Legato_<version>_android-arm64.apk`
 answers. It is only announced (a toast with Update, Settings › About): the APK downloads on the user's tap (mobile
-data) into the cache's `updates/` folder, then goes to Android's installer (`ApkInstall.kt` over JNI, through the
+data) into the cache's `updates/` folder (behind other apps too: `UpdateService.kt`, a data sync foreground service
+while it comes, its notification "12.3 MB / 45.6 MB" with a progress bar, then one with the bar full that opens Legato),
+then goes to Android's installer (`ApkInstall.kt` over JNI, through the
 FileProvider), which asks the user; cancelled there, it stays ready. The first time, Android's "Install unknown apps"
 page comes first and the installer opens as Legato comes back; an APK ready while Legato is off screen waits for its
 return (Android opens nothing for an app in the background). Android refuses an APK not signed with the installed

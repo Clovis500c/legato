@@ -139,6 +139,15 @@ the order; a line leaves only when it ships or the user drops it.
       playing. Ruled out: sync merges and pickups never play (a click), the YouTube embed honours `hold`; Android's and
       Windows' media controls play only on a button (a headset may send one when it connects). Decided alone
       (2026-11-19): the setting's words stay (still true). Not tried on a phone.
+- [x] `S` Android: an update downloads in the background, with a progress notification (the owner, 2026-11-19, from the
+      phone: "il faudra faire en sorte que l'app mobile puisse download l'update en background et aussi fasse une notif en
+      mode mise à jour taille/taille avec une progress bar avec l'API Android"). 8e343126: `UpdateService.kt`, a data sync
+      foreground service only while the APK comes (its own channel), "<done> / <total> MB" and a determinate bar moved at
+      most once a second from `mobile/update.rs`; done, a notification with the bar full whose tap opens Legato, where
+      the installer waits (ApkInstall, as before); failed, nothing left. The download, its checks and the installed-app
+      rule unchanged. Decided alone (2026-11-19): the version and numbers only in it (no words, so no locale to keep),
+      and Android 13's notification permission asked at the first download (it never was: the music's notification
+      gains too). To try on the phone: none of the Kotlin or the phone's Rust could be built here (no Android target).
 
 ## The owner's asks of 2026-11-07, evening
 
