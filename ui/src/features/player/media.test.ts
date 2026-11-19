@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { keyAction, mediaNow, needsPush, phoneButton, phoneCover, phoneMessage, phoneQueue } from './media'
+import { keyAction, mediaNow, missingThumbs, needsPush, phoneButton, phoneCover, phoneMessage, phoneQueue } from './media'
 
 describe('phone cover', () => {
   it('takes the first cover the art scheme serves, as its 256 px thumbnail', async () => {
@@ -13,6 +13,15 @@ describe('phone cover', () => {
     expect(await phoneCover([local, remote], load)).toBe('/9j/AA==')
     expect(asked).toEqual([`${local}?s=256`, `${remote}?s=256`])
     expect(await phoneCover([], load)).toBe('')
+  })
+
+  it('a bigger one for the disc widget (600 px), a smaller for the rows', async () => {
+    const asked: string[] = []
+    const load = async (src: string) => (asked.push(src), 'AA==')
+    const remote = 'http://art.localhost/https%3A%2F%2Fi.ytimg.com%2Fvi%2Fx%2Fhqdefault.jpg'
+    await phoneCover([remote], load, 600)
+    await phoneCover([remote], load, 128)
+    expect(asked).toEqual([`${remote}?s=600`, `${remote}?s=256`])
   })
 })
 
@@ -83,13 +92,23 @@ describe('when to push', () => {
 })
 
 describe('the queue sent to the phone widget', () => {
-  const list = ['a', 'b', 'c', 'd'].map((t) => ({ title: t, artist: `${t}!` }))
+  const list = ['a', 'b', 'c', 'd'].map((t, n) => ({ id: 100 + n, title: t, artist: `${t}!` }))
   it('starts at the current song and follows the play order', () => {
-    expect(JSON.parse(phoneQueue(list, [2, 0, 3, 1], 0))).toEqual({ queue: [{ i: 0, t: 'a', a: 'a!' }, { i: 3, t: 'd', a: 'd!' }, { i: 1, t: 'b', a: 'b!' }] })
+    expect(JSON.parse(phoneQueue(list, [2, 0, 3, 1], 0))).toEqual({ queue: [{ i: 0, t: 'a', a: 'a!', k: 100 }, { i: 3, t: 'd', a: 'd!', k: 103 }, { i: 1, t: 'b', a: 'b!', k: 101 }] })
   })
   it('is cut to its size and skips what is gone', () => {
     expect(JSON.parse(phoneQueue(list, [0, 1, 2, 3], 0, 2)).queue).toHaveLength(2)
     expect(JSON.parse(phoneQueue(list, [0, 9, 1], 0)).queue.map((r: { i: number }) => r.i)).toEqual([0, 1])
     expect(JSON.parse(phoneQueue([], [], -1))).toEqual({ queue: [] })
+  })
+  it('asks the covers of the first rows only, once per song, never what is gone', () => {
+    const many = Array.from({ length: 30 }, (_, n) => ({ id: n + 1, title: `t${n}`, artist: 'x' }))
+    const order = many.map((_, n) => n)
+    expect(missingThumbs(many, order, 0, new Set()).map((t) => t.id)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    expect(missingThumbs(many, order, 0, new Set([1, 2, 3])).map((t) => t.id)).toEqual([4, 5, 6, 7, 8, 9, 10])
+    // The queue moved on a song: the song that left is not asked, the new tenth is.
+    expect(missingThumbs(many, order, 1, new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])).map((t) => t.id)).toEqual([11])
+    expect(missingThumbs(many, [0, 99, 1], 0, new Set()).map((t) => t.id)).toEqual([1, 2])
+    expect(missingThumbs([], [], -1, new Set())).toEqual([])
   })
 })

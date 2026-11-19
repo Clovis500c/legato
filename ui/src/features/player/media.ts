@@ -49,10 +49,20 @@ export function phoneMessage(info: MediaNow | null): string {
 }
 
 /** The queue for the phone's home-screen widget (`Widgets.kt`): the current song and what follows in play order, 30 rows at most, each with its index in the list (`play:<i>` plays it). */
-export function phoneQueue(list: readonly { title: string; artist: string }[], order: readonly number[], index: number, max = 30): string {
+export function phoneQueue(list: readonly { id: number; title: string; artist: string }[], order: readonly number[], index: number, max = 30): string {
   const from = Math.max(0, order.indexOf(index))
-  const rows = order.slice(from, from + max).flatMap((i) => (list[i] ? [{ i, t: list[i].title.slice(0, 120), a: list[i].artist.slice(0, 120) }] : []))
+  // `k`: the song's id, the key its thumbnail is kept under on the native side (a queue change does not redo them).
+  const rows = order.slice(from, from + max).flatMap((i) => (list[i] ? [{ i, t: list[i].title.slice(0, 120), a: list[i].artist.slice(0, 120), k: list[i].id }] : []))
   return JSON.stringify({ queue: rows })
+}
+
+/** The rows of the widget that show a cover: the first ones. */
+export const THUMB_ROWS = 10
+
+/** The songs among the widget's first rows whose thumbnail was not asked yet, in order. */
+export function missingThumbs<T extends { id: number }>(list: readonly T[], order: readonly number[], index: number, asked: ReadonlySet<number>, max = THUMB_ROWS): T[] {
+  const from = Math.max(0, order.indexOf(index))
+  return order.slice(from, from + max).flatMap((i) => (list[i] && !asked.has(list[i].id) ? [list[i]] : []))
 }
 
 /** A button of the phone's notification and widgets: play, pause, next, previous, seek:<ms> or play:<list index>. */
@@ -92,10 +102,10 @@ function jpeg(src: string): Promise<string | null> {
   })
 }
 
-/** The phone notification's cover: the first candidate the art scheme serves, as its 256 px thumbnail; '' = none. */
-export async function phoneCover(urls: string[], load: (src: string) => Promise<string | null> = jpeg): Promise<string> {
+/** A cover for the phone: the first candidate the art scheme serves, as the thumbnail of at least `size` px (256 for the notification, 600 for the disc widget); '' = none. */
+export async function phoneCover(urls: string[], load: (src: string) => Promise<string | null> = jpeg, size = 256): Promise<string> {
   for (const url of urls) {
-    const data = await load(sizedArt(url, 256))
+    const data = await load(sizedArt(url, size))
     if (data) return data
   }
   return ''
@@ -113,10 +123,18 @@ export function startMedia(): () => void {
   let last: Pushed | null = null
   let lastTrack: number | undefined
   // The widget's queue follows the list, its order and the song, not the position (a blind test shows nothing).
+  const askedThumbs = new Set<number>()
   const sendQueue = () => {
     if (!phone) return
     const s = usePlayer.getState()
-    phone.postMessage(useBlind.getState().open ? '{"queue":[]}' : phoneQueue(s.list, s.order, s.index))
+    if (useBlind.getState().open) return void phone.postMessage('{"queue":[]}')
+    phone.postMessage(phoneQueue(s.list, s.order, s.index))
+    // The first rows' covers, once per song (kept natively by id), small: the widget draws them 40 dp wide.
+    if (askedThumbs.size > 200) askedThumbs.clear()
+    for (const t of missingThumbs(s.list, s.order, s.index, askedThumbs)) {
+      askedThumbs.add(t.id)
+      void phoneCover(trackArt(t), jpeg, 128).then((d) => d && phone.postMessage(JSON.stringify({ thumb: { k: t.id, d } })))
+    }
   }
   const push = () => {
     const { playing, positionMs, durationMs } = usePlayer.getState()
@@ -136,11 +154,15 @@ export function startMedia(): () => void {
     }
     phone.postMessage(phoneMessage(info))
     sendQueue()
-    // Its cover follows, unless another song came first.
+    // Its cover follows, unless another song came first; then a bigger one for the disc widget (it draws at the widget's real size).
     if (fresh && info) {
       const id = lastTrack
-      void phoneCover(track ? trackArt(track) : []).then((cover) => {
+      const urls = track ? trackArt(track) : []
+      void phoneCover(urls).then((cover) => {
         if (lastTrack === id) phone.postMessage(JSON.stringify({ cover }))
+      })
+      void phoneCover(urls, jpeg, 600).then((big) => {
+        if (lastTrack === id && big) phone.postMessage(JSON.stringify({ big }))
       })
     }
   }
