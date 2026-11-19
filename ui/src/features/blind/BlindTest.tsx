@@ -3,7 +3,7 @@ import { useStore } from '../../app/store'
 import type { LibraryTrack } from '../../shared/api'
 import { Button } from '../../shared/ui/Button'
 import { LedChip } from '../../shared/ui/controls'
-import { leaders, playerOf, scored } from './players'
+import { leaders, playerOf, scored, turnsOf } from './players'
 import { tr, trn } from '../../shared/i18n/i18n'
 import { usePlayer } from '../player/store'
 import { ANSWER_MS, pickRounds, pointFor, SNIPPET_MS, snippetStart, TIMED_OUT } from './rounds'
@@ -95,7 +95,7 @@ export function BlindTest() {
             <ul className="flex flex-col gap-1.5 text-center">
               {scores.map((s, i) => (
                 <li key={i} className={`text-2xl ${leaders(scores).includes(i) ? 'font-black' : 'text-ink-2'}`}>
-                  {tr('Player {n}', { n: i + 1 })}: {tr('Score: {score} of {total}', { score: s, total: game.length })}
+                  {tr('Player {n}', { n: i + 1 })}: {tr('Score: {score} of {total}', { score: s, total: turnsOf(i, game.length, players) })}
                 </li>
               ))}
             </ul>
