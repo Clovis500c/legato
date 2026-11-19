@@ -16,6 +16,19 @@ with no tags, one artist played every day and liked):
   than a like.
 - Nothing reacted to a skip before the next reload of the signals (every 20 listens).
 
+The Mixes page follows what you play NOW (the owner, 2026-11-19: "Your daily mixes" showed artists he no longer plays, "For right now" and
+other mixes brought back songs played a lot long ago). Cause, reproduced by three tests (`mixes.rs`, invented artists): the daily
+mixes were seeded by `affinity`, the sum of every song's score, and that score adds the playlist, saved and Liked bonuses, which never
+age, so a cluster of old likes outranked what is played today (and an artist with only likes or a playlist was a node); the moment
+mixes ("For right now", the weekday one) summed the plays of ALL time at this hour with a 30-day half-life, so a song played 100 times a
+year ago still had a positive score and filled the mix when few songs had been played lately. Now: daily mixes are seeded only by
+artists with at least `RECENT_FLOOR` (2 full listens' worth, decayed) in the last `RECENT_DAYS` (60), clusters ranked by that,
+members of a cluster only those artists (playlists and likes still link clusters and rank the songs inside, never seed); the moment
+mixes read only those 60 days and songs with at least `MOMENT_FLOOR` (0.5); too little recent history = fewer mixes, never old ones.
+Left as they were, by their sections' words: artist mixes and tag mixes ("favorites": your top artists over time), Supermix (months),
+Rediscover (what you stopped playing, on purpose). The front end's own ranking (Shuffle, Up next, mixes from a song) is unchanged:
+it ranks against the queue, where the long profile and play counts shape the preference but never choose the candidates.
+
 ## What we copy, what we do differently
 - YouTube (Covington 2016): two stages, candidates then a ranker; the target is time really listened, not clicks. We copy
   both: candidates from the library (plus YouTube Music's radio when signed in), a score from listened time, skips, likes.

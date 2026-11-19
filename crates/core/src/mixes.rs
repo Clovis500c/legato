@@ -62,6 +62,12 @@ const WINDOW: usize = 8;
 const COOLDOWN: i64 = 20 * 3600;
 const COOLDOWN_FACTOR: f64 = 0.6;
 const REPEAT_DAYS: i64 = 30;
+/// What you play NOW (the owner, 2026-11-19: daily mixes of artists no longer played, "For right now" full of songs played a lot long ago): daily
+/// mixes are seeded only by artists with this much listening in the last RECENT_DAYS (decayed full listens' worth); the moment mixes read only those
+/// days and only songs with at least MOMENT_FLOOR. Playlists, likes and the long memory shape what is picked, never what is seeded.
+const RECENT_DAYS: i64 = 60;
+const RECENT_FLOOR: f64 = 2.0;
+const MOMENT_FLOOR: f64 = 0.5;
 /// Newest songs looked at for "Fresh in your library".
 const NEW_TRACKS: usize = 60;
 /// A mix sharing this much with an earlier one adds nothing: dropped (small libraries).
@@ -570,9 +576,26 @@ pub fn mixes(input: &Input) -> Vec<Mix> {
         }
     }
 
+    // The listening of the last RECENT_DAYS alone, per artist: no playlist or like in it.
+    let mut fresh_affinity: BTreeMap<&str, f64> = BTreeMap::new();
+    for p in good.iter().filter(|p| input.now - p.started_at <= RECENT_DAYS * DAY) {
+        *fresh_affinity.entry(taste.artist[&p.track_id].as_str()).or_default() += play_weight(p) * decay(input.now - p.started_at);
+    }
+
     let nodes: Vec<String> = affinity.keys().map(|a| a.to_string()).collect();
     let mut groups: Vec<(f64, Vec<String>)> = clusters(&nodes, &edges, input.seed).into_iter().map(|g| (g.iter().map(|a| affinity[a.as_str()]).sum(), g)).collect();
     groups.sort_by(|a, b| b.0.total_cmp(&a.0));
+
+    // Daily mixes: only the artists played lately seed them (a cluster of old favourites has none), best listening first.
+    let mut daily_groups: Vec<(f64, Vec<String>)> = groups
+        .iter()
+        .filter_map(|(_, g)| {
+            let members: Vec<String> = g.iter().filter(|a| fresh_affinity.get(a.as_str()).is_some_and(|s| *s >= RECENT_FLOOR)).cloned().collect();
+            let sum = members.iter().map(|a| fresh_affinity[a.as_str()]).sum();
+            (!members.is_empty()).then_some((sum, members))
+        })
+        .collect();
+    daily_groups.sort_by(|a, b| b.0.total_cmp(&a.0));
 
     let group_of: HashMap<String, usize> = groups.iter().enumerate().flat_map(|(i, (_, g))| g.iter().map(move |a| (a.clone(), i))).collect();
     let score_of = |id: i64| taste.score.get(&id).copied().unwrap_or(0.0);
@@ -597,11 +620,12 @@ pub fn mixes(input: &Input) -> Vec<Mix> {
     // Daylist: this slot of this weekday (Friday evenings), other weeks; it changes through the day and the week.
     let mut in_day_slot: HashMap<i64, f64> = HashMap::new();
     let mut weeks = HashSet::new();
-    for p in good.iter().filter(|p| weekday(p.started_at) == today && slot(local_hour(p.started_at)) == now_slot && local_day(p.started_at) != local_day(input.now)) {
+    let in_recent = |p: &Play| input.now - p.started_at <= RECENT_DAYS * DAY;
+    for p in good.iter().filter(|p| in_recent(p)).filter(|p| weekday(p.started_at) == today && slot(local_hour(p.started_at)) == now_slot && local_day(p.started_at) != local_day(input.now)) {
         *in_day_slot.entry(p.track_id).or_default() += play_weight(p) * decay(input.now - p.started_at);
         weeks.insert(local_day(p.started_at));
     }
-    let ids = taste.pick(in_day_slot.into_iter(), Opts::default());
+    let ids = taste.pick(in_day_slot.into_iter().filter(|(_, s)| *s >= MOMENT_FLOOR), Opts::default());
     if weeks.len() >= 2 && ids.len() >= MIN_LEN {
         let d = WEEKDAYS[today];
         let words = Words { slot: Some(now_slot), day: Some(today), ..Words::default() };
@@ -609,10 +633,10 @@ pub fn mixes(input: &Input) -> Vec<Mix> {
     }
 
     let mut in_slot: HashMap<i64, f64> = HashMap::new();
-    for p in good.iter().filter(|p| slot(local_hour(p.started_at)) == now_slot) {
+    for p in good.iter().filter(|p| in_recent(p)).filter(|p| slot(local_hour(p.started_at)) == now_slot) {
         *in_slot.entry(p.track_id).or_default() += play_weight(p) * decay(input.now - p.started_at);
     }
-    let ids = taste.pick(in_slot.into_iter(), Opts::default());
+    let ids = taste.pick(in_slot.into_iter().filter(|(_, s)| *s >= MOMENT_FLOOR), Opts::default());
     if ids.len() >= MIN_LEN && new_enough(&out, &ids) {
         let when = if now_slot == "night" { "at night".to_string() } else { format!("in the {now_slot}") };
         let words = Words { slot: Some(now_slot), ..Words::default() };
@@ -621,7 +645,7 @@ pub fn mixes(input: &Input) -> Vec<Mix> {
 
     let mut daily: Vec<(Vec<String>, Vec<i64>)> = Vec::new();
     let mut leftovers: Vec<String> = Vec::new();
-    for (_, g) in groups {
+    for (_, g) in daily_groups {
         if daily.len() == DAILY_MIXES {
             break;
         }
@@ -942,6 +966,55 @@ mod tests {
         m.track_ids.iter().map(|id| tracks.iter().find(|t| t.id == *id).unwrap().track.artist.clone()).collect()
     }
 
+    /// Old and new taste, invented: four artists (ids 1..=12) played a lot 6 months ago, liked and in a playlist, nothing since; two
+    /// artists (ids 101..=112) played in the last days.
+    fn then_and_now() -> (Vec<LibraryTrack>, Vec<Play>, Vec<i64>) {
+        let mut tracks: Vec<LibraryTrack> = (1..=12).map(|i| t(i, ["Old One", "Old Two", "Old Three", "Old Four"][((i - 1) / 3) as usize])).collect();
+        tracks.extend((101..=112).map(|i| t(i, ["New One", "New Two"][((i - 101) / 6) as usize])));
+        let mut plays = Vec::new();
+        for round in 0..20 {
+            plays.extend((1..=12).map(|i| play(i, NOW - 190 * DAY + round * 3600 + i * 120, true)));
+        }
+        plays.extend((101..=112).map(|i| play(i, NOW - 2 * DAY + i * 240, true)));
+        (tracks, plays, (1..=12).collect())
+    }
+
+    #[test]
+    fn a_daily_mix_follows_what_you_play_now_not_what_you_liked_long_ago() {
+        let (tracks, plays, old) = then_and_now();
+        let playlists = [old.clone()];
+        let input = Input { tracks: &tracks, plays: &plays, playlists: &playlists, saved: &[], liked: &old, prefs: &HashMap::new(), now: NOW, utc_offset: 0, seed: 3, found: &[] };
+        let daily: Vec<Mix> = mixes(&input).into_iter().filter(|m| m.kind == "daily").collect();
+        assert!(!daily.is_empty(), "what is played now still makes one");
+        for m in &daily {
+            let who = artists(&tracks, m);
+            assert!(who.iter().all(|a| a.starts_with("New ")), "{who:?}: only artists played in the last weeks");
+        }
+    }
+
+    #[test]
+    fn only_old_plays_make_no_daily_mix_at_all() {
+        let (tracks, plays, old) = then_and_now();
+        let plays: Vec<Play> = plays.into_iter().filter(|p| p.track_id <= 12).collect();
+        let playlists = [old.clone()];
+        let input = Input { tracks: &tracks[..12], plays: &plays, playlists: &playlists, saved: &[], liked: &old, prefs: &HashMap::new(), now: NOW, utc_offset: 0, seed: 3, found: &[] };
+        assert!(mixes(&input).iter().all(|m| m.kind != "daily"), "too little recent history: fewer mixes, never old ones");
+    }
+
+    #[test]
+    fn for_right_now_leaves_out_what_was_played_a_lot_long_ago() {
+        // Songs 1..=3: played 100 times each, in the morning, 400 days ago. Songs 11..=16: played in the morning on 6 recent days.
+        let tracks: Vec<LibraryTrack> = (1..=16).map(|i| t(i, &format!("Artist {i}"))).collect();
+        let mut plays: Vec<Play> = (1..=3).flat_map(|i| (0..100).map(move |k| play(i, NOW - 400 * DAY - k * DAY - i, true))).collect();
+        plays.extend((11..=16).map(|i| play(i, NOW - (i - 9) * DAY - i, true)));
+        let moment = |plays: &[Play]| mixes(&Input { tracks: &tracks, plays, playlists: &[], saved: &[], liked: &[], prefs: &HashMap::new(), now: NOW, utc_offset: 0, seed: 3, found: &[] }).into_iter().find(|m| m.id == "now");
+        let now_mix = moment(&plays).expect("six recent songs make it");
+        assert!(now_mix.track_ids.iter().all(|id| *id >= 11), "{:?}", now_mix.track_ids);
+        // Only three recent songs: no mix, rather than one filled with the old ones.
+        let few: Vec<Play> = plays.iter().filter(|p| p.track_id <= 3 || p.track_id <= 13).copied().collect();
+        assert!(moment(&few).is_none(), "too little recent history");
+    }
+
     #[test]
     fn weights_and_decay() {
         let w = |completed, listened_ms, length| play_weight(&Play { track_id: 1, started_at: 0, listened_ms, completed }, length);
@@ -1134,13 +1207,19 @@ mod tests {
     }
 
     #[test]
-    fn custom_playlists_count_without_history() {
+    fn custom_playlists_count_beside_a_little_recent_listening() {
         let tracks: Vec<LibraryTrack> = (1..=6).map(|i| t(i, if i % 2 == 0 { "Even" } else { "Odd" })).collect();
-        let out = mixes(&Input { tracks: &tracks, plays: &[], playlists: &[(1..=6).collect()], saved: &[], liked: &[], prefs: &HashMap::new(), now: NOW, utc_offset: 0, seed: 1, found: &[] });
+        // Playlists never seed a daily mix (it needs listening in the last weeks: three full listens of one song of each artist), but they fill it.
+        let plays: Vec<Play> = (0..3).flat_map(|k| [1, 2].map(|i| play(i, NOW - 3 * DAY - k * 3600 - i * 60, true))).collect();
+        let out = mixes(&Input { tracks: &tracks, plays: &plays, playlists: &[(1..=6).collect()], saved: &[], liked: &[], prefs: &HashMap::new(), now: NOW, utc_offset: 0, seed: 1, found: &[] });
         // Artist, fresh and gems mixes would repeat daily-1 in so small a library: dropped.
-        assert_eq!(out.iter().map(|m| m.id.as_str()).collect::<Vec<_>>(), ["daily-1"]);
-        assert_eq!(out[0].reason, "Because you listen to Even and Odd");
-        assert_eq!((out[0].words.number, out[0].words.names.clone()), (Some(1), vec!["Even".to_string(), "Odd".to_string()]));
+        assert_eq!(out.iter().filter(|m| m.kind == "daily").map(|m| m.id.as_str()).collect::<Vec<_>>(), ["daily-1"]);
+        let daily = out.iter().find(|m| m.id == "daily-1").unwrap();
+        assert_eq!(daily.track_ids.len(), 6, "the playlist's songs fill it");
+        assert!(daily.reason == "Because you listen to Even and Odd" || daily.reason == "Because you listen to Odd and Even", "{}", daily.reason);
+        let mut names = daily.words.names.clone();
+        names.sort();
+        assert_eq!((daily.words.number, names), (Some(1), vec!["Even".to_string(), "Odd".to_string()]));
     }
 
     #[test]
@@ -1148,14 +1227,16 @@ mod tests {
         // 40 songs, all in one playlist: only 25 fit a mix, the liked ones always among them.
         let tracks = library_of(40, &["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]);
         let liked: Vec<i64> = (33..=40).collect();
-        let out = mixes(&Input { tracks: &tracks, plays: &[], playlists: &[(1..=40).collect()], saved: &[], liked: &liked, prefs: &HashMap::new(), now: NOW, utc_offset: 0, seed: 1, found: &[] });
-        let mix: HashSet<i64> = out[0].track_ids.iter().copied().collect();
+        // Each artist heard lately (a daily mix needs it); the likes and the playlist shape what fills the mix.
+        let plays: Vec<Play> = (1..=10).flat_map(|i| (0..3).map(move |k| play(i, NOW - 2 * DAY - k * 3600 - i * 60, true))).collect();
+        let out = mixes(&Input { tracks: &tracks, plays: &plays, playlists: &[(1..=40).collect()], saved: &[], liked: &liked, prefs: &HashMap::new(), now: NOW, utc_offset: 0, seed: 1, found: &[] });
+        let mix: HashSet<i64> = out.iter().find(|m| m.kind == "daily").expect("a daily mix").track_ids.iter().copied().collect();
         assert!(liked.iter().all(|id| mix.contains(id)), "{mix:?}");
         // 300 likes since: these weigh little more than a playlist, the 8 newest likes win.
         let old: Vec<i64> = (1000..1300).chain((1..=8).chain(17..=40)).collect();
         let newest: Vec<i64> = (9..=16).chain(old.clone()).collect();
-        let out = mixes(&Input { tracks: &tracks, plays: &[], playlists: &[(1..=40).collect()], saved: &[], liked: &newest, prefs: &HashMap::new(), now: NOW, utc_offset: 0, seed: 1, found: &[] });
-        let mix: HashSet<i64> = out[0].track_ids.iter().copied().collect();
+        let out = mixes(&Input { tracks: &tracks, plays: &plays, playlists: &[(1..=40).collect()], saved: &[], liked: &newest, prefs: &HashMap::new(), now: NOW, utc_offset: 0, seed: 1, found: &[] });
+        let mix: HashSet<i64> = out.iter().find(|m| m.kind == "daily").expect("a daily mix").track_ids.iter().copied().collect();
         assert!((9..=16).all(|id| mix.contains(&id)), "{mix:?}");
     }
 
