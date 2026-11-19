@@ -21,6 +21,8 @@ import android.os.IBinder
 class UpdateService : Service() {
   override fun onBind(intent: Intent?): IBinder? = null
 
+  // Every start, the stop too: foreground first (Android 12 on kills an app whose service started this way stops before
+  // it), only then may it stop.
   override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
     val n = build(this, intent?.getStringExtra(TITLE) ?: "", intent?.getStringExtra(TEXT) ?: "", intent?.getIntExtra(PERMILLE, 0) ?: 0)
     try {
@@ -28,6 +30,11 @@ class UpdateService : Service() {
       else startForeground(ID, n)
     } catch (e: Exception) {
       running = false
+      stopSelf()
+      return START_NOT_STICKY
+    }
+    if (intent?.getBooleanExtra(STOP, false) == true) {
+      stopForeground(STOP_FOREGROUND_REMOVE)
       stopSelf()
     }
     return START_NOT_STICKY
@@ -40,6 +47,7 @@ class UpdateService : Service() {
     private const val TITLE = "title"
     private const val TEXT = "text"
     private const val PERMILLE = "permille"
+    private const val STOP = "stop"
     @Volatile private var running = false
 
     // permille 0..999: downloading; 1000: done; below 0: gone.
@@ -48,8 +56,14 @@ class UpdateService : Service() {
       val nm = context.getSystemService(NotificationManager::class.java)
       nm.createNotificationChannel(NotificationChannel(CHANNEL, context.getString(R.string.app_name), NotificationManager.IMPORTANCE_LOW))
       if (permille < 0 || permille >= 1000) {
-        running = false
-        context.stopService(Intent(context, UpdateService::class.java))
+        // Never stopService: the start may not have reached onStartCommand yet. The stop goes after it, in order.
+        if (running) {
+          running = false
+          try {
+            context.startService(Intent(context, UpdateService::class.java).putExtra(STOP, true))
+          } catch (e: Exception) {
+          }
+        }
         if (permille >= 1000) nm.notify(READY, build(context, title, text, 1000))
         return
       }
