@@ -25,6 +25,9 @@ year ago still had a positive score and filled the mix when few songs had been p
 artists with at least `RECENT_FLOOR` (2 full listens' worth, decayed) in the last `RECENT_DAYS` (60), clusters ranked by that,
 members of a cluster only those artists (playlists and likes still link clusters and rank the songs inside, never seed); the moment
 mixes read only those 60 days and songs with at least `MOMENT_FLOOR` (0.5); too little recent history = fewer mixes, never old ones.
+Fallback (553cd7d5, 2026-11-19, found in review): a light listener, with no artist at the floor, still gets daily mixes from the artists heard in the
+last 60 days at all (the floor lowered to any listening); a library with no listening at all (just imported, a new phone) gets them from its
+playlists and likes as before. A library whose only plays are old gets none. Tested by `a_light_listener_and_a_new_library_still_get_a_daily_mix`.
 Left as they were, by their sections' words: artist mixes and tag mixes ("favorites": your top artists over time), Supermix (months),
 Rediscover (what you stopped playing, on purpose). The front end's own ranking (Shuffle, Up next, mixes from a song) is unchanged:
 it ranks against the queue, where the long profile and play counts shape the preference but never choose the candidates.
