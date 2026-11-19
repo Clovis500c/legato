@@ -73,6 +73,8 @@ const he: Record<string, string> = {
   'Which artist is playing?': 'איזה אמן מתנגן?',
   'Blind test from this playlist…': 'מבחן עיוור מהפלייליסט הזה…',
   'Translate into': 'תרגום ל',
+  'Players': 'שחקנים',
+  'Player {n}': 'שחקן {n}',
   'Mixes': 'מיקסים',
   'Add music': 'הוספת מוזיקה',
   'Songs': 'שירים',

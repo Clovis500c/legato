@@ -81,6 +81,8 @@ const vi: Record<string, string> = {
   'Which artist is playing?': 'Nghệ sĩ nào đang phát?',
   'Blind test from this playlist…': 'Thử nghe mù từ danh sách này…',
   'Translate into': 'Dịch sang',
+  'Players': 'Người chơi',
+  'Player {n}': 'Người chơi {n}',
   'Mixes': 'Bản phối',
   'Add music': 'Thêm nhạc',
   'Songs': 'Bài hát',

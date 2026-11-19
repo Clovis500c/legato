@@ -81,6 +81,8 @@ const id: Record<string, string> = {
   'Which artist is playing?': 'Artis mana yang diputar?',
   'Blind test from this playlist…': 'Tes buta dari playlist ini…',
   'Translate into': 'Terjemahkan ke',
+  'Players': 'Pemain',
+  'Player {n}': 'Pemain {n}',
   'Mixes': 'Mix',
   'Add music': 'Tambah musik',
   'Songs': 'Lagu',

@@ -81,6 +81,8 @@ const tr: Record<string, string> = {
   'Which artist is playing?': 'Hangi sanatçı çalıyor?',
   'Blind test from this playlist…': 'Bu çalma listesiyle kör test…',
   'Translate into': 'Şuna çevir',
+  'Players': 'Oyuncular',
+  'Player {n}': 'Oyuncu {n}',
   'Mixes': 'Mix’ler',
   'Add music': 'Müzik ekle',
   'Songs': 'Şarkılar',

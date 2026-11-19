@@ -73,6 +73,8 @@ const ar: Record<string, string> = {
   'Which artist is playing?': 'أي فنان يُشغَّل؟',
   'Blind test from this playlist…': 'اختبار أعمى من هذه القائمة…',
   'Translate into': 'ترجمة إلى',
+  'Players': 'اللاعبون',
+  'Player {n}': 'اللاعب {n}',
   'Mixes': 'المزيج',
   'Add music': 'إضافة موسيقى',
   'Songs': 'الأغاني',

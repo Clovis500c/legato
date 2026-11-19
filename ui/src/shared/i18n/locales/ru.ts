@@ -81,6 +81,8 @@ const ru: Record<string, string> = {
   'Which artist is playing?': 'Какой исполнитель играет?',
   'Blind test from this playlist…': 'Слепой тест из этого плейлиста…',
   'Translate into': 'Перевести на',
+  'Players': 'Игроки',
+  'Player {n}': 'Игрок {n}',
   'Mixes': 'Миксы',
   'Add music': 'Добавить музыку',
   'Songs': 'Песни',

@@ -81,6 +81,8 @@ const sv: Record<string, string> = {
   'Which artist is playing?': 'Vilken artist spelas?',
   'Blind test from this playlist…': 'Blindtest från den här spellistan…',
   'Translate into': 'Översätt till',
+  'Players': 'Spelare',
+  'Player {n}': 'Spelare {n}',
   'Mixes': 'Mixar',
   'Add music': 'Lägg till musik',
   'Songs': 'Låtar',

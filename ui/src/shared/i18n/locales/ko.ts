@@ -81,6 +81,8 @@ const ko: Record<string, string> = {
   'Which artist is playing?': '어떤 아티스트의 곡일까요?',
   'Blind test from this playlist…': '이 재생목록으로 블라인드 테스트…',
   'Translate into': '번역할 언어',
+  'Players': '플레이어',
+  'Player {n}': '플레이어 {n}',
   'Mixes': '믹스',
   'Add music': '음악 추가',
   'Songs': '노래',

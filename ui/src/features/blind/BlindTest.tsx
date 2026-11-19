@@ -3,6 +3,7 @@ import { useStore } from '../../app/store'
 import type { LibraryTrack } from '../../shared/api'
 import { Button } from '../../shared/ui/Button'
 import { LedChip } from '../../shared/ui/controls'
+import { leaders, playerOf, scored } from './players'
 import { tr, trn } from '../../shared/i18n/i18n'
 import { usePlayer } from '../player/store'
 import { ANSWER_MS, pickRounds, pointFor, SNIPPET_MS, snippetStart, TIMED_OUT } from './rounds'
@@ -29,7 +30,9 @@ export function BlindTest() {
   const [game, setGame] = useState(() => make(false))
   const [round, setRound] = useState(0)
   const [answer, setAnswer] = useState<number | null>(null)
-  const [score, setScore] = useState(0)
+  // Up to 4 players passing the device round, one answering each round (players.ts); alone, the one score.
+  const [players, setPlayers] = useState(1)
+  const [scores, setScores] = useState([0])
   const done = round >= game.length
   const current = game[round]
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
@@ -68,13 +71,13 @@ export function BlindTest() {
     if (answer !== null || !current) return
     usePlayer.getState().pauseNow()
     setAnswer(i)
-    setScore((n) => n + pointFor(i, right))
+    setScores((s) => scored(s, playerOf(round, players), pointFor(i, right)))
   }
-  const again = (by = artists) => {
+  const again = (by = artists, n = players) => {
     setGame(make(by))
     setRound(0)
     setAnswer(null)
-    setScore(0)
+    setScores(Array<number>(n).fill(0))
   }
 
   return (
@@ -86,7 +89,17 @@ export function BlindTest() {
         </>
       ) : done ? (
         <>
-          <h2 className="text-3xl font-black">{tr('Score: {score} of {total}', { score, total: game.length })}</h2>
+          {players === 1 ? (
+            <h2 className="text-3xl font-black">{tr('Score: {score} of {total}', { score: scores[0], total: game.length })}</h2>
+          ) : (
+            <ul className="flex flex-col gap-1.5 text-center">
+              {scores.map((s, i) => (
+                <li key={i} className={`text-2xl ${leaders(scores).includes(i) ? 'font-black' : 'text-ink-2'}`}>
+                  {tr('Player {n}', { n: i + 1 })}: {tr('Score: {score} of {total}', { score: s, total: game.length })}
+                </li>
+              ))}
+            </ul>
+          )}
           <div className="flex gap-2">
             <Button onClick={() => again()}>{tr('Play again')}</Button>
             <Button variant="ghost" onClick={closeBlind}>
@@ -98,6 +111,22 @@ export function BlindTest() {
         <>
           <div className="flex items-center gap-3">
             <p className="text-sm text-ink-3">{trn(game.length, 'Round {r} of {n} song', 'Round {r} of {n} songs', { r: round + 1 })}</p>
+            <select
+              aria-label={tr('Players')}
+              value={players}
+              onChange={(e) => {
+                setPlayers(Number(e.target.value))
+                again(artists, Number(e.target.value))
+              }}
+              className="rounded-md border border-line bg-bg px-2 py-0.5 text-xs text-ink-2"
+            >
+              {[1, 2, 3, 4].map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+            {players > 1 && <span className="text-sm font-semibold">{tr('Player {n}', { n: playerOf(round, players) + 1 })}</span>}
             {/* Switching starts a new game: the answers change kind. */}
             {canArtists && (
               <LedChip

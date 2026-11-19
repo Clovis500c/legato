@@ -81,6 +81,8 @@ const de: Record<string, string> = {
   'Which artist is playing?': 'Welcher Künstler spielt?',
   'Blind test from this playlist…': 'Blindtest aus dieser Playlist …',
   'Translate into': 'Übersetzen in',
+  'Players': 'Spieler',
+  'Player {n}': 'Spieler {n}',
   'Mixes': 'Mixe',
   'Add music': 'Musik hinzufügen',
   'Songs': 'Songs',

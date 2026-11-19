@@ -81,6 +81,8 @@ const fr: Record<string, string> = {
   'Which artist is playing?': 'Quel artiste joue ?',
   'Blind test from this playlist…': 'Blind test de cette playlist…',
   'Translate into': 'Traduire en',
+  'Players': 'Joueurs',
+  'Player {n}': 'Joueur {n}',
   'Mixes': 'Mix',
   'Add music': 'Ajouter de la musique',
   'Songs': 'Titres',

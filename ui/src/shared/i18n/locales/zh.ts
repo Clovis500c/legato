@@ -81,6 +81,8 @@ const zh: Record<string, string> = {
   'Which artist is playing?': '正在播放哪位艺术家的歌？',
   'Blind test from this playlist…': '用此播放列表做盲听测试…',
   'Translate into': '翻译成',
+  'Players': '玩家',
+  'Player {n}': '玩家 {n}',
   'Mixes': '混音',
   'Add music': '添加音乐',
   'Songs': '歌曲',
