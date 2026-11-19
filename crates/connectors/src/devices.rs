@@ -28,6 +28,8 @@ const HELLO_MAX: u32 = 1024;
 const SPAKE_MAX: u32 = 256;
 const INTRO_MAX: u32 = 4096;
 const SNAPSHOT_MAX: u32 = 64 << 20;
+/// A live push (one change, its songs): a bigger one waits for the round.
+pub const LIVE_MAX: u32 = 1 << 20;
 const TAG: u32 = 16;
 const STEP: Duration = Duration::from_secs(10);
 const SWAP: Duration = Duration::from_secs(60);
@@ -51,6 +53,9 @@ pub struct Intro {
 pub enum Hello {
     Pair,
     Sync { from: String, to: String },
+    /// A trusted device's change, just made: the same handshake as `Sync`, then one push and an ack. Older apps can't read
+    /// the hello and drop it (the round still syncs them).
+    Live { from: String, to: String },
 }
 
 #[derive(Serialize, Deserialize)]
@@ -141,6 +146,29 @@ impl Session {
         .await
         .map_err(|_| anyhow!("The other device stopped answering"))?
     }
+
+    /// Live, the side that made the change: its push, then the listener's ack.
+    pub async fn push(mut self, change: &[u8]) -> Result<()> {
+        ensure!(change.len() as u32 <= LIVE_MAX, "Too big for a live push");
+        timeout(STEP, async {
+            self.send(change).await?;
+            ensure!(self.s.read_u8().await? == GO, "No ack");
+            Ok(())
+        })
+        .await
+        .map_err(|_| anyhow!("The other device stopped answering"))?
+    }
+
+    /// Live, the listener: the push, acked once read.
+    pub async fn take(mut self) -> Result<Vec<u8>> {
+        timeout(STEP, async {
+            let change = self.recv(LIVE_MAX).await?;
+            self.s.write_u8(GO).await?;
+            Ok(change)
+        })
+        .await
+        .map_err(|_| anyhow!("The other device stopped answering"))?
+    }
 }
 
 /// SPAKE2 both ways: the session's shared key.
@@ -218,7 +246,7 @@ impl Incoming {
 
     /// Trusted: `key` = the one kept for the hello's `from`.
     pub async fn sync(mut self, me: &str, key: &[u8; 32], mine: &Intro) -> Result<(Session, Intro)> {
-        let Hello::Sync { from, .. } = &self.hello else { bail!("Not a sync") };
+        let (Hello::Sync { from, .. } | Hello::Live { from, .. }) = &self.hello else { bail!("Not a sync") };
         let (from, id) = (from.clone(), sync_id(me, from));
         timeout(STEP, async {
             self.s.write_u8(GO).await?;
@@ -271,8 +299,9 @@ pub async fn pair(addrs: &[SocketAddr], code: &str, mine: &Intro) -> Result<Pair
     Err(last)
 }
 
-async fn sync_at(addr: SocketAddr, me: &str, peer: &str, key: &[u8; 32], mine: &Intro) -> Result<(Session, Intro)> {
-    let mut s = open(addr, Hello::Sync { from: me.into(), to: peer.into() }).await?;
+async fn sync_at(addr: SocketAddr, me: &str, peer: &str, key: &[u8; 32], mine: &Intro, live: bool) -> Result<(Session, Intro)> {
+    let (from, to) = (me.into(), peer.into());
+    let mut s = open(addr, if live { Hello::Live { from, to } } else { Hello::Sync { from, to } }).await?;
     timeout(STEP, async {
         let k = spake(&mut s, key, &sync_id(me, peer)).await?;
         let mut session = Session::new(s, &k, false)?;
@@ -288,9 +317,18 @@ async fn sync_at(addr: SocketAddr, me: &str, peer: &str, key: &[u8; 32], mine: &
 
 /// Syncs with trusted `peer`, its addresses in turn. `Refused`: it forgot this device.
 pub async fn sync(addrs: &[SocketAddr], me: &str, peer: &str, key: &[u8; 32], mine: &Intro) -> Result<(Session, Intro)> {
+    reach(addrs, me, peer, key, mine, false).await
+}
+
+/// Opens a live push to trusted `peer` (`Session::push` next). Any failure: the round brings the change instead.
+pub async fn live(addrs: &[SocketAddr], me: &str, peer: &str, key: &[u8; 32], mine: &Intro) -> Result<(Session, Intro)> {
+    reach(addrs, me, peer, key, mine, true).await
+}
+
+async fn reach(addrs: &[SocketAddr], me: &str, peer: &str, key: &[u8; 32], mine: &Intro, live: bool) -> Result<(Session, Intro)> {
     let mut last = anyhow!("Not on this network");
     for addr in addrs {
-        match sync_at(*addr, me, peer, key, mine).await {
+        match sync_at(*addr, me, peer, key, mine, live).await {
             Ok(s) => return Ok(s),
             Err(e) if e.is::<Refused>() => return Err(e),
             Err(e) => last = e,
@@ -434,6 +472,54 @@ mod tests {
         assert_eq!(session.swap(b"phone").await.unwrap(), b"tower");
         let (theirs, snapshot) = server.await.unwrap();
         assert_eq!((theirs.card.id.as_str(), snapshot.as_slice()), (B, b"phone".as_slice()));
+    }
+
+    #[tokio::test]
+    async fn a_live_push_is_one_sealed_change_and_an_ack() {
+        let key = [7u8; 32];
+        let (addr, server) = listen(move |inc| async move {
+            assert_eq!(inc.hello, Hello::Live { from: B.into(), to: A.into() });
+            let (session, _) = inc.sync(A, &key, &intro(A, "Tower", false)).await.unwrap();
+            session.take().await.unwrap()
+        })
+        .await;
+        let (session, theirs) = live(&[addr], B, A, &key, &intro(B, "Phone", false)).await.unwrap();
+        assert_eq!(theirs.card.id, A);
+        session.push(b"a like").await.unwrap();
+        assert_eq!(server.await.unwrap(), b"a like");
+        // Too big: never sent, the round takes it.
+        let (addr, _server) = listen(move |inc| async move { inc.sync(A, &key, &intro(A, "Tower", false)).await.map(|_| ()) }).await;
+        let (session, _) = live(&[addr], B, A, &key, &intro(B, "Phone", false)).await.unwrap();
+        assert!(session.push(&vec![0; LIVE_MAX as usize + 1]).await.is_err());
+    }
+
+    #[tokio::test]
+    async fn an_older_app_drops_a_live_hello() {
+        // An app without `live`: its hello doesn't parse, the connection closes, the pusher fails (and leaves it to the round).
+        let l = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = l.local_addr().unwrap();
+        let server = tokio::spawn(async move {
+            let mut s = l.accept().await.unwrap().0;
+            let raw = read_frame_max(&mut s, HELLO_MAX).await.unwrap();
+            #[derive(Deserialize)]
+            #[serde(tag = "op", rename_all = "lowercase")]
+            #[allow(dead_code)]
+            enum Old {
+                Pair,
+                Sync { from: String, to: String },
+            }
+            #[derive(Deserialize)]
+            #[allow(dead_code)]
+            struct OldEnvelope {
+                v: u32,
+                #[serde(flatten)]
+                hello: Old,
+            }
+            assert!(serde_json::from_slice::<OldEnvelope>(&raw).is_err());
+            assert!(serde_json::from_slice::<OldEnvelope>(br#"{"v":2,"op":"sync","from":"a","to":"b"}"#).is_ok());
+        });
+        assert!(live(&[addr], B, A, &[7u8; 32], &intro(B, "Phone", false)).await.is_err());
+        server.await.unwrap();
     }
 
     #[tokio::test]

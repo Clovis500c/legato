@@ -30,6 +30,8 @@ const TICK: Duration = Duration::from_secs(2);
 const HEAR: Duration = Duration::from_secs(3);
 /// Connections answered at once.
 const AT_ONCE: usize = 4;
+/// A live push waits for the library to be still this long (one action writes a few rows; an import never stops).
+const LIVE_SETTLE: Duration = Duration::from_millis(300);
 
 #[derive(Default)]
 pub struct Devices {
@@ -40,6 +42,8 @@ pub struct Devices {
     running: tokio::sync::Mutex<()>,
     /// A trusted device showed up: the automatic round runs now.
     wake: Notify,
+    /// Something changed here (`Versions::on_change`): the live push goes.
+    changed: Notify,
 }
 
 #[derive(Default)]
@@ -59,6 +63,10 @@ struct Inner {
     error: Option<String>,
     /// Failed automatic syncs, logged once each.
     failed: HashMap<String, String>,
+    /// What each trusted device has of this one: the time of the last snapshot or live push it took (unix ms).
+    pushed: HashMap<String, i64>,
+    /// The change count right after a live push merged here: nothing of this device's own to push back.
+    merged_at: Option<u64>,
 }
 
 struct Offer {
@@ -405,6 +413,91 @@ async fn answer(app: &AppHandle, s: TcpStream) {
                 let _ = syncmode::logged("device", swap(app, session, &theirs).await);
             }
         }
+        Hello::Live { from, to } => {
+            if to != card.id {
+                return inc.not_me().await;
+            }
+            let Some(key) = key_of(&state, &from).filter(|_| !syncmode::config(&state).manual) else { return inc.refuse().await };
+            let id = card.id.clone();
+            if let Ok((session, theirs)) = inc.sync(&id, &key, &Intro { card, port, trust: true }).await {
+                let _ = syncmode::logged("live", taken(app, session, &theirs).await);
+            }
+        }
+    }
+}
+
+/// A trusted device's live push merged here. Its secrets and its playing song are no business of a push.
+async fn taken(app: &AppHandle, session: Session, theirs: &Intro) -> CmdResult<Merged> {
+    let bytes = session.take().await.map_err(err)?;
+    let (a, from) = (app.clone(), theirs.card.id.clone());
+    let merged = tauri::async_runtime::spawn_blocking(move || {
+        let s = sm::unpack(&bytes)?;
+        anyhow::ensure!(s.device == from, "Another device");
+        let m = syncmode::take(&a, &Snapshot { secrets: None, now: None, ..s })?;
+        dev(&a).inner.lock().unwrap().merged_at = Some(a.state::<AppState>().lib().versions.changes());
+        Ok(m)
+    })
+    .await
+    .map_err(err)?
+    .map_err(err)?;
+    dev(app).inner.lock().unwrap().reached.insert(theirs.card.id.clone(), now_ms());
+    emit(app);
+    Ok(merged)
+}
+
+/// This device's change, a moment ago, to the trusted devices heard that take live pushes: only what changed since what
+/// each one has. Anything amiss (unreachable, an older app, too big): left to the round, said nowhere.
+async fn push_live(app: &AppHandle) {
+    let state = app.state::<AppState>();
+    let c = syncmode::config(&state);
+    let devices = dev(app);
+    if !c.network || c.manual || devices.tasks.lock().unwrap().is_empty() || devices.inner.lock().unwrap().merged_at == Some(state.lib().versions.changes()) {
+        return;
+    }
+    let targets: Vec<(&Peer, Vec<SocketAddr>, i64)> = {
+        let inner = devices.inner.lock().unwrap();
+        c.peers
+            .iter()
+            .filter(|p| !p.refused)
+            .filter_map(|p| {
+                let (h, addrs) = inner.heard.get(&p.card.id)?;
+                // Never swapped since this app started: the round first.
+                let since = inner.pushed.get(&p.card.id).copied()?;
+                (h.live && !addrs.is_empty()).then(|| (p, addrs.clone(), since))
+            })
+            .collect()
+    };
+    if targets.is_empty() {
+        return;
+    }
+    let a = app.clone();
+    let Ok(Ok(full)) = tauri::async_runtime::spawn_blocking(move || {
+        let state = a.state::<AppState>();
+        syncmode::snapshot(&state, &syncmode::config(&state).device, false)
+    })
+    .await
+    else {
+        return;
+    };
+    let card = me(&state);
+    let port = devices.inner.lock().unwrap().port;
+    for (peer, addrs, since) in targets {
+        let d = sm::changes_since(&full, since);
+        if d.tracks.is_empty() && d.playlists.is_empty() && d.gone.is_empty() && d.removed.is_empty() && d.edits.is_empty() && d.settings.is_empty() {
+            continue;
+        }
+        let Some(key) = key_of(&state, &peer.card.id) else { continue };
+        let Ok(bytes) = sm::pack(&d) else { continue };
+        if bytes.len() > wire::LIVE_MAX as usize {
+            continue;
+        }
+        let pushed = async {
+            let (session, _) = wire::live(&addrs, &card.id, &peer.card.id, &key, &Intro { card: card.clone(), port, trust: true }).await?;
+            session.push(&bytes).await
+        };
+        if pushed.await.is_ok() {
+            devices.inner.lock().unwrap().pushed.insert(peer.card.id.clone(), full.at);
+        }
     }
 }
 
@@ -426,10 +519,10 @@ async fn paired(app: &AppHandle, p: Paired, trust: bool) -> CmdResult<Merged> {
 async fn swap(app: &AppHandle, session: Session, theirs: &Intro) -> CmdResult<Merged> {
     let addr = session.peer_addr();
     let a = app.clone();
-    let (mine, sent) = tauri::async_runtime::spawn_blocking(move || {
+    let (mine, sent, sent_at) = tauri::async_runtime::spawn_blocking(move || {
         let state = a.state::<AppState>();
         let s = syncmode::snapshot(&state, &syncmode::config(&state).device, true)?;
-        anyhow::Ok((sm::pack(&s)?, stamp_of(&s)))
+        anyhow::Ok((sm::pack(&s)?, stamp_of(&s), s.at))
     })
     .await
     .map_err(err)?
@@ -462,6 +555,7 @@ async fn swap(app: &AppHandle, session: Session, theirs: &Intro) -> CmdResult<Me
         inner.reached.insert(theirs.card.id.clone(), now_ms());
         inner.failed.remove(&theirs.card.id);
         inner.due_since.remove(&theirs.card.id);
+        inner.pushed.insert(theirs.card.id.clone(), sent_at);
     }
     emit(app);
     Ok(merged)
@@ -625,9 +719,32 @@ pub fn spawn(app: AppHandle) {
         {
             crate::diag::warn("devices", "listening failed", &e);
         }
-        // Taken again after each round: a restored library is a new one.
-        let versions = |a: &AppHandle| a.state::<AppState>().lib().versions.clone();
+        // Taken again after each round: a restored library is a new one (told of its changes again).
+        let versions = |a: &AppHandle| {
+            let v = a.state::<AppState>().lib().versions.clone();
+            let b = a.clone();
+            v.on_change(Arc::new(move || dev(&b).changed.notify_one()));
+            v
+        };
         let mut v = versions(&app);
+        let a = app.clone();
+        tauri::async_runtime::spawn(async move {
+            loop {
+                dev(&a).changed.notified().await;
+                // Still for a moment: one push for one action.
+                let count = || a.state::<AppState>().lib().versions.changes();
+                let mut seen = count();
+                loop {
+                    tokio::time::sleep(LIVE_SETTLE).await;
+                    let now = count();
+                    if now == seen {
+                        break;
+                    }
+                    seen = now;
+                }
+                push_live(&a).await;
+            }
+        });
         let (mut seen, mut changed, mut woke, mut last) = (v.changes(), None, false, i64::MIN);
         // Changes that keep coming (an import, a scan) space the rounds out (`dv::change_gap`).
         let (mut gap, mut last_change) = (dv::ROUND_SOON, i64::MIN);
