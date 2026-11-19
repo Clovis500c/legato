@@ -65,8 +65,6 @@ struct Inner {
     failed: HashMap<String, String>,
     /// What each trusted device has of this one: the time of the last snapshot or live push it took (unix ms).
     pushed: HashMap<String, i64>,
-    /// The change count right after a live push merged here: nothing of this device's own to push back.
-    merged_at: Option<u64>,
 }
 
 struct Offer {
@@ -433,9 +431,9 @@ async fn taken(app: &AppHandle, session: Session, theirs: &Intro) -> CmdResult<M
     let merged = tauri::async_runtime::spawn_blocking(move || {
         let s = sm::unpack(&bytes)?;
         anyhow::ensure!(s.device == from, "Another device");
-        let m = syncmode::take(&a, &Snapshot { secrets: None, now: None, ..s })?;
-        dev(&a).inner.lock().unwrap().merged_at = Some(a.state::<AppState>().lib().versions.changes());
-        Ok(m)
+        // Pushed on from here too (a third device), and back once: that one merges nothing and writes nothing. Never
+        // skipped: a change made here meanwhile would go with it (2026-11-19, crossing changes).
+        syncmode::take(&a, &Snapshot { secrets: None, now: None, ..s })
     })
     .await
     .map_err(err)?
@@ -451,7 +449,7 @@ async fn push_live(app: &AppHandle) {
     let state = app.state::<AppState>();
     let c = syncmode::config(&state);
     let devices = dev(app);
-    if !c.network || c.manual || devices.tasks.lock().unwrap().is_empty() || devices.inner.lock().unwrap().merged_at == Some(state.lib().versions.changes()) {
+    if !c.network || c.manual || devices.tasks.lock().unwrap().is_empty() {
         return;
     }
     let targets: Vec<(&Peer, Vec<SocketAddr>, i64)> = {
