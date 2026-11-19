@@ -7,6 +7,7 @@ import { curveHints, curveLabels, curvePath, DEMO_GAP, demoLength, effectiveFade
 import { usePlayer } from '../player/store'
 import { msg, tr } from '../../shared/i18n/i18n'
 import { labelOf } from './catalog'
+import { ROW, ROW_TEXT } from './rowStyle'
 
 // Graph geometry (viewBox units). One time line, 0 = end of the song; the next one starts as the fade out does (X).
 const W = 640
@@ -259,8 +260,8 @@ export function FadeEditor() {
         <Side side="in" fade={f} set={set} />
       </div>
       <div className="rounded-xl border border-line bg-raised">
-        <div data-setting="Fade in after a skip" className="flex items-center gap-4 border-b border-line-soft px-4 py-3">
-          <div className="flex-1">
+        <div data-setting="Fade in after a skip" className={ROW}>
+          <div className={ROW_TEXT}>
             <p className="text-[0.8125rem] font-medium">{tr(labelOf('Fade in after a skip'))}</p>
             <p className="text-xs text-ink-2">{tr('Songs you pick yourself fade in too, not only the ones that follow on their own')}</p>
           </div>

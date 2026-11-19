@@ -15,6 +15,7 @@ import { downloadUpdate, installUpdate, useUpdate } from '../update/updates'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
 import { phoneApp } from '../../shared/platform'
 import { DESKTOP_ONLY } from './desktopOnly'
+import { ROW, ROW_TEXT } from './rowStyle'
 import { DISCUSSIONS, PRIVACY_PAGE, REPO } from '../../shared/links'
 
 // Status colors keep their meaning whatever the theme.
@@ -54,12 +55,12 @@ function label(s: UpdateStatus | null): string {
 function Row({ label: name, sub, children }: { label: string; sub?: ReactNode; children?: ReactNode }) {
   if (phoneApp && DESKTOP_ONLY.has(name)) return null
   return (
-    <div data-setting={name} className="flex items-center gap-4 border-b border-line-soft px-4 py-3 last:border-0">
-      <div className="min-w-0 flex-1">
+    <div data-setting={name} className={ROW}>
+      <div className={ROW_TEXT}>
         <p className="text-[0.8125rem] font-medium">{tr(name)}</p>
         {sub && <div className="text-xs text-ink-2">{sub}</div>}
       </div>
-      {children}
+      {children && <div className="flex shrink-0 flex-wrap items-center gap-4">{children}</div>}
     </div>
   )
 }

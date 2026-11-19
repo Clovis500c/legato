@@ -42,6 +42,7 @@ import { PHONE_FOLDED } from './phoneFold'
 import { usePhone } from '../../shared/phone'
 import { LanguagePicker } from './LanguagePicker'
 import { ask } from '../../shared/ui/Ask'
+import { ROW, ROW_TEXT } from './rowStyle'
 
 const ICONS: Record<Category, ReactNode> = {
   general: <GearSix size={15} />,
@@ -127,9 +128,9 @@ function Row({ label, sub, children, preview, setting }: { label: string; sub?: 
         { label: tr('Copy name'), icon: <Copy size={16} />, onSelect: () => void navigator.clipboard.writeText(tr(labelOf(label))) },
       ])}
       // A narrow pane (the phone, a small window) keeps the words at least half the row: a wide control goes under them.
-      className="flex items-center gap-4 border-b border-line-soft px-4 py-3 last:border-0 @max-lg:flex-wrap @max-lg:gap-y-2.5"
+      className={ROW}
     >
-      <div className="flex-1 @max-lg:min-w-[55%]">
+      <div className={ROW_TEXT}>
         <p className="flex items-center gap-2 text-[0.8125rem] font-medium">
           {tr(labelOf(label))}
           {changed && (
