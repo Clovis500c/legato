@@ -111,9 +111,12 @@
 
   // 2026-11-19, the phone crackled with the Live Editor on: every part of its graph ran all the time, a part at rest too
   // (the 3D panner's HRTF, two reverbs' 24 looped delays, the compressor, the 4x distortion, the pitch oscillators). Chromium
-  // renders only what reaches the speakers, so a part at rest is unwired, once its fade (20 ms) is over.
+  // renders only what reaches the speakers, so a part at rest is unwired, once its fade (20 ms) is over. An unwired part
+  // keeps what its delays held, replayed when it comes back: its input goes first, its feedback to 0, its output once
+  // it has emptied (FLUSH_MS: the longest echo, 2 s), so it freezes on silence.
   const UNWIRE_MS = 250
-  function wire(from, to, later = true) {
+  const FLUSH_MS = 3000
+  function wire(from, to, ms = UNWIRE_MS) {
     let on = false
     let off = 0
     return (want) => {
@@ -126,7 +129,7 @@
           from.disconnect(to)
           on = false
         }
-        if (later) off = setTimeout(cut, UNWIRE_MS)
+        if (ms) off = setTimeout(cut, ms)
         else cut()
       }
     }
@@ -185,8 +188,8 @@
       }
       node.connect(output, 0, side)
     })
-    const set = (size, damping, predelayMs) => {
-      const fb = 0.7 + 0.28 * size
+    const set = (size, damping, predelayMs, on = true) => {
+      const fb = on ? 0.7 + 0.28 * size : 0
       const dmp = 0.4 * damping
       // One-pole damping pole → cutoff of the stand-in lowpass.
       const cutoff = dmp > 0.001 ? Math.min(20000, (-Math.log(dmp) * ctx.sampleRate) / (2 * Math.PI)) : 20000
@@ -211,6 +214,7 @@
     const dry = new GainNode(ctx, { gain: 1 })
     const wet = new GainNode(ctx, { gain: 0 })
     input.connect(dry).connect(output)
+    const tapIn = new GainNode(ctx)
     const H = 64
     const saw = (shift) => {
       const real = new Float32Array(H)
@@ -229,12 +233,12 @@
       const fade = new OscillatorNode(ctx, { frequency: f, periodicWave: cos })
       const fadeDepth = new GainNode(ctx, { gain: shift ? -0.5 : 0.5 })
       fade.connect(fadeDepth).connect(env.gain)
-      input.connect(d).connect(env).connect(wet)
+      tapIn.connect(d).connect(env).connect(wet)
       sweep.start(t0)
       fade.start(t0)
       return { d, depth, nodes: [sweep, fade] }
     })
-    const link = wire(wet, output)
+    const link = together(wire(input, tapIn), wire(wet, output, FLUSH_MS))
     const set = (ratio) => {
       const on = Math.abs(ratio - 1) > 1e-4
       link(on)
@@ -266,8 +270,8 @@
     let shaped = 0
     const afterDrive = new GainNode(ctx)
     shaper.connect(afterDrive)
-    const driveOn = wire(node, shaper, false)
-    const driveOff = wire(node, afterDrive, false)
+    const driveOn = wire(node, shaper, 0)
+    const driveOff = wire(node, afterDrive, 0)
     driveOff(true)
     node = afterDrive
     const comp = new DynamicsCompressorNode(ctx, { knee: 6, attack: 0.005, release: 0.15 })
@@ -285,21 +289,21 @@
     width.output.connect(afterEcho)
     echo.connect(echoFb).connect(echo)
     echo.connect(echoWet)
-    const echoLink = together(wire(width.output, echo), wire(echoWet, afterEcho))
+    const echoLink = together(wire(width.output, echo), wire(echoWet, afterEcho, FLUSH_MS))
     const reverb = freeverb(ctx)
     const dry = new GainNode(ctx, { gain: 1 })
     const wet = new GainNode(ctx, { gain: 0 })
     const afterReverb = new GainNode(ctx)
     afterEcho.connect(dry).connect(afterReverb)
     reverb.output.connect(wet)
-    const reverbLink = together(wire(afterEcho, reverb.input), wire(wet, afterReverb))
+    const reverbLink = together(wire(afterEcho, reverb.input), wire(wet, afterReverb, FLUSH_MS))
     const panner = new PannerNode(ctx, { panningModel: 'HRTF', distanceModel: 'inverse', refDistance: 1, rolloffFactor: 1, channelCount: 1, channelCountMode: 'explicit' })
     const spaceOn = new GainNode(ctx, { gain: 0 })
     const spaceOff = new GainNode(ctx, { gain: 1 })
     const afterSpace = new GainNode(ctx)
     afterReverb.connect(spaceOff).connect(afterSpace)
     panner.connect(spaceOn)
-    const spaceLink = together(wire(afterReverb, panner), wire(spaceOn, afterSpace))
+    const spaceLink = together(wire(afterReverb, panner), wire(spaceOn, afterSpace, FLUSH_MS))
     let room = null
     const balance = matrix(ctx, afterSpace)
     let fx = cleanFx(null)
@@ -344,9 +348,9 @@
       const wb = (1 - e.width) / 2
       width.set(wa, wb, wb, wa)
       to(echo.delayTime, e.echo.timeMs / 1000)
-      to(echoFb.gain, e.echo.feedback)
+      to(echoFb.gain, use.echo ? e.echo.feedback : 0)
       to(echoWet.gain, e.echo.mix)
-      reverb.set(e.reverb.size, e.reverb.damping, e.reverb.predelayMs)
+      reverb.set(e.reverb.size, e.reverb.damping, e.reverb.predelayMs, use.reverb)
       // reverb.rs `levels`: as loud as the dry song whatever the room.
       const mix = Math.min(1, Math.max(0, e.reverb.mix))
       to(dry.gain, 1 - 0.5 * mix)
@@ -355,11 +359,10 @@
       to(spaceOff.gain, e.space.on ? 0 : 1)
       if (e.space.on && e.space.room > 0 && !room) {
         room = { verb: freeverb(ctx), gain: new GainNode(ctx, { gain: 0 }) }
-        room.verb.set(0.5, 0.6, 20)
-        panner.connect(room.verb.input)
         room.verb.output.connect(room.gain)
-        room.link = wire(room.gain, afterSpace)
+        room.link = together(wire(panner, room.verb.input), wire(room.gain, afterSpace, FLUSH_MS))
       }
+      room?.verb.set(0.5, 0.6, 20, use.room)
       room?.link(use.room)
       if (room) to(room.gain.gain, e.space.on ? e.space.room * 0.6 * Math.min(2, e.space.distance) : 0)
       if (!e.space.rotate) azimuth = e.space.azimuth

@@ -8,7 +8,7 @@ type Fx = { drive: number; compress: number; echo: { mix: number }; reverb: { mi
 type Node = { connect: (to: unknown) => void; disconnect: (to: unknown) => void }
 const { parts, wire } = new Function(`${block}; return { parts, wire }`)() as {
   parts: (e: Fx, shift: number) => Record<string, boolean>
-  wire: (from: Node, to: unknown, later?: boolean) => (want: boolean) => void
+  wire: (from: Node, to: unknown, ms?: number) => (want: boolean) => void
 }
 
 const rest: Fx = { drive: 0, compress: 0, echo: { mix: 0 }, reverb: { mix: 0 }, space: { on: false, room: 0.2 } }
@@ -41,9 +41,17 @@ describe('Live Editor wiring', () => {
     vi.advanceTimersByTime(1000)
     expect(edges).toBe(0)
     // At once (the distortion's two ways round): never both wired.
-    const now = wire(from, {}, false)
+    const now = wire(from, {}, 0)
     now(true)
     now(false)
+    expect(edges).toBe(0)
+    // An output stays wired until the part has emptied, so it never freezes holding sound.
+    const out = wire(from, {}, 3000)
+    out(true)
+    out(false)
+    vi.advanceTimersByTime(2900)
+    expect(edges).toBe(1)
+    vi.advanceTimersByTime(200)
     expect(edges).toBe(0)
     vi.useRealTimers()
   })
