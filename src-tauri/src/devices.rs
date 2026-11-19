@@ -65,6 +65,8 @@ struct Inner {
     failed: HashMap<String, String>,
     /// What each trusted device has of this one: the time of the last snapshot or live push it took (unix ms).
     pushed: HashMap<String, i64>,
+    /// Live pushes of the last minute (`dv::live_now`).
+    live_times: Vec<i64>,
 }
 
 struct Offer {
@@ -465,7 +467,8 @@ async fn push_live(app: &AppHandle) {
             })
             .collect()
     };
-    if targets.is_empty() {
+    // Each push builds a snapshot: changes that keep coming (an import) are the round's.
+    if targets.is_empty() || !dv::live_now(&mut devices.inner.lock().unwrap().live_times, now_ms()) {
         return;
     }
     let a = app.clone();

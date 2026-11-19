@@ -156,6 +156,19 @@ pub fn change_gap(gap: i64, quiet: i64) -> i64 {
     if quiet >= ROUND_EVERY { ROUND_SOON } else { gap }
 }
 
+/// Live pushes a minute at most: each builds a snapshot, so past them (an import, a scan) the round alone.
+pub const LIVE_PER_MINUTE: usize = 10;
+
+/// A live push now? `recent`: the times of the last ones, kept to the minute (this one added when it goes).
+pub fn live_now(recent: &mut Vec<i64>, now: i64) -> bool {
+    recent.retain(|t| now - t < 60_000);
+    let go = recent.len() < LIVE_PER_MINUTE;
+    if go {
+        recent.push(now);
+    }
+    go
+}
+
 /// This device's mDNS TXT words.
 pub fn txt(card: &Card, offering: bool, auto: bool, stamp: Option<&str>) -> Vec<(&'static str, String)> {
     let mut words = vec![("v", VERSION.to_string()), ("id", card.id.clone()), ("n", card.name.clone()), ("o", card.os.word().into()), ("f", card.form.word().into())];
@@ -437,6 +450,14 @@ mod tests {
         assert!(h.wakes(Some(&Heard { stamp: Some("bbbbbbbbbbbb".into()), ..h.clone() })), "its stamp moved");
         assert!(h.wakes(Some(&Heard { auto: false, ..h.clone() })), "it turned automatic");
         assert!(!h.wakes(Some(&Heard { offering: true, ..h.clone() })), "a code shown is no sync");
+    }
+
+    #[test]
+    fn live_pushes_stop_while_changes_keep_coming() {
+        let mut recent = Vec::new();
+        assert!((0..LIVE_PER_MINUTE as i64).all(|i| live_now(&mut recent, i * 1000)), "a few likes: each pushed");
+        assert!(!live_now(&mut recent, 20_000), "an import: the round's");
+        assert!(live_now(&mut recent, 60_000), "a minute after the first: pushed again");
     }
 
     #[test]
