@@ -148,6 +148,7 @@ the order; a line leaves only when it ships or the user drops it.
       rule unchanged. Decided alone (2026-11-19): the version and numbers only in it (no words, so no locale to keep),
       and Android 13's notification permission asked at the first download (it never was: the music's notification
       gains too). To try on the phone: none of the Kotlin or the phone's Rust could be built here (no Android target).
+- [x] `M` Daily mixes and « For right now » follow what you play now (the owner, 2026-11-19, from the phone: « dans tout ça j'écoute aucune musique quotidiennement, et dans les autres mix des fois y a des musiques que oui j'ai beaucoup écoutées mais que je n'écoute plus du tout maintenant »). Ticked 2026-11-19 with b6d42173. Cause: the daily mixes were seeded by the sum of every song's score, where playlist, saved and like bonuses never age, so old likes won, and the right-now mixes added every past play at that hour (30-day half-life). Fix: daily mixes are seeded only by artists with at least 2 full plays in the last 60 days; likes and playlists only link and rank. Never heard in the app.
 
 ## The owner's asks of 2026-11-07, evening
 
