@@ -85,11 +85,24 @@ older Legato's code ("Enter a code" falls back to it when no new device offers o
   after 30 s due with nothing from it (`dv::GRACE`). The app back on screen, or leaving it, syncs at once (`devices_wake`); on
   Android the silent playback service lingers 30 s off screen so that round ends before the app is frozen.
   Off: "Sync now" only. Every 10 minutes a sync runs anyway when a stamp can't be heard.
+- **Live** (2026-11-19, the owner's ask: "tu fais un truc et sync instantanée"): a change here (the library tells of
+  each write, `Versions::on_change`: no polling) is pushed, once the library has been still 300 ms, to every trusted
+  device heard that takes it (TXT `l=1`, said with `a=1`: automatic devices only). The push is only what changed since
+  what that device has of this one (`sm::changes_since`: playlists, preferences, ratings, deletions, Live Editor
+  versions, settings stamped after the last snapshot or push it took, plays of the last hour; no secrets, no playing
+  song), merged by the same rules. One short connection per push (hello `{"v":2,"op":"live",…}`, the trusted
+  handshake, one sealed message of 1 MB at most, an ack): nothing held open, nothing between changes. The round still
+  runs seconds later as the catch-up (songs added by hand outside a playlist, changes merged from a third device, a
+  push lost). A push refused, unreachable, too big or to an older app (it can't read the hello and drops it): said
+  nowhere, the round brings it. Not before the first swap since the app started (nothing to measure "since" against).
+  10 pushes a minute at most (`dv::live_now`: each builds a snapshot here; an import is the round's). A push merged
+  here goes on to the others and once back to its sender, who merges nothing (never skipped: a change made here
+  meanwhile goes with it).
 - **Here or not**: on this network = resolved by mDNS and not withdrawn, or reached in the last 3 minutes; else "Not on
   this network" with the last sync. The last addresses are kept per device and tried when mDNS hears nothing (Wi-Fi
   that drops multicast, Android without its multicast lock).
 - **Wire**: frames of a 4-byte length and bytes. A hello in clear (1 KB at most): `{"v":2,"op":"pair"}` or
-  `{"v":2,"op":"sync","from":<id>,"to":<id>}`. After the handshake every message is sealed (ChaCha20-Poly1305, a
+  `{"v":2,"op":"sync","from":<id>,"to":<id>}` (or `"op":"live"`, above). After the handshake every message is sealed (ChaCha20-Poly1305, a
   counter nonce per direction). The server's intro first (id, name, system, form, port, trust; 4 KB at most), then the
   client's; snapshots (64 MB at most) flow only once both intros opened, so nobody without the code gets a big buffer.
   Then an ack.
