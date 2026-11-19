@@ -80,8 +80,9 @@ the order; a line leaves only when it ships or the user drops it.
       2026-11-19, the owner: it is the Live Editor ("bien dû au live editor"). Decided alone: once used, `buildFx` ran
       every part all the time, even at rest (HRTF panner, one or two Freeverbs of 24 looped delays, compressor, 4x
       WaveShaper, the pitch shifter's oscillators), twice during a crossfade (two embeds, two contexts): too much for a
-      throttled phone's audio thread. Now a part at rest is unwired (Chromium renders only what reaches the output) 250 ms
-      after its fade, the drive switched at once (`wire`, `parts` in `live.js`, `wiring.test.ts`); the sound is the same
+      throttled phone's audio thread. Now a part at rest is unwired (Chromium renders only what reaches the output): its
+      input 250 ms after its fade, its feedback to 0, its output 3 s later once emptied (else it froze holding sound and
+      replayed it when it came back: seen in Chromium, fixed), the drive switched at once (`wire`, `parts` in `live.js`, `wiring.test.ts`); the sound is the same
       (offline render in Chromium: all on then off = the neutral level), desktop too. NOT ticked: the cause is likely,
       not certain. To try on the phone: (1) Live Editor used on a song then reset, YouTube song, Bluetooth, screen off:
       no crackle = the idle parts were it. (2) Same with crossfade on, across a song change. (3) 8D (Space) and reverb on:
