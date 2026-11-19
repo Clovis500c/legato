@@ -149,6 +149,11 @@ fn system() -> String {
     format!("{}, {}", std::env::consts::OS, std::env::consts::ARCH)
 }
 
+/// The report's labels for the system and the page engine: Windows and WebView2 on Windows, neutral words elsewhere (a phone is no Windows).
+fn labels(os: &str) -> (&'static str, &'static str) {
+    if os == "windows" { ("Windows", "WebView2") } else { ("System", "WebView") }
+}
+
 /// The text Settings › About › Copy diagnostics copies: versions, the settings that matter, who is signed in, the latest
 /// warnings and errors, the latest events. With `details` the errors' own text and the data folder come too; without it
 /// no song title, account name or path holding the user's name does.
@@ -164,10 +169,11 @@ pub async fn diag_report(state: State<'_, AppState>, details: bool) -> Result<St
         signed_in.push("YouTube Music");
     }
     let dir = app.path().app_data_dir().unwrap_or_default();
+    let (system_label, webview_label) = labels(std::env::consts::OS);
     let mut facts = vec![
         ("Version".to_string(), format!("{}{}", app.package_info().version, if cfg!(debug_assertions) { " (dev build)" } else { "" })),
-        ("Windows".to_string(), system()),
-        ("WebView2".to_string(), tauri::webview_version().unwrap_or_else(|e| format!("not found ({e})"))),
+        (system_label.to_string(), system()),
+        (webview_label.to_string(), tauri::webview_version().unwrap_or_else(|e| format!("not found ({e})"))),
         ("Signed in".to_string(), if signed_in.is_empty() { "nobody".to_string() } else { signed_in.join(", ") }),
         ("Settings".to_string(), log::settings_line(&ui)),
     ];
@@ -187,6 +193,14 @@ pub async fn diag_report(state: State<'_, AppState>, details: bool) -> Result<St
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_report_names_the_system_and_the_webview_neutrally_off_windows() {
+        assert_eq!(labels("windows"), ("Windows", "WebView2"));
+        for os in ["android", "macos", "linux", "ios"] {
+            assert_eq!(labels(os), ("System", "WebView"), "{os}");
+        }
+    }
 
     #[test]
     fn errors_and_panics_land_in_the_file() {
