@@ -587,15 +587,24 @@ pub fn mixes(input: &Input) -> Vec<Mix> {
     groups.sort_by(|a, b| b.0.total_cmp(&a.0));
 
     // Daily mixes: only the artists played lately seed them (a cluster of old favourites has none), best listening first.
-    let mut daily_groups: Vec<(f64, Vec<String>)> = groups
-        .iter()
-        .filter_map(|(_, g)| {
-            let members: Vec<String> = g.iter().filter(|a| fresh_affinity.get(a.as_str()).is_some_and(|s| *s >= RECENT_FLOOR)).cloned().collect();
-            let sum = members.iter().map(|a| fresh_affinity[a.as_str()]).sum();
-            (!members.is_empty()).then_some((sum, members))
-        })
-        .collect();
-    daily_groups.sort_by(|a, b| b.0.total_cmp(&a.0));
+    let fresh_groups = |floor: f64| -> Vec<(f64, Vec<String>)> {
+        let mut out: Vec<(f64, Vec<String>)> = groups
+            .iter()
+            .filter_map(|(_, g)| {
+                let members: Vec<String> = g.iter().filter(|a| fresh_affinity.get(a.as_str()).is_some_and(|s| *s >= floor)).cloned().collect();
+                let sum = members.iter().map(|a| fresh_affinity[a.as_str()]).sum();
+                (!members.is_empty()).then_some((sum, members))
+            })
+            .collect();
+        out.sort_by(|a, b| b.0.total_cmp(&a.0));
+        out
+    };
+    let mut daily_groups = fresh_groups(RECENT_FLOOR);
+    // 2026-11-19: a light listener (no artist at the floor) still gets the artists heard lately; a library with no listening
+    // at all (just imported, a new phone) its playlists and likes, as before. Old plays alone: still none.
+    if daily_groups.is_empty() {
+        daily_groups = if good.is_empty() { groups.clone() } else { fresh_groups(f64::MIN_POSITIVE) };
+    }
 
     let group_of: HashMap<String, usize> = groups.iter().enumerate().flat_map(|(i, (_, g))| g.iter().map(move |a| (a.clone(), i))).collect();
     let score_of = |id: i64| taste.score.get(&id).copied().unwrap_or(0.0);
@@ -999,6 +1008,21 @@ mod tests {
         let playlists = [old.clone()];
         let input = Input { tracks: &tracks[..12], plays: &plays, playlists: &playlists, saved: &[], liked: &old, prefs: &HashMap::new(), now: NOW, utc_offset: 0, seed: 3, found: &[] };
         assert!(mixes(&input).iter().all(|m| m.kind != "daily"), "too little recent history: fewer mixes, never old ones");
+    }
+
+    #[test]
+    fn a_light_listener_and_a_new_library_still_get_a_daily_mix() {
+        let (tracks, plays, old) = then_and_now();
+        let playlists = [old.clone()];
+        // One listen of each new artist, three weeks ago: under the floor, still what is played now.
+        let light: Vec<Play> = plays.iter().filter(|p| p.track_id <= 12).copied().chain([play(101, NOW - 21 * DAY, true), play(107, NOW - 21 * DAY + 600, true)]).collect();
+        let input = Input { tracks: &tracks, plays: &light, playlists: &playlists, saved: &[], liked: &old, prefs: &HashMap::new(), now: NOW, utc_offset: 0, seed: 3, found: &[] };
+        let daily: Vec<Mix> = mixes(&input).into_iter().filter(|m| m.kind == "daily").collect();
+        assert!(!daily.is_empty(), "a light listener gets one");
+        assert!(daily.iter().all(|m| artists(&tracks, m).iter().all(|a| a.starts_with("New "))));
+        // Nothing listened yet: the playlist and the likes make one, as before.
+        let input = Input { plays: &[], ..input };
+        assert!(mixes(&input).iter().any(|m| m.kind == "daily"), "a new library gets one");
     }
 
     #[test]
