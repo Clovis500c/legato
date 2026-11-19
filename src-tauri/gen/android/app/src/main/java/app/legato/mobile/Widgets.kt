@@ -7,6 +7,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Bundle
 import android.graphics.Bitmap
 import android.graphics.BitmapShader
 import android.graphics.Canvas
@@ -26,7 +27,7 @@ object Widgets {
   fun refresh(context: Context) {
     val manager = AppWidgetManager.getInstance(context)
     redraw(context, manager, RectangleWidget::class.java) { rectangle(context) }
-    redraw(context, manager, DiscWidget::class.java) { disc(context) }
+    redrawEach(context, manager, DiscWidget::class.java) { id -> disc(context, discSide(context, manager, id)) }
     try {
       val ids = manager.getAppWidgetIds(ComponentName(context, QueueWidget::class.java))
       if (ids.isNotEmpty()) {
@@ -46,6 +47,20 @@ object Widgets {
     }
   }
 
+  // Each widget of a provider drawn for its own size (the disc: a different picture per widget).
+  private fun redrawEach(context: Context, manager: AppWidgetManager, provider: Class<*>, build: (Int) -> RemoteViews) {
+    try {
+      for (id in manager.getAppWidgetIds(ComponentName(context, provider))) {
+        try {
+          manager.updateAppWidget(id, build(id))
+        } catch (e: Exception) {
+          // This widget only: the next change tries again.
+        }
+      }
+    } catch (e: Exception) {
+    }
+  }
+
   /** The widget for the song playing now; nothing playing: the app's name, and a tap opens the app. */
   fun rectangle(context: Context): RemoteViews {
     val views = RemoteViews(context.packageName, R.layout.widget_rectangle)
@@ -55,14 +70,15 @@ object Widgets {
     if (title == null) {
       views.setTextViewText(R.id.widget_title, context.getString(R.string.app_name))
       views.setTextViewText(R.id.widget_artist, context.getString(R.string.widget_idle))
-      views.setImageViewResource(R.id.widget_cover, R.drawable.widget_cover_empty)
+      views.setImageViewResource(R.id.widget_cover, R.drawable.widget_cover_empty_round)
       for (id in buttons) views.setViewVisibility(id, View.GONE)
       return views
     }
     views.setTextViewText(R.id.widget_title, title)
     views.setTextViewText(R.id.widget_artist, MediaState.artist ?: "")
     val cover = MediaState.cover
-    if (cover != null) views.setImageViewBitmap(R.id.widget_cover, small(cover, 192)) else views.setImageViewResource(R.id.widget_cover, R.drawable.widget_cover_empty)
+    // The cover as a disc (the app's cover shape for a record), clipped in the bitmap itself.
+    if (cover != null) views.setImageViewBitmap(R.id.widget_cover, clipped(cover, 192, true)) else views.setImageViewResource(R.id.widget_cover, R.drawable.widget_cover_empty_round)
     for (id in buttons) {
       views.setViewVisibility(id, View.VISIBLE)
       views.setInt(id, "setColorFilter", context.getColor(R.color.widget_text))
@@ -89,10 +105,10 @@ object Widgets {
   }
 
   /** The widget as a record: the cover as the label of a vinyl; play and next. Nothing playing: a bare record, a tap opens the app. */
-  fun disc(context: Context): RemoteViews {
+  fun disc(context: Context, side: Int): RemoteViews {
     val views = RemoteViews(context.packageName, R.layout.widget_disc)
     views.setOnClickPendingIntent(R.id.widget_root, open(context))
-    views.setImageViewBitmap(R.id.widget_cover, record(MediaState.cover.takeIf { MediaState.running }, 360))
+    views.setImageViewBitmap(R.id.widget_cover, record((MediaState.big ?: MediaState.cover).takeIf { MediaState.running }, side))
     val buttons = intArrayOf(R.id.widget_play, R.id.widget_next)
     if (MediaState.title == null || !MediaState.running) {
       for (id in buttons) views.setViewVisibility(id, View.GONE)
@@ -106,6 +122,31 @@ object Widgets {
     views.setOnClickPendingIntent(R.id.widget_play, button(context, if (MediaState.playing) "pause" else "play", 22))
     views.setOnClickPendingIntent(R.id.widget_next, button(context, "next", 23))
     return views
+  }
+
+  /**
+   * The side (px) the disc is drawn at for widget `id`: its size now as the launcher says it (dp, the larger of its max and min), as a
+   * square, times the screen's density, kept between 240 and 720 so the bitmap stays well under RemoteViews' memory limit.
+   */
+  fun discSide(context: Context, manager: AppWidgetManager, id: Int): Int {
+    val o = manager.getAppWidgetOptions(id)
+    val w = maxOf(o.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, 0), o.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0))
+    val h = maxOf(o.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0), o.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0))
+    val dp = minOf(w, h).takeIf { it > 0 } ?: 110
+    return (dp * context.resources.displayMetrics.density).toInt().coerceIn(240, 720)
+  }
+
+  /** A cover cut to a square `side` px wide, as a disc (`round`) or a rounded square (corners a fifth of it); the bitmap itself is clipped, so it shows the same on every launcher. */
+  fun clipped(cover: Bitmap, side: Int, round: Boolean): Bitmap {
+    val box = squareCrop(cover.width, cover.height)
+    val square = Bitmap.createBitmap(cover, box[0], box[1], box[2], box[2])
+    val scaled = Bitmap.createScaledBitmap(square, side, side, true)
+    val out = Bitmap.createBitmap(side, side, Bitmap.Config.ARGB_8888)
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
+    paint.shader = BitmapShader(scaled, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+    val canvas = Canvas(out)
+    if (round) canvas.drawCircle(side / 2f, side / 2f, side / 2f, paint) else canvas.drawRoundRect(0f, 0f, side.toFloat(), side.toFloat(), side * 0.2f, side * 0.2f, paint)
+    return out
   }
 
   /** The square a cover is cut to (centered): left, top, side. */
@@ -127,6 +168,7 @@ object Widgets {
     paint.strokeWidth = side * 0.004f
     for (k in 1..3) canvas.drawCircle(c, c, c * (0.97f - k * 0.06f), paint)
     paint.style = Paint.Style.FILL
+    paint.isFilterBitmap = true
     val label = (side * 0.62f).toInt()
     if (cover != null) {
       val box = squareCrop(cover.width, cover.height)
@@ -191,6 +233,9 @@ class QueueRows(private val context: Context) : RemoteViewsService.RemoteViewsFa
     val row = rows.getOrNull(position) ?: return views
     views.setTextViewText(R.id.widget_title, row.title)
     views.setTextViewText(R.id.widget_artist, row.artist)
+    // Its cover, a rounded square (a placeholder until the page's small cover comes).
+    val thumb = MediaState.thumb(row.key)
+    if (thumb != null) views.setImageViewBitmap(R.id.widget_cover, Widgets.clipped(thumb, 112, false)) else views.setImageViewResource(R.id.widget_cover, R.drawable.widget_cover_empty)
     // The first row is the song playing: lit, and a tap on it plays or pauses.
     views.setTextColor(R.id.widget_title, if (position == 0) context.getColor(R.color.widget_accent) else context.getColor(R.color.widget_text))
     val action = if (position == 0) (if (MediaState.playing) "pause" else "play") else "play:" + row.index
@@ -210,7 +255,12 @@ class QueueRows(private val context: Context) : RemoteViewsService.RemoteViewsFa
 /** The disc widget (the cover as a record, play and next). */
 class DiscWidget : AppWidgetProvider() {
   override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
-    appWidgetManager.updateAppWidget(appWidgetIds, Widgets.disc(context))
+    for (id in appWidgetIds) appWidgetManager.updateAppWidget(id, Widgets.disc(context, Widgets.discSide(context, appWidgetManager, id)))
+  }
+
+  // Resized on the home screen: drawn again at the new size.
+  override fun onAppWidgetOptionsChanged(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int, newOptions: Bundle?) {
+    appWidgetManager.updateAppWidget(appWidgetId, Widgets.disc(context, Widgets.discSide(context, appWidgetManager, appWidgetId)))
   }
 }
 
