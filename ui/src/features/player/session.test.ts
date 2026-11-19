@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { LibraryTrack } from '../../shared/api'
-import { restore, snapshot } from './session'
+import { restore, resumeAs, snapshot } from './session'
 
 const t = (id: number): LibraryTrack => ({ id, added: id, addedAt: null, title: `T${id}`, artist: 'A', album: null, durationMs: null, isrc: null, ids: { youtube: `v${id}` } })
 const lib = [t(1), t(2), t(3), t(4)]
@@ -67,6 +67,15 @@ describe('session', () => {
     expect(new Set(q?.list.map((x) => x.id)).size).toBe(2)
     s.remote[1].part = { startMs: 'x', endMs: -4 }
     expect((restore(s, lib)?.queue?.list[1] as { part?: unknown }).part).toBeUndefined()
+  })
+
+  it('a launch comes back paused when left paused, playing only when left playing', () => {
+    const paused = restore(snapshot({ ...player, playing: false }), lib)!.queue
+    const playing = restore(snapshot({ ...player, playing: true }), lib)!.queue
+    expect(resumeAs(paused, true, false)?.paused).toBe(true)
+    expect(resumeAs(paused, false, true)?.paused).toBe(true)
+    expect(resumeAs(playing, true, false)?.paused).toBe(false)
+    expect(resumeAs(playing, false, false)).toBeNull()
   })
 
   it('current track gone or junk: no queue, volume kept when valid', () => {

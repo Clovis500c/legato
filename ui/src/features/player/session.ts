@@ -94,15 +94,20 @@ export function restore(raw: unknown, tracks: LibraryTrack[]): { volume: number;
 }
 
 /**
- * Launch: volume back, and (enabled: Settings › Advanced) the last queue playing again where it stopped. exact = first
- * launch after an update: back as it was even if resume is off, paused if it was.
+ * Launch: the last queue back where it stopped (enabled: Settings › Advanced; exact = first launch after an update, even
+ * if resume is off). Playing only if it was: left paused, it comes back paused (2026-11-19: it played by itself).
  */
+export function resumeAs<Q extends { paused: boolean }>(queue: Q | null, enabled: boolean, exact: boolean): Q | null {
+  return queue && (enabled || exact) ? queue : null
+}
+
 export async function resumeSession(enabled: boolean, exact = false) {
   const saved = restore(await api.loadSession().catch(() => null), useStore.getState().tracks)
   if (!saved) return
   usePlayer.setState({ volume: saved.volume })
-  if (!saved.queue || (!enabled && !exact) || usePlayer.getState().now) return
-  usePlayer.getState().resume({ ...saved.queue, paused: exact && saved.queue.paused })
+  const queue = resumeAs(saved.queue, enabled, exact)
+  if (!queue || usePlayer.getState().now) return
+  usePlayer.getState().resume(queue)
 }
 
 // Update installing: its session is final. The ended song's last statuses must not overwrite it (came back paused at
