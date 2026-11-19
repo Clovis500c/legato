@@ -77,6 +77,15 @@ the order; a line leaves only when it ships or the user drops it.
       stream was it. (2) Still crackles: Settings › Sound, early song ends off (and cover pulse off), same test: no
       crackle now = the listening alone still hurts (look at the analysis next); still crackles = not the listening.
       (3) The YouTube Music app on the same earphones: crackles there too = Bluetooth alone. Not tried: `process` mode.
+      2026-11-19, the owner: it is the Live Editor ("bien dû au live editor"). Decided alone: once used, `buildFx` ran
+      every part all the time, even at rest (HRTF panner, one or two Freeverbs of 24 looped delays, compressor, 4x
+      WaveShaper, the pitch shifter's oscillators), twice during a crossfade (two embeds, two contexts): too much for a
+      throttled phone's audio thread. Now a part at rest is unwired (Chromium renders only what reaches the output) 250 ms
+      after its fade, the drive switched at once (`wire`, `parts` in `live.js`, `wiring.test.ts`); the sound is the same
+      (offline render in Chromium: all on then off = the neutral level), desktop too. NOT ticked: the cause is likely,
+      not certain. To try on the phone: (1) Live Editor used on a song then reset, YouTube song, Bluetooth, screen off:
+      no crackle = the idle parts were it. (2) Same with crossfade on, across a song change. (3) 8D (Space) and reverb on:
+      crackles only then = those parts alone are too heavy (next: a lighter reverb on Android). (4) Speed or pitch changed.
 - [x] `M` The devices sync heard sooner on the network (the owner, 2026-11-18, from the phone: "que ça se détecte plus
       rapidement sur le réseau"). Today (`src-tauri/src/devices.rs`): listening starts 20 s after launch (`FIRST`), the
       automatic round runs every 60 s (`EVERY`) and wakes early only when a trusted device is heard for the first time
