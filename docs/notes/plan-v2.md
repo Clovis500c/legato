@@ -113,6 +113,12 @@ the order; a line leaves only when it ships or the user drops it.
       their last addresses at once (not 10 minutes later). Decided alone (2026-11-18): the likely cause is the phone as
       the smaller id, asleep or unheard after waking; 30 s is a guess; two syncs crossing at worst merge twice (no
       loss). No wire or TXT change. Tests: `starts` in `crates/core`; never tried between two real devices.
+- [x] `S` The phone's bottom tabs follow Settings › Sidebar entries (the owner, 2026-11-19, from the phone: "le truc pour
+      éditer les onglets ne marche pas sur mobile, par exemple cacher l'icône radio de la sidebar"). Done 2026-11-19:
+      `phoneTabs(hiddenNav)` in `tabLogic.ts` (tested) hides Home, Mixes or Radio as the sidebar does; Search and Your
+      library can't be hidden, so a tab is always left. Decided alone (2026-11-19): `hiddenNav` travels with Sync Mode as
+      before, so an entry hidden on the PC hides the phone's tab too (easiest undo: add it to the per-device settings).
+      Never seen on a phone.
 
 ## The owner's asks of 2026-11-07, evening
 
