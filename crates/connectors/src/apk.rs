@@ -40,7 +40,13 @@ impl Default for Apk {
 impl Apk {
     /// Tests: a local server for both.
     pub fn with_urls(latest: &str, releases: &str) -> Self {
-        Self { http: crate::http(), latest: latest.into(), releases: releases.trim_end_matches('/').into() }
+        // 2026-11-19: ~45 MB on mobile data: never a whole-request timeout, only a stall (no byte for a minute) ends it.
+        let http = crate::builder()
+            .connect_timeout(std::time::Duration::from_secs(15))
+            .read_timeout(std::time::Duration::from_secs(60))
+            .build()
+            .unwrap_or_default();
+        Self { http, latest: latest.into(), releases: releases.trim_end_matches('/').into() }
     }
 
     /// A version newer than `current` whose APK is there; None: up to date, or its APK isn't up yet (built last).
