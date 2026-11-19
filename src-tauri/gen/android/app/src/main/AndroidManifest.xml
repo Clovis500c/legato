@@ -16,6 +16,10 @@
     <!-- Updates: a downloaded APK handed to Android's installer, which asks the user (ApkInstall). Not for the Play
          Store, which forbids an app updating itself. -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- An update downloading behind other apps: UpdateService, its notification with a progress bar (Android 13 on asks
+         for notifications as the first download starts). -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- AndroidTV support -->
     <uses-feature android:name="android.software.leanback" android:required="false" />
@@ -99,6 +103,12 @@
             android:name=".PlaybackService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback"
+            android:stopWithTask="true" />
+
+        <service
+            android:name=".UpdateService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync"
             android:stopWithTask="true" />
     </application>
 </manifest>

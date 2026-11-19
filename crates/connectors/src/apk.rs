@@ -61,8 +61,8 @@ impl Apk {
         Ok(Some(Found { version, notes: latest.notes.filter(|n| !n.trim().is_empty()), url }))
     }
 
-    /// The APK into `to`, through `to`.part renamed once whole; `progress` in percent as it comes.
-    pub async fn download(&self, found: &Found, to: &Path, progress: impl FnMut(u8)) -> Result<()> {
+    /// The APK into `to`, through `to`.part renamed once whole; `progress` (bytes so far, of all) at each percent.
+    pub async fn download(&self, found: &Found, to: &Path, progress: impl FnMut(u64, u64)) -> Result<()> {
         let part = to.with_extension("part");
         let got = self.fetch(found, &part, progress).await.and_then(|()| Ok(std::fs::rename(&part, to)?));
         if got.is_err() {
@@ -71,7 +71,7 @@ impl Apk {
         got
     }
 
-    async fn fetch(&self, found: &Found, part: &Path, mut progress: impl FnMut(u8)) -> Result<()> {
+    async fn fetch(&self, found: &Found, part: &Path, mut progress: impl FnMut(u64, u64)) -> Result<()> {
         let mut r = self.http.get(&found.url).send().await?;
         if !r.status().is_success() {
             bail!("APK: {}", r.status());
@@ -90,7 +90,7 @@ impl Apk {
                 let p = (done * 100 / total).min(100) as u8;
                 if shown != Some(p) {
                     shown = Some(p);
-                    progress(p);
+                    progress(done, total);
                 }
             }
         }
@@ -100,6 +100,11 @@ impl Apk {
         file.sync_all()?;
         Ok(())
     }
+}
+
+/// A download's notification text: "12.3 MB / 45.6 MB" (numbers and a unit: nothing to translate).
+pub fn sizes(done: u64, total: u64) -> String {
+    format!("{:.1} MB / {:.1} MB", done as f64 / 1e6, total as f64 / 1e6)
 }
 
 /// Is `a` later than `b` ("1.1.679" after "1.1.641")? Part by part as numbers; a missing or odd part counts 0.
@@ -166,13 +171,14 @@ mod tests {
         let found = Found { version: "1.1.700".into(), notes: None, url: format!("{}{APK}", s.url()) };
         let to = dir.join("legato.apk");
         let mut seen = vec![];
-        apk.download(&found, &to, |p| seen.push(p)).await.unwrap();
+        apk.download(&found, &to, |done, total| seen.push((done, total))).await.unwrap();
         assert_eq!(std::fs::read(&to).unwrap(), body);
-        assert_eq!(seen.last(), Some(&100));
+        assert_eq!(seen.last(), Some(&(5004, 5004)));
+        assert_eq!(sizes(12_345_678, 45_600_000), "12.3 MB / 45.6 MB");
         assert!(!to.with_extension("part").exists());
         let page = Found { url: format!("{}/page.apk", s.url()), ..found };
         let bad = dir.join("bad.apk");
-        assert!(apk.download(&page, &bad, |_| {}).await.is_err());
+        assert!(apk.download(&page, &bad, |_, _| {}).await.is_err());
         assert!(!bad.exists() && !bad.with_extension("part").exists());
         let _ = std::fs::remove_dir_all(&dir);
     }

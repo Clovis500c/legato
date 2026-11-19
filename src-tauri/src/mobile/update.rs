@@ -19,6 +19,9 @@ const EVERY: Duration = Duration::from_secs(6 * 3600);
 /// Settings key: the update handed to the installer, then the last one installed (the PC's record).
 const KEY: &str = "update";
 const CLASS: &str = "app.legato.mobile.ApkInstall";
+const NOTICE: &str = "app.legato.mobile.UpdateService";
+/// The download's notification, moved at most this often.
+const NOTICE_EVERY: Duration = Duration::from_secs(1);
 
 // The PC's shapes (`update.rs`, the interface's `UpdateStatus`).
 #[derive(Debug, Clone, Default, Serialize)]
@@ -166,10 +169,24 @@ impl Updater {
             return self.failed(app, "download", e.to_string());
         }
         let to = dir.join(format!("legato-{}.apk", found.version));
-        let got = Apk::default().download(&found, &to, |percent| self.set(app, State::Downloading { version: found.version.clone(), percent })).await;
+        // Its own notification and foreground service (`UpdateService`): Android freezes an app behind others otherwise.
+        let title = format!("Legato {}", found.version);
+        let (mut size, mut noted) = (0u64, None::<std::time::Instant>);
+        let got = Apk::default()
+            .download(&found, &to, |done, total| {
+                size = total;
+                self.set(app, State::Downloading { version: found.version.clone(), percent: (done * 100 / total).min(100) as u8 });
+                if noted.is_none_or(|t| t.elapsed() >= NOTICE_EVERY) {
+                    noted = Some(std::time::Instant::now());
+                    notice(&title, &music_connectors::apk::sizes(done, total), (done * 1000 / total).min(999) as i32);
+                }
+            })
+            .await;
         if let Err(e) = got {
+            notice("", "", -1);
             return self.failed(app, "download", e.to_string());
         }
+        notice(&title, &music_connectors::apk::sizes(size, size), 1000);
         *self.found.lock().unwrap() = Some((found.clone(), Some(to)));
         self.set(app, State::Ready { version: found.version, notes: found.notes });
     }
@@ -216,6 +233,39 @@ fn installer(path: &str) -> anyhow::Result<String> {
     }
     let out = JString::from(out?.l()?);
     Ok(env.get_string(&out)?.into())
+}
+
+/// `UpdateService.show(activity, title, text, permille)`: the download's notification (1000 = done, below 0 = gone).
+/// Never in the way of the download: a failure is a log line.
+fn notice(title: &str, text: &str, permille: i32) {
+    if let Err(e) = show(title, text, permille) {
+        crate::diag::warn("update", "notification failed", &e.to_string());
+    }
+}
+
+fn show(title: &str, text: &str, permille: i32) -> anyhow::Result<()> {
+    let ctx = ndk_context::android_context();
+    // SAFETY: as in `installer`.
+    let vm = unsafe { JavaVM::from_raw(ctx.vm().cast()) }?;
+    let mut env = vm.attach_current_thread()?;
+    let activity = unsafe { JObject::from_raw(ctx.context().cast()) };
+    let loader = env.call_method(&activity, "getClassLoader", "()Ljava/lang/ClassLoader;", &[])?.l()?;
+    let name = env.new_string(NOTICE)?;
+    let class = env.call_method(&loader, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;", &[JValue::Object(&name)])?.l()?;
+    let title = env.new_string(title)?;
+    let text = env.new_string(text)?;
+    let out = env.call_static_method(
+        jni::objects::JClass::from(class),
+        "show",
+        "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;I)V",
+        &[JValue::Object(&activity), JValue::Object(&title), JValue::Object(&text), JValue::Int(permille)],
+    );
+    if env.exception_check()? {
+        env.exception_clear()?;
+        anyhow::bail!("Android's notification couldn't show");
+    }
+    out?;
+    Ok(())
 }
 
 /// Background checks, announced only: release builds (a debug one checks when asked, from About).
