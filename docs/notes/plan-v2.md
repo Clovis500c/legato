@@ -119,6 +119,14 @@ the order; a line leaves only when it ships or the user drops it.
       library can't be hidden, so a tab is always left. Decided alone (2026-11-19): `hiddenNav` travels with Sync Mode as
       before, so an entry hidden on the PC hides the phone's tab too (easiest undo: add it to the per-device settings).
       Never seen on a phone.
+- [ ] `L` Live sync between trusted devices (the owner, 2026-11-19, from the phone: "ajoute le sync en direct mais que avec
+      les device trustés, en mode tu fais un truc et sync instantanée entre les devices, et bien sûr comme d'hab pour le
+      réseau ce qui circule c'est full encrypté et bien sécurisé"). First thoughts: trusted (paired) devices only, over the
+      sealed session they already open (pair key in the keychain, nothing in clear but mDNS's stamp). Today's rounds
+      (75cb8db3) already run seconds after a change, but each swaps a whole snapshot (big on a large library): "instant"
+      means a held connection per trusted device on the same network that carries only the change made (a like, a
+      playlist edit, a setting), merged by the same rules, with the snapshot round kept as the catch-up. Battery: an idle
+      held socket costs little, but a phone in the background is frozen anyway (a2cf7431), so live there only while open.
 
 ## The owner's asks of 2026-11-07, evening
 
