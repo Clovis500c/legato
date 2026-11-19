@@ -124,7 +124,7 @@ class PlaybackService : Service() {
     }
     val open = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
     val b = Notification.Builder(this, CHANNEL)
-      .setSmallIcon(android.R.drawable.ic_media_play)
+      .setSmallIcon(R.drawable.ic_stat_legato)
       .setContentTitle(title ?: getString(R.string.app_name))
       .setContentIntent(open)
       .setOngoing(true)

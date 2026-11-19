@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="128" android:viewportHeight="128">
+  <!-- Status-bar mark of the notifications: Legato's L, white on transparent. -->
+  <group android:scaleX="1.2" android:scaleY="1.2" android:translateX="-12.8" android:translateY="-11.5">
+    <path android:fillColor="#FFFFFF" android:pathData="M87.7969 84.3438V97H53.2969V84.3438H87.7969ZM59.1562 28.75V97H42.7031V28.75H59.1562Z"/>
+  </group>
+</vector>
