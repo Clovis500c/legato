@@ -10,4 +10,8 @@
     <string name="widget_previous">Anterior</string>
     <string name="widget_play_pause">Reproduzir ou pausar</string>
     <string name="widget_next">Próxima</string>
+    <string name="widget_sample_song_1">Primeira música</string>
+    <string name="widget_sample_song_2">Segunda música</string>
+    <string name="widget_sample_song_3">Terceira música</string>
+    <string name="widget_sample_artist">Nome do artista</string>
 </resources>

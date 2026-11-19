@@ -10,4 +10,8 @@
     <string name="widget_previous">前へ</string>
     <string name="widget_play_pause">再生または一時停止</string>
     <string name="widget_next">次へ</string>
+    <string name="widget_sample_song_1">1曲目</string>
+    <string name="widget_sample_song_2">2曲目</string>
+    <string name="widget_sample_song_3">3曲目</string>
+    <string name="widget_sample_artist">アーティスト名</string>
 </resources>

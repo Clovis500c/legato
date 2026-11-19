@@ -10,4 +10,8 @@
     <string name="widget_previous">이전</string>
     <string name="widget_play_pause">재생 또는 일시정지</string>
     <string name="widget_next">다음</string>
+    <string name="widget_sample_song_1">첫 번째 곡</string>
+    <string name="widget_sample_song_2">두 번째 곡</string>
+    <string name="widget_sample_song_3">세 번째 곡</string>
+    <string name="widget_sample_artist">아티스트 이름</string>
 </resources>

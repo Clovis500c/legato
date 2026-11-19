@@ -10,4 +10,8 @@
     <string name="widget_previous">Föregående</string>
     <string name="widget_play_pause">Spela eller pausa</string>
     <string name="widget_next">Nästa</string>
+    <string name="widget_sample_song_1">Första låten</string>
+    <string name="widget_sample_song_2">Andra låten</string>
+    <string name="widget_sample_song_3">Tredje låten</string>
+    <string name="widget_sample_artist">Artistens namn</string>
 </resources>

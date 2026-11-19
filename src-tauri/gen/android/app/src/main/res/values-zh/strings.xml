@@ -10,4 +10,8 @@
     <string name="widget_previous">上一首</string>
     <string name="widget_play_pause">播放或暂停</string>
     <string name="widget_next">下一首</string>
+    <string name="widget_sample_song_1">第一首歌</string>
+    <string name="widget_sample_song_2">第二首歌</string>
+    <string name="widget_sample_song_3">第三首歌</string>
+    <string name="widget_sample_artist">艺术家名称</string>
 </resources>

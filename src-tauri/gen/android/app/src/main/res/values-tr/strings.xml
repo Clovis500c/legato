@@ -10,4 +10,8 @@
     <string name="widget_previous">Önceki</string>
     <string name="widget_play_pause">Oynat veya duraklat</string>
     <string name="widget_next">Sonraki</string>
+    <string name="widget_sample_song_1">Birinci şarkı</string>
+    <string name="widget_sample_song_2">İkinci şarkı</string>
+    <string name="widget_sample_song_3">Üçüncü şarkı</string>
+    <string name="widget_sample_artist">Sanatçı adı</string>
 </resources>

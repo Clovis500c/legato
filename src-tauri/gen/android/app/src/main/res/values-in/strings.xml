@@ -10,4 +10,8 @@
     <string name="widget_previous">Sebelumnya</string>
     <string name="widget_play_pause">Putar atau jeda</string>
     <string name="widget_next">Berikutnya</string>
+    <string name="widget_sample_song_1">Lagu pertama</string>
+    <string name="widget_sample_song_2">Lagu kedua</string>
+    <string name="widget_sample_song_3">Lagu ketiga</string>
+    <string name="widget_sample_artist">Nama artis</string>
 </resources>

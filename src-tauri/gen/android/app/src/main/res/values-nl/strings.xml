@@ -10,4 +10,8 @@
     <string name="widget_previous">Vorige</string>
     <string name="widget_play_pause">Afspelen of pauzeren</string>
     <string name="widget_next">Volgende</string>
+    <string name="widget_sample_song_1">Eerste nummer</string>
+    <string name="widget_sample_song_2">Tweede nummer</string>
+    <string name="widget_sample_song_3">Derde nummer</string>
+    <string name="widget_sample_artist">Naam van de artiest</string>
 </resources>

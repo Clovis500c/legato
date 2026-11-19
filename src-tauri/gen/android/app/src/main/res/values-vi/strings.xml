@@ -10,4 +10,8 @@
     <string name="widget_previous">Trước</string>
     <string name="widget_play_pause">Phát hoặc tạm dừng</string>
     <string name="widget_next">Tiếp</string>
+    <string name="widget_sample_song_1">Bài hát thứ nhất</string>
+    <string name="widget_sample_song_2">Bài hát thứ hai</string>
+    <string name="widget_sample_song_3">Bài hát thứ ba</string>
+    <string name="widget_sample_artist">Tên nghệ sĩ</string>
 </resources>

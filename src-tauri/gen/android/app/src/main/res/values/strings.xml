@@ -12,4 +12,8 @@
     <string name="widget_previous">Previous</string>
     <string name="widget_play_pause">Play or pause</string>
     <string name="widget_next">Next</string>
+    <string name="widget_sample_song_1">First song</string>
+    <string name="widget_sample_song_2">Second song</string>
+    <string name="widget_sample_song_3">Third song</string>
+    <string name="widget_sample_artist">Artist name</string>
 </resources>

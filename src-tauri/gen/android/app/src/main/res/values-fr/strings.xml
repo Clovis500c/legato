@@ -10,4 +10,8 @@
     <string name="widget_previous">Précédent</string>
     <string name="widget_play_pause">Lecture ou pause</string>
     <string name="widget_next">Suivant</string>
+    <string name="widget_sample_song_1">Premier morceau</string>
+    <string name="widget_sample_song_2">Deuxième morceau</string>
+    <string name="widget_sample_song_3">Troisième morceau</string>
+    <string name="widget_sample_artist">Nom de l’artiste</string>
 </resources>

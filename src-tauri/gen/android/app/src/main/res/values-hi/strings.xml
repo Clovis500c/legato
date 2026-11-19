@@ -10,4 +10,8 @@
     <string name="widget_previous">पिछला</string>
     <string name="widget_play_pause">चलाएँ या रोकें</string>
     <string name="widget_next">अगला</string>
+    <string name="widget_sample_song_1">पहला गाना</string>
+    <string name="widget_sample_song_2">दूसरा गाना</string>
+    <string name="widget_sample_song_3">तीसरा गाना</string>
+    <string name="widget_sample_artist">कलाकार का नाम</string>
 </resources>
