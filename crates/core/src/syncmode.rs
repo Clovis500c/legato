@@ -868,6 +868,62 @@ pub fn onedrive_folders(var: impl Fn(&str) -> Option<String>) -> Vec<PathBuf> {
     out
 }
 
+/// Plays are recorded when a listen ends, stamped with its start: a push looks back this far for them.
+const PLAYS_BACK_MS: i64 = 3_600_000;
+
+/// A live push (`docs/sync-mode.md` › Live): only what changed after `since` (unix ms), merged by the same `merge`.
+/// What it leaves out means "no news", never "deleted"; songs added by hand outside a playlist wait for the round.
+pub fn changes_since(s: &Snapshot, since: i64) -> Snapshot {
+    let mut used: Vec<u32> = Vec::new();
+    let mut map = HashMap::new();
+    let mut keep = |i: u32| *map.entry(i).or_insert_with(|| {
+        used.push(i);
+        used.len() as u32 - 1
+    });
+    let playlists = s
+        .playlists
+        .iter()
+        .filter(|p| p.updated > since || p.added.iter().any(|(_, at)| *at > since))
+        .map(|p| PlaylistSnap { tracks: p.tracks.iter().map(|i| keep(*i)).collect(), added: p.added.iter().map(|(i, at)| (keep(*i), *at)).collect(), ..p.clone() })
+        .collect();
+    let prefs = s.prefs.iter().filter(|p| p.2 > since).map(|(i, p, at)| (keep(*i), p.clone(), *at)).collect();
+    let ratings = s.ratings.iter().filter(|r| r.2 > since).map(|(i, st, at)| (keep(*i), *st, *at)).collect();
+    let plays = s.plays.iter().filter(|p| p.1 * 1000 > since - PLAYS_BACK_MS).map(|(i, st, ms, c)| (keep(*i), *st, *ms, *c)).collect();
+    let edits = s
+        .edits
+        .iter()
+        .filter(|e| e.updated * 1000 > since)
+        .map(|e| {
+            let song = match e.song.as_deref().and_then(|x| x.strip_prefix("t#")).and_then(|x| x.parse::<u32>().ok()) {
+                Some(i) => Some(format!("t#{}", keep(i))),
+                None => e.song.clone(),
+            };
+            EditSnap { song, ..e.clone() }
+        })
+        .collect();
+    Snapshot {
+        format: s.format,
+        device: s.device.clone(),
+        device_name: s.device_name.clone(),
+        at: s.at,
+        library: Vec::new(),
+        playlists,
+        gone: s.gone.iter().filter(|g| g.at > since).cloned().collect(),
+        removed: s.removed.iter().filter(|r| r.at > since).cloned().collect(),
+        prefs,
+        ratings,
+        plays,
+        edits,
+        settings: s.settings.iter().filter(|(_, st)| st.at > since).map(|(k, st)| (k.clone(), st.clone())).collect(),
+        accounts: s.accounts.clone(),
+        secrets: None,
+        now: None,
+        // Last: `keep` above has seen every index.
+        // A bad index of our own: no songs, so the merge refuses it rather than shift them.
+        tracks: used.iter().map(|i| s.tracks.get(*i as usize).cloned()).collect::<Option<_>>().unwrap_or_default(),
+    }
+}
+
 /// Extension of a PC's file in the sync folder.
 pub const FILE_EXT: &str = "legatosync";
 
@@ -1095,6 +1151,40 @@ mod tests {
         a.clear_history()?;
         b.merge(&snap(&a))?;
         assert!(b.plays()?.is_empty());
+        Ok(())
+    }
+
+    #[test]
+    fn a_live_push_carries_only_the_changes_and_merges_like_the_snapshot() -> Result<()> {
+        let a = Library::in_memory()?;
+        let b = Library::in_memory()?;
+        let x = a.upsert_track(&song("X", "x1"))?;
+        let y = a.upsert_track(&song("Y", "y1"))?;
+        let old = a.edit_playlist(PlaylistEdit::Create { name: "Old".into() })?.unwrap();
+        a.edit_playlist(PlaylistEdit::Add { id: old, track_ids: vec![x] })?;
+        let gone = a.edit_playlist(PlaylistEdit::Create { name: "Gone".into() })?.unwrap();
+        a.set_rating(x, 4)?;
+        b.merge(&snap(&a))?;
+        let since = snap(&a).at;
+        std::thread::sleep(std::time::Duration::from_millis(5));
+        // After the last exchange: a new playlist, a rating, a deletion, a setting.
+        let new = a.edit_playlist(PlaylistEdit::Create { name: "New".into() })?.unwrap();
+        a.edit_playlist(PlaylistEdit::Add { id: new, track_ids: vec![y] })?;
+        a.set_rating(y, 10)?;
+        a.edit_playlist(PlaylistEdit::Delete { id: gone })?;
+        a.save_ui_settings(&serde_json::json!({ "accent": "red" }), now_ms())?;
+        let full = snap(&a);
+        let d = changes_since(&full, since);
+        assert_eq!(d.playlists.iter().map(|p| p.name.as_str()).collect::<Vec<_>>(), ["New"]);
+        assert_eq!(d.tracks.iter().map(|t| t.title.as_str()).collect::<Vec<_>>(), ["Y"]);
+        assert_eq!((d.ratings.len(), d.gone.len(), d.settings.len(), d.library.len()), (1, 1, 1, 0));
+        b.merge(&d)?;
+        // Same as the whole snapshot: nothing left for it to bring.
+        assert_eq!(names(&b), ["New", "Old"]);
+        assert!(!b.merge(&full)?.any());
+        // Nothing since: an empty push.
+        let none = changes_since(&full, full.at);
+        assert!(none.playlists.is_empty() && none.tracks.is_empty() && none.settings.is_empty());
         Ok(())
     }
 
