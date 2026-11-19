@@ -131,6 +131,8 @@ pub struct Heard {
     pub auto: bool,
     /// Its snapshot's stamp, when it says.
     pub stamp: Option<String>,
+    /// Takes live pushes (`Hello::Live`): automatic, and new enough. Older apps never say it.
+    pub live: bool,
 }
 
 impl Heard {
@@ -162,6 +164,7 @@ pub fn txt(card: &Card, offering: bool, auto: bool, stamp: Option<&str>) -> Vec<
     }
     if auto {
         words.push(("a", "1".into()));
+        words.push(("l", "1".into()));
     }
     if let Some(s) = stamp {
         words.push(("s", s.to_string()));
@@ -176,7 +179,7 @@ pub fn heard(get: impl Fn(&str) -> Option<String>) -> Option<Heard> {
     }
     let card = Card { id: get("id")?, name: get("n")?, os: Os::from_word(&get("o")?)?, form: Form::from_word(&get("f")?)? }.checked()?;
     let stamp = get("s").filter(|s| s.len() == 12 && s.bytes().all(|b| b.is_ascii_hexdigit()));
-    Some(Heard { card, offering: get("c").as_deref() == Some("1"), auto: get("a").as_deref() == Some("1"), stamp })
+    Some(Heard { card, offering: get("c").as_deref() == Some("1"), auto: get("a").as_deref() == Some("1"), stamp, live: get("l").as_deref() == Some("1") })
 }
 
 /// A snapshot's stamp: 12 hex of SHA-256 of its bytes (its time left out by the caller).
@@ -352,10 +355,10 @@ mod tests {
         let me = Card { id: A.into(), name: "TOUR-SALON".into(), os: Os::Windows, form: Form::Tower };
         let words: HashMap<&str, String> = txt(&me, true, true, Some("0123456789ab")).into_iter().collect();
         let h = heard(|k| words.get(k).cloned()).unwrap();
-        assert_eq!(h, Heard { card: me.clone(), offering: true, auto: true, stamp: Some("0123456789ab".into()) });
+        assert_eq!(h, Heard { card: me.clone(), offering: true, auto: true, stamp: Some("0123456789ab".into()), live: true });
         let quiet: HashMap<&str, String> = txt(&me, false, false, None).into_iter().collect();
         let h = heard(|k| quiet.get(k).cloned()).unwrap();
-        assert!(!h.offering && !h.auto && h.stamp.is_none());
+        assert!(!h.offering && !h.auto && h.stamp.is_none() && !h.live, "manual: no live pushes either");
         for (k, v) in [("v", "3"), ("id", "not-an-id"), ("o", "beos"), ("f", "watch"), ("n", "\u{7}  ")] {
             let mut bad = words.clone();
             bad.insert(k, v.into());
@@ -428,7 +431,7 @@ mod tests {
     #[test]
     fn a_device_heard_again_wakes_only_when_it_moved() {
         let card = Card { id: A.into(), name: "PC".into(), os: Os::Windows, form: Form::Tower };
-        let h = Heard { card, offering: false, auto: true, stamp: Some("aaaaaaaaaaaa".into()) };
+        let h = Heard { card, offering: false, auto: true, stamp: Some("aaaaaaaaaaaa".into()), live: true };
         assert!(h.wakes(None), "new on the network");
         assert!(!h.wakes(Some(&h)), "the same words announced again");
         assert!(h.wakes(Some(&Heard { stamp: Some("bbbbbbbbbbbb".into()), ..h.clone() })), "its stamp moved");
@@ -472,7 +475,7 @@ mod tests {
     #[test]
     fn rows_put_trusted_first_then_who_is_here() {
         let peers = [peer(B, "zed phone"), peer("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "Laptop"), peer("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "Away")];
-        let near = |id: &str, name: &str, offering: bool| Heard { card: card(id, name), offering, auto: true, stamp: None };
+        let near = |id: &str, name: &str, offering: bool| Heard { card: card(id, name), offering, auto: true, stamp: None, live: true };
         let heard = [
             near(A, "Me", false),
             near(B, "Zed Phone (renamed)", false),

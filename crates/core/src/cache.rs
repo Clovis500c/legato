@@ -30,13 +30,23 @@ pub fn data_of(table: &str) -> Data {
     }
 }
 
+/// Told when `changes` moves (the devices' live push): called on the writing thread, so quick.
+pub type OnChange = std::sync::Arc<dyn Fn() + Send + Sync>;
+
 /// Bumped on every row written. A cached answer stamped with an older number is stale.
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct Versions {
     library: AtomicU64,
     history: AtomicU64,
     /// Shared settings saved (their `sync_times` row written, `Library::set_setting`).
     settings: AtomicU64,
+    on_change: std::sync::Mutex<Option<OnChange>>,
+}
+
+impl std::fmt::Debug for Versions {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Versions").field("library", &self.library).field("history", &self.history).field("settings", &self.settings).finish()
+    }
 }
 
 impl Versions {
@@ -44,8 +54,21 @@ impl Versions {
         match data_of(table) {
             Data::Library => self.library.fetch_add(1, Ordering::Relaxed),
             Data::History => self.history.fetch_add(1, Ordering::Relaxed),
-            Data::Other => 0,
+            Data::Other => return,
         };
+        self.told();
+    }
+
+    /// `f` is told of every change from now on (replacing the one before).
+    pub fn on_change(&self, f: OnChange) {
+        *self.on_change.lock().unwrap() = Some(f);
+    }
+
+    fn told(&self) {
+        let f = self.on_change.lock().unwrap().clone();
+        if let Some(f) = f {
+            f();
+        }
     }
 
     pub fn library(&self) -> u64 {
@@ -58,6 +81,7 @@ impl Versions {
 
     pub fn setting_written(&self) {
         self.settings.fetch_add(1, Ordering::Relaxed);
+        self.told();
     }
 
     /// Moves when anything the devices sync sends may have changed (a cheap look, no snapshot built).
@@ -271,6 +295,16 @@ mod tests {
         v.touch("plays");
         v.touch("settings");
         assert_eq!((v.library(), v.history()), (2, 1));
+        // Told of what counts, not of the rest.
+        let told = std::sync::Arc::new(AtomicU64::new(0));
+        let t = told.clone();
+        v.on_change(std::sync::Arc::new(move || {
+            t.fetch_add(1, Ordering::Relaxed);
+        }));
+        v.touch("tracks");
+        v.touch("settings");
+        v.setting_written();
+        assert_eq!(told.load(Ordering::Relaxed), 2);
     }
 
     #[test]
