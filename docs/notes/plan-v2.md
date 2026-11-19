@@ -132,6 +132,13 @@ the order; a line leaves only when it ships or the user drops it.
       (both stamps move, so it would take a stamp swap in the ack to skip it: a follow-up if bandwidth matters); live
       only after the first swap since start. Never tried between two real devices: latency, two PCs or a phone + a PC
       crossing changes, Windows' firewall on the push.
+- [x] `S` A launch played by itself (the owner, 2026-11-19, from the phone: "des fois l'app mobile quand tu l'ouvres ça
+      reprend tout seul la musique alors que quand t'as quitté l'app elle était stoppée, et je crois que ça fait la même
+      pour PC"). With "Resume playback on launch" on, the saved pause was dropped (`paused: exact && …`): only the first
+      launch after an update kept it. Now `resumeAs` (session.ts, tested): back paused when left paused, playing when left
+      playing. Ruled out: sync merges and pickups never play (a click), the YouTube embed honours `hold`; Android's and
+      Windows' media controls play only on a button (a headset may send one when it connects). Decided alone
+      (2026-11-19): the setting's words stay (still true). Not tried on a phone.
 
 ## The owner's asks of 2026-11-07, evening
 
